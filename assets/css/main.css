@@ -1233,6 +1233,11 @@ input, select, textarea {
 				margin-bottom: 20px; /* Add some spacing between members */
 			}
 
+			.team-row .team-member { /* Target the single member */
+				width: 100%; 
+				margin: 0 auto 15px;  /* Centers horizontally */
+			}
+
 		}
 
 		@media screen and (max-width: 700px) {
@@ -1702,9 +1707,10 @@ input, select, textarea {
 	}
 	
 	.team-member {
-		position: relative; /* For overlay */
-		width: 250px; /* Adjust as needed */
-		margin: 15px;
+		position: relative;    
+		width: calc(33.33% - 15px); /* Adjust spacing as needed */
+		margin: 15px; 
+		text-align: center; /* Centers content within the member */ 
 	}
 	
 	.team-photo { 

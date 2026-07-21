@@ -6,6 +6,7 @@
 <title>SpikesPeak — Developer Docs - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -73,6 +72,15 @@
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-developer-docs">SpikesPeak — Developer Docs<a class="headerlink" href="#spikespeak-developer-docs" title="Permanent link">#</a></h1>
 <p>Onboarding + reference for the SpikesPeak acquisition stack (Qt/C++ backend, external-browser UI,
 closed-loop stimulation). <strong>Start here</strong>, then jump to the doc for your task below.</p>
+<blockquote>
+<p><strong>Current state (2026-07-21): saline bench validation DONE on both probes; ready for in-vivo testing
+under anesthesia.</strong> The full closed loop — synthetic ripple <strong>in saline</strong> → online SWR detection → UDP
+<code>fire</code> → Raspberry Pi 3B+ / AM Systems 2300 → biphasic pulse on NI-DAQ ai4 — is measured on <strong>real NP1.0
+and NP2.0</strong> hardware across the complete quorum × delivery matrix (1000 detections/cell), sub-millisecond
+with ASAP delivery. See the <strong>Hardware Results</strong> page
+(<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>). The next
+milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
+</blockquote>
 <h2 id="start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)<a class="headerlink" href="#start-here-the-path-for-a-new-agent-30-min-in-this-order" title="Permanent link">#</a></h2>
 <ol>
 <li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one
@@ -88,6 +96,12 @@ closed-loop stimulation). <strong>Start here</strong>, then jump to the doc for 
 </ol>
 <p><strong>Before you touch hardware</strong>, also read the Safety rules in the <code>spikespeak</code> skill (never force-kill a
 backend with a real probe attached; never leave the rig streaming; kill only the debug-port Chrome).</p>
+<p><strong>Skills you have on this repo:</strong> the <strong><code>spikespeak</code></strong> project skill (<code>.claude/skills/spikespeak/</code> — the
+cross-machine memory, since <code>~/.claude</code> auto-memories do NOT travel between machines; architecture,
+build/run, configs, safety — read it); <strong><code>dataviz</code></strong> (read before making ANY figure — it has a runnable
+palette validator, <code>scripts/validate_palette.js</code>; the latency figures use validated light+dark palettes);
+and <strong><code>agy</code></strong> delegation (<a href="UsingAgy.html"><code>UsingAgy.md</code></a> — Claude conducts + verifies, agy executes
+bulk/spec-driven work; always re-run the gate yourself).</p>
 <p><strong>Verification culture — the one habit that matters here.</strong> Claims about this system are cheap and often
 wrong; the recordings and the DOM are the ground truth. Do not report a conclusion you have not checked
 numerically. Two examples that actually happened, both written up in
@@ -100,6 +114,27 @@ numerically. Two examples that actually happened, both written up in
 </ul>
 <p>Generalising from a single artifact, or theorising about hardware before plotting the signal, is the
 characteristic failure mode on this repo.</p>
+<h3 id="traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)<a class="headerlink" href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop" title="Permanent link">#</a></h3>
+<p>The concrete domain facts behind the tables below — each is documented in full where linked:</p>
+<ul>
+<li><strong>NP2 offline reproduction uses an EXACT 2nd-order Bessel <code>data.lfp</code> (−3 dB @ 400 Hz) then ÷12.</strong> An
+  older <code>raw÷12 + DC-removal</code> approximation is <strong>wrong — never reintroduce it.</strong> NP1 reads native
+  <code>data.npx.lfp</code> directly (decimation 1). (<a href="RippleDetection.html"><code>RippleDetection.md</code></a>)</li>
+<li><strong>Latency stage splits use MEANS, not medians.</strong> The batching counter is quantised to one input sample
+  (400 µs), so medians snap to 0/400/800 µs and are not additive; the <code>net+stim</code> term is a residual by
+  subtraction. (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
+<li><strong>The ASAP <code>low_latency</code> flag</strong> (acquisition poll 1 ms → 0, per-source, opt-in) is the only latency
+  lever. On NP2 it also removes <em>upstream</em> raw-poll latency the detector-side counter can't see, so the
+  counter under-reports the win — the NI-DAQ total is authoritative. On both probes it takes the loop
+  sub-millisecond. (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
+<li><strong>Never validate a periodic signal by nearest-neighbour pairing.</strong> Three separate NI-DAQ↔NPX clock/sync
+  bugs (a ~10 ppm scale ramp + two whole-period off-by-ones) all read as <em>perfect</em> on every scalar metric
+  (ppm, residual, intervals); anchor on the <strong>aperiodic</strong> structure instead.
+  (<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> is the sync canon.)</li>
+<li><strong>A generic command/event subscription bus does NOT exist yet</strong> (<code>todo.txt:5–6</code>) — it's approximated by
+  config-wired data streams + Qt signals + <code>Q_INVOKABLE</code> + a vestigial <code>CommandDispatcher</code>. See
+  architecture review §11.6 and <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
+</ul>
 <h2 id="what-is-here">What is here<a class="headerlink" href="#what-is-here" title="Permanent link">#</a></h2>
 <p><strong>Architecture &amp; contracts</strong> — read before touching the core</p>
 <table>
@@ -231,11 +266,11 @@ characteristic failure mode on this repo.</p>
 </tr>
 <tr>
 <td><a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a></td>
-<td><strong>Offline analysis of a recorded closed-loop test</strong>: reproduce the NP2 detector EXACTLY from disk (Bessel <code>data.lfp</code>), the closed-loop <strong>latency</strong> method + results, the <strong>NI-DAQ↔NPX sync off-by-one bug + fix</strong> (<code>match="auto"</code>), and how to read a detection/pulse <strong>count mismatch</strong> correctly. Read before trusting a recorded latency.</td>
+<td><strong>The offline-analysis + sync canon.</strong> Reproduce the NP2 detector EXACTLY from disk (Bessel <code>data.lfp</code>), the closed-loop <strong>latency method</strong> (pulse-anchored + burst-anchored cross-check), the <strong>NI-DAQ↔NPX sync fit and all three clock/sync bugs</strong> (clock-scale ramp + two off-by-ones), and how to read a detection/pulse <strong>count mismatch</strong>. Read before trusting a recorded latency.</td>
 </tr>
 <tr>
 <td><a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a></td>
-<td><strong>Closed-loop latency</strong>: the definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds actually go, and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag. Read before trying to optimise the loop.</td>
+<td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag — now on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>). Numbers live in the Hardware Results page.</td>
 </tr>
 <tr>
 <td><a href="FilterDebugging.html"><code>FilterDebugging.md</code></a></td>
@@ -248,9 +283,10 @@ hardware verification are recorded in <a href="../SpikesPeak_Status.html"><code>
 <code>StimClosedLoop_Status.md</code> snapshot now lives in <a href="archive/README.html"><code>archive/</code></a>. Pi <strong>setup</strong> is in
 <code>raspberrypi_pulsegenerator/README.md</code>.</p>
 <p><strong>Hardware test results</strong> live next to the data in <code>RecordingTests/</code> and are in this book under
-<strong>"Hardware Results"</strong>: <a href="../RecordingTests/NP1_RIPPLE_TESTS.html"><code>NP1_RIPPLE_TESTS.md</code></a> and
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html"><code>NP2_RIPPLE_TESTS.md</code></a> — the real-probe closed-loop results
-(100 ripples × 3 quorum variants per probe, latency + sync tables, regression verdicts).</p>
+<strong>"Hardware Results"</strong>: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>CLOSED_LOOP_LATENCY.md</code></a> — one
+consolidated, <strong>tabbed</strong> page (NP1.0 / NP2.0) with the full quorum × delivery latency matrix at 1000
+detections per cell, detection-integrity and sync tables, the stage decomposition, and the cross-probe
+comparison. Both probes run the <strong>identical</strong> test matrix; the tabs show the parallel results.</p>
 <p><strong>Testing &amp; tooling</strong></p>
 <table>
 <thead>
@@ -300,7 +336,7 @@ hardware verification are recorded in <a href="../SpikesPeak_Status.html"><code>
 <tbody>
 <tr>
 <td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
-<td>Open, low priority: the NI-DAQ drops a trailing sync pulse vs the NPX. The analysis side is already handled by <code>match="auto"</code>.</td>
+<td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
 </tr>
 </tbody>
 </table>
@@ -507,7 +543,10 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)</a></li>
+<li><a href="#start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)</a><ul>
+<li><a href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)</a></li>
+</ul>
+</li>
 <li><a href="#what-is-here">What is here</a><ul>
 <li><a href="#where-artifacts-belong-screenshots-figures-captures">Where artifacts belong (screenshots, figures, captures)</a></li>
 <li><a href="#doc-conventions-keep-this-book-small">Doc conventions (keep this book small)</a></li>
@@ -525,5 +564,17 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

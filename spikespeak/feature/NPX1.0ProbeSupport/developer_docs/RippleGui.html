@@ -6,6 +6,7 @@
 <title>Ripple-detection GUI — design, WS contract, and integration plan - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -73,8 +72,13 @@
   <main class="content"><article class="markdown-body"><h1 id="ripple-detection-gui-design-ws-contract-and-integration-plan">Ripple-detection GUI — design, WS contract, and integration plan<a class="headerlink" href="#ripple-detection-gui-design-ws-contract-and-integration-plan" title="Permanent link">#</a></h1>
 <p>The RippleDetection panel is a <strong>right-side dock column</strong> (≤ ¼ width, stretchable) that coexists with the
 Probe Map / Live Data views (a toolbar tab <strong>toggles</strong> the dock; it does not replace the main view). It drives
-<code>proc.rippledetector</code> and visualises its per-channel state. For the built panel in action, see the annotated
-screenshots in <code>user_docs/RippleDetection.md</code> (<code>user_docs/images/ripple/</code>).</p>
+<code>proc.rippledetector</code> and visualises its per-channel state.</p>
+<blockquote>
+<p><strong>Scope — this doc is the GUI ↔ backend WS contract only.</strong> How to <em>operate</em> the dock (with annotated
+screenshots): <a href="../user_docs/RippleDetection.html"><code>../user_docs/RippleDetection.md</code></a>. The detection
+<em>algorithm</em> + per-probe data path: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>. This doc does not repeat
+either.</p>
+</blockquote>
 <p>Status: <strong>BUILT + WIRED END-TO-END (2026-07-08).</strong> The frontend panel (<code>webinterface/RippleModule.js</code>) sends WS
 commands and renders live backend events; the backend <code>RippleDetector</code> emits <code>rippleEnvelope</code>/<code>rippleTraining</code>/
 <code>rippleBaseline</code>/<code>rippleDetected</code>/<code>rippleState</code>, and applies frontend commands (start/pause/setChannels/setParam/
@@ -326,5 +330,17 @@ arm/disarm to <code>setStimArmed</code> on the main thread + broadcast armed-by-
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

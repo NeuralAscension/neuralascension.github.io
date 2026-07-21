@@ -6,6 +6,7 @@
 <title>SpikesPeak — Architectural Review & Audit - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -72,15 +71,17 @@
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-architectural-review-audit">SpikesPeak — Architectural Review &amp; Audit<a class="headerlink" href="#spikespeak-architectural-review-audit" title="Permanent link">#</a></h1>
 <p><strong>Scope:</strong> Qt/C++ acquisition backend + JavaScript (SciChart) web frontend
-<strong>Date:</strong> 2026-06-23
+<strong>Core review date:</strong> 2026-06-23 · <strong>Completion pass:</strong> 2026-07-21 (§11)
 <strong>Frontend rendering lib:</strong> SciChart.js v5.2.35 (local UMD bundle, <code>webinterface/lib/index.min.js</code>)
-<strong>Build:</strong> CMake (Ninja) + MSVC 2019 (14.29.30133) + Qt 6.7.3, C++20, Release <code>/Ox</code></p>
+<strong>Build:</strong> CMake (Ninja) + MSVC 2019 + Qt 6.7.3, C++20, Release <code>/Ox</code> (Windows hardware box); GCC + Qt 6.7+ (Linux sim box)</p>
 <blockquote>
-<p><strong>State note.</strong> This reflects the <strong>current working tree</strong> on <code>feature/NPX1.0ProbeSupport</code>
-(uncommitted changes). It has remediated essentially every finding from the prior
-(2026-06-22) static review and unified the IMRO control path onto QWebChannel. §10 tracks
-that. The <code>saveImroToFile</code> native-dialog fix and the <strong>Option A</strong> <code>handleWebCommand</code>
-cleanup (§7.4) were applied during the 2026-06-23 session.</p>
+<p><strong>State note.</strong> §1–§10 are the original 2026-06-23 architecture review (hosting, threading, data plane,
+factory/registry, QWebChannel command model) and remain accurate for the <strong>core</strong>. Since then the system
+grew a second probe, a full ripple→stimulation closed loop, an NI-DAQ source, and latency
+instrumentation, and was validated end-to-end on real hardware. <strong>§11 is the 2026-07-21 completion pass</strong>
+that brings the review up to date and records the current status: <strong>both probes validated end-to-end in
+saline; ready for in-vivo testing under anesthesia.</strong> Read §1–§10 for how the core works, then §11 for
+everything built on top.</p>
 <p><strong>Companion guides:</strong> <a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a>,
 <a href="AddingASinkModule.html"><code>AddingASinkModule.md</code></a>, and <a href="README.html"><code>README.md</code></a> (onboarding +
 parallel-work map). Read those to <em>extend</em> the system; read this to <em>understand</em> it.</p>
@@ -632,7 +633,85 @@ symbol, since <code>NpInterface.cpp</code> line numbers drift):</p>
   Multi-producer is a TODO in the source.</li>
 </ul>
 <hr />
-<h2 id="11-appendix-files-examined">11. Appendix — Files Examined<a class="headerlink" href="#11-appendix-files-examined" title="Permanent link">#</a></h2>
+<h2 id="11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21">11. Completion pass — closed loop, NP2, NI-DAQ, latency (2026-06-23 → 2026-07-21)<a class="headerlink" href="#11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21" title="Permanent link">#</a></h2>
+<p>Everything in §1–§10 still holds. This section completes the review with what was built on top of that
+core and validated on real hardware. Deep dives are cross-linked; this is the architectural map.</p>
+<h3 id="111-a-second-probe-neuropixels-20-multishank">11.1 A second probe — Neuropixels 2.0 multishank<a class="headerlink" href="#111-a-second-probe-neuropixels-20-multishank" title="Permanent link">#</a></h3>
+<p><code>Npx2MSProbe</code> (<code>src/modules/neuropixels/NpInterface.{hpp,cpp}</code>) is the NP2 sibling of <code>Npx1Probe</code>: same
+worker-thread + <code>QTimer</code> acquisition model (§5), producing a single 30 kHz wideband <code>data.npx.raw</code> (NP1
+demuxes into <code>ap</code>+<code>lfp</code>; NP2 has one raw band). <code>NeuropixelsSource::startAcq</code> branches on <code>mProbeType</code>
+to construct one or the other. Geometry/mapping and what is wired vs stubbed: <a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a>.
+The probe-agnostic channel map is published through <code>ChannelMapService</code> (<code>src/core/IChannelMap.hpp</code>) so a
+consumer resolves electrodes → read-out channels against the <em>real</em> applied map, not a Bank-0 identity.</p>
+<h3 id="112-ripple-detection-matured-into-a-closed-loop-dsp">11.2 Ripple detection matured into a closed-loop DSP<a class="headerlink" href="#112-ripple-detection-matured-into-a-closed-loop-dsp" title="Permanent link">#</a></h3>
+<p><code>RippleDetector</code> (§5.1) is now a full sharp-wave-ripple detector, not a stub: a <strong>per-probe input path</strong>
+(NP1 reads native <code>data.npx.lfp</code> directly, decimation 1; NP2 derives <code>data.lfp</code> via a <code>proc.lfp</code> Bessel
+low-pass then decimates ÷12 — both land at 2.5 kHz), a ripple-band + envelope FIR chain, a per-channel
+mean+z·σ baseline, and a <strong>multi-channel quorum / coincidence / lockout</strong> state machine. Channels and all
+detection parameters are <strong>strictly GUI/WS-driven</strong> (removed from YAML); the module starts with 0 channels
+and waits. On record start it writes a <strong>ripple sidecar</strong> (<code>slWriteRippleSidecar</code>, <code>Q_INVOKABLE</code>) capturing
+the resolved channels + trained thresholds. Algorithm + the per-probe rationale: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>;
+GUI: <a href="RippleGui.html"><code>RippleGui.md</code></a>; threading: <a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a>.</p>
+<h3 id="113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq">11.3 The stimulation path — detect → fire → Pi → AM 2300 → NI-DAQ<a class="headerlink" href="#113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq" title="Permanent link">#</a></h3>
+<p>On a confirmed quorum detection the detector calls <code>StimulatorClient</code>
+(<code>src/modules/stimulation/StimulatorClient.{hpp,cpp}</code>), which sends a UDP <code>fire</code> datagram (default
+<code>192.168.1.100:8888</code>) to a <strong>Raspberry Pi 3B+</strong> running the pulse generator, which drives an <strong>AM Systems
+2300</strong> to emit a biphasic pulse. The Pi ACKs <code>fired</code> off its real-time path; the client stamps send/ACK
+times (<code>mLastFireSendUs</code>/<code>mLastAckUs</code>) and the GUI's STIM LED lights only on a confirmed fire. The
+delivered pulse is captured on <strong>NI-DAQ ai4</strong>, which is how the closed loop is measured (§11.5). Stim
+target is retargetable live (<code>setStimServer</code>); pulse params (phase/gap/freq/train) are GUI-editable. An
+ESP32-S3-ETH firmware twin exists (<code>esp32s3eth_am2300_pulsegenerator/</code>) but the production server is the
+Pi. Bring-up: <code>raspberrypi_pulsegenerator/README.md</code>; closed-loop history: <code>../SpikesPeak_Status.md</code> §21–§30.</p>
+<h3 id="114-ni-daq-as-a-first-class-source">11.4 NI-DAQ as a first-class source<a class="headerlink" href="#114-ni-daq-as-a-first-class-source" title="Permanent link">#</a></h3>
+<p><code>source.nidaq</code> (<code>src/modules/nidaq/NiDaqInterface.*</code>) streams a PXI-6133 (differential only) as
+<code>data.nidaq.raw</code> (analog volts) with a parallel DI/O stream, wired by YAML like any other source (§4). It
+carries the shared ~1 Hz sync TTL on ai0 and the stim pulse on ai4. Its single-reservation failure mode
+and the 2026-07 robustness fixes are in <a href="NiDaq.html"><code>NiDaq.md</code></a>. Recording writes <code>nidaq</code> (<code>ai0..ai7</code>) and
+<code>nidaq_di</code> bands alongside the probe bands.</p>
+<h3 id="115-latency-instrumentation-the-asap-delivery-flag">11.5 Latency instrumentation + the ASAP delivery flag<a class="headerlink" href="#115-latency-instrumentation-the-asap-delivery-flag" title="Permanent link">#</a></h3>
+<p>The detector emits a per-stage <strong><code>rippleLatency</code></strong> WS event after every confirmed stimulus (sample-proc,
+detector-backlog, detect→send, send→ACK). <strong>Closed-loop latency</strong> is defined as <em>threshold crossing → ai4
+pulse</em> and measured offline against the NI-DAQ recording. The one architectural lever found was <strong>delivery
+granularity</strong>: a source's poll cadence sets how stale the oldest sample in a delivered block is. The opt-in
+<strong><code>low_latency: true</code></strong> YAML flag drives <code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency()</code>, dropping the
+acquisition <code>QTimer</code> interval from 1 ms to 0 (poll every event-loop pass). It is <strong>per-source</strong>, so only a
+config that closes a loop pays the CPU cost. Result: sub-millisecond closed loop on both probes. Method:
+<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>; numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
+<h3 id="116-the-commandevent-model-today-and-what-is-still-a-todo">11.6 The command/event model today — and what is still a TODO<a class="headerlink" href="#116-the-commandevent-model-today-and-what-is-still-a-todo" title="Permanent link">#</a></h3>
+<p>§7 chose <strong>Option A</strong>: per-module frontend commands ride <code>Q_INVOKABLE</code> over QWebChannel. That is now the
+standard across <em>multiple</em> modules — the NPX sources, <code>RecordProcessor::setRecording</code>, and the ripple
+detector's sidecar invokables all register their own object at select time
+(<code>WebSocketServer::onSourceSelection</code>), so adding a module needs no central-router edit. Alongside it:</p>
+<ul>
+<li><strong>Data-plane "subscription" is config-driven</strong> and is the only subscription initialised from YAML: a
+  processor's <code>configure()</code> reads its <code>input(s):</code> names and registers as a <code>CircularBuffer</code> consumer
+  (<code>addWaitingConsumer</code>/polling); sources <code>addProducer</code>. The YAML wires who-consumes-what by registry name.</li>
+<li><strong>Inter-module events are plain Qt signals/slots</strong> (<code>sigIpStarted/Stopped/DataReady/ErrorOccurred</code>,
+  <code>sigRippleEvent</code>, <code>sigGuiStatus</code>), <code>connect()</code>-ed imperatively in <code>ProcessorManager</code>/<code>WebSocketServer</code> —
+  there is <strong>no event bus</strong>.</li>
+<li>A partial <strong><code>CommandDispatcher</code></strong> singleton (<code>src/core/CommandDispatch.hpp</code>, <code>addSubscriber</code> /
+  <code>executeCallbacks</code>) provides a runtime command pub/sub, but it is <strong>command-only, code-registered, and
+  has exactly one subscriber</strong> (<code>AudioProcessor.cpp:491</code>, hard-coded id <code>0x218</code>); it is being superseded by
+  <code>Q_INVOKABLE</code>.</li>
+</ul>
+<p><strong>So the long-standing goal "processors subscribe to any commands/events, config-initialised +
+runtime-modifiable" (<code>todo.txt:5–6</code>) is NOT yet a unified mechanism.</strong> It is approximated by the four
+paths above (config-wired data plane + Qt signals + <code>Q_INVOKABLE</code> web commands + the single-use
+<code>CommandDispatcher</code>). A true generic event/command bus, declarable in YAML and mutable at runtime, remains
+the open design item.</p>
+<h3 id="117-offline-analysis-the-sync-machinery">11.7 Offline analysis + the sync machinery<a class="headerlink" href="#117-offline-analysis-the-sync-machinery" title="Permanent link">#</a></h3>
+<p>A Python post-processing stack (<code>python/spikespeak_postprocess</code>, <code>ripple_tools/</code>) reconstructs the exact
+detector from a recording and measures the closed loop, warping NI-DAQ time onto the NPX clock via the
+shared sync train. Three clock/sync bugs that silently corrupted latency were found and fixed (a ~10 ppm
+clock-scale ramp and two whole-period off-by-ones); the aligner now pairs robustly at either end and warns
+on a count mismatch. This is the reference for any recorded-timing work: <a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>.</p>
+<h3 id="118-status">11.8 Status<a class="headerlink" href="#118-status" title="Permanent link">#</a></h3>
+<p>Both probes are validated <strong>end-to-end on real hardware in saline</strong> — synthetic ripple → detection →
+Pi/AM 2300 → NI-DAQ ai4 — across the full quorum × delivery matrix (1000 detections/cell), sub-millisecond
+with ASAP. Saline bench validation is <strong>done</strong>; the next milestone is <strong>in-vivo recording under
+anesthesia</strong>, run by the user. Dated log: <code>../SpikesPeak_Status.md</code>.</p>
+<hr />
+<h2 id="12-appendix-files-examined">12. Appendix — Files Examined<a class="headerlink" href="#12-appendix-files-examined" title="Permanent link">#</a></h2>
 <p><strong>C++:</strong> <code>main.cpp</code>, <code>MainController.{hpp,cpp}</code>, <code>SourceManager.{hpp,cpp}</code>,
 <code>ProcessorManager.cpp</code>, <code>WebSocketServer.{hpp,cpp}</code>, <code>WebSocketTransport.cpp</code>, <code>Registry.hpp</code>,
 <code>ObjectFactory.hpp</code>, <code>CircularBuffer.hpp</code>, <code>Utils.cpp</code>, <code>IData.hpp</code>, <code>IDataSource.hpp</code>,
@@ -666,7 +745,18 @@ symbol, since <code>NpInterface.cpp</code> line numbers drift):</p>
 <li><a href="#remaining-latent-not-regressions">Remaining / latent (not regressions)</a></li>
 </ul>
 </li>
-<li><a href="#11-appendix-files-examined">11. Appendix — Files Examined</a></li>
+<li><a href="#11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21">11. Completion pass — closed loop, NP2, NI-DAQ, latency (2026-06-23 → 2026-07-21)</a><ul>
+<li><a href="#111-a-second-probe-neuropixels-20-multishank">11.1 A second probe — Neuropixels 2.0 multishank</a></li>
+<li><a href="#112-ripple-detection-matured-into-a-closed-loop-dsp">11.2 Ripple detection matured into a closed-loop DSP</a></li>
+<li><a href="#113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq">11.3 The stimulation path — detect → fire → Pi → AM 2300 → NI-DAQ</a></li>
+<li><a href="#114-ni-daq-as-a-first-class-source">11.4 NI-DAQ as a first-class source</a></li>
+<li><a href="#115-latency-instrumentation-the-asap-delivery-flag">11.5 Latency instrumentation + the ASAP delivery flag</a></li>
+<li><a href="#116-the-commandevent-model-today-and-what-is-still-a-todo">11.6 The command/event model today — and what is still a TODO</a></li>
+<li><a href="#117-offline-analysis-the-sync-machinery">11.7 Offline analysis + the sync machinery</a></li>
+<li><a href="#118-status">11.8 Status</a></li>
+</ul>
+</li>
+<li><a href="#12-appendix-files-examined">12. Appendix — Files Examined</a></li>
 </ul>
 </div>
 </aside>
@@ -674,5 +764,17 @@ symbol, since <code>NpInterface.cpp</code> line numbers drift):</p>
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

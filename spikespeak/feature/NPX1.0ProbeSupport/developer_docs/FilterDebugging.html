@@ -6,6 +6,7 @@
 <title>Filter debugging — the .bin dumps, the kill switches, and how to validate the filters - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -205,7 +204,7 @@ is what makes the offline reconstruction in <code>analyze_recording.py</code> tr
 <p>This also independently corroborates the recording-side result: on the NP1.0 hardware tests the offline
 envelope crossings paired <strong>1:1 with the ai4 stim pulses</strong> (99/99, max deviation 4.6 ms), which could not
 happen if the online filters diverged from the offline ones. See
-<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> and <code>RecordingTests/NP1_RIPPLE_TESTS.md</code>.</p>
+<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> and <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>.</p>
 <h2 id="housekeeping">Housekeeping<a class="headerlink" href="#housekeeping" title="Permanent link">#</a></h2>
 <p>The dumps are written to the <strong>process working directory</strong>, which for <code>python run_spikespeak.py</code> is the
 repo root. They are untracked build litter, not data:</p>
@@ -238,5 +237,17 @@ flipped to <code>true</code> — check both files listed at the top of this page
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

@@ -6,6 +6,7 @@
 <title>Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -82,64 +81,67 @@ recording and needs the sync fit to share a clock with the probe. Everything els
 <em>decomposition</em> of that interval — useful for finding where the milliseconds live, never a replacement.</p>
 <p><strong>Measured (real hardware, pulse-anchored).</strong> Full results, figures and the delivery-mode comparison:
 <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
-<p>The complete NP1.0 matrix, ~1000 delivered stimuli per cell (2026-07-21):</p>
+<p>The complete matrix, ~1000 delivered stimuli per cell (2026-07-21). Both probes, both delivery modes:</p>
 <table>
 <thead>
 <tr>
 <th>configuration</th>
 <th>NP1.0 default</th>
 <th>NP1.0 <strong>ASAP</strong></th>
-<th>saving</th>
 <th>NP2.0 default</th>
+<th>NP2.0 <strong>ASAP</strong></th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>1 ch</td>
-<td>1.483 ms (n=1000)</td>
-<td><strong>0.977 ms</strong> (n=997)</td>
-<td>−506 µs (−34.1 %)</td>
-<td>not measured</td>
+<td>1.483 ms</td>
+<td><strong>0.977 ms</strong></td>
+<td>1.351 ms †</td>
+<td><strong>0.600 ms</strong></td>
 </tr>
 <tr>
 <td>2 ch, quorum 2</td>
-<td>1.489 ms (n=999)</td>
-<td><strong>0.942 ms</strong> (n=996)</td>
-<td>−547 µs (−36.7 %)</td>
-<td>1.179 ms (n=99)</td>
+<td>1.489 ms</td>
+<td><strong>0.942 ms</strong></td>
+<td>1.186 ms</td>
+<td><strong>0.608 ms</strong></td>
 </tr>
 <tr>
 <td>4 ch, quorum 3-of-4</td>
-<td>1.484 ms (n=998)</td>
-<td><strong>0.963 ms</strong> (n=995)</td>
-<td>−521 µs (−35.1 %)</td>
-<td>1.173 ms (n=99)</td>
+<td>1.484 ms</td>
+<td><strong>0.963 ms</strong></td>
+<td>1.124 ms</td>
+<td><strong>0.546 ms</strong></td>
+</tr>
+<tr>
+<td>ASAP saving</td>
+<td>—</td>
+<td>−506…−547 µs</td>
+<td>—</td>
+<td>−578…−751 µs</td>
 </tr>
 </tbody>
 </table>
-<p>Latency is <strong>flat across quorum size</strong> on both probes — within 6 µs (default) and 35 µs (ASAP): quorum
-decides which crossing fires, not the delivery delay. ASAP is sub-millisecond at every quorum level and
-tightens the IQR 4–5×. NP2.0 ASAP is not yet measured.</p>
+<p>All cells n≈1000, <strong>0 unmatched</strong>. Latency is <strong>flat across quorum size</strong> on both probes — within 6 µs
+(NP1 default) / 35 µs (NP1 ASAP) / 62 µs (NP2 ASAP): quorum decides which crossing fires, not the
+delivery delay. ASAP is sub-millisecond at every quorum on both probes.
+(† <code>np2_1ch_baseline</code> has mild sync-clock curvature; burst-anchored cross-check 1.23 ms — read as
+~1.2–1.35 ms. Does not affect any ASAP cell.)</p>
+<p><strong>NP2.0 is faster than NP1.0 in both modes</strong> (~0.3 ms default, ~0.37 ms ASAP). The gap is the
+probe→detector path, not the shared network: NP2 derives <code>data.lfp</code> in software from the fresh 30 kHz raw
+stream; NP1 waits on the hardware LFP band. See the NP2 upstream-latency note below.</p>
 <blockquote>
-<p><strong>Two offline analysis bugs were found and fixed on 2026-07-21. Numbers published before then are
-wrong.</strong></p>
-<ol>
-<li><strong>Clock-scale error.</strong> The offline mapping mixed a NOMINAL 100 kHz tick rate with the MEASURED
-   per-sample rate, leaving a ~10 ppm scale error that grew with recording length (+6.5 ms over a
-   618 s run, slope 10.7 us/s, r = 0.99). Invisible on ~70 s recordings; produced a spurious "latency
-   rises with quorum" trend. Fixed in <code>online_det_recording_times</code>.</li>
-<li><strong>Sync off-by-one wrap.</strong> When the NI-DAQ drops a sync pulse at the <em>start</em> of the train, both the
-   start- and end-anchored pairings are off by a whole period, so <code>_pair_edges_auto</code> picked an offset
-   ~1.000 s wrong and added exactly one sync period to every latency in that recording. Invisible in
-   the usual diagnostics: intervals, drift (9.8 ppm) and residual (0.012 ms) all look perfect either
-   way. Caught on <code>np1_4ch_q3_asap</code> (257 of 995 pulses left unpaired, and a physically impossible
-   0.433 ms minimum). Fixed in <code>python/spikespeak_postprocess/sync.py</code> — the coarse offset is now
-   reduced modulo the sync period, with a warning when it fires.</li>
-</ol>
-<p><strong>Lesson, the same one as the 2026-07-17 sync bug: never validate a periodic signal by
-nearest-neighbour pairing.</strong> A whole-period shift is invisible to interval checks, drift and residual.
-Anchor on aperiodic landmarks — here the ~1.6 s gaps between ripple bursts, which is what exposed it.</p>
+<p><strong>Numbers published before 2026-07-21 were wrong</strong> — three offline clock/sync bugs (a ~10 ppm
+clock-scale ramp and two sync off-by-ones) inflated them. All are fixed and every recording re-analysed.
+The canonical write-up of the sync fit and all three bugs is in
+<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> — read it before trusting any recorded
+latency. <strong>This doc does not re-derive them.</strong></p>
 </blockquote>
+<p>The full result tables, figures, and detection-integrity/sync numbers live in
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a> (a tabbed NP1/NP2
+page). This doc owns the <strong>method</strong>: the definition, the live per-stage instrumentation, the ASAP flag,
+and the mechanism of where the milliseconds go.</p>
 <h2 id="live-per-stage-instrumentation">Live per-stage instrumentation<a class="headerlink" href="#live-per-stage-instrumentation" title="Permanent link">#</a></h2>
 <p>The backend emits a <strong><code>rippleLatency</code></strong> WS event after every <em>confirmed</em> stimulus (i.e. once the stim
 server ACKs <code>fired</code>), and writes a <code>latency_us</code> summary into each recording's <code>_ripple.json</code>. Stages, all
@@ -336,10 +338,13 @@ timer). ~17 us total against a ~840 us loop -- negligible, but real, which is wh
 <p><code>Npx1Probe</code> polls <code>np_readElectrodeData</code> on a <strong>1 ms</strong> timer and requests up to <strong>64 superframes</strong>
 (<code>NpInterface.cpp</code>). At the 2.5 kHz LFP rate that accumulates 1–2 samples per <code>commitWrite</code>, measured as
 a <strong>214–631 µs</strong> mean backlog on this rig — 15–43 % of the total closed-loop latency.</p>
-<p><code>low_latency: true</code> on the probe source now drives <code>Npx1Probe::setLowLatency()</code>, which polls on every
-event-loop pass (interval 0) instead of every 1 ms. The <strong>request size stays at 64</strong> so the probe can
-still catch up if it ever falls behind — only the poll cadence changes. Config
-<strong><code>Npx1PxiNiDaqAsap</code></strong> is byte-identical to <code>Npx1PxiNiDaq</code> apart from that key.</p>
+<p><code>low_latency: true</code> on the probe source now drives <code>Npx1Probe::setLowLatency()</code> (and, since 2026-07-21,
+<code>Npx2MSProbe::setLowLatency()</code> — same one-line timer change, <code>setInterval(mLowLatency ? 0 : 1)</code>, wired in
+<code>NeuropixelsSource::startAcq</code>), which polls on every event-loop pass (interval 0) instead of every 1 ms.
+The <strong>request size is unchanged</strong> so the probe can still catch up if it ever falls behind — only the poll
+cadence changes. Configs <strong><code>Npx1PxiNiDaqAsap</code></strong> and <strong><code>Npx2PxiNiDaqAsap</code></strong> are byte-identical to their
+default configs apart from that key. The backend logs <code>acquisition poll interval 0 ms (low_latency =
+true)</code> at start — check it to confirm the flag actually took before trusting an A/B.</p>
 <p>Staleness is still bounded below by the Neuropixels API's own packetisation: below that the data has not
 arrived yet and no software change can help.</p>
 <h3 id="measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell">Measured on real NP1.0 — every quorum level, ~1000 stimuli per cell<a class="headerlink" href="#measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell" title="Permanent link">#</a></h3>
@@ -437,6 +442,100 @@ a measurement.</p>
 compensate. The totals are trustworthy; this channel-count dependence of the <em>attribution</em> is
 unexplained. Treat the stage split as indicative, not exact.</p>
 </blockquote>
+<h3 id="measured-on-real-np20-every-quorum-level-1000-stimuli-per-cell-2026-07-21">Measured on real NP2.0 — every quorum level, ~1000 stimuli per cell (2026-07-21)<a class="headerlink" href="#measured-on-real-np20-every-quorum-level-1000-stimuli-per-cell-2026-07-21" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>1 ch</th>
+<th></th>
+<th>2 ch, quorum 2</th>
+<th></th>
+<th>4 ch, quorum 3-of-4</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>default</td>
+<td><strong>ASAP</strong></td>
+<td>default</td>
+<td><strong>ASAP</strong></td>
+<td>default</td>
+<td><strong>ASAP</strong></td>
+</tr>
+<tr>
+<td>closed-loop latency (median)</td>
+<td>1.351 ms †</td>
+<td><strong>0.600 ms</strong></td>
+<td>1.186 ms</td>
+<td><strong>0.608 ms</strong></td>
+<td>1.124 ms</td>
+<td><strong>0.546 ms</strong></td>
+</tr>
+<tr>
+<td>p95</td>
+<td>1.863 ms</td>
+<td>0.707 ms</td>
+<td>1.692 ms</td>
+<td>0.724 ms</td>
+<td>1.665 ms</td>
+<td>0.656 ms</td>
+</tr>
+<tr>
+<td>n / unmatched</td>
+<td>998 / 0</td>
+<td>999 / 0</td>
+<td>999 / 0</td>
+<td>999 / 0</td>
+<td>997 / 0</td>
+<td>999 / 0</td>
+</tr>
+<tr>
+<td><strong>data batching</strong> (counter, mean)</td>
+<td>320 us</td>
+<td>88 us</td>
+<td>284 us</td>
+<td>56 us</td>
+<td>194 us</td>
+<td>27 us</td>
+</tr>
+<tr>
+<td>detection + dispatch (mean)</td>
+<td>8 us</td>
+<td>9 us</td>
+<td>9 us</td>
+<td>10 us</td>
+<td>10 us</td>
+<td>10 us</td>
+</tr>
+<tr>
+<td>net + stim (residual, mean)</td>
+<td>1030 us</td>
+<td>515 us</td>
+<td>906 us</td>
+<td>557 us</td>
+<td>950 us</td>
+<td>527 us</td>
+</tr>
+</tbody>
+</table>
+<p><strong>−578 to −751 us (−49 to −56 %) median.</strong> NP2 goes sub-millisecond at every quorum, and <em>faster than
+NP1</em> in both modes (~0.3 ms default, ~0.37 ms ASAP). († <code>np2_1ch_baseline</code> has mild sync-clock curvature;
+burst-anchored cross-check 1.23 ms — read it as ~1.2–1.35 ms. No ASAP cell is affected.)</p>
+<blockquote>
+<p><strong>The detector-side batching counter UNDER-reports the ASAP benefit on NP2 — a key difference from
+NP1.</strong> On NP1 the detector reads <code>data.npx.lfp</code> directly, so the probe-poll latency <em>is</em> the
+detector-input backlog: the counter went 631→0 us and matched the ~506 us total saving. On NP2 the
+detector runs off <code>data.lfp</code> <em>derived</em> by <code>proc.lfp</code> from the raw poll, so the 1 ms raw-poll latency
+sits <strong>upstream</strong> of the detector and its input counter cannot see it. The counter shows only
+~230→60 us, but the NI-DAQ-anchored total drops ~578–751 us and the <code>net + stim</code> residual — which on
+NP1 was a near-fixed ~0.9 ms network floor — collapses ~0.4 ms (1030→515, 906→557, 950→527 us). That
+collapse <em>is</em> the removed upstream raw-poll latency. The lesson: on any probe whose detector input is
+derived through an intermediate processor, instrument the stage counter at the <em>source</em> poll, not just
+the detector input, or the split will mis-attribute the gain. The NI-DAQ total is always authoritative.</p>
+</blockquote>
 <h2 id="figures">Figures<a class="headerlink" href="#figures" title="Permanent link">#</a></h2>
 <p><code>ripple_tools/plot_latency_figure.py</code> renders the five-panel latency figure (signal chain, histogram,
 CDF, stage decomposition, per-trial stability); <code>plot_latency_compare.py</code> renders the A/B. Both take
@@ -493,6 +592,7 @@ python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;
 <li><a href="#measured-effect-ab-n1000-each-live-pi-simulation">Measured effect (A/B, n=1000 each, live Pi, simulation)</a></li>
 <li><a href="#on-real-hardware-implemented-2026-07-21">On real hardware — implemented 2026-07-21</a></li>
 <li><a href="#measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell">Measured on real NP1.0 — every quorum level, ~1000 stimuli per cell</a></li>
+<li><a href="#measured-on-real-np20-every-quorum-level-1000-stimuli-per-cell-2026-07-21">Measured on real NP2.0 — every quorum level, ~1000 stimuli per cell (2026-07-21)</a></li>
 </ul>
 </li>
 <li><a href="#figures">Figures</a></li>
@@ -506,5 +606,17 @@ python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

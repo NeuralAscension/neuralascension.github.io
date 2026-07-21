@@ -6,6 +6,7 @@
 <title>SpikesPeak — Running Status Log - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="benchmarks/README.html">Benchmarks</a>
 <a href="benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -77,9 +76,10 @@
 is going. Began as the Neuropixels 1.0 / IMRO status record (this branch's original purpose)
 and now also tracks cross-cutting architecture work (module communication) and the planned
 overhauls. Renamed from SpikesPeak_IMRO_Status.txt on 2026-06-25 as scope grew past IMRO.</p>
-<p><strong>STATUS DATE: 2026-07-21</strong> -- NP1.0 closed loop fully quantified: the complete quorum x delivery
-matrix at 1000 detections per cell, sub-millisecond (0.942-0.977 ms) with ASAP delivery at every
-quorum level. NP2.0 ASAP is the next measurement.</p>
+<p><strong>STATUS DATE: 2026-07-21</strong> -- BOTH probes' closed loops fully quantified: the complete quorum x
+delivery matrix at 1000 detections per cell on NP1.0 AND NP2.0. Sub-millisecond with ASAP delivery at
+every quorum level on both -- NP1.0 0.94-0.98 ms, NP2.0 0.55-0.61 ms. ASAP now works on NP2.0
+(<code>Npx2MSProbe::setLowLatency</code>). The closed loop is validated end to end on both probes.</p>
 <p>SEE ALSO: developer_docs/README.md (the doc map + the START HERE path for a new agent);
 developer_docs/archive/README.md (retired docs + how to catch up);
 user_docs/ (GUI usage); images/architecture_overview.md (architecture.txt / plantuml_export.txt)</p>
@@ -196,6 +196,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S29</strong></td>
 <td><strong>2026-07-21</strong></td>
 <td><strong>Full NP1.0 quorum × delivery matrix at 1000 detections (0.942–0.977 ms ASAP); a second sync off-by-one (whole-period wrap) fixed; stage split switched to means</strong></td>
+</tr>
+<tr>
+<td><strong>S30</strong></td>
+<td><strong>2026-07-21</strong></td>
+<td><strong>NP2.0 ASAP implemented (<code>Npx2MSProbe::setLowLatency</code>) + full NP2 matrix at 1000 detections: sub-ms 0.55–0.61 ms ASAP; the batching counter under-reports because NP2's raw-poll latency is upstream of the detector</strong></td>
 </tr>
 </tbody>
 </table>
@@ -2224,7 +2229,70 @@ the residual rises to compensate. The totals are trustworthy; this channel-count
 </ul>
 <h3 id="295-next">29.5 Next<a class="headerlink" href="#295-next" title="Permanent link">#</a></h3>
 <p>NP2.0: the same 1000-detection baseline + ASAP pair, to see whether it also goes sub-millisecond.
-Hardware swap to the 2.0 probe is the gate.</p></article>
+Hardware swap to the 2.0 probe is the gate.</p>
+<hr />
+<h2 id="30-np20-asap-the-full-np2-matrix-at-1000-detections-2026-07-21">30. NP2.0 ASAP + THE FULL NP2 MATRIX AT 1000 DETECTIONS  (2026-07-21)<a class="headerlink" href="#30-np20-asap-the-full-np2-matrix-at-1000-detections-2026-07-21" title="Permanent link">#</a></h2>
+<p>Same 1000-detection quorum × delivery matrix as §29, now on the NP2.0 multishank probe. Six fresh
+recordings, fresh backend per condition, graceful teardown throughout. Results/figures/method:
+<code>RecordingTests/CLOSED_LOOP_LATENCY.md</code> (the consolidated tabbed NP1/NP2 hardware-results page).</p>
+<h3 id="301-asap-had-to-be-implemented-for-np2-first">30.1 ASAP had to be implemented for NP2 first<a class="headerlink" href="#301-asap-had-to-be-implemented-for-np2-first" title="Permanent link">#</a></h3>
+<p>The <code>low_latency</code> flag was wired only to <code>Npx1Probe</code> — an NP2 ASAP config would have been a silent
+no-op, producing fake "ASAP == baseline" numbers. Added <code>Npx2MSProbe::setLowLatency()</code> (the same
+<code>setInterval(mLowLatency ? 0 : 1)</code> timer change), forwarded it in <code>NeuropixelsSource::startAcq</code>, and
+created <code>config/Npx2PxiNiDaqAsap.yaml</code>. Rebuilt; verified from the backend log that condition 1 ran at
+<code>poll interval 1 ms</code> and condition 2 at <code>0 ms (low_latency = true)</code> before trusting the A/B.</p>
+<h3 id="302-the-matrix-sub-millisecond-on-np2-0-unmatched-everywhere">30.2 The matrix — sub-millisecond on NP2, 0 unmatched everywhere<a class="headerlink" href="#302-the-matrix-sub-millisecond-on-np2-0-unmatched-everywhere" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>detector</th>
+<th>default</th>
+<th><strong>ASAP</strong></th>
+<th>saving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ch</td>
+<td>1.351 ms †</td>
+<td><strong>0.600 ms</strong></td>
+<td>-751 us (-55.6 %)</td>
+</tr>
+<tr>
+<td>2 ch, quorum 2</td>
+<td>1.186 ms</td>
+<td><strong>0.608 ms</strong></td>
+<td>-578 us (-48.7 %)</td>
+</tr>
+<tr>
+<td>4 ch, quorum 3-of-4</td>
+<td>1.124 ms</td>
+<td><strong>0.546 ms</strong></td>
+<td>-578 us (-51.4 %)</td>
+</tr>
+</tbody>
+</table>
+<p>NP2 is faster than NP1 in BOTH modes (~0.3 ms default, ~0.37 ms ASAP) — the probe→detector path (NP2
+software-derives LFP from the fresh 30 kHz raw; NP1 waits on the hardware LFP band), consistent with the
+long-known baseline gap now shown to carry into ASAP.</p>
+<h3 id="303-the-batching-counter-under-reports-the-asap-benefit-on-np2-mechanistic-finding">30.3 The batching counter under-reports the ASAP benefit on NP2 (mechanistic finding)<a class="headerlink" href="#303-the-batching-counter-under-reports-the-asap-benefit-on-np2-mechanistic-finding" title="Permanent link">#</a></h3>
+<p>On NP1 the detector-side <code>data batching</code> counter (631→0 us) matched the total saving, because NP1 reads
+<code>data.npx.lfp</code> directly so the poll latency IS the detector-input backlog. On NP2 the detector runs off
+<code>data.lfp</code> derived by <code>proc.lfp</code> from the raw poll, so the 1 ms raw-poll latency sits UPSTREAM of the
+detector where its input counter can't see it. The counter shows only ~230→60 us, but the NI-DAQ total
+drops ~578-751 us and the <code>net+stim</code> residual (a near-fixed ~0.9 ms floor on NP1) collapses ~0.4 ms —
+that collapse is the removed upstream raw-poll latency. Lesson: instrument the SOURCE poll, not just the
+detector input, when the detector eats a derived stream. NI-DAQ total is authoritative.</p>
+<h3 id="304-verification-one-caveat">30.4 Verification + one caveat<a class="headerlink" href="#304-verification-one-caveat" title="Permanent link">#</a></h3>
+<p>All six cross-checked with the independent burst-anchored pairing; the three ASAP medians agree with
+nearest-before to &lt;= 7 us. † <code>np2_1ch_baseline</code> alone shows mild sync-clock curvature (linear residual
+0.077 ms vs 0.015-0.028 for the rest; a quadratic fit halves it but the ~0.1 ms nb-vs-burst gap
+persists, so it's a within-burst effect not a pure sync-fit error). Its burst-anchored median is 1.23 ms
+→ read the 1-ch baseline as ~1.2-1.35 ms. No ASAP cell is affected. Graceful teardown verified: FPGA
+confirmed idle (backend exited) before any analysis touched the host.</p>
+<h3 id="305-next">30.5 Next<a class="headerlink" href="#305-next" title="Permanent link">#</a></h3>
+<p>Both probes are now fully characterised end to end. Candidate next steps: NP2 offline exact-detector
+reconstruction on the new recordings; the ESP32-S3-ETH stim path once a working board is in hand.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2345,6 +2413,14 @@ Hardware swap to the 2.0 probe is the gate.</p></article>
 <li><a href="#295-next">29.5 Next</a></li>
 </ul>
 </li>
+<li><a href="#30-np20-asap-the-full-np2-matrix-at-1000-detections-2026-07-21">30. NP2.0 ASAP + THE FULL NP2 MATRIX AT 1000 DETECTIONS (2026-07-21)</a><ul>
+<li><a href="#301-asap-had-to-be-implemented-for-np2-first">30.1 ASAP had to be implemented for NP2 first</a></li>
+<li><a href="#302-the-matrix-sub-millisecond-on-np2-0-unmatched-everywhere">30.2 The matrix — sub-millisecond on NP2, 0 unmatched everywhere</a></li>
+<li><a href="#303-the-batching-counter-under-reports-the-asap-benefit-on-np2-mechanistic-finding">30.3 The batching counter under-reports the ASAP benefit on NP2 (mechanistic finding)</a></li>
+<li><a href="#304-verification-one-caveat">30.4 Verification + one caveat</a></li>
+<li><a href="#305-next">30.5 Next</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>
@@ -2352,5 +2428,17 @@ Hardware swap to the 2.0 probe is the gate.</p></article>
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

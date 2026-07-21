@@ -3,14 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX - SpikesPeak Docs</title>
+<title>NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
-  <span class="crumb">Developer Docs / NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</span>
+  <span class="crumb">Developer Docs / NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a class="active" href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a class="active" href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -70,50 +69,81 @@
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="next-task-low-priority-ni-daq-drops-a-trailing-sync-pulse-vs-the-npx">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX<a class="headerlink" href="#next-task-low-priority-ni-daq-drops-a-trailing-sync-pulse-vs-the-npx" title="Permanent link">#</a></h1>
-<p><strong>Status:</strong> open follow-up, low priority. The analysis side is already handled (the sync aligner now defaults to
-<code>match="auto"</code>, which survives a pulse-count mismatch — see
-<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>). This note is only about the <em>capture</em> asymmetry,
-which the user considers not important and possibly not controllable.</p>
-<h2 id="observation">Observation<a class="headerlink" href="#observation" title="Permanent link">#</a></h2>
-<p>In <code>RecordingTests/np2_4channel_3required</code> (2026-07-16), the shared ~1 Hz TTL sync train was captured as:
-- <strong>NPX sync field: 79 pulses</strong> (0.342 … 78.343 s)
-- <strong>NI-DAQ ai0: 78 pulses</strong> (0.545 … 77.545 s)</p>
-<p>The NI-DAQ recording <strong>starts ~0.2 s later and ends ~0.8 s earlier</strong> than the NPX — it misses the <strong>last</strong> NPX
-sync pulse (the NI-DAQ task stopped a beat before the probe stream). Tests 1 &amp; 2 the same day captured equal
-counts (76=76, 80=80), so this is intermittent, not systematic.</p>
-<h2 id="why-it-used-to-matter">Why it (used to) matter<a class="headerlink" href="#why-it-used-to-matter" title="Permanent link">#</a></h2>
-<p>A count mismatch + the old <code>match="end"</code> sync default silently shifted the whole NI-DAQ→NPX map by one sync
-period (2 ripple cycles) and produced fake "orphan" stim pulses / wrong closed-loop latency. <strong>That is already
-fixed</strong> in <code>python/spikespeak_postprocess/sync.py</code> (<code>match="auto"</code>). This to-do is only about eliminating the
-asymmetry at the source, if it's ever deemed worthwhile.</p>
-<h2 id="what-a-future-agent-could-check-if-pursued">What a future agent could check (if pursued)<a class="headerlink" href="#what-a-future-agent-could-check-if-pursued" title="Permanent link">#</a></h2>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-low-priority-ni-daq-captures-a-different-sync-pulse-count-than-the-npx">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX<a class="headerlink" href="#next-task-low-priority-ni-daq-captures-a-different-sync-pulse-count-than-the-npx" title="Permanent link">#</a></h1>
+<p><strong>Status:</strong> open follow-up, low priority — <strong>analysis side fully handled; only the capture-side source
+asymmetry remains.</strong> The sync aligner survives a pulse-count mismatch at <strong>either</strong> end (see the three
+clock/sync bugs in <a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>), and a count-mismatch
+<strong>warning now fires automatically</strong> (added 2026-07-21, <code>python/spikespeak_postprocess/sync.py</code>). This note
+is only about eliminating the asymmetry <em>at the source</em>, which the user considers not important and
+possibly not controllable.</p>
+<h2 id="what-we-now-know-updated-2026-07-21">What we now know (updated 2026-07-21)<a class="headerlink" href="#what-we-now-know-updated-2026-07-21" title="Permanent link">#</a></h2>
+<p>The original observation was a <strong>trailing</strong> drop: in <code>np2_4channel_3required</code> (2026-07-16) the NI-DAQ
+captured <strong>78</strong> sync pulses vs the NPX's <strong>79</strong> — it started ~0.2 s later and ended ~0.8 s earlier,
+missing the <strong>last</strong> NPX pulse. Tests the same day captured equal counts (76=76, 80=80), so it is
+intermittent, not systematic.</p>
+<p><strong>The 1000-detection quorum runs (2026-07-21) showed it can also drop at the START.</strong> <code>np1_4ch_q3_asap</code>
+captured <strong>617</strong> NI-DAQ pulses vs <strong>618</strong> NPX, missing the <strong>first</strong> shared edge. That is what exposed
+<strong>sync bug #3</strong> (the whole-period wrap): with the drop at the start, <em>both</em> the start- and end-anchored
+offset estimates were off by a full period, so <code>match="auto"</code> still mis-shifted every timestamp by
+~1.000 s until the modulo-period fix. So the capture asymmetry is <strong>not</strong> always trailing — a source-side
+fix must make <strong>both</strong> ends symmetric.</p>
+<h2 id="why-it-used-to-matter-now-defused-on-the-analysis-side">Why it (used to) matter — now defused on the analysis side<a class="headerlink" href="#why-it-used-to-matter-now-defused-on-the-analysis-side" title="Permanent link">#</a></h2>
+<p>A count mismatch is the <em>precondition</em> for an off-by-one that silently shifts the NI-DAQ→NPX map by a
+whole sync period (2 ripple cycles) and manufactures fake "orphan" stim pulses / wrong latency. <strong>All of
+that is fixed in analysis:</strong> <code>match="auto"</code> + the modulo-period wrap (bug #3 fix) pair correctly whichever
+end drops, the burst-anchored cross-check catches a residual whole-period shift, and the new
+count-mismatch warning makes the asymmetry visible immediately instead of via a garbled latency. This
+to-do is now purely about the <em>hardware capture</em>, if ever deemed worthwhile.</p>
+<h2 id="what-a-future-agent-could-still-check-if-pursued-source-side-only">What a future agent could still check (if pursued) — source-side only<a class="headerlink" href="#what-a-future-agent-could-still-check-if-pursued-source-side-only" title="Permanent link">#</a></h2>
 <ol>
-<li><strong>Stop-order timing.</strong> Look at how the NI-DAQ task is stopped vs the NPX stream on record-stop / disconnect
-   (<code>src/modules/nidaq/NiDaqInterface.cpp</code> <code>stopAcq</code>/<code>slStopAcquiringData</code> vs the NPX teardown). If the NI-DAQ
+<li><strong>Stop-order timing.</strong> How is the NI-DAQ task stopped vs the NPX stream on record-stop / disconnect
+   (<code>src/modules/nidaq/NiDaqInterface.cpp</code> <code>stopAcq</code>/<code>slStopAcquiringData</code> vs the NPX teardown)? If
    <code>DAQmxStopTask</code> fires slightly before the probe stops, the last shared sync edge lands after the NI-DAQ
-   window → dropped. A small stop-order tweak (stop the probe first, or drain one more NI-DAQ block) would make
-   the capture symmetric.</li>
-<li><strong>Start jitter.</strong> The NI-DAQ started ~0.2 s after the NPX here — confirm start-order and whether the first
-   sync edge is reliably inside both windows.</li>
-<li><strong>Guard rail (cheap, high value):</strong> have the recorder/analysis <strong>log a warning</strong> when the NPX and NI-DAQ
-   captured different sync-pulse counts, so a mismatch is visible immediately rather than discovered by a garbled
-   latency. (<code>align_timestamps</code> already has a — insufficient — interval-agreement warning; add an explicit
-   <code>len(ref_edges) != len(tgt_edges)</code> note.)</li>
+   window → trailing drop. Stopping the probe first, or draining one more NI-DAQ block, would make it
+   symmetric.</li>
+<li><strong>Start jitter.</strong> The NI-DAQ started ~0.2 s after the NPX in the trailing-drop case and <em>earlier</em> in the
+   start-drop case — confirm the start-order and whether the first shared sync edge reliably lands inside
+   <strong>both</strong> windows. A start-drop is the more dangerous one (it fed bug #3).</li>
 </ol>
-<h2 id="do-not">Do NOT<a class="headerlink" href="#do-not" title="Permanent link">#</a></h2>
+<h2 id="the-robust-fix-recommended-direction-a-non-periodic-sync-code-not-a-square-wave">The robust fix (recommended direction): a non-periodic sync code, not a square wave<a class="headerlink" href="#the-robust-fix-recommended-direction-a-non-periodic-sync-code-not-a-square-wave" title="Permanent link">#</a></h2>
+<p><strong>The real cure is to stop using a periodic ~1 Hz square wave as the sync signal.</strong> Every bug above
+(both off-by-ones) is only possible <em>because</em> the train is periodic — a whole-period shift is
+indistinguishable from a correct pairing, so a dropped edge at either end is ambiguous. Make the sync
+signal <strong>self-identifying</strong> and the ambiguity disappears entirely:</p>
 <ul>
-<li>Do <strong>not</strong> revert the <code>match="auto"</code> sync default — it's the robust fix and handles this case correctly.</li>
-<li>Do <strong>not</strong> treat this as blocking; the user has said it isn't important or necessarily controllable.</li>
+<li>Drive the shared sync line from an <strong>external generator that emits a non-repeating, decodable pattern</strong>
+  — think "a QR-code / barcode over time" rather than a metronome. Options, roughly in order of effort:
+  a <strong>PRBS / Gold / Barker code</strong> (each window of edges is locally unique, so any captured segment
+  self-locates by cross-correlation), or a <strong>serially-encoded incrementing counter / timestamp</strong> (each
+  "pulse group" literally carries its own index).</li>
+<li>Both acquisitions then align by <strong>matching the code content</strong>, not by counting edges from an end — a
+  dropped or extra edge can never cause a whole-period slip because no two positions look alike.</li>
+<li>This also removes the burst-anchored-vs-nearest-before cross-check as a <em>necessary</em> safeguard (it stays
+  useful as a check), and makes the count-mismatch warning informational rather than load-bearing.</li>
+</ul>
+<p>This is the recommended long-term direction if the capture asymmetry is ever worth eliminating at the
+source. It is a <strong>hardware + a small decoder change</strong>, not a probe/NI-DAQ stop-order tweak — and it is more
+robust than any stop-order fix could be. Until then, the analysis-side handling above is sufficient.</p>
+<h2 id="done-do-not-redo">Done — do NOT redo<a class="headerlink" href="#done-do-not-redo" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Guard-rail warning (was item 3): DONE 2026-07-21.</strong> <code>align_timestamps</code> now warns explicitly when
+  <code>len(ref_edges) != len(tgt_edges)</code>, in addition to the pre-existing interval-agreement warning and the
+  modulo-wrap warning.</li>
+<li><strong>Do NOT revert <code>match="auto"</code></strong> or the modulo-period wrap — together they are the robust fix and handle
+  a drop at either end.</li>
+<li><strong>Do NOT treat this as blocking.</strong> The user has said the capture asymmetry isn't important or
+  necessarily controllable; the closed loop and every recorded latency are correct as-is.
+</content></li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/NextTask_SyncPulseCountCheck.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#observation">Observation</a></li>
-<li><a href="#why-it-used-to-matter">Why it (used to) matter</a></li>
-<li><a href="#what-a-future-agent-could-check-if-pursued">What a future agent could check (if pursued)</a></li>
-<li><a href="#do-not">Do NOT</a></li>
+<li><a href="#what-we-now-know-updated-2026-07-21">What we now know (updated 2026-07-21)</a></li>
+<li><a href="#why-it-used-to-matter-now-defused-on-the-analysis-side">Why it (used to) matter — now defused on the analysis side</a></li>
+<li><a href="#what-a-future-agent-could-still-check-if-pursued-source-side-only">What a future agent could still check (if pursued) — source-side only</a></li>
+<li><a href="#the-robust-fix-recommended-direction-a-non-periodic-sync-code-not-a-square-wave">The robust fix (recommended direction): a non-periodic sync code, not a square wave</a></li>
+<li><a href="#done-do-not-redo">Done — do NOT redo</a></li>
 </ul>
 </div>
 </aside>
@@ -121,5 +151,17 @@ asymmetry at the source, if it's ever deemed worthwhile.</p>
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

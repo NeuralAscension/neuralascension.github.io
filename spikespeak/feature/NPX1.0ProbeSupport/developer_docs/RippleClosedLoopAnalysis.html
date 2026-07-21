@@ -6,6 +6,7 @@
 <title>Offline analysis of closed-loop ripple→stim recordings - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
@@ -39,7 +40,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
@@ -57,9 +58,7 @@
 <h3>Tooling</h3>
 <a href="../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
-<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
-<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
 <a href="../benchmarks/README.html">Benchmarks</a>
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
@@ -71,13 +70,19 @@
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="offline-analysis-of-closed-loop-ripplestim-recordings">Offline analysis of closed-loop ripple→stim recordings<a class="headerlink" href="#offline-analysis-of-closed-loop-ripplestim-recordings" title="Permanent link">#</a></h1>
-<p>How a recorded NP2.0 ripple→stimulation test is analysed <strong>after the fact</strong> to (a) reproduce the online
-detector <strong>exactly</strong> from disk, (b) quantify the <strong>closed-loop latency</strong> (detection → current into the
-electrode), and (c) the <strong>NI-DAQ↔Neuropixels sync</strong> it all depends on — including a real off-by-one bug that
-was found and fixed on 2026-07-17.</p>
-<p>This documents the analysis of <code>RecordingTests/np2_{1channel_1required,2channel_2required,4channel_3required}</code>
-(three real NP2.0 tests, 100 online ripple detections each, synthetic ripple in saline + NI-DAQ + the Pi/AM2300
-stim server). Full result write-up: <a href="../RecordingTests/NP2_RIPPLE_TESTS.html"><code>../RecordingTests/NP2_RIPPLE_TESTS.md</code></a>.</p>
+<p><strong>This is the canonical reference for analysing a recorded closed-loop test offline, and for the
+NI-DAQ↔Neuropixels clock/sync machinery every recorded latency depends on.</strong> It covers (a) reproducing
+the online detector <strong>exactly</strong> from disk, (b) the <strong>closed-loop latency</strong> measurement method
+(detection → current into the electrode), and (c) the <strong>sync fit + the three clock/sync bugs</strong> that were
+found and fixed. Companion docs:</p>
+<ul>
+<li><strong>Measured numbers, tables, figures (both probes):</strong> <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a> — the single source of truth for results.</li>
+<li><strong>Live per-stage instrumentation + the ASAP <code>low_latency</code> flag:</strong> <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>.</li>
+</ul>
+<p>The worked examples below are the real NP1.0 and NP2.0 tests under <code>RecordingTests/</code> (synthetic ripple in
+saline + NI-DAQ + the Pi/AM 2300 stim server): the 1000-detection quorum matrix
+(<code>np{1,2}_{1ch,2ch_q2,4ch_q3}_{baseline,asap}</code>) and the earlier 100-detection NP2 runs
+(<code>np2_{2channel_2required,4channel_3required}</code>).</p>
 <h2 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">#</a></h2>
 <ul>
 <li><code>ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;name&gt;_ws.jsonl [--quorum "..."]</code> — the main analysis.
@@ -112,52 +117,71 @@ front-end (all coefficients live in <code>src/core/Common.hpp</code>):</p>
    bump all channels' lockout (<code>RippleDetector.cpp</code> ~728–769). Reproduced in <code>quorum_detections()</code>.</li>
 </ol>
 <p><strong>Validation:</strong> with this exact chain the offline reconstruction reproduces the online detector on the clean
-tests (offline-quorum→ai4 = +1.45 ms / 0 unmatched for test 1, +3.6 ms for test 2), matching the online-instant
-latencies. Historical note: an earlier <code>raw÷12</code> windowed-sinc approximation of <code>data.lfp</code> <strong>plus a DC-removal
-the detector never does</strong> gave the wrong scale and ~10 ms offsets — do not reintroduce it.</p>
+tests (offline-quorum crossings match the recorded online-instant firings, 0 unmatched). <strong>Historical note —
+do not reintroduce this:</strong> an earlier <code>raw÷12</code> windowed-sinc approximation of <code>data.lfp</code> <strong>plus a DC-removal
+the detector never does</strong> gave the wrong scale and multi-ms offsets. The exact 2nd-order Bessel <code>data.lfp</code>
+(step 1 above) is the <em>only</em> correct reconstruction; the approximation is wrong and is called out again in
+<a href="RippleDetection.html"><code>RippleDetection.md</code></a>.</p>
 <h2 id="closed-loop-latency">Closed-loop latency<a class="headerlink" href="#closed-loop-latency" title="Permanent link">#</a></h2>
 <p><strong>Definition:</strong> <code>closed-loop latency = ai4 stim pulse HIGH − the causal detection that triggered it</code> = the
 physical path <em>detect → <code>fire()</code> → UDP → Pi GPIO → AM Systems 2300 → electrode</em>. The causal-vs-zero-phase FIR
 group delay is <strong>not</strong> included (it is a fixed function of the tap count, not part of the loop).</p>
 <p><strong>Method:</strong> <strong>pulse-anchored</strong> — each ai4 rising edge is paired with the detection that <em>preceded</em> it, so the
 value is ≥ 0 by construction. The detection instant used is the <strong>recorded online detector firing time</strong>
-(<code>rippleDetected</code> <code>ts</code> = <code>lfpTs</code>, mapped onto the recording clock via the NPX per-sample hardware timestamp,
-<code>raw_ts / 100 kHz</code>), i.e. the actual realtime causal-detector instant — no reconstruction jitter.</p>
-<p><strong>Results</strong> now live in <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>
-(the "Closed-Loop Latency" section of the docs book), which is the single source of truth for measured
-latency on both probes.</p>
-<blockquote>
-<p><strong>Numbers published before 2026-07-21 were inflated.</strong> <code>online_det_recording_times</code> mixed a NOMINAL
-100 kHz tick rate with the MEASURED per-sample rate, leaving a ~10 ppm scale error that grew with
-recording length (+6.5 ms over a 618 s run; invisible at ~70 s). It also produced a spurious "latency
-rises with quorum size" trend. Fixed; every recording test has been re-analysed.</p>
-</blockquote>
-<h2 id="ni-daq-neuropixels-sync-and-the-off-by-one-bug">NI-DAQ ↔ Neuropixels sync (and the off-by-one bug)<a class="headerlink" href="#ni-daq-neuropixels-sync-and-the-off-by-one-bug" title="Permanent link">#</a></h2>
+(<code>rippleDetected</code> <code>ts</code> = <code>lfpTs</code>, mapped onto the recording clock via the NPX per-sample hardware timestamp),
+i.e. the actual realtime causal-detector instant — no reconstruction jitter. A second, independent
+<strong>burst-start-anchored</strong> pairing (using the aperiodic ~1.6 s gaps between ripple bursts) cross-checks it and
+agrees with nearest-before on every clean recording — that cross-check is what caught bug #3 below.</p>
+<p><strong>Results</strong> live in <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>,
+the single source of truth for measured latency on both probes. <strong>Do not duplicate numbers here</strong> — this
+doc owns the <em>method</em>, that doc owns the <em>results</em>.</p>
+<h2 id="ni-daq-neuropixels-sync-the-fit-and-the-three-clocksync-bugs">NI-DAQ ↔ Neuropixels sync — the fit and the THREE clock/sync bugs<a class="headerlink" href="#ni-daq-neuropixels-sync-the-fit-and-the-three-clocksync-bugs" title="Permanent link">#</a></h2>
 <p>A shared ~1 Hz TTL sync pulse feeds <strong>both</strong> the NPX sync input (recorded in the NPX <code>sync</code> field) and NI-DAQ
 analog <code>ai0</code>. <code>Recording.synchronize()</code> (→ <code>spikespeak_postprocess/sync.py align_timestamps</code>) matches the two
-rising-edge trains and fits a linear NI-DAQ→NPX time warp, so the recorded ai4 stim pulses land on the same
-clock as the recorded ripples.</p>
-<p><strong>The bug (fixed 2026-07-17).</strong> Test 3's NI-DAQ captured <strong>one fewer</strong> sync pulse than the NPX (78 vs 79 — it
-stopped ~0.8 s before the last NPX sync). The old default <code>match="end"</code> pairs the <strong>last</strong> N edges one-to-one,
-which — when the dropped pulse is at the <em>other</em> end — is off by one, shifting every NI-DAQ time by exactly one
-sync period = <strong>1000 ms = 2 ripple cycles</strong>. On a periodic 1 Hz train this is invisible: the shifted pairing has
-identical inter-pulse intervals <strong>and the same 0.012 ms fit residual</strong>, so nothing flagged it. The symptom was
-~half the ai4 pulses landing in ripple-free envelope troughs ("orphans") and an inflated/garbled latency. Tests
-1 &amp; 2 had matching counts (76=76, 80=80) and were never affected.</p>
-<p><strong>The fix.</strong> <code>align_timestamps</code> now defaults to <strong><code>match="auto"</code></strong> (<code>_pair_edges_auto</code>): estimate the true
-sub-period clock offset (the smaller-magnitude of the start- and end-anchored offsets — they differ by
-count_diff × IPI, and the true offset is &lt; IPI/2), then <strong>nearest-edge pair</strong> the two trains within ½ IPI, so a
-missing pulse at either end can't cause an off-by-N. <code>Recording.synchronize</code> default is also <code>"auto"</code>. Spot-check
-across all three tests: only test 3 had a count mismatch; <code>auto</code> fixes it (42→0 unmatched, latency 4.06→3.45 ms)
-and leaves the already-correct tests 1 &amp; 2 byte-identical.</p>
-<p><strong>Lessons (worth internalising for any closed-loop timing analysis):</strong>
-- On a <strong>periodic</strong> sync train, a tiny fit residual does <strong>not</strong> prove correct alignment — a whole-period
-  pairing error hides inside the periodicity.
-- <strong>Verify event-by-event, not nearest-neighbour.</strong> Nearest-neighbour matching on a 2 Hz signal happily pairs a
-  2-cycle-shifted stream (each pulse just lands on a different ripple), which masked the shift in every scalar
-  metric until the ripples-vs-detections-vs-pulses <strong>raster</strong> (<code>analysis/*_timeline.png</code>) made it obvious.
-- Look at the <strong>per-channel envelope vs threshold</strong> (<code>analysis/*_perchannel_at_pulses.png</code>) + the raster FIRST,
-  before theorising about hardware.</p>
+rising-edge trains and fits a NI-DAQ→NPX time warp, so the recorded ai4 stim pulses land on the same clock as
+the recorded ripples. <strong>Three separate bugs in this path silently corrupted latency; all are fixed. This is the
+canonical write-up.</strong></p>
+<h3 id="bug-1-the-clock-scale-error-fixed-2026-07-21">Bug #1 — the clock-scale error (fixed 2026-07-21)<a class="headerlink" href="#bug-1-the-clock-scale-error-fixed-2026-07-21" title="Permanent link">#</a></h3>
+<p><code>online_det_recording_times</code> mapped the detector's <code>lfpTs</code> (computed by the backend as ticks / a <strong>NOMINAL</strong>
+100 kHz) onto the recording clock using a t0 derived from the <strong>MEASURED</strong> per-sample tick rate. Mixing the two
+left a ~10 ppm SCALE error, so apparent latency <strong>ramped with recording length</strong>: +6.5 ms over a 618 s run
+(slope 10.7 µs/s, r = 0.99), invisible on the ~70 s recordings used earlier. It also manufactured a spurious
+"latency rises with quorum" trend (the tests had different durations). <strong>Fix:</strong> convert detections back to
+hardware ticks with the same nominal constant the backend used, then map ticks→seconds with the measured rate —
+one conversion, no scale error. Every recording was re-analysed; all numbers published before 2026-07-21 were
+inflated by this.</p>
+<h3 id="bug-2-matchend-off-by-one-fixed-2026-07-17">Bug #2 — <code>match="end"</code> off-by-one (fixed 2026-07-17)<a class="headerlink" href="#bug-2-matchend-off-by-one-fixed-2026-07-17" title="Permanent link">#</a></h3>
+<p>A recording's NI-DAQ captured <strong>one fewer</strong> sync pulse than the NPX (78 vs 79 — it stopped ~0.8 s before the
+last NPX sync). The old default <code>match="end"</code> pairs the <strong>last</strong> N edges one-to-one, which — when the dropped
+pulse is at the <em>other</em> end — is off by one, shifting every NI-DAQ time by exactly one sync period
+(<strong>1000 ms = 2 ripple cycles</strong>). On a periodic 1 Hz train this is invisible: the shifted pairing has identical
+inter-pulse intervals <strong>and the same 0.012 ms fit residual</strong>. Symptom: ~half the ai4 pulses landing in
+ripple-free envelope troughs ("orphans") + garbled latency. <strong>Fix:</strong> <code>align_timestamps</code> defaults to
+<strong><code>match="auto"</code></strong> (<code>_pair_edges_auto</code>) — estimate the true sub-period offset (smaller-magnitude of the start-
+and end-anchored offsets), then <strong>nearest-edge pair</strong> within ½ IPI, so a missing pulse at either end can't cause
+an off-by-N. Fixed the affected test (42→0 unmatched) and left the already-correct tests byte-identical.</p>
+<h3 id="bug-3-the-whole-period-wrap-in-matchauto-fixed-2026-07-21">Bug #3 — the whole-period wrap in <code>match="auto"</code> (fixed 2026-07-21)<a class="headerlink" href="#bug-3-the-whole-period-wrap-in-matchauto-fixed-2026-07-21" title="Permanent link">#</a></h3>
+<p><code>auto</code> was still not enough. When the NI-DAQ drops a pulse at the <strong>start</strong> of the train, <strong>both</strong> the start-
+and end-anchored offsets are wrong by a whole period (observed <code>off_start=+0.950 s</code>, <code>off_end=+1.950 s</code> on a
+1 Hz train), so picking the smaller-magnitude one still shifted every timestamp by ~<strong>1.000 s</strong>. Same invisible
+signature — 617 pulses, 9.78 ppm, 0.012 ms residual all looked perfect. It hit <code>np1_4ch_q3_asap</code> (257 of 995
+pulses left unpaired, a physically impossible 0.433 ms minimum). <strong>Fix:</strong> both clocks are started by one host
+command, so the true offset is milliseconds; any whole-period component is a pairing artefact. <code>_pair_edges_auto</code>
+now <strong>reduces the coarse offset modulo the sync period</strong> into (−IPI/2, +IPI/2], with a warning when it fires.
+After the fix: unmatched 257→0, and the healthy recordings are bit-identical. It surfaced only because the
+<strong>burst-start-anchored</strong> cross-check (aperiodic ripple-burst gaps) disagreed with nearest-before by ~1 s.</p>
+<h3 id="lessons-internalise-these-for-any-closed-loop-timing-analysis">Lessons (internalise these for any closed-loop timing analysis)<a class="headerlink" href="#lessons-internalise-these-for-any-closed-loop-timing-analysis" title="Permanent link">#</a></h3>
+<ul>
+<li>On a <strong>periodic</strong> sync train, a tiny fit residual, matching intervals, and a clean ppm <strong>do NOT</strong> prove
+  correct alignment — a whole-period pairing error hides inside the periodicity. Twice.</li>
+<li><strong>Anchor on the APERIODIC structure.</strong> The burst gaps (or any non-periodic landmark) expose a whole-period
+  shift that every scalar metric misses. Cross-check nearest-before against burst-anchored pairing.</li>
+<li><strong>Verify event-by-event, not nearest-neighbour</strong>, and look at the per-channel envelope vs threshold + the
+  raster <strong>first</strong>, before theorising about hardware.</li>
+<li>A guard rail now exists: <code>align_timestamps</code> warns on both a pulse-count mismatch and a modulo-wrap. Watch for
+  those warnings. See <a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a> for the remaining
+  capture-side asymmetry (low priority; the analysis side is fully handled).</li>
+</ul>
 <h2 id="reading-a-count-mismatch-correctly-np10-lessons-2026-07-20">Reading a count mismatch correctly (NP1.0 lessons, 2026-07-20)<a class="headerlink" href="#reading-a-count-mismatch-correctly-np10-lessons-2026-07-20" title="Permanent link">#</a></h2>
 <p>When online detections, offline crossings, and ai4 pulses disagree, <strong>look at the times before theorising</strong>.
 Two real cases from the NP1.0 regression, both benign, both initially easy to misread as a broken detector:</p>
@@ -188,7 +212,13 @@ pulse (stops a beat before the NPX). Low priority; the <code>auto</code> fix han
 <li><a href="#tools">Tools</a></li>
 <li><a href="#reproducing-the-np20-detector-exactly-offline">Reproducing the NP2.0 detector EXACTLY offline</a></li>
 <li><a href="#closed-loop-latency">Closed-loop latency</a></li>
-<li><a href="#ni-daq-neuropixels-sync-and-the-off-by-one-bug">NI-DAQ ↔ Neuropixels sync (and the off-by-one bug)</a></li>
+<li><a href="#ni-daq-neuropixels-sync-the-fit-and-the-three-clocksync-bugs">NI-DAQ ↔ Neuropixels sync — the fit and the THREE clock/sync bugs</a><ul>
+<li><a href="#bug-1-the-clock-scale-error-fixed-2026-07-21">Bug #1 — the clock-scale error (fixed 2026-07-21)</a></li>
+<li><a href="#bug-2-matchend-off-by-one-fixed-2026-07-17">Bug #2 — match="end" off-by-one (fixed 2026-07-17)</a></li>
+<li><a href="#bug-3-the-whole-period-wrap-in-matchauto-fixed-2026-07-21">Bug #3 — the whole-period wrap in match="auto" (fixed 2026-07-21)</a></li>
+<li><a href="#lessons-internalise-these-for-any-closed-loop-timing-analysis">Lessons (internalise these for any closed-loop timing analysis)</a></li>
+</ul>
+</li>
 <li><a href="#reading-a-count-mismatch-correctly-np10-lessons-2026-07-20">Reading a count mismatch correctly (NP1.0 lessons, 2026-07-20)</a></li>
 <li><a href="#open-follow-ups">Open follow-ups</a></li>
 </ul>
@@ -198,5 +228,17 @@ pulse (stops a beat before the NPX). Low priority; the <code>auto</code> fix han
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
 </script>
 </body></html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neuropixels 1.0 — closed-loop ripple → stimulation results - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Hardware Results / Neuropixels 1.0 — closed-loop ripple → stimulation results</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<h3>Developer Docs</h3>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
+<a class="active" href="NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
+<a href="NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="neuropixels-10-closed-loop-ripple-stimulation-results">Neuropixels 1.0 — closed-loop ripple → stimulation results<a class="headerlink" href="#neuropixels-10-closed-loop-ripple-stimulation-results" title="Permanent link">#</a></h1>
+<p>Real-hardware tests of the full closed loop: a synthetic sharp-wave ripple played into saline, detected
+online by SpikesPeak on a real NP1.0 probe, driving a single biphasic stimulus through the Raspberry Pi
+3B+ / AM Systems 2300 stimulator, with the delivered pulse captured on NI-DAQ ai4.</p>
+<p><strong>Closed-loop latency = threshold crossing on the filtered signal → stimulus pulse observed on the
+NI-DAQ.</strong> Measured offline, pulse-anchored on the shared Neuropixels clock. Full method, the
+delivery-mode comparison and the figures: <strong><a href="CLOSED_LOOP_LATENCY.html">Closed-Loop Latency</a></strong>.</p>
+<h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Probe / config</td>
+<td>Neuropixels 1.0, <code>NPX 1.0 with NI-DAQ</code> (default) or <code>NPX 1.0 with NI-DAQ (ASAP)</code></td>
+</tr>
+<tr>
+<td>Detector input</td>
+<td>native 2.5 kHz <code>data.npx.lfp</code>, int16, decimation 1</td>
+</tr>
+<tr>
+<td>Threshold</td>
+<td>mean + 2.5 σ on the ripple envelope (150–250 Hz FIR → abs → envelope FIR)</td>
+</tr>
+<tr>
+<td>Lockout</td>
+<td>200 ms</td>
+</tr>
+<tr>
+<td>Stimulus</td>
+<td>one biphasic pulse per detection (60 µs phase, 10 µs gap) on ai4</td>
+</tr>
+<tr>
+<td>NI-DAQ</td>
+<td>PXI-6133, 40 kHz (25 µs edge resolution)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="latency-results">Latency results<a class="headerlink" href="#latency-results" title="Permanent link">#</a></h2>
+<p>The full quorum × delivery-mode matrix, ~1000 delivered stimuli per cell:</p>
+<table>
+<thead>
+<tr>
+<th>test</th>
+<th>detector</th>
+<th>delivery</th>
+<th>median</th>
+<th>IQR</th>
+<th>p95</th>
+<th>n / unmatched</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>np1_2ch_q2_asap</code></td>
+<td>2 ch, quorum 2</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.942 ms</strong></td>
+<td>0.895 – 0.994</td>
+<td>1.082</td>
+<td>996 / 0</td>
+</tr>
+<tr>
+<td><code>np1_4ch_q3_asap</code></td>
+<td>4 ch, quorum 3-of-4</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.963 ms</strong></td>
+<td>0.908 – 1.024</td>
+<td>1.116</td>
+<td>995 / 0</td>
+</tr>
+<tr>
+<td><code>np1_lat1k_asap</code></td>
+<td>1 ch</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.977 ms</strong></td>
+<td>0.922 – 1.036</td>
+<td>1.133</td>
+<td>997 / 0</td>
+</tr>
+<tr>
+<td><code>np1_latency_1ch</code></td>
+<td>1 ch</td>
+<td>default</td>
+<td>1.425 ms</td>
+<td>1.210 – 1.685</td>
+<td>1.908</td>
+<td>100 / 0</td>
+</tr>
+<tr>
+<td><code>np1_lat1k_baseline</code></td>
+<td>1 ch</td>
+<td>default</td>
+<td>1.483 ms</td>
+<td>1.234 – 1.716</td>
+<td>1.938</td>
+<td>1000 / 0</td>
+</tr>
+<tr>
+<td><code>np1_4ch_q3_baseline</code></td>
+<td>4 ch, quorum 3-of-4</td>
+<td>default</td>
+<td>1.484 ms</td>
+<td>1.241 – 1.744</td>
+<td>1.989</td>
+<td>998 / 0</td>
+</tr>
+<tr>
+<td><code>np1_2ch_q2_baseline</code></td>
+<td>2 ch, quorum 2</td>
+<td>default</td>
+<td>1.489 ms</td>
+<td>1.233 – 1.733</td>
+<td>1.959</td>
+<td>999 / 0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Every test: 0 unmatched</strong> — every delivered stimulus pairs with a preceding detection, and every
+detection that armed the stimulator produced a pulse.</p>
+<p><strong>Latency is independent of quorum size</strong>, in both delivery modes:</p>
+<table>
+<thead>
+<tr>
+<th>quorum</th>
+<th>default</th>
+<th>ASAP</th>
+<th>saving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ch</td>
+<td>1.483 ms</td>
+<td><strong>0.977 ms</strong></td>
+<td>−506 µs (−34.1 %)</td>
+</tr>
+<tr>
+<td>2 ch, quorum 2</td>
+<td>1.489 ms</td>
+<td><strong>0.942 ms</strong></td>
+<td>−547 µs (−36.7 %)</td>
+</tr>
+<tr>
+<td>4 ch, quorum 3-of-4</td>
+<td>1.484 ms</td>
+<td><strong>0.963 ms</strong></td>
+<td>−521 µs (−35.1 %)</td>
+</tr>
+</tbody>
+</table>
+<p>Flat within 6 µs across quorum in the default mode and within 35 µs with ASAP. Quorum determines <em>which</em>
+threshold crossing triggers the stimulus, not the delay from that crossing to the pulse.</p>
+<p><strong>ASAP delivery is sub-millisecond in every configuration</strong>, and the saving reproduces at every quorum
+level, with the interquartile range 4–5× tighter. Paired figures:
+<a href="CLOSED_LOOP_LATENCY.html">Closed-Loop Latency</a>.</p>
+<h2 id="detection-integrity">Detection integrity<a class="headerlink" href="#detection-integrity" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>test</th>
+<th>online detections</th>
+<th>ai4 pulses</th>
+<th>NI-DAQ ↔ NPX sync</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>np1_2ch_q2_baseline</code></td>
+<td>1016</td>
+<td>999</td>
+<td>9.7 ppm, 0.012 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_2ch_q2_asap</code></td>
+<td>1018</td>
+<td>996</td>
+<td>9.7 ppm, 0.012 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_4ch_q3_baseline</code></td>
+<td>1019</td>
+<td>998</td>
+<td>9.8 ppm, 0.012 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_4ch_q3_asap</code></td>
+<td>1018</td>
+<td>995</td>
+<td>9.8 ppm, 0.012 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_lat1k_baseline</code></td>
+<td>1014</td>
+<td>1000</td>
+<td>9.6 ppm, 0.014 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_lat1k_asap</code></td>
+<td>1014</td>
+<td>997</td>
+<td>9.8 ppm, 0.015 ms residual</td>
+</tr>
+<tr>
+<td><code>np1_latency_1ch</code></td>
+<td>116</td>
+<td>100</td>
+<td>9.4 ppm, 0.011 ms residual</td>
+</tr>
+</tbody>
+</table>
+<p>Online-detection counts exceed the recorded pulse count because detection begins before the recording
+starts (during baseline settling) and continues through the post-record settling window; only pulses
+inside the recording are analysed.</p>
+<p>Electrodes are auto-picked per run (strongest ripple), so paired conditions are not electrode-matched —
+see the measurement notes in <a href="CLOSED_LOOP_LATENCY.html">Closed-Loop Latency</a>.</p>
+<h2 id="probe-parity">Probe parity<a class="headerlink" href="#probe-parity" title="Permanent link">#</a></h2>
+<p>Neuropixels 2.0 runs the same closed loop at <strong>1.17–1.18 ms</strong> with default delivery — about 0.3 ms
+faster than NP1.0, consistent with its finer pre-decimation delivery granularity. See
+<a href="NP2_RIPPLE_TESTS.html">NP2_RIPPLE_TESTS.md</a>.</p>
+<h2 id="reproduce">Reproduce<a class="headerlink" href="#reproduce" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python ripple_tools/run_latency_hw.py --source &quot;NPX 1.0 with NI-DAQ (ASAP)&quot; \
+    --dir &lt;abs recdir&gt; --name &lt;name&gt; --nchan 2 --quorum 2 --n 1000
+python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl --figs &lt;recdir&gt;/analysis
+</code></pre>
+<p>Recording directories hold the raw <code>.bin</code> bands + sidecars and are <strong>not</strong> version-controlled; the
+<code>analysis/</code> figures and <code>_summary.json</code> are.
+</content></p></article>
+    <footer class="pagefoot">Generated from <code>RecordingTests/NP1_RIPPLE_TESTS.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#latency-results">Latency results</a></li>
+<li><a href="#detection-integrity">Detection integrity</a></li>
+<li><a href="#probe-parity">Probe parity</a></li>
+<li><a href="#reproduce">Reproduce</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+</script>
+</body></html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Home - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="assets/style.css">
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Overview / Home</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="index.html">Home</a>
+<h3>Overview</h3>
+<a href="README.html">SpikesPeak</a>
+<a href="SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<h3>Developer Docs</h3>
+<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
+<a href="RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
+<a href="RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<h3>Benchmarks</h3>
+<a href="benchmarks/README.html">Benchmarks</a>
+<a href="benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><div class="cover"><img class="cover-logo" src="assets/logo.svg" alt="Neural Ascension logo"><h1>SpikesPeak &mdash; Documentation</h1><p class="lead">Real-time Neuropixels acquisition, live display, recording, and closed-loop sharp-wave-ripple detection to stimulation. Generated from the repo Markdown files &mdash; edit them and re-run <code>scripts/build_docs.py</code>.</p><div class="cardgrid"><div class="card"><h3>Overview</h3><a href="README.html">SpikesPeak</a>
+<a href="SpikesPeak_Status.html">SpikesPeak — Running Status Log</a></div>
+<div class="card"><h3>User Guide</h3><a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a></div>
+<div class="card"><h3>Developer Docs</h3><a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a></div>
+<div class="card"><h3>Architecture</h3><a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a></div>
+<div class="card"><h3>Tooling</h3><a href="python/README.html">spikespeakpostprocess</a></div>
+<div class="card"><h3>Hardware Results</h3><a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
+<a href="RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
+<a href="RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a></div>
+<div class="card"><h3>Benchmarks</h3><a href="benchmarks/README.html">Benchmarks</a>
+<a href="benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a></div>
+<div class="card"><h3>Stim Server</h3><a href="raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a></div>
+<div class="card"><h3>Archive (historical)</h3><a href="developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></div></div><p class="lead" style="font-size:14px">Architecture diagrams live in <code>images/</code> (PlantUML <code>architecture.txt</code> + <code>plantuml_export.txt</code>); render to SVG to see them.</p></div></article>
+    <footer class="pagefoot">Generated from <code>scripts/build_docs.py</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"></aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+</script>
+</body></html>

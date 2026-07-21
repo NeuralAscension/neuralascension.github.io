@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — GUI Guide (with screenshots) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">User Guide / SpikesPeak — GUI Guide (with screenshots)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a class="active" href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="README.html">SpikesPeak — User Guide</a>
+<a href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<h3>Developer Docs</h3>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ drops a trailing sync pulse vs the NPX</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Closed-loop latency — measured results</a>
+<a href="../RecordingTests/NP1_RIPPLE_TESTS.html">Neuropixels 1.0 — closed-loop ripple → stimulation results</a>
+<a href="../RecordingTests/NP2_RIPPLE_TESTS.html">Neuropixels 2.0 — closed-loop ripple → stimulation results</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-gui-guide-with-screenshots">SpikesPeak — GUI Guide (with screenshots)<a class="headerlink" href="#spikespeak-gui-guide-with-screenshots" title="Permanent link">#</a></h1>
+<p>An illustrated, end-to-end walkthrough of the SpikesPeak browser UI: connect a probe (or a simulated
+source), set the channel map, watch the live signal, pick which channels to record, record, and check the
+result. Screenshots are from a <strong>real Neuropixels 1.0 probe + NI-DAQ</strong> and the <strong>simulated</strong> sources.</p>
+<blockquote>
+<p>The UI runs in your <strong>normal web browser</strong> (served at <code>http://localhost:8080</code>) — the SpikesPeak backend
+streams the data over a WebSocket. See <a href="README.html"><code>README.md</code></a> for launching and every toolbar control,
+and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1.0-specific channel-map details.</p>
+</blockquote>
+<hr />
+<h2 id="1-launch-connect">1. Launch &amp; connect<a class="headerlink" href="#1-launch-connect" title="Permanent link">#</a></h2>
+<ol>
+<li>Run <strong><code>SpikesPeak.exe</code></strong>. It opens a dedicated browser window at the UI (or browse to
+   <code>http://localhost:8080</code>). The top toolbar shows <strong>Source: None</strong> and a status of <strong>Ready</strong>.</li>
+<li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown:
+   - A <strong>hardware profile</strong> (e.g. <code>NPX 1.0</code>, <code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank</code>) connects the real
+     probe. Connecting takes a few seconds (the toolbar shows <strong>Found Neuropixels … probe</strong> when ready).
+   - <strong><code>Simulated Data…</code></strong> opens a <strong>picker</strong> of hardware-free simulated sources — no probe needed:</li>
+</ol>
+<p><img alt="Simulated Data picker" src="images/sim_picker.png" /></p>
+<p>Pick a variant (Neuropixels 1.0 sine, synthetic ripples, 1.0 + NI-DAQ, 2.0 Multishank, 2.0 + NI-DAQ).</p>
+<blockquote>
+<p><strong>Probe-type mismatch:</strong> if you pick a profile for one probe (say <em>NPX 2.0 Multishank</em>) but a different
+probe is physically connected (a 1.0), a dialog appears — <strong>Disconnect</strong> or <strong>Continue anyway</strong> — so you
+never silently stream the wrong probe.</p>
+</blockquote>
+<hr />
+<h2 id="2-probe-channel-map-edit-map">2. Probe Channel Map (Edit Map)<a class="headerlink" href="#2-probe-channel-map-edit-map" title="Permanent link">#</a></h2>
+<p>After connecting, the <strong>Probe Map</strong> tab shows the probe's electrodes. The mode radio has <strong>Edit Map</strong> (set
+the channel map) and <strong>Select Recording Channels</strong> (§4).</p>
+<h3 id="neuropixels-10">Neuropixels 1.0<a class="headerlink" href="#neuropixels-10" title="Permanent link">#</a></h3>
+<p><img alt="NP1 probe map" src="images/np1_probemap.png" /></p>
+<ul>
+<li><strong>Green</strong> = an electrode whose channel is active (will stream); <strong>gray</strong> = available; <strong>amber</strong> =
+  the internal-reference site (channel 191 — reserved, not recordable).</li>
+<li><strong>Click</strong> an electrode to route its read-out channel to that electrode's <strong>bank</strong>; <strong>drag</strong> a vertical
+  box to select a contiguous 384-electrode window. The <strong>Bank 0 / 1 / 2</strong> buttons are quick presets
+  (Bank 2 is a half-bank, channels 0–191 only).</li>
+<li><strong>Apply Map to Hardware</strong> pushes the map to the probe (and re-orders the live view by depth).</li>
+<li><strong>Save .imro / Load .imro</strong> write/read the channel map as a standard <code>.imro</code> file (a bad or wrong-probe
+  file is rejected).</li>
+</ul>
+<h3 id="neuropixels-20-multishank">Neuropixels 2.0 multishank<a class="headerlink" href="#neuropixels-20-multishank" title="Permanent link">#</a></h3>
+<p><img alt="NP2 4-shank editor" src="images/np2_editor.png" /></p>
+<p>All <strong>4 shanks</strong> are drawn side by side (labelled <strong>0–3</strong> left→right, matching the manual), each with its
+own shaft + tip. A <strong>Shank</strong> dropdown + <strong>Bank 0–3</strong> buttons fill all 384 channels from the selected shank
+&amp; bank. Because 384 channels are shared across 5120 electrodes, a full map partitions the channels among
+the shanks — click/drag on any shank to route those channels there.</p>
+<blockquote>
+<p><strong>Tip — designing complex custom maps:</strong> SpikesPeak's editor handles quick bank presets and contiguous
+selections well, but for <strong>fine-grained custom channel maps</strong> (especially multishank NP2 layouts) a
+dedicated probe-map tool is easier. Consider <strong>neurocarto</strong> (an open-source, <code>pip</code>-installable Neuropixels
+channel-map editor) or a similar tool: design the map there, export a <code>.imro</code>, then <strong>Load .imro</strong> here
+and <strong>Apply Map to Hardware</strong>. This level of custom map design is genuinely easier on dedicated software
+than in SpikesPeak — or, frankly, in any current Neuropixels acquisition GUI.</p>
+</blockquote>
+<hr />
+<h2 id="3-live-data-watch-the-signal">3. Live Data (watch the signal)<a class="headerlink" href="#3-live-data-watch-the-signal" title="Permanent link">#</a></h2>
+<p>Press <strong>▶ Play</strong>, then the <strong>Live Data</strong> tab. Traces are <strong>depth-sorted</strong> (deepest/tip at the bottom) and
+labelled by electrode + side.</p>
+<p>The <strong>▶ / ⏸ Play button</strong> shows its state by colour: <strong>green ▶ when paused</strong> (ready — "press to play"), and
+a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (the green ring is the unmistakable "live" cue —
+it mirrors the Record button's armed ring, but green). A disabled button (no source selected) stays grey.</p>
+<p><img alt="Play paused = green ▶" src="images/play_button_green.png" /></p>
+<p><img alt="Streaming = white ⏸ inside a green pulsing ring" src="images/play_button_streaming.png" /></p>
+<p><img alt="NP1 live view" src="images/np1_liveview.png" /></p>
+<ul>
+<li>Two columns; each has dropdowns for <strong>Band</strong> (AP / LFP / RAW / NI-DAQ), <strong>Shank</strong> (for multishank), and
+  <strong>L+R / Left / Right</strong>, plus a <strong>Scale</strong> (µV per trace). Drag the slider to scroll depth.</li>
+<li><strong>Layout — <code>Horizontal ⬌</code> / <code>Vertical ⬍</code></strong> (toolbar toggle, beside <strong>Columns/Rows</strong>): <em>Horizontal</em> tiles
+  the strips side-by-side as <strong>columns</strong> (20 channels each) — best on a landscape monitor. <em>Vertical</em> stacks
+  them as full-width <strong>rows</strong> (40 channels each) — ideal for a <strong>portrait / rotated monitor</strong> and laminar
+  probes. The <strong>Columns/Rows</strong> selector sets how many strips (up to 4); the choice persists across reloads.</li>
+</ul>
+<p><img alt="Vertical (rows) live view on a portrait monitor" src="images/vertical_liveview.png" />
+- With <strong>NI-DAQ</strong>, one column can show the analog channels (a TTL sync pulse is visible on ch 0).
+- On a real probe the traces look like <strong>neural activity</strong> (irregular, noisy). The simulated sources show
+  a clean sine (identical on every channel) — e.g. the <strong>NP2 4-shank</strong> live view:</p>
+<p><img alt="NP2 live view" src="images/np2_liveview.png" /></p>
+<hr />
+<h2 id="4-select-which-channels-to-record">4. Select which channels to record<a class="headerlink" href="#4-select-which-channels-to-record" title="Permanent link">#</a></h2>
+<p>Switch the <strong>Select Recording Channels</strong> radio (works any time — before or during Play).</p>
+<p><img alt="Record-channel selection" src="images/record_selection.png" /></p>
+<ul>
+<li>Only the <strong>applied map's</strong> electrodes are shown: <strong>green = will record</strong>, <strong>blue = applied but not
+  recording</strong>, <strong>amber = reference (excluded, NP1 only)</strong>.</li>
+<li>Default is <strong>record all</strong>. <strong>Click</strong> an electrode to toggle it, or <strong>drag</strong> a vertical box to add a run.
+  <strong>Record all</strong> / <strong>Unselect all</strong> / <strong>Set recording channels</strong> commit the selection.</li>
+<li>If a <strong>NI-DAQ</strong> recorder is present, a <strong>NI-DAQ channel grid</strong> appears below (buttons are 0-indexed to
+  match the live view). Pick a couple, then <strong>Set</strong>.</li>
+<li>The selection is per-recorder (<code>window.recordChannels = {npx:[…], nidaq:[…]}</code>) and overrides the config
+  default for that session. You can only pick electrodes that are actually in the applied (streamable) map.</li>
+</ul>
+<hr />
+<h2 id="5-record">5. Record<a class="headerlink" href="#5-record" title="Permanent link">#</a></h2>
+<p>Recording is a two-step, deliberate flow so you never start writing by surprise.</p>
+<ol>
+<li>Press <strong>● Record</strong> → a dialog asks for a <strong>recording name</strong> (animal/id) and an <strong>output directory</strong> on
+   the SpikesPeak machine (Browse… opens a native folder picker). Click <strong>Set Location</strong> → the recorder is
+   <strong>armed</strong> (a muted-red ring on the Record button):</li>
+</ol>
+<p><img alt="Armed" src="images/record_armed.png" /></p>
+<ol start="2">
+<li>Press <strong>● Record again to START</strong>. The <strong>Record button turns solid red</strong> and a flashing <strong>● REC → name</strong>
+   badge appears; files write live to <code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>. (While streaming the
+   Play button is a <strong>white ⏸ in a green ring</strong>; it returns to a <strong>green ▶</strong> when paused.):</li>
+</ol>
+<p><img alt="Recording — Play = white ⏸ in a green ring (streaming), Record = solid red (recording)" src="images/record_buttons.png" /></p>
+<ol start="3">
+<li>Press <strong>● Record again to STOP</strong> (files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the
+   stream). One start records every configured stream (NPX AP+LFP or RAW, + NI-DAQ) into that one folder.</li>
+</ol>
+<blockquote>
+<p><strong>Headless / scripted:</strong> the same flow runs with no clicking via <code>python/spikespeak_cli.py</code>
+(<code>select → waitready → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → pause → disconnect → quit</code>). See
+<a href="../developer_docs/ControlCLI.html"><code>../developer_docs/ControlCLI.md</code></a>.</p>
+</blockquote>
+<hr />
+<h2 id="6-check-the-recording">6. Check the recording<a class="headerlink" href="#6-check-the-recording" title="Permanent link">#</a></h2>
+<p>Each <code>.bin</code> gets a self-describing <code>.bin.json</code> sidecar (band, channels, sample rate, units). The
+<code>python/spikespeak_postprocess</code> package loads a band by electrode number as NumPy/xarray, and
+<code>python/examples/plot_recording.py &lt;dir&gt;</code> writes two plots into the folder:</p>
+<ul>
+<li><strong><code>channels.png</code></strong> — the recorded electrodes in µV (AP + LFP). On a real probe you see neural signal;
+  known-noisy electrodes stand out:</li>
+</ul>
+<p><img alt="channels.png" src="images/recording_channels.png" /></p>
+<ul>
+<li><strong><code>sync.png</code></strong> — NI-DAQ ↔ Neuropixels clock alignment from a shared TTL pulse train (recovers the ppm
+  drift between the two clocks):</li>
+</ul>
+<p><img alt="sync.png" src="images/recording_sync.png" /></p>
+<p>See <a href="../python/README.html"><code>../python/README.md</code></a> and
+<a href="../developer_docs/RecordingTest.html"><code>../developer_docs/RecordingTest.md</code></a> (the canonical end-to-end check).</p>
+<hr />
+<h2 id="7-teardown">7. Teardown<a class="headerlink" href="#7-teardown" title="Permanent link">#</a></h2>
+<p>Close the browser window (the backend quits after a ~2 s grace) or, in a scripted session, use the correct
+order <strong>stop → pause → disconnect → quit</strong>. Never change/apply a probe map while streaming.</p></article>
+    <footer class="pagefoot">Generated from <code>user_docs/GUI-Guide.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-launch-connect">1. Launch &amp; connect</a></li>
+<li><a href="#2-probe-channel-map-edit-map">2. Probe Channel Map (Edit Map)</a><ul>
+<li><a href="#neuropixels-10">Neuropixels 1.0</a></li>
+<li><a href="#neuropixels-20-multishank">Neuropixels 2.0 multishank</a></li>
+</ul>
+</li>
+<li><a href="#3-live-data-watch-the-signal">3. Live Data (watch the signal)</a></li>
+<li><a href="#4-select-which-channels-to-record">4. Select which channels to record</a></li>
+<li><a href="#5-record">5. Record</a></li>
+<li><a href="#6-check-the-recording">6. Check the recording</a></li>
+<li><a href="#7-teardown">7. Teardown</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+</script>
+</body></html>

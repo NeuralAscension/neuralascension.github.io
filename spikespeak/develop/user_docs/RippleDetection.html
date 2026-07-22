@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Ripple Detection Module (User Guide) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">User Guide / SpikesPeak — Ripple Detection Module (User Guide)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="README.html">SpikesPeak — User Guide</a>
+<a href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a class="active" href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-ripple-detection-module-user-guide">SpikesPeak — Ripple Detection Module (User Guide)<a class="headerlink" href="#spikespeak-ripple-detection-module-user-guide" title="Permanent link">#</a></h1>
+<p>The <strong>Ripple Detection</strong> module watches the LFP band for hippocampal <strong>sharp-wave ripples (SWRs)</strong> and, when
+enough channels cross threshold together within a short window, fires a <strong>stimulation trigger</strong> (closed-loop). It
+lives in a <strong>right-side dock</strong> in the browser UI and coexists with the Probe Map / Live Data views (a toolbar tab
+toggles it). Everything is <strong>GUI-driven</strong> — you pick the channels, set the parameters, and start/stop it live;
+nothing is baked into a config file.</p>
+<blockquote>
+<p>New here? Read <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> first for launching SpikesPeak and picking a source, and
+<a href="SimulatedData.html"><code>SimulatedData.md</code></a> for every hardware-free source you can drive this with. This guide covers
+<strong>operating</strong> the ripple module. Screenshots below are from the simulated sources.
+Stimulation server (Raspberry Pi) setup: see <a href="../raspberrypi_pulsegenerator/README.html">../raspberrypi_pulsegenerator/README.md</a>.</p>
+<p><strong>For developers:</strong> the detection <em>algorithm</em> + per-probe data path is in
+<a href="../developer_docs/RippleDetection.html"><code>../developer_docs/RippleDetection.md</code></a>; the GUI ↔ backend WS
+command/event <em>contract</em> is in <a href="../developer_docs/RippleGui.html"><code>../developer_docs/RippleGui.md</code></a>. This
+guide does not duplicate them — it is the operation manual.</p>
+</blockquote>
+<p><strong>The whole module at a glance</strong> (NP1 sim, three channels detecting a ripple):</p>
+<p><img alt="Ripple detection — running, detecting" src="images/ripple/np1_detecting.png" /></p>
+<p>On the right dock, top→bottom: <strong>① Channels</strong>, <strong>② Parameters</strong> + Train/Retrain + progress bar, <strong>③ per-channel
+columns</strong> (z-score, μ+zσ threshold, rolling envelope), <strong>④ Detection &amp; stimulation</strong> (cowsay + red STIM LED + stim
+IP). The main view (left) is the Live Data waveforms on the <strong>LFP band</strong> (where NP1 ripples live — see the tip in
+§5); the ripple burst is the bright vertical band. This shot runs with <strong>quorum = 2</strong>: two channels (e10, e20) are
+in <strong>● RIPPLE</strong> together, so the cowsay reports <strong><code>2/3 ch 10,20</code></strong> and the stim trigger fires.</p>
+<hr />
+<h2 id="1-open-the-module-and-pick-a-source">1. Open the module and pick a source<a class="headerlink" href="#1-open-the-module-and-pick-a-source" title="Permanent link">#</a></h2>
+<ol>
+<li>In the top toolbar, click <strong>◉ Ripple Detection</strong>. The dock slides in on the right and the main view <strong>shrinks
+   to fit</strong> (no overlap, even columns). Drag the dock's <strong>left grip</strong> to resize it.</li>
+<li>Pick a <strong>source</strong> that produces an LFP band the detector can read (via the <strong>Source</strong> dropdown →
+   <strong>Simulated Data…</strong>, or a real-probe profile). The best sources for learning the module:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Source (in the Simulated Data picker)</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Neuropixels 1.0 — Ripple Detection (GUI)</strong></td>
+<td>NP1 sim, injected ripples, <strong>no channels pre-selected</strong></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank — Ripple Detection (GUI)</strong></td>
+<td>NP2 sim, injected ripples, no channels</td>
+</tr>
+<tr>
+<td><strong>Simulated Neuropixels 2.0 (play file)</strong></td>
+<td>Replays an <strong>HDF5 file</strong> through all channels (§6)</td>
+</tr>
+<tr>
+<td><em>real</em> <strong>NPX 1.0 / 2.0 with NI-DAQ</strong></td>
+<td>attaches to the live probe LFP</td>
+</tr>
+</tbody>
+</table>
+<p>(See <a href="SimulatedData.html"><code>SimulatedData.md</code></a> for the full source list and the ripple-injection knobs.)</p>
+<p>The module always starts <strong>paused, with zero channels</strong> — it will not train or detect until you add channels and
+press <strong>Start</strong>:</p>
+<p><img alt="Ripple dock idle — 0 channels" src="images/ripple/np1_idle.png" /></p>
+<p>Note the header shows <strong>▶ Start</strong> (disabled, greyed — no channels yet) and the training bar reads <strong>"not started"</strong>.</p>
+<hr />
+<h2 id="2-select-detection-channels">2. Select detection channels<a class="headerlink" href="#2-select-detection-channels" title="Permanent link">#</a></h2>
+<p>The panel shows <strong>electrode numbers</strong> (as labelled in the Live/Probe view). Add one electrode at a time:</p>
+<ul>
+<li><strong>Drag from a view:</strong> left-drag an electrode — a label in <strong>Live Data</strong>, or an electrode on the <strong>Probe Map</strong> —
+  into the dock. Hold <strong>Ctrl</strong>, <em>or</em> — because the dock is open — just drag (no Ctrl needed).</li>
+<li><strong>Type it:</strong> enter an electrode number in the box under the chips and click <strong>Add</strong>.</li>
+</ul>
+<p>Each channel becomes a <strong>chip</strong> (<code>e50 → ch98 ✕</code>, showing the electrode→read-out-channel mapping) and gets its own
+column below. Remove one with its <strong>✕</strong>. Channels are only editable while <strong>paused + Edit</strong> (§4).</p>
+<p><img alt="Channels added, still idle" src="images/ripple/np1_channels.png" /></p>
+<p>Here three electrodes <code>0, 10, 20</code> were added. Each column status reads <strong>"idle — press ▶ Start"</strong> and the
+Train/Retrain button reads <strong>"Train"</strong> (nothing has trained yet). The <strong>Start</strong> button is now enabled.</p>
+<blockquote>
+<p><strong>Electrode vs channel:</strong> on NP2 the mapping is not identity — e.g. <code>e100 → ch196</code>, <code>e200 → ch248</code> (the probe's
+block-permutation wiring). The chip shows you exactly which read-out channel your electrode lands on.</p>
+</blockquote>
+<hr />
+<h2 id="3-parameters-section-2">3. Parameters (section ②)<a class="headerlink" href="#3-parameters-section-2" title="Permanent link">#</a></h2>
+<p>All times are in <strong>seconds</strong>. Set these before Start (or pause + Edit to change them later):</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Parameter-estimation (training) time</strong></td>
+<td>Seconds of LFP used to estimate each channel's baseline mean/σ. Longer = steadier threshold, slower to arm.</td>
+<td>1200 s</td>
+</tr>
+<tr>
+<td><strong>Train / Retrain</strong> button</td>
+<td>Runs (or re-runs) baseline estimation. Reads <strong>Train</strong> until every channel is trained, then <strong>Retrain</strong>. Enabled only while running.</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>Min time above threshold to report</strong></td>
+<td>A channel must stay above threshold this long before it counts (rejects 1-sample blips). <code>0</code> = react instantly.</td>
+<td>0.000 s</td>
+</tr>
+<tr>
+<td><strong>Lockout after detection / stimulation</strong></td>
+<td>Refractory — after a detection, channels can't re-fire for this long.</td>
+<td>0.200 s</td>
+</tr>
+<tr>
+<td><strong>Channels required (quorum)</strong></td>
+<td>How many selected channels must cross threshold <strong>together</strong> (within the coincidence window) for a true detection + stim. Must be ≤ channels selected. Default 1 = any single channel; the screenshots here use <strong>2</strong> to show the coincidence logic.</td>
+<td>1</td>
+</tr>
+<tr>
+<td><strong>Coincidence window</strong></td>
+<td>Time window within which the quorum's crossings must all fall.</td>
+<td>0.010 s</td>
+</tr>
+<tr>
+<td><strong>Per-channel z-score</strong> (section ③)</td>
+<td>Each column's own <strong>z</strong>; threshold = <strong>μ + z·σ</strong>. <strong>Editable any time, even while running</strong> — live sensitivity tuning; the threshold updates instantly.</td>
+<td>3.00</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Tip — for a quick sim test</strong>, set the training time to <strong>3 s</strong> so the module arms in a few seconds instead of
+20 minutes. (There is also a fixed ~6 s amplifier-settle gate before training starts, so first detection is
+~9 s after Start with a 3 s training time.)</p>
+</blockquote>
+<hr />
+<h2 id="4-run-it-start-pause-edit">4. Run it: Start / Pause / Edit<a class="headerlink" href="#4-run-it-start-pause-edit" title="Permanent link">#</a></h2>
+<p>The dock header has <strong>two buttons</strong>:</p>
+<ul>
+<li><strong>▶ Start</strong> — begins the module. The <strong>first</strong> Start trains the baseline (progress bar fills), then detects. A
+  Start <strong>after a Pause</strong> just <strong>resumes</strong> with the existing baselines (no retrain). Disabled until ≥1 channel.</li>
+<li><strong>⏸ Pause</strong> — stops detection + stimulation. <strong>Live envelopes keep streaming</strong> so you still see data; baselines
+  are kept.</li>
+<li><strong>✎ Edit</strong> — enabled only while paused. Unlocks the configuration (channels + parameters). While <strong>running</strong>,
+  the config is <strong>locked</strong> (no dragging channels or editing params — <strong>except the per-channel z-score</strong>, which
+  stays live). Press Start to re-lock.</li>
+</ul>
+<p><strong>While training</strong>, each column shows <strong>"training…"</strong> and the progress bar fills:</p>
+<p><img alt="Training in progress" src="images/ripple/np1_training.png" /></p>
+<p><strong>Adding a channel to an already-trained set:</strong> pause → <strong>Edit</strong> → drag the new electrode in → <strong>Start</strong>. Existing
+channels keep their baselines; only the <strong>new</strong> channel trains ("train-only-new").</p>
+<hr />
+<h2 id="5-reading-the-display-sections-3-4">5. Reading the display (sections ③ + ④)<a class="headerlink" href="#5-reading-the-display-sections-3-4" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>⚡ To SEE ripples in the Live Data view, pick the right band.</strong> Each column has a <strong>band dropdown</strong>
+(top-left of the column). Ripples live in the <strong>LFP band</strong> on NP1 (the AP band is high-passed and carries no
+ripples) and in the <strong>RAW band</strong> on NP2 / play-file. In the LFP/RAW band the ripple bursts show as periodic
+denser vertical bands across channels — but the <strong>clearest</strong> view of a ripple is the per-channel <strong>envelope</strong>
+in the dock, which spikes above the dashed threshold on every detection. (Tip: a <strong>~2 s Window</strong> and a
+<strong>~600 µV Scale</strong> separate the traces nicely and make each ripple burst stand out as a bright vertical band —
+that's what the screenshots below use.)</p>
+</blockquote>
+<p><strong>Per-channel column</strong> (section ③):
+- the <strong>μ + z·σ = value</strong> threshold,
+- a <strong>rolling envelope plot</strong> — the <strong>last 500 ms</strong> of the ripple-band envelope, with the threshold drawn as a
+  <strong>dashed red line</strong>,
+- a <strong>status line</strong>:
+  - <strong>idle — press ▶ Start</strong> — added but not running,
+  - <strong>training…</strong> — running, estimating baseline,
+  - <strong>below threshold</strong> — armed and watching,
+  - <strong>● RIPPLE</strong> — the envelope crossed; the column flashes red for the lockout.</p>
+<p><strong>Detection &amp; stimulation</strong> (section ④):
+- a <strong>cowsay</strong> banner prints each detection: <code>Ripple detected! k/N ch &lt;list&gt;</code> (k of N channels reported, and
+  which electrodes),
+- a <strong>red STIM LED</strong> lights for the lockout on a true detection,
+- a <strong>stim-server IP</strong> selector chooses where the trigger is sent.</p>
+<p>A <strong>true detection</strong> fires when <strong>quorum</strong> channels cross within the <strong>coincidence window</strong> — then the stim
+trigger goes out. The cowsay shows <code>k/N</code> and which channels reported. Below, the NP2 sim with <strong>quorum = 2</strong>:
+channels e50 and e100 are both in <strong>● RIPPLE</strong> while e0 stays below threshold, so the cowsay reports
+<strong><code>2/3 ch 50,100</code></strong> and the stim fires (only channels that cross <em>together</em> count):</p>
+<p><img alt="NP2 sim — quorum 2, two channels detecting together" src="images/ripple/np2_detecting.png" /></p>
+<h3 id="live-threshold-tuning">Live threshold tuning<a class="headerlink" href="#live-threshold-tuning" title="Permanent link">#</a></h3>
+<p>You can change any column's <strong>z-score while the module is running</strong> — the threshold recomputes immediately (higher
+z ⇒ higher threshold ⇒ fewer detections). Below, e0's z was raised from 3 to 8 mid-run and its threshold jumped
+from ~45 to ~69:</p>
+<p><img alt="Live z-score tuning" src="images/ripple/np1_livez.png" /></p>
+<hr />
+<h2 id="6-hdf5-play-file-replay-a-recording-through-all-channels">6. HDF5 "play file" — replay a recording through all channels<a class="headerlink" href="#6-hdf5-play-file-replay-a-recording-through-all-channels" title="Permanent link">#</a></h2>
+<p>Pick <strong>Simulated Data… → "Simulated Neuropixels 2.0 (play file)"</strong>. The picker gives you a <strong>path line edit</strong>:</p>
+<ul>
+<li><strong>Type or paste</strong> a full path to an <code>.h5</code> file and click <strong>▶ Play file</strong> — it plays that file directly.</li>
+<li>Or leave it blank and click <strong>📂 Browse…</strong> to open your machine's native file dialog.</li>
+</ul>
+<p>The last path is remembered. A missing/wrong-format file <strong>streams silence + logs a warning</strong> (no crash) — just
+re-select and pick a valid one.</p>
+<p>The play-file source <strong>renders the Probe Map</strong> like a real probe, and you select detection channels + run exactly
+as above:</p>
+<p><img alt="Play-file — Probe Map renders" src="images/ripple/playfile_probemap.png" />
+<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting.png" /></p>
+<h3 id="file-format">File format<a class="headerlink" href="#file-format" title="Permanent link">#</a></h3>
+<p>The <code>.h5</code> must contain:
+- a dataset <strong><code>data</code></strong>, <code>int16</code>, shape <strong><code>[nSamples × nChannels]</code></strong> (or 1-D <code>[nSamples]</code> = one trace broadcast to
+  all channels), sample-major;
+- an attribute <strong><code>sampling_rate</code></strong> (<code>int32</code>, Hz — expected 30000);
+- optionally <strong><code>num_channels</code></strong> (<code>int32</code>).</p>
+<p>Generate a synthetic one with <code>scripts/gen_synthetic_ripples.py</code> — see <a href="SimulatedData.html#6-hdf5-play-file-sources"><code>SimulatedData.md</code></a>
+and <a href="../developer_docs/SyntheticSources.html"><code>../developer_docs/SyntheticSources.md</code></a>. <strong>Other formats (e.g. the
+recorder's <code>.bin</code> + <code>.json</code>) are a planned future feature.</strong></p>
+<blockquote>
+<p><strong>Note:</strong> the play-file live view can look sparse compared to the sine-wave sims — the HDF5 here is
+ripple-band-only, low-amplitude data with ~1 s-spaced bursts, not a full-spectrum neural signal. Detection is
+unaffected (the envelopes + cowsay show the activity).</p>
+</blockquote>
+<hr />
+<h2 id="7-a-complete-worked-example-np1-sim">7. A complete worked example (NP1 sim)<a class="headerlink" href="#7-a-complete-worked-example-np1-sim" title="Permanent link">#</a></h2>
+<ol>
+<li>Source → <strong>Simulated Data… → Neuropixels 1.0 — Ripple Detection (GUI)</strong>. Wait for "device ready".</li>
+<li>Press <strong>▶ Play</strong> (toolbar). Click <strong>◉ Ripple Detection</strong> to open the dock.</li>
+<li>Switch the main view to <strong>Live Data</strong>. In the dock, add electrodes <code>0, 10, 20</code> (drag them from the view, or
+   type + Add).</li>
+<li>Set <strong>Parameter-estimation time = 3</strong> (for a quick test). Press <strong>▶ Start</strong>.</li>
+<li>Watch the progress bar fill (<strong>"training…"</strong>). After ~9 s the columns arm (<strong>"below threshold"</strong>), thresholds
+   appear (<strong>μ + 3σ ≈ 45</strong>), and detections start firing — the cowsay prints <code>Ripple detected! 1/3 ch 0</code>, the
+   <strong>STIM LED</strong> blinks, and the crossing column flashes <strong>● RIPPLE</strong>.</li>
+<li>Try <strong>raising a column's z-score</strong> to 8 → its threshold jumps and it stops firing. Lower it back to see it fire
+   again.</li>
+<li><strong>Pause</strong>, click <strong>Edit</strong>, add electrode <code>30</code>, press <strong>Start</strong> — only <code>e30</code> re-trains; the others keep detecting.</li>
+</ol>
+<p><em>(This is exactly the verified test run behind the screenshots above: 6 detections, thresholds 45.1/44.2/44.4,
+Train→Retrain after training, live-z 45→69.)</em></p>
+<hr />
+<h2 id="8-tips-troubleshooting">8. Tips &amp; troubleshooting<a class="headerlink" href="#8-tips-troubleshooting" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Nothing detects?</strong> Confirm the module is <strong>running</strong> (button shows ⏸ Pause), training reached <strong>100%</strong>
+  ("training complete"), and your z-score isn't so high that ripples don't cross it. Detection needs a warm-up
+  (~6 s settle gate + your training time).</li>
+<li><strong>The Start button is greyed out</strong> → you have <strong>no channels</strong> selected. Add at least one.</li>
+<li><strong>"Quorum" never met?</strong> Lower <strong>Channels required</strong>, widen the <strong>coincidence window</strong>, or add more channels.</li>
+<li><strong>Too many false detections?</strong> Raise the per-channel <strong>z-score</strong>, increase <strong>Min time above threshold</strong>, or
+  raise the quorum.</li>
+<li><strong>Play-file picked the wrong file / didn't open?</strong> Re-select the play-file source to reopen the picker.</li>
+<li><strong>Module shows "enabled" on a fresh source?</strong> It shouldn't — it starts paused with 0 channels. If a config sets
+  <code>auto_start: true</code>, it will run on Play (the sim GUI configs set it false).</li>
+<li><strong>Real hardware:</strong> the detector reads the native LFP directly (NP1) or a derived LFP (NP2) for lowest closed-loop
+  latency. Set <code>debug_files: false</code> in the profile for hardware runs (per-sample debug dumps add I/O latency).</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>user_docs/RippleDetection.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-open-the-module-and-pick-a-source">1. Open the module and pick a source</a></li>
+<li><a href="#2-select-detection-channels">2. Select detection channels</a></li>
+<li><a href="#3-parameters-section-2">3. Parameters (section ②)</a></li>
+<li><a href="#4-run-it-start-pause-edit">4. Run it: Start / Pause / Edit</a></li>
+<li><a href="#5-reading-the-display-sections-3-4">5. Reading the display (sections ③ + ④)</a><ul>
+<li><a href="#live-threshold-tuning">Live threshold tuning</a></li>
+</ul>
+</li>
+<li><a href="#6-hdf5-play-file-replay-a-recording-through-all-channels">6. HDF5 "play file" — replay a recording through all channels</a><ul>
+<li><a href="#file-format">File format</a></li>
+</ul>
+</li>
+<li><a href="#7-a-complete-worked-example-np1-sim">7. A complete worked example (NP1 sim)</a></li>
+<li><a href="#8-tips-troubleshooting">8. Tips &amp; troubleshooting</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

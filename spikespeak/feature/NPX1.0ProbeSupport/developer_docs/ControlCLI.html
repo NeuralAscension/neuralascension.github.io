@@ -26,6 +26,7 @@
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
 <a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -76,7 +77,84 @@ clicking</strong>. It exists so tests (and agents) can launch, configure, record
 at the mouse; an open browser <strong>mirrors the session live</strong> (source dropdown, play button, red Record
 button all reflect the CLI's actions).</p>
 <p>Zero dependencies: a tiny RFC-6455 client on the Python standard library only.</p>
-<h2 id="commands">Commands<a class="headerlink" href="#commands" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>There are two headless interfaces, and this page covers both:</strong>
+1. the <strong>built-in console command interface</strong> — type commands at the backend's <em>own</em> console (no Python,
+   no second process): a minimal <code>connect</code>/<code>play</code>/<code>pause</code>/<code>disconnect</code>/<code>quit</code> surface (GitHub issue #6,
+   "command the server through the console"), and
+2. the <strong>WebSocket control CLI</strong> (<code>python/spikespeak_cli.py</code>) — the full, scriptable, remote-capable
+   interface (<code>list</code>/<code>select</code>/<code>record</code>/…) that every <code>ripple_tools/</code> script is built on.</p>
+<p>Use the console for a quick local poke; use the WebSocket CLI for anything scripted, recorded, or remote.</p>
+</blockquote>
+<h2 id="built-in-console-command-interface-type-at-the-backends-console">Built-in console command interface (type at the backend's console)<a class="headerlink" href="#built-in-console-command-interface-type-at-the-backends-console" title="Permanent link">#</a></h2>
+<p>The backend reads commands <strong>typed directly into the console it runs in</strong>
+(<code>src/core/KeyboardListener.cpp</code> → <code>MainController::handleTextCommand</code>) — the original
+"command through the console" path. No Python, no WebSocket. <strong>Confirmed working on Windows (2026-07-22)</strong> —
+previously Linux-only (issue #6): each typed line drives <code>MainController</code>, and the app exits <code>0</code> on <code>quit</code>.</p>
+<p><strong>How the console is attached</strong>
+- <strong>Windows</strong> — the backend is a GUI-subsystem exe, so at startup <code>setupWindowsConsole()</code> (<code>main.cpp</code>) does
+  <code>AttachConsole(ATTACH_PARENT_PROCESS)</code> (inherit the console of the terminal / Qt Creator that launched it)
+  or <code>AllocConsole()</code> (a fresh one), then reopens <code>stdin</code>/<code>stdout</code>/<code>stderr</code> to <code>CONIN$</code>/<code>CONOUT$</code>. Launch it
+  from a terminal to type into it.
+- <strong>Linux</strong> — it reads the controlling terminal's stdin directly.
+- <strong>Headless (stdin closed / redirected)</strong> — <code>KeyboardListener</code> detects the closed stdin, logs
+  <code>console commands disabled</code>, and stops reading. It does <strong>not</strong> quit; drive the app with the WebSocket CLI
+  and <code>quit</code> from there. This is the state under <code>--no-browser</code> with no attached console.</p>
+<p><strong>The commands</strong> — the <em>complete</em> set (this is a deliberately minimal control surface):</p>
+<table>
+<thead>
+<tr>
+<th>type this</th>
+<th>effect (<code>MainController</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>connect &lt;source name&gt;</code></td>
+<td>connect that source; <strong>everything after <code>connect</code> is the config <code>name:</code></strong> verbatim — no quotes, spaces allowed (<code>connect Simulated Data</code>, <code>connect NPX 1.0 with NI-DAQ</code>)</td>
+</tr>
+<tr>
+<td><code>play</code></td>
+<td>start streaming</td>
+</tr>
+<tr>
+<td><code>pause</code></td>
+<td>pause streaming</td>
+</tr>
+<tr>
+<td><code>disconnect</code></td>
+<td>disconnect the source (auto-pauses first if still streaming)</td>
+</tr>
+<tr>
+<td><code>quit</code> / <code>exit</code></td>
+<td>shut the server down (once <code>MainController::isReadyToQuit()</code>)</td>
+</tr>
+<tr>
+<td><em>(blank line)</em></td>
+<td>ignored; <em>(anything else)</em> → logged <code>[MainController] Unrecognized command</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>No <code>list</code>, <code>record</code>, <code>waitready</code>, or probe-map</strong> over the console, and <code>connect</code> has <strong>no discovery</strong> —
+you must already know the source <code>name:</code> (from <code>config/*.yaml</code> or the WebSocket CLI's <code>list</code>). For
+recording, readiness-waiting, scripting, or remote control, use the WebSocket CLI below.</p>
+</blockquote>
+<p>A console session looks like this (the <code>[MainController]</code> lines are the backend confirming each command):</p>
+<pre><code>Listening for console input...
+&gt; connect Simulated Data
+[MainController] Source connected and not streaming
+&gt; play
+Attempting to stream from source
+[MainController] All sources have started
+&gt; pause
+[MainController] Source paused
+&gt; disconnect
+[MainController] Source disconnected and set to none
+&gt; quit
+Shutdown initiated
+</code></pre>
+<h2 id="websocket-control-cli-spikespeak_clipy-command-reference">WebSocket control CLI (<code>spikespeak_cli.py</code>) — command reference<a class="headerlink" href="#websocket-control-cli-spikespeak_clipy-command-reference" title="Permanent link">#</a></h2>
 <table>
 <thead>
 <tr>
@@ -240,16 +318,171 @@ writing even if the CLI drops; when the <em>last</em> client disconnects an auto
 <blockquote>
 <p>When the user asks for a <strong>"Recording Test"</strong>, run the canonical procedure in
 <strong><a href="RecordingTest.html">RecordingTest.md</a></strong> (this flow + <code>plot_recording.py</code>, and what the user looks for).</p>
+</blockquote>
+<h2 id="tutorial-from-zero-to-a-recorded-clip-websocket-cli">Tutorial — from zero to a recorded clip (WebSocket CLI)<a class="headerlink" href="#tutorial-from-zero-to-a-recorded-clip-websocket-cli" title="Permanent link">#</a></h2>
+<p>A first end-to-end run, no GUI. Uses a <strong>sim</strong> source, so no hardware is needed.</p>
+<ol>
+<li><strong>Launch the backend headless</strong> (keeps serving; opens no browser):
+   <code>bash
+   python run_spikespeak.py --no-browser        # add --offscreen if there is no display at all</code></li>
+<li><strong>See what sources exist</strong> — the names printed are the config <code>name:</code> fields you pass to <code>select</code>:
+   <code>bash
+   python python/spikespeak_cli.py list</code><blockquote>
+<p>⚠️ A bare <code>list</code> connects <strong>then disconnects</strong>, and the backend auto-quits ~2 s after the <em>last</em>
+WebSocket client leaves. So for a multi-step session, do it all inside <strong>one</strong> connected <code>--script</code>
+(below), or keep a browser open on the side to hold the server up.</p>
+</blockquote>
+</li>
+<li><strong>Connect → wait until ready → stream → record 10 s → tear down</strong>, all in one connected script:
+   <code>bash
+   python python/spikespeak_cli.py --script \
+     "select 'Simulated Data'; waitready 40; play; sleep 2; \
+      record RecordingTests demo1; sleep 10; stop; pause; disconnect; quit"</code>
+   (<code>waitready</code> blocks on the source's readiness signal instead of guessing a <code>sleep</code>; the
+   <code>stop → pause → disconnect → quit</code> order is the safe teardown — see above.)</li>
+<li><strong>Verify the files</strong> (they land in <code>RecordingTests/demo1/</code>, relative to the backend's working dir):
+   <code>bash
+   python examples/plot_recording.py RecordingTests/demo1</code></li>
+</ol>
+<h2 id="more-examples">More examples<a class="headerlink" href="#more-examples" title="Permanent link">#</a></h2>
+<pre><code class="language-bash"># interactive REPL — type commands one at a time, server stays up until you quit
+python python/spikespeak_cli.py
+&gt;&gt;&gt; list
+&gt;&gt;&gt; select &quot;Simulated Data&quot;
+&gt;&gt;&gt; waitready 40
+&gt;&gt;&gt; play
+&gt;&gt;&gt; pause
+&gt;&gt;&gt; quit
+
+# one-shot (connect, run the single command, exit) — quick config dump
+python python/spikespeak_cli.py list
+
+# stream only (no recording), hold 30 s, then stop cleanly
+python python/spikespeak_cli.py --script \
+  &quot;select 'Simulated Data'; waitready 40; play; sleep 30; pause; disconnect; quit&quot;
+
+# apply an NP1 probe-map bank preset before streaming (real NPX 1.0)
+python python/spikespeak_cli.py --script \
+  &quot;select 'NPX 1.0'; waitready 40; probemap bank1; play; sleep 5; pause; disconnect; quit&quot;
+
+# drive a backend running on another machine
+python python/spikespeak_cli.py --host 192.168.1.50 --port 1234 list
+</code></pre>
+<h2 id="ripple-detection-module-commands">Ripple Detection module commands<a class="headerlink" href="#ripple-detection-module-commands" title="Permanent link">#</a></h2>
+<p>The CLI drives <code>proc.rippledetector</code> too, via <strong><code>ripple &lt;subcommand&gt;</code></strong> — each maps to a
+<code>{"command":"ripple","action":…}</code> WS text frame, the <strong>same contract the browser dock uses</strong>
+(<a href="RippleGui.html"><code>RippleGui.md</code></a> §2). <strong>Every subcommand except <code>arm</code>/<code>disarm</code> is applied on the detector's
+worker thread, which only runs while streaming — so <code>play</code> first.</strong> <code>arm</code>/<code>disarm</code> run on the main thread
+(<code>RippleDetector::setStimArmed</code>) and work even when paused / not streaming.</p>
+<table>
+<thead>
+<tr>
+<th>CLI</th>
+<th>action sent</th>
+<th>payload</th>
+<th>effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ripple channels &lt;e…&gt;</code></td>
+<td><code>setChannels</code></td>
+<td><code>{electrodes:[int]}</code></td>
+<td>set detection electrodes (merge — keeps trained ones, trains only-new)</td>
+</tr>
+<tr>
+<td><code>ripple param &lt;name&gt; &lt;v&gt;</code></td>
+<td><code>setParam</code></td>
+<td><code>{name,value}</code></td>
+<td>one of <code>estimation_seconds</code>, <code>min_duration_seconds</code>, <code>lockout_seconds</code>, <code>coincidence_window_seconds</code>, <code>quorum_count</code></td>
+</tr>
+<tr>
+<td><code>ripple z &lt;electrode&gt; &lt;v&gt;</code></td>
+<td><code>setZ</code></td>
+<td><code>{electrode,z}</code></td>
+<td>per-channel z-score threshold (live-editable while running)</td>
+</tr>
+<tr>
+<td><code>ripple start</code> / <code>ripple pause</code></td>
+<td><code>start</code> / <code>pause</code></td>
+<td><code>{}</code></td>
+<td>first <code>start</code> trains then detects; a <code>start</code> after <code>pause</code> <strong>resumes</strong> (baselines kept)</td>
+</tr>
+<tr>
+<td><code>ripple retrain</code></td>
+<td><code>retrain</code></td>
+<td><code>{}</code></td>
+<td>clear baselines, re-estimate μ/σ</td>
+</tr>
+<tr>
+<td><code>ripple stimserver &lt;ip&gt;</code></td>
+<td><code>setStimServer</code></td>
+<td><code>{ip}</code></td>
+<td>retarget the <code>StimulatorClient</code></td>
+</tr>
+<tr>
+<td><code>ripple stimparams &lt;phase_us&gt; &lt;gap_us&gt; &lt;freq_hz&gt; &lt;total_ms&gt;</code></td>
+<td><code>setStimParams</code></td>
+<td><code>{…}</code></td>
+<td>biphasic pulse-train params (clamped to hardware ranges)</td>
+</tr>
+<tr>
+<td><code>ripple testfire</code></td>
+<td><code>testFire</code></td>
+<td><code>{}</code></td>
+<td>one manual pulse (arm + fire, no detection)</td>
+</tr>
+<tr>
+<td><code>ripple arm</code> / <code>ripple disarm</code></td>
+<td><code>armStim</code> / <code>disarmStim</code></td>
+<td><code>{}</code></td>
+<td><strong>main-thread</strong> — arm / disarm the stim server even when NOT streaming</td>
+</tr>
+<tr>
+<td><code>ripple enable &lt;0\|1&gt;</code></td>
+<td><code>enable</code></td>
+<td><code>{enabled}</code></td>
+<td>legacy bool toggle (maps to start/pause)</td>
+</tr>
+<tr>
+<td><code>ripple raw '&lt;json&gt;'</code></td>
+<td><em>(verbatim)</em></td>
+<td>your object</td>
+<td>escape hatch: sends <code>{command:"ripple", …your fields}</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Events the reader prints back:</strong> <code>rippleState</code> (full snapshot after every command), <code>rippleTraining</code>
+(progress %), <code>rippleBaseline</code> (μ/σ/threshold per channel), <code>rippleDetected</code> (<code>k/N</code> quorum + electrodes +
+<code>ts</code>). <code>rippleEnvelope</code> (~30–60 Hz) is drained silently so it doesn't flood the terminal.</p>
+<p><strong>Worked example</strong> (verified headless, sim, 2026-07-22 — fires detections in ~10 s):</p>
+<pre><code class="language-bash">python python/spikespeak_cli.py --script \
+  &quot;select 'Latency Bench NP1 (baseline delivery)'; waitready 30; play; sleep 2; \
+   ripple channels 0 10 20; ripple z 0 2; ripple z 10 2; ripple z 20 2; \
+   ripple param estimation_seconds 3; ripple param quorum_count 2; \
+   ripple start; sleep 18; ripple pause; disconnect; quit&quot;
+</code></pre>
+<p>It prints the training progress, the three baselines, then detections such as
+<code>[ripple ● DETECTED] 2/3 ch [0, 10] ts=15.73</code>. <code>arm</code>/<code>disarm</code> may go <strong>before</strong> <code>play</code>. (Any ripple-capable
+source works; this benchmark sim just injects frequent ripples for a fast demo.)</p>
+<blockquote>
+<p><strong>Read next:</strong> the detection <strong>algorithm</strong> — <a href="RippleDetection.html"><code>RippleDetection.md</code></a>; the <strong>full GUI/WS
+contract</strong> (every action + every event field) — <a href="RippleGui.html"><code>RippleGui.md</code></a>; the <strong>operator's</strong>
+walkthrough — <a href="../user_docs/RippleDetection.html"><code>../user_docs/RippleDetection.md</code></a>.</p>
 </blockquote></article>
     <footer class="pagefoot">Generated from <code>developer_docs/ControlCLI.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#commands">Commands</a></li>
+<li><a href="#built-in-console-command-interface-type-at-the-backends-console">Built-in console command interface (type at the backend's console)</a></li>
+<li><a href="#websocket-control-cli-spikespeak_clipy-command-reference">WebSocket control CLI (spikespeak_cli.py) — command reference</a></li>
 <li><a href="#how-the-gui-mirrors-a-cli-session">How the GUI mirrors a CLI session</a></li>
 <li><a href="#running-the-backend-headless">Running the backend headless</a></li>
 <li><a href="#readiness-signal-the-correct-teardown-order">Readiness signal + the correct teardown order</a></li>
 <li><a href="#example-a-full-headless-record-test-validated-on-live-hardware">Example: a full headless record test (validated on live hardware)</a></li>
+<li><a href="#tutorial-from-zero-to-a-recorded-clip-websocket-cli">Tutorial — from zero to a recorded clip (WebSocket CLI)</a></li>
+<li><a href="#more-examples">More examples</a></li>
+<li><a href="#ripple-detection-module-commands">Ripple Detection module commands</a></li>
 </ul>
 </div>
 </aside>

@@ -26,6 +26,7 @@
 <a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
 <a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
 <a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -211,6 +212,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S32</strong></td>
 <td><strong>2026-07-21</strong></td>
 <td><strong>HTTP UI port 8080 → 8234 (SpikesPeak-specific; avoids the NI Application Web Server conflict)</strong></td>
+</tr>
+<tr>
+<td><strong>S33</strong></td>
+<td><strong>2026-07-22</strong></td>
+<td><strong>Issue #6 confirmed on Windows</strong> (console <code>connect</code>/<code>play</code>/<code>pause</code>/<code>disconnect</code>/<code>quit</code> + <code>--no-browser</code> no-GUI mode); <strong>control CLI gained full ripple-detector control</strong> (<code>ripple channels</code>/<code>param</code>/<code>z</code>/<code>start</code>/<code>pause</code>/<code>retrain</code>/<code>stim*</code>/<code>arm</code>/<code>disarm</code>); CLI docs split dev (<code>ControlCLI.md</code>) / user (new <code>CommandLineControl.md</code>); measured ASAP CPU cost (≈1 core busy-spin, ~7× baseline) added to <code>LatencyProfiling.md</code></td>
 </tr>
 </tbody>
 </table>

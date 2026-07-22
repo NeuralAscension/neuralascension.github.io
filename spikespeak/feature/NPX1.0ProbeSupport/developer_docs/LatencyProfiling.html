@@ -26,6 +26,7 @@
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
 <a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -334,6 +335,44 @@ to exactly 0 and the NI-DAQ-anchored median drops 506-547 us at every quorum lev
 under-predicted the saving because its backlog was smaller than the real probe's.</p>
 <p>Cost: per-sample processing 2 -&gt; 5 us and dispatch 4 -&gt; 12 us (CPU contention with the busier production
 timer). ~17 us total against a ~840 us loop -- negligible, but real, which is why the flag is opt-in.</p>
+<h3 id="cpu-cost-of-asap-the-busy-spin-measured-2026-07-22">CPU cost of ASAP — the busy-spin (measured 2026-07-22)<a class="headerlink" href="#cpu-cost-of-asap-the-busy-spin-measured-2026-07-22" title="Permanent link">#</a></h3>
+<p>The ~17 us above is the added <em>per-detection compute</em>. The other, larger cost is <strong>process-level CPU</strong>. At
+<code>interval 0</code> the acquisition <code>QTimer</code> re-fires on every event-loop pass, and because production is
+wall-clock-gated (<code>SimDataSource.cpp:125</code> -- <code>if (due &lt;= 0) return;</code>) the overwhelming majority of those
+firings do nothing but re-read the clock and return. That is a <strong>busy-spin that saturates roughly one core</strong>,
+occasionally emitting a single superframe. It is exactly the "trade CPU for freshness" the flag names.</p>
+<p>Measured on the NP1 sim A/B (<code>SimNpx1LatencyBaseline</code> vs <code>SimNpx1LatencyAsap</code> -- byte-identical but the flag;
+<strong>played with the detector dormant</strong> (<code>auto_start:false</code>), so this is the <em>pure source-poll</em> cost), i7-11700K
+(8C / 16T), from <code>SpikesPeak.exe</code> <code>TotalProcessorTime</code> over a 40 s streaming window:</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th>timer</th>
+<th>CPU (% of one core)</th>
+<th>% of the 16-thread machine</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>baseline</td>
+<td>1 ms</td>
+<td><strong>13.4 %</strong></td>
+<td>0.84 %</td>
+</tr>
+<tr>
+<td>ASAP</td>
+<td>interval 0</td>
+<td><strong>98 %</strong> (≈ one core pegged)</td>
+<td>6.12 %</td>
+</tr>
+</tbody>
+</table>
+<p><strong>≈7x the CPU, +0.85 of a logical core</strong>; idle (connected, not streaming) is ~0 %. On the <strong>real probe</strong> the
+<code>interval 0</code> path <em>also</em> calls <code>np_readElectrodeData</code> on every pass, so on-probe ASAP costs <strong>at least</strong> this --
+the sim figure is a lower bound. This is the concrete reason the flag is opt-in and per-source: ~one core to
+shave the ~0.5 ms backlog off the loop is cheap for a closed-loop rig, wasteful for plain streaming. (Confirm
+the flag took via the <code>production tick interval 0 ms (low_latency = true)</code> log line before trusting an A/B.)</p>
 <h3 id="on-real-hardware-implemented-2026-07-21">On real hardware — implemented 2026-07-21<a class="headerlink" href="#on-real-hardware-implemented-2026-07-21" title="Permanent link">#</a></h3>
 <p><code>Npx1Probe</code> polls <code>np_readElectrodeData</code> on a <strong>1 ms</strong> timer and requests up to <strong>64 superframes</strong>
 (<code>NpInterface.cpp</code>). At the 2.5 kHz LFP rate that accumulates 1–2 samples per <code>commitWrite</code>, measured as
@@ -590,6 +629,7 @@ python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;
 <li><a href="#why-the-backlog-exists-and-the-correction-to-an-earlier-claim">Why the backlog exists — and the correction to an earlier claim</a></li>
 <li><a href="#the-asap-low-latency-flag">The ASAP / low-latency flag</a><ul>
 <li><a href="#measured-effect-ab-n1000-each-live-pi-simulation">Measured effect (A/B, n=1000 each, live Pi, simulation)</a></li>
+<li><a href="#cpu-cost-of-asap-the-busy-spin-measured-2026-07-22">CPU cost of ASAP — the busy-spin (measured 2026-07-22)</a></li>
 <li><a href="#on-real-hardware-implemented-2026-07-21">On real hardware — implemented 2026-07-21</a></li>
 <li><a href="#measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell">Measured on real NP1.0 — every quorum level, ~1000 stimuli per cell</a></li>
 <li><a href="#measured-on-real-np20-every-quorum-level-1000-stimuli-per-cell-2026-07-21">Measured on real NP2.0 — every quorum level, ~1000 stimuli per cell (2026-07-21)</a></li>

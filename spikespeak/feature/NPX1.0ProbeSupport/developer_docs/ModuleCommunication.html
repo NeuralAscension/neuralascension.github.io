@@ -81,7 +81,7 @@ see <a href="Recording.html"><code>Recording.md</code></a>.</p>
 </blockquote>
 <hr />
 <h2 id="1-the-transport-one-websocket-three-multiplexed-channels">1. The transport: one WebSocket, three multiplexed channels<a class="headerlink" href="#1-the-transport-one-websocket-three-multiplexed-channels" title="Permanent link">#</a></h2>
-<p>The backend serves the UI over HTTP <code>:8080</code> and opens the system browser; <strong>all</strong> backchannel traffic
+<p>The backend serves the UI over HTTP <code>:8234</code> and opens the system browser; <strong>all</strong> backchannel traffic
 rides one WebSocket on <code>:1234</code> (<code>NetworkClient.js</code> ⇄ <code>WebSocketServer.cpp</code>), split three ways:</p>
 <table>
 <thead>

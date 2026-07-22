@@ -295,8 +295,11 @@ channel↔electrode wiring. <strong>Reference:</strong> <code>OpenEphys/UI/Neuro
     <code>SimNpx2.yaml</code> / <code>SimNpx2NiDaq.yaml</code> (tagged <code>sim_variant</code>). Derived LFP via <code>proc.lfp</code>.</li>
 <li><strong>VERIFIED:</strong> the simulated 2.0 source streams + records + drives the 4-shank live view / editor / record
   selection (headless CLI + CDP screenshots, zero JS errors); NP1 hardware regression clean.</li>
-<li><strong>NOT yet verified:</strong> the REAL 2.0 hardware apply+record — the probe currently on the box reports NP1.0, not
-  a 2.0 multishank, so plug in an actual 2.0 probe and run <code>select "NPX 2.0 Multishank"</code> (see Status §15.4).</li>
+<li><strong>VERIFIED on real hardware (2026-07-15/16 → 2026-07-21):</strong> a real 2.0 multishank was subsequently plugged
+  into the Windows rig. Streaming, pause/play, and <strong>Bank apply</strong> (<code>writeProbeConfiguration</code> VERIFIED OK) are
+  verified (see the <em>Real-2.0-hardware streaming robustness</em> subsection below and Status §23); recording and the
+  full ripple→stimulation <strong>closed loop</strong> are validated across the quorum × delivery matrix at 1000
+  detections/cell (Status §24, §30; <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</li>
 <li>Single-shank (<code>eNpx2SingleShank</code>) parses/serializes but otherwise still follows the old gaps (not built).</li>
 </ul>
 <h3 id="refinements-2026-07-07-see-spikespeak_statusmd-1718">Refinements (2026-07-07) — see <code>SpikesPeak_Status.md §17–§18</code><a class="headerlink" href="#refinements-2026-07-07-see-spikespeak_statusmd-1718" title="Permanent link">#</a></h3>

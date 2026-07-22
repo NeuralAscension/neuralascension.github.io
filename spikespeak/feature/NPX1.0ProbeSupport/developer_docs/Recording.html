@@ -305,10 +305,10 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 <li>Recording path implemented + wired for NP1.0 (AP + LFP). <strong>Code fixes above applied and the C++ +
   webinterface rebuilt clean</strong> (CMake/Ninja/MSVC2019, exit 0). The on-disk format is now correct and
   documented (774-byte records, real sync). <code>verify_npx_recording.py</code> added at the repo root.</li>
-<li><strong>Remaining: the on-hardware §4 run.</strong> Drive a 1.0 probe with a known signal (sine through saline):
-  Play → Record ~5 s → Stop, confirm <code>npx_ap_recording.&lt;ts&gt;</code> + <code>npx_lfp_recording.&lt;ts&gt;</code> land next to
-  <code>output.log</code>, then run the verifier on each (<code>--rate 30000</code> AP, <code>--rate 2500</code> LFP). This step needs
-  the rig and has not been performed yet.</li>
+<li><strong>Done on hardware.</strong> NP1.0 recording is since verified on the real probe + NI-DAQ — the §4 checklist
+  passed during the 2026-07-07 hardware bring-up (Status §16), and recording rode along in the ripple
+  closed-loop hardware tests (both AP/LFP bands written and loaded back via <code>spikespeak_postprocess</code>;
+  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</li>
 </ul>
 <hr />
 <h2 id="7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)<a class="headerlink" href="#7-gui-record-channel-selection-built-2026-07-06" title="Permanent link">#</a></h2>

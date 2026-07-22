@@ -202,6 +202,16 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-07-21</strong></td>
 <td><strong>NP2.0 ASAP implemented (<code>Npx2MSProbe::setLowLatency</code>) + full NP2 matrix at 1000 detections: sub-ms 0.55–0.61 ms ASAP; the batching counter under-reports because NP2's raw-poll latency is upstream of the detector</strong></td>
 </tr>
+<tr>
+<td><strong>S31</strong></td>
+<td><strong>2026-07-21</strong></td>
+<td><strong>Open-items backlog folded from the retired <code>todo.txt</code>; a generic command/event subscription bus is the one still-live design item</strong></td>
+</tr>
+<tr>
+<td><strong>S32</strong></td>
+<td><strong>2026-07-21</strong></td>
+<td><strong>HTTP UI port 8080 → 8234 (SpikesPeak-specific; avoids the NI Application Web Server conflict)</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -1800,7 +1810,7 @@ includes). <strong>Manual verify:</strong> pick a "(play file)" source → <stro
 <ul>
 <li><strong>Three NP2.0 tests, 100 online detections each</strong> (1 ch / 2 ch quorum / 3-of-4), synthetic ripple in saline:
   closed-loop latency <strong>1.94 / 2.70 / 3.45 ms</strong>, 0 unmatched, sync ~10 ppm. Results:
-  <code>RecordingTests/NP2_RIPPLE_TESTS.md</code>.</li>
+  <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code> (NP2.0 tab).</li>
 <li><strong>The NP2 detector is now reproduced EXACTLY offline</strong> from a recorded <code>raw</code> band (2nd-order Bessel
   <code>data.lfp</code> → every 12th sample → ripple/envelope FIRs → online threshold → quorum state machine). This
   <em>supersedes</em> the earlier <code>raw÷12 + DC-removal</code> approximation, which was wrong.</li>
@@ -1853,7 +1863,7 @@ break NP1. Three tests, 100 online detections each, electrodes auto-picked 160/3
 </table>
 <p>Within ~0.35 ms of NP2 at every quorum, same monotonic rise with quorum size. Every item on the regression
 surface was checked claim-by-claim (shared <code>sync.py</code>, the <code>DisplayProcessor</code> re-baseline, the channels
-override, <code>NpInterface</code>, <code>NetworkClient</code> AC-coupling). Full write-up: <code>RecordingTests/NP1_RIPPLE_TESTS.md</code>.
+override, <code>NpInterface</code>, <code>NetworkClient</code> AC-coupling). Full write-up: <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code> (NP1.0 tab).
 Driver: <code>ripple_tools/run_np1_tests.py</code>, which <strong>imports</strong> NP2's <code>pick_channels</code>/<code>run_test</code> so both probes
 take one code path.</p>
 <p>Two count mismatches were chased down numerically and are benign — a recording that starts before the
@@ -2292,7 +2302,47 @@ persists, so it's a within-burst effect not a pure sync-fit error). Its burst-an
 confirmed idle (backend exited) before any analysis touched the host.</p>
 <h3 id="305-next">30.5 Next<a class="headerlink" href="#305-next" title="Permanent link">#</a></h3>
 <p>Both probes are now fully characterised end to end. Candidate next steps: NP2 offline exact-detector
-reconstruction on the new recordings; the ESP32-S3-ETH stim path once a working board is in hand.</p></article>
+reconstruction on the new recordings; the ESP32-S3-ETH stim path once a working board is in hand.
+(The fuller open-items backlog is §31.)</p>
+<h2 id="31-open-items-backlog-folded-from-the-retired-todotxt-2026-07-21">31. OPEN ITEMS / BACKLOG — folded from the retired <code>todo.txt</code>  (2026-07-21)<a class="headerlink" href="#31-open-items-backlog-folded-from-the-retired-todotxt-2026-07-21" title="Permanent link">#</a></h2>
+<p><code>todo.txt</code> (this branch's original hand-written checklist) is <strong>retired</strong>; this log — its Session index — is
+the canonical tracker, per the repo doc conventions. Almost every original item is done (flexible YAML
+config, logging, console input, NP1/NP2 acquisition + streaming + recording, LFP, ripple detection +
+closed-loop stim, versioning, docs, benchmarks, AVX detection). The genuinely-open items it still named,
+now tracked here:</p>
+<ul>
+<li><strong>A generic command/event subscription bus</strong> — todo.txt's old items 5–6 ("formats of commands/events" +
+  "how to subscribe to commands/events"). The single still-live <strong>design</strong> item: it does NOT exist yet, and
+  today is approximated by config-wired data streams + Qt signals/slots + per-module <code>Q_INVOKABLE</code> + the
+  vestigial <code>CommandDispatcher</code>. Design brief: <code>NextSessionPrompts/01_command_event_subscription.md</code>;
+  current-state analysis: architecture review §11.6; the module-command standard is
+  <code>developer_docs/ModuleCommunication.md</code>.</li>
+<li><strong>More probes</strong> — Neuropixels <strong>OneBox</strong> is not implemented (<code>source.npx.onebox</code> unregistered; selecting the
+  profile raises a hardware error). NP1.0 and NP2.0 multishank are done; NP2 single-shank parses/serializes only.</li>
+<li><strong>Spike processing</strong> — spike-band filtering and spike detection processors are not built (LFP filtering and
+  ripple detection are).</li>
+<li><strong>Build / infra</strong> — build-as-a-library and pre-compiled headers (todo.txt "Minor" 1–2) remain undone.</li>
+<li><strong>Fuller FDIR</strong> — processor error → frontend is partial (<code>recordingStatus</code> + hardware-error alerts exist); a
+  complete error/invalid-state strategy is still future work (architecture review §11).</li>
+</ul>
+<p>The original <code>todo.txt</code> checklist text is preserved in git history; the file itself is now a short pointer here.</p>
+<h2 id="32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21">32. HTTP UI PORT MOVED 8080 → 8234 (SpikesPeak-specific)  (2026-07-21)<a class="headerlink" href="#32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21" title="Permanent link">#</a></h2>
+<p>The backend's static-UI HTTP port was hardcoded to <strong>8080</strong>, which on the Windows rig is permanently held by
+the <strong>NI Application Web Server</strong> service (<code>NIApplicationWebServer</code>, auto-start, part of the NI stack — the
+§23 "port 8080 gotcha"). SpikesPeak's own HTTP server therefore couldn't bind it (it logs "Failed to start
+HTTP server" and continues, so WS:1234 still works but the UI won't load). Changed the hardcoded port to
+<strong>8234</strong> — a SpikesPeak-specific port that echoes the <strong>:1234</strong> WebSocket and is clear of NI's :8080
+(<code>src/main.cpp</code>, <code>httpPort</code>). The WebSocket port (<strong>:1234</strong>) is unchanged, so the backend no longer collides
+with NI at all (the NI service can stay running).</p>
+<ul>
+<li>Updated every reference to <code>http://localhost:8234</code>: the docs (<code>developer_docs/</code>, <code>user_docs/</code>,
+  <code>images/architecture_overview.md</code>, <code>images/architecture.txt</code>), the <code>spikespeak</code> skill, and the CDP /
+  benchmark helpers (<code>python/tools/gui_scenarios.py</code>, <code>benchmarks/</code>). 31 occurrences across 14 files.</li>
+<li>Requires a <strong>rebuild</strong> to take effect. The rendered architecture SVGs still show <code>:8080</code> until regenerated
+  from the (updated) <code>.txt</code> sources.</li>
+<li>Left as a fixed port (not configurable); a <code>--http-port</code> flag / <code>SPIKESPEAK_HTTP_PORT</code> env override is a
+  possible future enhancement if a machine ever collides with :8234 too.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2421,6 +2471,8 @@ reconstruction on the new recordings; the ESP32-S3-ETH stim path once a working 
 <li><a href="#305-next">30.5 Next</a></li>
 </ul>
 </li>
+<li><a href="#31-open-items-backlog-folded-from-the-retired-todotxt-2026-07-21">31. OPEN ITEMS / BACKLOG — folded from the retired todo.txt (2026-07-21)</a></li>
+<li><a href="#32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21">32. HTTP UI PORT MOVED 8080 → 8234 (SpikesPeak-specific) (2026-07-21)</a></li>
 </ul>
 </div>
 </aside>

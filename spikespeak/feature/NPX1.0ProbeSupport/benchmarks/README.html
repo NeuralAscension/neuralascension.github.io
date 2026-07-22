@@ -95,7 +95,7 @@ per config under <code>shots/</code>. <code>plot_density.py</code> renders the 4
 <p>Prereqs — one backend + one isolated Chrome on CDP:9222 (see <code>developer_docs/GuiTesting.md</code>):</p>
 <pre><code>python run_spikespeak.py --no-browser          # Windows (or the Linux offscreen build)
 chrome --remote-debugging-port=9222 &quot;--remote-allow-origins=*&quot; \
-  --user-data-dir=&lt;tmp&gt;/sp_bench_profile --app=http://localhost:8080 --window-size=1920,1080
+  --user-data-dir=&lt;tmp&gt;/sp_bench_profile --app=http://localhost:8234 --window-size=1920,1080
 </code></pre>
 <p>Then:</p>
 <pre><code>python benchmarks/cdp_bench.py           # -&gt; bench_channel_density.csv     (current renderer)

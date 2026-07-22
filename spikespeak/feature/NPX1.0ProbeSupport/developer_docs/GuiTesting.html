@@ -70,7 +70,7 @@
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci">Driving &amp; screenshotting the SpikesPeak GUI headlessly (for agents / CI)<a class="headerlink" href="#driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci" title="Permanent link">#</a></h1>
-<p>The UI is an <strong>external browser</strong> (served HTTP:8080, one WebSocket:1234) — SciChart renders in the
+<p>The UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — SciChart renders in the
 <em>browser</em>, not the backend. So to verify frontend work (probe map, record-channel selection, the sim
 picker, live view, NP2.0 editor) <strong>without a human at the mouse</strong>, you drive a real browser
 programmatically and screenshot <em>it</em>. This was used heavily to build/verify the 2026-07-06 work and is the
@@ -98,7 +98,7 @@ browser profile:</p>
 <pre><code class="language-bash"># Linux:
 brave-browser --user-data-dir=/tmp/bravesp --remote-debugging-port=9222 &quot;--remote-allow-origins=*&quot; \
   --no-first-run --no-default-browser-check --disable-features=Translate,TranslateUI \
-  --app=http://localhost:8080 --window-size=1760,1080 &amp;
+  --app=http://localhost:8234 --window-size=1760,1080 &amp;
 # Windows (adjust the exe path): brave.exe / chrome.exe / msedge.exe with the SAME flags.
 </code></pre>
 <h3 id="gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them">Gotchas (each cost real time on 2026-07-06 — don't repeat them)<a class="headerlink" href="#gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them" title="Permanent link">#</a></h3>

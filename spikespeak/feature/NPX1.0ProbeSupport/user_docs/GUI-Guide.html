@@ -74,7 +74,7 @@
 source), set the channel map, watch the live signal, pick which channels to record, record, and check the
 result. Screenshots are from a <strong>real Neuropixels 1.0 probe + NI-DAQ</strong> and the <strong>simulated</strong> sources.</p>
 <blockquote>
-<p>The UI runs in your <strong>normal web browser</strong> (served at <code>http://localhost:8080</code>) — the SpikesPeak backend
+<p>The UI runs in your <strong>normal web browser</strong> (served at <code>http://localhost:8234</code>) — the SpikesPeak backend
 streams the data over a WebSocket. See <a href="README.html"><code>README.md</code></a> for launching and every toolbar control,
 and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1.0-specific channel-map details.</p>
 </blockquote>
@@ -82,7 +82,7 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
 <h2 id="1-launch-connect">1. Launch &amp; connect<a class="headerlink" href="#1-launch-connect" title="Permanent link">#</a></h2>
 <ol>
 <li>Run <strong><code>SpikesPeak.exe</code></strong>. It opens a dedicated browser window at the UI (or browse to
-   <code>http://localhost:8080</code>). The top toolbar shows <strong>Source: None</strong> and a status of <strong>Ready</strong>.</li>
+   <code>http://localhost:8234</code>). The top toolbar shows <strong>Source: None</strong> and a status of <strong>Ready</strong>.</li>
 <li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown:
    - A <strong>hardware profile</strong> (e.g. <code>NPX 1.0</code>, <code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank</code>) connects the real
      probe. Connecting takes a few seconds (the toolbar shows <strong>Found Neuropixels … probe</strong> when ready).

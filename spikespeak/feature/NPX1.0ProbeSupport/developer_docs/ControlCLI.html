@@ -202,7 +202,7 @@ Start-Process -FilePath &quot;...\build-...\bin\SpikesPeak.exe&quot; -WorkingDir
 </code></pre>
 <p>Pass <strong><code>--no-browser</code></strong> (or <code>--nobrowser</code>) for automated runs: the app starts the HTTP + WebSocket
 servers but does <strong>not</strong> open any browser, so nothing is left open when the test ends. Open
-<code>http://localhost:8080</code> yourself if you want to watch. Launched without a console, <code>KeyboardListener</code>
+<code>http://localhost:8234</code> yourself if you want to watch. Launched without a console, <code>KeyboardListener</code>
 detects the closed stdin and disables console input (instead of spinning) — the app keeps serving;
 drive it with the CLI and shut down with <code>quit</code>.</p>
 <p><strong>Browser launch (interactive runs).</strong> With no flag, running the executable now opens the UI in a

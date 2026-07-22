@@ -200,12 +200,14 @@ streaming (if running) → write the new map → <strong>verify</strong> it read
 <hr />
 <h2 id="6-record-to-disk">6. Record to disk<a class="headerlink" href="#6-record-to-disk" title="Permanent link">#</a></h2>
 <blockquote>
-<p>⚠️ Recording works but is still being verified for 1.0 — treat output as preliminary for now.</p>
+<p>Recording is verified on real NP1.0 hardware (probe + NI-DAQ). See <a href="GUI-Guide.html#5-record"><code>GUI-Guide.md</code></a>
+for the full illustrated flow (name/directory prompt, channel selection, checking the result).</p>
 </blockquote>
-<p>While <strong>playing</strong>, press <strong>⏺ Record</strong> (it's disabled when paused). SpikesPeak writes the configured
-streams (for 1.0, <strong>AP and LFP</strong>) to files named <code>npx_ap_recording.&lt;timestamp&gt;</code> and
-<code>npx_lfp_recording.&lt;timestamp&gt;</code> in the program's run folder (next to the log file). Press Record again
-to stop.</p>
+<p>While <strong>playing</strong>, press <strong>⏺ Record</strong> (it's disabled when paused). A dialog asks for a <strong>recording name</strong>
+and an <strong>output directory</strong> (Browse… opens a native folder picker); <strong>Set Location</strong> arms the recorder,
+and pressing <strong>● Record</strong> again starts writing. SpikesPeak writes the configured streams (for 1.0, <strong>AP
+and LFP</strong>) to <code>&lt;directory&gt;/&lt;name&gt;/&lt;name&gt;_ap_&lt;timestamp&gt;.bin</code> and <code>…_lfp_&lt;timestamp&gt;.bin</code>. Press Record
+again to stop — <strong>streaming keeps going</strong> (only <strong>Pause</strong> stops it).</p>
 <hr />
 <h2 id="7-disconnect-quit">7. Disconnect / quit<a class="headerlink" href="#7-disconnect-quit" title="Permanent link">#</a></h2>
 <ul>

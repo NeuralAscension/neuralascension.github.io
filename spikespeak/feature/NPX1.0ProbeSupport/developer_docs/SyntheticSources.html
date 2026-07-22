@@ -99,8 +99,9 @@
 <li><strong>NP1 vs NP2 Mirroring:</strong> <code>initDataSource</code> binds the first <code>outputs[].name</code> and publishes a matching fallback
   channel map (<code>publishChannelMap(isNp2)</code>): NP2 (<code>data.npx.raw</code>) → NP2 map; NP1 (<code>data.npx.ap</code>) → NP1 bank-0 map.</li>
 <li><code>NpxSynthRipples.yaml</code> mimics NP2.0 → <code>data.npx.raw</code>.</li>
-<li><code>Npx1SynthRipples.yaml</code> mimics NP1.0 → <code>data.npx.ap</code> + <code>proc.lfp</code> → <code>data.lfp</code>. <em>(The NP1.0 picker option is
-    currently disabled because <code>gen_synthetic_ripples.py</code> emits data tailored for NP2.0 testing.)</em></li>
+<li><code>Npx1SynthRipples.yaml</code> mimics NP1.0 → <code>data.npx.ap</code> + <code>proc.lfp</code> → <code>data.lfp</code>. <em>(The NP1.0 play-file
+    picker option is now enabled — <code>gen_synthetic_ripples.py --probe 1.0</code> emits the NP1 file(s); see
+    <a href="../user_docs/SimulatedData.html">SimulatedData.md §6</a>.)</em></li>
 </ul>
 <h3 id="playback-file-format-datasynthetic_ripplesh5-2-d-per-channel">Playback file format (<code>data/synthetic_ripples.h5</code>) — 2-D per-channel<a class="headerlink" href="#playback-file-format-datasynthetic_ripplesh5-2-d-per-channel" title="Permanent link">#</a></h3>
 <p><code>SynthRippleSource::initData</code> accepts either shape (row-major, sample-major):

@@ -105,12 +105,34 @@ configure its channel map, and watch / record the live signal.</p>
 </tbody>
 </table>
 <hr />
+<h2 id="quick-start-6-steps-to-streaming-and-your-first-detection">Quick start — 6 steps to streaming (and your first detection)<a class="headerlink" href="#quick-start-6-steps-to-streaming-and-your-first-detection" title="Permanent link">#</a></h2>
+<p>No hardware needed — this uses a <strong>simulated</strong> source. (Full illustrated walkthroughs:
+<a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> for connect → record, <a href="RippleDetection.html"><code>RippleDetection.md</code></a> for the
+ripple module.)</p>
+<ol>
+<li><strong>Launch.</strong> Run <strong><code>SpikesPeak.exe</code></strong> (or <code>python run_spikespeak.py</code>). Your browser opens at
+   <code>http://localhost:8234</code>. (Details: <a href="#launching-spikespeak">Launching SpikesPeak</a>.)</li>
+<li><strong>Pick a source.</strong> Toolbar <strong>Source</strong> ▸ <strong><code>Simulated Data…</code></strong> → <strong>Neuropixels 1.0 — Ripple Detection
+   (GUI)</strong>. It connects with no probe attached.</li>
+</ol>
+<p><img alt="Simulated Data picker" src="images/sim_picker.png" />
+3. <strong>Play.</strong> Press <strong>▶</strong>, then open the <strong>Live Data</strong> tab — you'll see the live waveforms, one trace per
+   channel, stacked by depth.</p>
+<p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview.png" />
+4. <strong>Open Ripple Detection.</strong> Click <strong>◉ Ripple Detection</strong> in the toolbar; the dock slides in on the right.
+5. <strong>Add a channel + arm.</strong> Drag an electrode label from the view (or type a number and <strong>Add</strong>), set
+   <strong>Parameter-estimation time = 3 s</strong> (quick test), then press <strong>▶ Start</strong>.</p>
+<p><img alt="Channels added" src="images/ripple/np1_channels.png" />
+6. <strong>Watch it fire.</strong> After ~9 s the columns arm and detections start — the cowsay prints <code>Ripple detected!</code>
+   and the red <strong>STIM LED</strong> blinks on each detection.</p>
+<p><img alt="Detecting" src="images/ripple/np1_detecting.png" /></p>
+<hr />
 <h2 id="launching-spikespeak">Launching SpikesPeak<a class="headerlink" href="#launching-spikespeak" title="Permanent link">#</a></h2>
 <ol>
 <li>Run <strong><code>SpikesPeak.exe</code></strong>. A console window opens (status/log messages) and your <strong>default web
-   browser</strong> opens automatically to the UI (served locally at <code>http://localhost:8080</code>).
+   browser</strong> opens automatically to the UI (served locally at <code>http://localhost:8234</code>).
    - 📷 <em>the console + the browser opening</em></li>
-<li>If the browser doesn't open, browse to <strong><code>http://localhost:8080</code></strong> manually.</li>
+<li>If the browser doesn't open, browse to <strong><code>http://localhost:8234</code></strong> manually.</li>
 <li><strong>Closing the browser tab quits the app</strong> (after a ~2-second grace, so a refresh is safe). You no
    longer need to close the console window separately.</li>
 </ol>
@@ -231,7 +253,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Neuropixels 2.0 multishank</strong></td>
-<td>✅ 4-shank map editor, live view, and recording work and are verified <strong>in simulation</strong> (mapping checked against the official manual). ⚠️ Real 2.0 <em>hardware</em> apply/record is <strong>not yet verified</strong> — the test rig had a 1.0 probe.</td>
+<td>✅ 4-shank map editor + depth-sorted live view (mapping checked against the official manual). <strong>Verified on a real 2.0 multishank probe:</strong> streaming, pause/play, channel-map (Bank) apply (<code>writeProbeConfiguration</code> verified OK), recording, and the full ripple→stimulation closed loop — see <a href="RippleDetection.html"><code>RippleDetection.md</code></a>.</td>
 </tr>
 <tr>
 <td><strong>NI-DAQ</strong></td>
@@ -256,6 +278,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#guides">Guides</a></li>
+<li><a href="#quick-start-6-steps-to-streaming-and-your-first-detection">Quick start — 6 steps to streaming (and your first detection)</a></li>
 <li><a href="#launching-spikespeak">Launching SpikesPeak</a></li>
 <li><a href="#the-toolbar-left-right">The toolbar (left → right)</a></li>
 <li><a href="#the-two-views-neuropixels-sources">The two views (Neuropixels sources)</a></li>

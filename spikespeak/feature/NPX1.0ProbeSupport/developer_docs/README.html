@@ -131,9 +131,10 @@ characteristic failure mode on this repo.</p>
   bugs (a ~10 ppm scale ramp + two whole-period off-by-ones) all read as <em>perfect</em> on every scalar metric
   (ppm, residual, intervals); anchor on the <strong>aperiodic</strong> structure instead.
   (<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> is the sync canon.)</li>
-<li><strong>A generic command/event subscription bus does NOT exist yet</strong> (<code>todo.txt:5–6</code>) — it's approximated by
-  config-wired data streams + Qt signals + <code>Q_INVOKABLE</code> + a vestigial <code>CommandDispatcher</code>. See
-  architecture review §11.6 and <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
+<li><strong>A generic command/event subscription bus does NOT exist yet</strong> (the one live item left on the retired
+  <code>todo.txt</code>; folded into Status §31) — it's approximated by config-wired data streams + Qt signals +
+  <code>Q_INVOKABLE</code> + a vestigial <code>CommandDispatcher</code>. See architecture review §11.6 and
+  <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
 </ul>
 <h2 id="what-is-here">What is here<a class="headerlink" href="#what-is-here" title="Permanent link">#</a></h2>
 <p><strong>Architecture &amp; contracts</strong> — read before touching the core</p>
@@ -422,7 +423,7 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
   row to the archive's table saying what superseded it. Archived files still appear in the book, under its own
   trailing "Archive (historical)" section. (<code>NextTask_NP1RippleRegression.md</code> was archived 2026-07-20
   when the NP1 regression passed; its durable content lives in <code>RippleDetection.md</code>,
-  <code>RippleClosedLoopAnalysis.md</code>, <code>RippleGui.md</code>, and <code>RecordingTests/NP1_RIPPLE_TESTS.md</code>.)</li>
+  <code>RippleClosedLoopAnalysis.md</code>, <code>RippleGui.md</code>, and <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>.)</li>
 <li><strong>Subsystem references stay live.</strong> <code>Neuropixels2.0.md</code>, <code>SimDataLinux.md</code>, <code>NiDaq.md</code> and
   <code>../SpikesPeak_Status.md</code> are running references, not snapshots — do not archive them. A <em>scoped</em> status
   snapshot (one effort, now finished) does get archived once its content is folded into
@@ -475,10 +476,10 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
 <pre><code>Hardware/Sim -&gt; [Source] -&gt; CircularBuffer (Registry) -&gt; [Sink(s)] -&gt; browser / disk / derived streams
                                                                          |
         external browser  &lt;-- WebSocket :1234 (binary stream + JSON commands + QWebChannel RPC)
-        (served HTTP :8080)                          ^ QWebChannel Q_INVOKABLEs per source
+        (served HTTP :8234)                          ^ QWebChannel Q_INVOKABLEs per source
 </code></pre>
 <ul>
-<li><strong>Not embedded:</strong> the backend serves the UI over HTTP :8080 and opens your <strong>system browser</strong>; all
+<li><strong>Not embedded:</strong> the backend serves the UI over HTTP :8234 and opens your <strong>system browser</strong>; all
   traffic is one WebSocket on :1234. Because the backend is a <code>QApplication</code>, native Qt dialogs are
   valid (and land on the machine running SpikesPeak).</li>
 <li><strong>Everything pluggable is named + registered</strong> in one place: <code>src/core/Utils.cpp</code>
@@ -507,6 +508,258 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
 <li><strong>Hardware teardown is graceful only.</strong> A force-kill leaves a real probe streaming into nothing and
    the NI-DAQ reserved. Disconnect/quit; force-kill is sim-only. (See <a href="NiDaq.html"><code>NiDaq.md</code></a>.)</li>
 </ol>
+<h2 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">#</a></h2>
+<p>An exhaustive, versioned checklist to tick off before building or running. Versions are the ones the
+current build trees <strong>actually used</strong> (read from each tree's <code>CMakeCache.txt</code>) — verify against your
+machine, don't assume. <code>CMakeLists.txt</code> is the authority for the required components.</p>
+<h3 id="build-windows-hardware-box-msvc">Build — Windows hardware box (MSVC)<a class="headerlink" href="#build-windows-hardware-box-msvc" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dependency</th>
+<th>Version / value</th>
+<th>Where it's configured / found</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OS</td>
+<td>Windows 10 (x64)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Compiler</td>
+<td><strong>MSVC 2019</strong>, toolset <strong>14.29.30133</strong> (VS 2019 Community)</td>
+<td><code>CMakeCache.txt</code> <code>CMAKE_CXX_COMPILER</code>; found at build time via <code>vswhere</code></td>
+</tr>
+<tr>
+<td>C++ standard</td>
+<td><strong>C++20</strong></td>
+<td><code>CMakeLists.txt</code> (<code>CMAKE_CXX_STANDARD 20</code>)</td>
+</tr>
+<tr>
+<td>CMake</td>
+<td><strong>≥ 3.19</strong></td>
+<td><code>CMakeLists.txt</code> <code>cmake_minimum_required</code></td>
+</tr>
+<tr>
+<td>Generator</td>
+<td><strong>Ninja</strong> (<code>C:/Qt/Tools/Ninja/ninja.exe</code>)</td>
+<td><code>CMakeCache.txt</code> <code>CMAKE_GENERATOR</code> / <code>CMAKE_MAKE_PROGRAM</code></td>
+</tr>
+<tr>
+<td>Qt</td>
+<td><strong>6.7.3 <code>msvc2019_64</code></strong> (<code>C:/Qt/6.7.3/msvc2019_64</code>) — modules <strong>Core, Gui, Widgets, WebEngineWidgets, WebSockets, Network</strong> (QtWebChannel arrives via WebEngine; used for the QWebChannel RPC)</td>
+<td><code>CMakeLists.txt</code> <code>find_package(Qt6 6.7 …)</code>; path in <code>CMakeCache.txt</code> <code>Qt6_DIR</code></td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td><strong>1.14.6</strong> (<code>C:/Program Files/HDF_Group/HDF5/1.14.6</code>) — components <strong>CXX, HL</strong></td>
+<td><code>CMakeLists.txt</code> <code>find_package(HDF5 … CXX HL)</code>; path in <code>CMakeCache.txt</code> <code>HDF5_DIR</code></td>
+</tr>
+<tr>
+<td>PortAudio</td>
+<td>git <strong><code>87e35e7</code></strong> (fetched into <code>ext/portaudio</code>)</td>
+<td><code>CMakeLists.txt</code> <code>FetchContent</code> — <strong>needs internet at configure time</strong></td>
+</tr>
+<tr>
+<td>rapidyaml</td>
+<td><strong>v0.9.0</strong> (fetched into <code>ext/rapidyaml</code>)</td>
+<td><code>CMakeLists.txt</code> <code>FetchContent</code> — <strong>needs internet at configure time</strong></td>
+</tr>
+<tr>
+<td>Neuropixels API</td>
+<td><strong>4.1.3</strong>, vendored <code>external/neuropixels/api/lib64/v4/NeuropixAPI_x64_4_1_3.{lib,dll}</code></td>
+<td><code>CMakeLists.txt</code> Windows branch (<code>NPX_HW_ENABLED</code>)</td>
+</tr>
+<tr>
+<td>NI-DAQmx</td>
+<td>vendored import lib <code>external/nidaq/api/lib64/NIDAQMX.lib</code> + the <strong>NI-DAQmx runtime</strong> installed on the box</td>
+<td><code>CMakeLists.txt</code> Windows branch (<code>NIDAQ_HW_ENABLED</code>)</td>
+</tr>
+<tr>
+<td>Runtime DLLs (copied post-build)</td>
+<td><code>FTD3XX.dll</code>, <code>FpgaManager.dll</code>, <code>NeuropixAPI_x64_4_1_3.dll</code></td>
+<td><code>external/neuropixels/extlibs</code> → build tree</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><code>NPX_HW_ENABLED</code> + <code>NIDAQ_HW_ENABLED</code> are defined <strong>only</strong> on Windows, so the real-probe / NI-DAQ sources
+compile only here. <code>CalibrationInfo/</code> (per-probe ADC/gain CSVs) is git-untracked and copied post-build
+only if present, so a clone without it still builds (sim needs no calibration).</p>
+</blockquote>
+<h3 id="build-linux-sim-box-gcc-no-hardware">Build — Linux sim box (GCC, no hardware)<a class="headerlink" href="#build-linux-sim-box-gcc-no-hardware" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Dependency</th>
+<th>Version / value</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compiler</td>
+<td><strong>GCC</strong>, C++20</td>
+<td>AVX2 path compiled with <code>-mavx2 -mfma</code></td>
+</tr>
+<tr>
+<td>CMake / generator</td>
+<td><strong>≥ 3.19</strong> / <strong>Ninja</strong></td>
+<td><code>_dobuild.sh</code> auto-configures <code>build/</code> (Ninja, Release) if missing</td>
+</tr>
+<tr>
+<td>Qt</td>
+<td><strong>6.7+</strong> (this box uses <strong>6.11.1</strong> <code>gcc_64</code>) — <code>qt6-base</code> + <strong>websockets</strong> + <strong>webchannel</strong> + <strong>webenginewidgets</strong></td>
+<td>same module set as Windows</td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td><code>libhdf5-dev</code> (system)</td>
+<td>components CXX, HL</td>
+</tr>
+<tr>
+<td>PortAudio, rapidyaml</td>
+<td>fetched via <code>FetchContent</code></td>
+<td><strong>internet at configure time</strong></td>
+</tr>
+<tr>
+<td>Neuropixels / NI-DAQ</td>
+<td><strong>stubs</strong> — <code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code> OFF, so <code>external/neuropixels/api/stubs/NeuropixelsAPI_x64_3_70_3_stubs.cpp</code> compiles and the hardware sources are excluded</td>
+<td>sim + <code>.h5</code> file sources only</td>
+</tr>
+</tbody>
+</table>
+<h3 id="run">Run<a class="headerlink" href="#run" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>What</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Launcher</td>
+<td><strong><code>run_spikespeak.py</code></strong> (cross-platform; thin wrappers <code>run_spikespeak.bat</code> / <code>run_spikespeak.sh</code>). Reads the build <code>CMakeCache.txt</code> and puts <strong>Qt + the vendored Neuropixels DLLs + HDF5</strong> on the loader path, then execs the backend — without it the exe dies at load (Windows <code>0xC0000135</code>). Flags: <code>--no-browser</code>, <code>--offscreen</code> (headless Qt platform), <code>--dry-run</code>.</td>
+</tr>
+<tr>
+<td>Browser</td>
+<td>a <strong>Chromium-family</strong> browser (Chrome / Brave / Edge) for the GUI at <code>http://localhost:8234</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="python-tooling-optional-the-scripts-analysis">Python tooling (optional — the scripts + analysis)<a class="headerlink" href="#python-tooling-optional-the-scripts-analysis" title="Permanent link">#</a></h3>
+<p>Third-party packages only (stdlib omitted):</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>Used by</th>
+<th>Install</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>numpy</strong></td>
+<td><code>spikespeak_postprocess</code>, <code>ripple_tools/*</code>, <code>benchmarks/*</code>, the synthetic-ripple generator</td>
+<td><code>pip install -e python</code> (core dep)</td>
+</tr>
+<tr>
+<td><strong>scipy</strong></td>
+<td><code>scripts/gen_synthetic_ripples.py</code>; <code>sync.py</code> <code>kind="interp"</code> (optional)</td>
+<td><code>sp</code> conda env</td>
+</tr>
+<tr>
+<td><strong>h5py</strong></td>
+<td><code>gen_synthetic_ripples.py</code> (writes the <code>.h5</code> play files)</td>
+<td><code>sp</code> conda env</td>
+</tr>
+<tr>
+<td><strong>matplotlib</strong></td>
+<td>every plot script (<code>plot_recording.py</code>, <code>ripple_tools</code>, <code>benchmarks</code>)</td>
+<td><code>pip install -e python[plot]</code></td>
+</tr>
+<tr>
+<td><strong>xarray</strong></td>
+<td><code>spikespeak_postprocess</code> <code>output="xarray"</code> (optional)</td>
+<td><code>pip install -e python[xarray]</code></td>
+</tr>
+<tr>
+<td><strong>markdown</strong></td>
+<td><strong>this docs book</strong> (<code>scripts/build_docs.py</code>)</td>
+<td><code>pip install markdown</code></td>
+</tr>
+<tr>
+<td><strong>requests</strong> + <strong>websocket-client</strong></td>
+<td>the CDP GUI-screenshot harness (<code>python/tools/cdp.py</code>)</td>
+<td><code>pip install requests websocket-client</code></td>
+</tr>
+<tr>
+<td><strong>paramiko</strong></td>
+<td>Pi stim-server control (<code>ripple_tools/pi_check.py</code>, <code>test_toggle.py</code>)</td>
+<td><code>pip install paramiko</code></td>
+</tr>
+<tr>
+<td><strong>imageio-ffmpeg</strong></td>
+<td>the saline video demo (<code>ripple_tools/run_saline_demo.py</code>, optional)</td>
+<td><code>pip install imageio-ffmpeg</code></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Two convenience setups: <strong><code>pip install -e python</code></strong> (installs <code>spikespeak_postprocess</code>; extras <code>[xarray,plot]</code>),
+and the <strong><code>sp</code> conda env</strong> (<code>scripts/environment.yml</code> / <code>scripts/setup_sp_env.bat</code> — Python 3.9 + numpy/scipy/h5py)
+for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its own deps — see
+<code>../raspberrypi_pulsegenerator/README.md</code>.</p>
+</blockquote>
+<h3 id="hardware-the-rig">Hardware (the rig)<a class="headerlink" href="#hardware-the-rig" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Probe</td>
+<td>Neuropixels <strong>1.0</strong> or <strong>2.0 multishank</strong> on an IMEC <strong>PXIe</strong> basestation (slot/port/dock = 3/4/1, hard-coded)</td>
+</tr>
+<tr>
+<td>DAQ</td>
+<td>National Instruments <strong>PXI-6133</strong> (<code>PXI1Slot2</code>) — 8 simultaneous-sampling AI, <strong>differential</strong> wiring, ±10 V</td>
+</tr>
+<tr>
+<td>Stim server</td>
+<td><strong>Raspberry Pi 3B+</strong> (production) or the <strong>ESP32-S3-ETH</strong> twin → <strong>AM Systems 2300</strong> stimulus isolator over a 3-line DB-9; UDP <code>192.168.1.100:8888</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="quick-start-clone-first-streaming-traces">Quick start (clone → first streaming traces)<a class="headerlink" href="#quick-start-clone-first-streaming-traces" title="Permanent link">#</a></h2>
+<p><strong>Linux (sim, no hardware):</strong></p>
+<pre><code class="language-bash">git clone &lt;repo&gt; &amp;&amp; cd SpikesPeak
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release &amp;&amp; cmake --build build   # or: ./_dobuild.sh
+python run_spikespeak.py --no-browser            # backend on :8234 (HTTP) + :1234 (WS); add --offscreen if headless
+# open a Chromium browser at http://localhost:8234 → Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
+</code></pre>
+<p><strong>Windows (hardware box):</strong></p>
+<pre><code class="language-bat">:: configure once in Qt Creator (or: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release)
+_dobuild.bat                                      :: vcvars64 + cmake --build the build-*Release tree
+run_spikespeak.bat                                :: puts Qt + Neuropix + HDF5 on PATH, opens the browser
+:: in the browser: Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
+</code></pre>
+<p>You should see <strong>streaming traces</strong> in the Live Data view — for the sim source, a clean sine identical on
+every channel:</p>
+<p><img alt="SpikesPeak Live Data view streaming the simulated NP1 sine source — two depth-sorted columns" src="images/quickstart_sim_streaming.png" /></p>
+<p><strong>Headless equivalent</strong> (no GUI — drive it over the WebSocket):</p>
+<pre><code class="language-bash">python run_spikespeak.py --no-browser &amp;
+python python/spikespeak_cli.py --host localhost \
+  --script &quot;select 'Simulated Data'; waitready 40; play; sleep 3; pause; disconnect; quit&quot;
+</code></pre>
+<p>See <a href="ControlCLI.html"><code>ControlCLI.md</code></a> for the full headless surface and <a href="GuiTesting.html"><code>GuiTesting.md</code></a> for
+driving/screenshotting the browser over CDP.</p>
 <h2 id="build-run">Build &amp; run<a class="headerlink" href="#build-run" title="Permanent link">#</a></h2>
 <p><code>CMakeLists.txt</code> is <strong>cross-platform</strong> (<code>if(WIN32)/elseif(Linux)</code>). There are two dev boxes: a
 <strong>Linux</strong> (GCC, sim-only, <strong>no hardware</strong>) box and the <strong>Windows</strong> hardware box (real NP1.0 + NI-DAQ).</p>
@@ -555,6 +808,15 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
 <li><a href="#operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo — gotchas that cost agents time (read first)</a></li>
 <li><a href="#60-second-orientation">60-second orientation</a></li>
 <li><a href="#the-golden-rules-do-not-fight-these">The golden rules (do not fight these)</a></li>
+<li><a href="#dependencies">Dependencies</a><ul>
+<li><a href="#build-windows-hardware-box-msvc">Build — Windows hardware box (MSVC)</a></li>
+<li><a href="#build-linux-sim-box-gcc-no-hardware">Build — Linux sim box (GCC, no hardware)</a></li>
+<li><a href="#run">Run</a></li>
+<li><a href="#python-tooling-optional-the-scripts-analysis">Python tooling (optional — the scripts + analysis)</a></li>
+<li><a href="#hardware-the-rig">Hardware (the rig)</a></li>
+</ul>
+</li>
+<li><a href="#quick-start-clone-first-streaming-traces">Quick start (clone → first streaming traces)</a></li>
 <li><a href="#build-run">Build &amp; run</a></li>
 <li><a href="#working-in-parallel-multiple-devs-agents">Working in parallel (multiple devs / agents)</a></li>
 </ul>

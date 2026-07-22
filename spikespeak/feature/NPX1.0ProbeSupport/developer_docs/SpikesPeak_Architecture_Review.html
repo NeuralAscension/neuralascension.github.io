@@ -93,7 +93,7 @@ Neuropixels (or simulated) data on dedicated worker threads, fans it out to inde
 processor threads (display decimation, disk recording, sharp-wave-ripple detection), and
 pushes display data to a <strong>browser UI</strong> over a <strong>single WebSocket on port 1234</strong>.</p>
 <p>Crucially, <strong>the UI is not embedded.</strong> The backend runs a tiny static HTTP server on
-<strong>port 8080</strong> (<code>main.cpp:40-80,251-253</code>) and opens the page in the user's <strong>system default
+<strong>port 8234</strong> (<code>main.cpp:40-80,251-253</code>) and opens the page in the user's <strong>system default
 browser</strong> via <code>QDesktopServices::openUrl</code> (<code>main.cpp:266</code>). The C++ process is a
 <code>QApplication</code> (Qt Widgets linked), so it can show <strong>native desktop dialogs</strong> even though
 its UI lives in an external browser. This matters for file I/O (§9).</p>
@@ -127,7 +127,7 @@ its UI lives in an external browser. This matters for file I/O (§9).</p>
    │  JS ─► setPlaying  ──► WebSocketServer::setPlaying (connect/disconnect broadcast signal)        │
    │  JS ◄─ QWebChannel RPC ◄─ WebSocketTransport (per client)  ⇄  NeuropixelsSource Q_INVOKABLEs     │
    └─────────────────────────────────────────────────────────────────────────────────────────────────┘
-                 ▲  ws://localhost:1234 (data + commands + QWebChannel)        ▲ http://localhost:8080 (static UI)
+                 ▲  ws://localhost:1234 (data + commands + QWebChannel)        ▲ http://localhost:8234 (static UI)
                  │                                                             │
    ┌─────────────┴─────────────────── JS FRONTEND (external browser) ─────────┴───────────────────────┐
    │  NetworkClient  — socket, binary parse, QWebChannel transport, deviceReady→bind                  │
@@ -163,12 +163,12 @@ interfaces, <code>src/modules/neuropixels/{NpInterface,DisplayProcessor,SimDataS
 </tr>
 <tr>
 <td>UI delivery</td>
-<td>Static HTTP server on <strong>:8080</strong> serves <code>../webinterface</code></td>
+<td>Static HTTP server on <strong>:8234</strong> serves <code>../webinterface</code></td>
 <td><code>main.cpp:40-80, 251-253</code></td>
 </tr>
 <tr>
 <td>UI launch</td>
-<td><code>QDesktopServices::openUrl("http://localhost:8080")</code> → <strong>system browser</strong></td>
+<td><code>QDesktopServices::openUrl("http://localhost:8234")</code> → <strong>system browser</strong></td>
 <td><code>main.cpp:256-269</code></td>
 </tr>
 <tr>

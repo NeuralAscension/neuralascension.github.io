@@ -185,8 +185,9 @@ NI-DAQ band and <code>rec.synchronize(reference_band="raw", nidaq_sync_channel=0
 A headless-Chrome CDP smoke test of the 4-shank editor / record-selection / live view is <code>cdp_np2_smoke.py</code>.</p>
 <p><strong>Real 2.0 probe:</strong> <code>select 'NPX 2.0 Multishank'</code>, then the same flow. Confirm the log shows
 <code>writeProbeConfiguration VERIFIED OK</code> on <code>probemap default</code>/Apply. Pick NP2 read-out channels for the
-<code>channels:</code> list (the default map is all shank 0). <strong>NOTE (2026-07-06):</strong> the probe on the box was a 1.0, so
-this real-2.0 run has not been executed yet — see Status §15.4.</p></article>
+<code>channels:</code> list (the default map is all shank 0). <strong>VERIFIED (2026-07-15/16 → 2026-07-21):</strong> a real 2.0
+multishank has since been streamed, apply-verified (<code>writeProbeConfiguration VERIFIED OK</code>), recorded, and run
+through the full ripple→stim closed loop (Status §23–§24, §30; <code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code>).</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/RecordingTest.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">

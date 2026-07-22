@@ -138,7 +138,7 @@ detection channels, each in default and ASAP delivery, ~1000 delivered stimuli p
 <button class="tab-btn" data-tab="np2">Neuropixels 2.0</button>
 </div>
 <div class="tab-panel active" data-tab="np1">
-<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">#</a></h3>
+<p><strong>Configuration</strong></p>
 <table>
 <thead>
 <tr>
@@ -173,7 +173,7 @@ detection channels, each in default and ASAP delivery, ~1000 delivered stimuli p
 </tr>
 </tbody>
 </table>
-<h3 id="latency-full-quorum-delivery-matrix">Latency — full quorum × delivery matrix<a class="headerlink" href="#latency-full-quorum-delivery-matrix" title="Permanent link">#</a></h3>
+<p><strong>Latency — full quorum × delivery matrix</strong></p>
 <table>
 <thead>
 <tr>
@@ -219,7 +219,7 @@ quorum decides <em>which</em> crossing fires, not the delay from that crossing t
   <img class="fig-light" src="latency/asap_comparison_4ch.png" alt="NP1.0 four-channel 3-of-4 quorum: default versus ASAP delivery">
   <img class="fig-dark" src="latency/asap_comparison_4ch_dark.png" alt="NP1.0 four-channel 3-of-4 quorum: default versus ASAP delivery">
 </p>
-<h3 id="full-per-test-table">Full per-test table<a class="headerlink" href="#full-per-test-table" title="Permanent link">#</a></h3>
+<p><strong>Full per-test table</strong></p>
 <table>
 <thead>
 <tr>
@@ -300,7 +300,7 @@ quorum decides <em>which</em> crossing fires, not the delay from that crossing t
 </table>
 <p><code>np1_latency_1ch</code> is the original 100-detection pilot, kept because it independently reproduces the
 default-mode result at a tenth the sample size.</p>
-<h3 id="detection-integrity">Detection integrity<a class="headerlink" href="#detection-integrity" title="Permanent link">#</a></h3>
+<p><strong>Detection integrity</strong></p>
 <table>
 <thead>
 <tr>
@@ -358,7 +358,7 @@ default-mode result at a tenth the sample size.</p>
 <p>Online-detection counts exceed the recorded pulse count because detection begins before the recording
 starts (baseline settling) and continues through the post-record settling window; only pulses inside the
 recording are analysed.</p>
-<h3 id="where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction">Where the time goes (means, additive; <code>net + stim</code> is a residual by subtraction)<a class="headerlink" href="#where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction" title="Permanent link">#</a></h3>
+<p><strong>Where the time goes</strong> (means, additive; <code>net + stim</code> is a residual by subtraction)</p>
 <table>
 <thead>
 <tr>
@@ -417,7 +417,7 @@ recording are analysed.</p>
 <p>On NP1 the detector reads <code>data.npx.lfp</code> directly, so the probe-poll latency <em>is</em> the counted backlog:
 ASAP zeroes it <strong>exactly</strong> — 0 µs in every one of ~1000 events in all three ASAP runs. Detector compute
 is 8–15 µs throughout. (The residual absorbs the batching quantisation — see the method notes.)</p>
-<h3 id="per-run-figures">Per-run figures<a class="headerlink" href="#per-run-figures" title="Permanent link">#</a></h3>
+<p><strong>Per-run figures</strong></p>
 <p>Per-run 5-panel figures (signal chain, histogram, CDF, stage decomposition, stability), light and dark:
 <code>latency/np1_asap_figure*.png</code>, <code>np1_baseline_figure*.png</code>, <code>np1_2ch_asap_figure*.png</code>,
 <code>np1_2ch_baseline_figure*.png</code>, <code>np1_4ch_asap_figure*.png</code>, <code>np1_4ch_baseline_figure*.png</code>.</p>
@@ -427,7 +427,7 @@ is 8–15 µs throughout. (The residual absorbs the batching quantisation — se
 </p>
 </div>
 <div class="tab-panel" data-tab="np2">
-<h3 id="configuration_1">Configuration<a class="headerlink" href="#configuration_1" title="Permanent link">#</a></h3>
+<p><strong>Configuration</strong></p>
 <table>
 <thead>
 <tr>
@@ -464,7 +464,7 @@ is 8–15 µs throughout. (The residual absorbs the batching quantisation — se
 </table>
 <p>On NP2.0 the <strong>electrode number is not the read-out channel</strong>; recordings store read-out channel ids and
 the ripple sidecar carries the electrode → channel map.</p>
-<h3 id="latency-full-quorum-delivery-matrix_1">Latency — full quorum × delivery matrix<a class="headerlink" href="#latency-full-quorum-delivery-matrix_1" title="Permanent link">#</a></h3>
+<p><strong>Latency — full quorum × delivery matrix</strong></p>
 <table>
 <thead>
 <tr>
@@ -511,7 +511,7 @@ does not affect the ASAP results, whose sync is clean and whose two pairing meth
   <img class="fig-light" src="latency/np2_asap_comparison_4ch.png" alt="NP2.0 four-channel 3-of-4 quorum: default versus ASAP delivery">
   <img class="fig-dark" src="latency/np2_asap_comparison_4ch_dark.png" alt="NP2.0 four-channel 3-of-4 quorum: default versus ASAP delivery">
 </p>
-<h3 id="full-per-test-table_1">Full per-test table<a class="headerlink" href="#full-per-test-table_1" title="Permanent link">#</a></h3>
+<p><strong>Full per-test table</strong></p>
 <table>
 <thead>
 <tr>
@@ -583,7 +583,7 @@ does not affect the ASAP results, whose sync is clean and whose two pairing meth
 </table>
 <p>The earlier <code>np2_2channel_2required</code> / <code>np2_4channel_3required</code> runs (99 detections, default, 2026-07-16)
 measured 1.179 / 1.173 ms — consistent with the 1000-detection baselines, kept as a smaller-n replication.</p>
-<h3 id="detection-integrity_1">Detection integrity<a class="headerlink" href="#detection-integrity_1" title="Permanent link">#</a></h3>
+<p><strong>Detection integrity</strong></p>
 <table>
 <thead>
 <tr>
@@ -632,7 +632,7 @@ measured 1.179 / 1.173 ms — consistent with the 1000-detection baselines, kept
 </tr>
 </tbody>
 </table>
-<h3 id="where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction_1">Where the time goes (means, additive; <code>net + stim</code> is a residual by subtraction)<a class="headerlink" href="#where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction_1" title="Permanent link">#</a></h3>
+<p><strong>Where the time goes</strong> (means, additive; <code>net + stim</code> is a residual by subtraction)</p>
 <table>
 <thead>
 <tr>
@@ -694,7 +694,7 @@ the <em>detector input</em>, and drops only ~230→60 µs — but the NI-DAQ tot
 <em>upstream</em> raw-poll latency: on NP2 the detector runs off <code>data.lfp</code> derived by <code>proc.lfp</code> from the raw
 poll, so the 1 ms raw-poll latency sits before the detector where its input counter cannot see it; ASAP
 removes it too. The NI-DAQ total is authoritative.</p>
-<h3 id="per-run-figures_1">Per-run figures<a class="headerlink" href="#per-run-figures_1" title="Permanent link">#</a></h3>
+<p><strong>Per-run figures</strong></p>
 <p>Per-run 5-panel figures (signal chain, histogram, CDF, stage decomposition, stability), light and dark:
 <code>latency/np2_1ch_asap_figure*.png</code>, <code>np2_1ch_baseline_figure*.png</code>, <code>np2_2ch_asap_figure*.png</code>,
 <code>np2_2ch_baseline_figure*.png</code>, <code>np2_4ch_asap_figure*.png</code>, <code>np2_4ch_baseline_figure*.png</code>.</p>
@@ -779,21 +779,7 @@ Offline pipeline, exact-detector reproduction and the sync fit:
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#headline">Headline</a></li>
-<li><a href="#results-by-probe">Results by probe</a><ul>
-<li><a href="#configuration">Configuration</a></li>
-<li><a href="#latency-full-quorum-delivery-matrix">Latency — full quorum × delivery matrix</a></li>
-<li><a href="#full-per-test-table">Full per-test table</a></li>
-<li><a href="#detection-integrity">Detection integrity</a></li>
-<li><a href="#where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction">Where the time goes (means, additive; net + stim is a residual by subtraction)</a></li>
-<li><a href="#per-run-figures">Per-run figures</a></li>
-<li><a href="#configuration_1">Configuration</a></li>
-<li><a href="#latency-full-quorum-delivery-matrix_1">Latency — full quorum × delivery matrix</a></li>
-<li><a href="#full-per-test-table_1">Full per-test table</a></li>
-<li><a href="#detection-integrity_1">Detection integrity</a></li>
-<li><a href="#where-the-time-goes-means-additive-net-stim-is-a-residual-by-subtraction_1">Where the time goes (means, additive; net + stim is a residual by subtraction)</a></li>
-<li><a href="#per-run-figures_1">Per-run figures</a></li>
-</ul>
-</li>
+<li><a href="#results-by-probe">Results by probe</a></li>
 <li><a href="#cross-probe-comparison">Cross-probe comparison</a></li>
 <li><a href="#method">Method</a></li>
 <li><a href="#corrections-applied">Corrections applied</a></li>

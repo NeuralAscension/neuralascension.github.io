@@ -132,12 +132,14 @@ t_npx = model.apply(daq.raw_timestamps / daq.fs)
   (<code>kind="quadratic"</code>/<code>"interp"</code> reproduce it; <code>"interp"</code> needs SciPy).
 - <strong>Adaptive edge threshold</strong> (per-signal min/max midpoint) — handles a 0/1 NPX bit <em>and</em> a several-volt
   NI-DAQ analog pulse without tuning.
-- <strong>Matched-interval sanity check</strong> — warns if the paired pulses' intervals disagree (i.e. the
-  end/start matching is wrong because the two files captured different pulse counts; try <code>match="start"</code>).
+- <strong>Robust nearest-edge pairing by default (<code>match="auto"</code>)</strong> — pairs the two pulse trains by nearest
+  edge, so a capture-count asymmetry at <em>either</em> end can't cause the off-by-one that silently shifts
+  latency by a whole sync period. A pulse-count mismatch (and any residual interval disagreement) is
+  <strong>warned about, not hidden</strong>; <code>match="end"</code>/<code>"start"</code> remain for explicit one-to-one end/start pairing.
 - <strong>Diagnostics</strong> — <code>drift_ppm</code> and <code>residual_ms</code> so you can <em>see</em> the alignment quality (residual
   should be sub-millisecond).</p>
 <p>The low-level function is exposed too:
-<code>align_timestamps(ref_time, ref_sync, target_time, target_sync, kind="linear", match="end")</code>.
+<code>align_timestamps(ref_time, ref_sync, target_time, target_sync, kind="linear", match="auto")</code>.
 Example with the before/after verification plot: <code>python examples/synchronize_nidaq.py &lt;dir&gt; [ch] [band]</code>.</p>
 <h2 id="example-plot-a-channel">Example — plot a channel<a class="headerlink" href="#example-plot-a-channel" title="Permanent link">#</a></h2>
 <pre><code class="language-bash">python examples/plot_channel.py C:/Data/mouse42            # random AP electrode

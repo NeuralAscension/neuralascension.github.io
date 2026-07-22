@@ -83,20 +83,29 @@ generated HTML book after re-running <code>scripts/build_docs.py</code>.</p>
 <p><img alt="High-level architecture and data flow" src="architecture.svg" /></p>
 <h3 id="detailed-class-diagram">Detailed class diagram<a class="headerlink" href="#detailed-class-diagram" title="Permanent link">#</a></h3>
 <p><img alt="Detailed class diagram: interfaces, control, management, data and processing" src="plantuml_export.svg" /></p>
+<blockquote>
+<p><strong>Note on the rendered images:</strong> they are generated from the <code>.txt</code> PlantUML above (last rendered
+2026-07-10) and can lag the sources. The <strong>stim node is drawn as the ESP32-S3</strong>, but the <strong>production
+stim server is the interchangeable Raspberry Pi 3B+</strong> driving an AM Systems 2300 (the <code>.txt</code> sources are
+corrected; regenerate the SVGs with <code>plantuml</code> to refresh the images). Recording now rides the per-module
+QWebChannel <code>Q_INVOKABLE</code>, not the legacy <code>0x1001</code>/<code>CommandDispatch</code> path an older legend may show. The
+narrative below and <a href="../developer_docs/SpikesPeak_Architecture_Review.html">architecture review §11</a> are
+authoritative.</p>
+</blockquote>
 <p>For <em>design rationale</em> (why an external browser, the Option-A command decision, the file-I/O rule) see
 [<code>../developer_docs/SpikesPeak_Architecture_Review.md</code>]; for the live waveform view see
 [<code>../developer_docs/LiveDataView.md</code>].</p>
 <hr />
 <h2 id="what-spikespeak-is">What SpikesPeak is<a class="headerlink" href="#what-spikespeak-is" title="Permanent link">#</a></h2>
 <p>A Qt/C++20 real-time neural acquisition app with a <strong>browser</strong> front-end. The backend is a windowless
-<code>QApplication</code> that (a) serves the UI over <strong>HTTP :8080</strong> and opens your system browser, and (b) carries
+<code>QApplication</code> that (a) serves the UI over <strong>HTTP :8234</strong> and opens your system browser, and (b) carries
 all live traffic over <strong>one WebSocket :1234</strong>. Data follows a <strong>single-producer / multi-consumer
 ring-buffer</strong> model with <strong>a thread per source and a thread per sink</strong>.</p>
 <pre><code>Hardware/Sim ─►[Source]─► CircularBuffer ─►[Sink(s): Display / Record / LFP / Ripple / Audio]─► browser / disk
    (worker thread)        (1 producer,         (each in its own thread)
                            N consumers)
         browser ◄── WebSocket :1234  (binary waveform stream + JSON commands + QWebChannel RPC)
-        (served HTTP :8080)
+        (served HTTP :8234)
 </code></pre>
 <hr />
 <h2 id="layered-structure-see-plantuml_exporttxt">Layered structure (see plantuml_export.txt)<a class="headerlink" href="#layered-structure-see-plantuml_exporttxt" title="Permanent link">#</a></h2>
@@ -254,14 +263,15 @@ derives a new stream (e.g. LFP) is itself a producer into a downstream buffer.</
 <hr />
 <h2 id="transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp">Transport: one WebSocket, triple-multiplexed (<code>main.cpp</code>, <code>WebSocketServer.cpp</code>)<a class="headerlink" href="#transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>HTTP :8080</strong> — a <code>QTcpServer</code> serves <code>webinterface/</code> and the app opens the browser.</li>
+<li><strong>HTTP :8234</strong> — a <code>QTcpServer</code> serves <code>webinterface/</code> and the app opens the browser.</li>
 <li><strong>WebSocket :1234</strong> carries three logical channels:
   1. <strong>Binary waveform stream</strong> — <code>[streamId][nPts][ts,(min,max)×nCh]…</code> frames pushed to the browser.
   2. <strong>JSON app commands (id <code>0x1000</code>)</strong> — <code>setPlaying</code> / <code>selectSource</code> / <code>Disconnect</code> →
      <code>MainController</code>; also <code>deviceReady</code> events back to the browser.
-  3. <strong>QWebChannel RPC + binary commands (id <code>0x1001</code>)</strong> — per-source <code>Q_INVOKABLE</code>s (the IMRO panel)
-     via <code>WebSocketTransport</code>; <code>0x1001</code> binary commands route through <code>CommandDispatch</code> (the recorder
-     subscribes here for record start/stop).</li>
+  3. <strong>QWebChannel RPC (id <code>0x1001</code>)</strong> — per-module <code>Q_INVOKABLE</code>s via <code>WebSocketTransport</code>: the IMRO
+     panel <strong>and recording</strong> (<code>RecordProcessor::setRecording</code>). The legacy <code>0x1001</code> binary-command path
+     through <code>CommandDispatch</code> was removed; <code>CommandDispatch</code> now has a single remaining subscriber,
+     <code>AudioProcessor</code> (id <code>0x218</code>). See <a href="../developer_docs/ModuleCommunication.html"><code>../developer_docs/ModuleCommunication.md</code></a>.</li>
 <li><strong>Lifecycle:</strong> <code>WebSocketServer</code> starts a 2 s grace timer when the <strong>last</strong> client disconnects and
   quits the app on timeout (a refresh cancels it); <code>main.cpp</code> sets <code>quitOnLastWindowClosed(false)</code>.</li>
 </ul>

@@ -184,7 +184,7 @@ header</strong> first (<code>[u8 idLen][idStr][u32 numCh][u32 numBins]…</code>
    git-untracked</strong> — per-probe/per-lab CSVs, decision #3 / Status §13.3 — and the <code>copy_directory</code> is
    unconditional → fails when the dir is absent). Make that copy <strong>conditional</strong> (<code>if(EXISTS …)</code>), since sim
    needs no calibration. (Same for the Windows-only DLL copies — already guarded by <code>if(WIN32)</code>.)</li>
-<li>Confirm <code>SpikesPeak</code> launches headless on Linux and serves HTTP:8080 + WS:1234 (drive with
+<li>Confirm <code>SpikesPeak</code> launches headless on Linux and serves HTTP:8234 + WS:1234 (drive with
    <code>spikespeak_cli.py --host localhost</code>). No <code>--no-browser</code>/<code>Start-Process</code> needed; Linux launch is just
    <code>./build/bin/SpikesPeak</code> (set <code>LD_LIBRARY_PATH</code> to the Qt/HDF5 libs if not system-installed).</li>
 </ol>
@@ -263,7 +263,7 @@ a leaky abstraction. So:</p>
 on this Linux box once sim streams. Facts carried over from the prior machine's notes (they weren't in the
 repo before):</p>
 <ul>
-<li>The web UI is an <strong>external browser</strong> (served HTTP:8080, one WebSocket:1234) — <strong>not</strong> an embedded
+<li>The web UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — <strong>not</strong> an embedded
   <code>QWebEngineView</code>. Native Qt dialogs are valid and land on the SpikesPeak machine. See
   [[spikespeak-web-architecture]] / the architecture review.</li>
 <li><strong>SciChart.js v5.2.35</strong> (local UMD bundle in <code>webinterface/</code>). Its enums are <strong>E-prefixed</strong> —

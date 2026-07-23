@@ -41,6 +41,7 @@
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
@@ -339,6 +340,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
 <td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
+</tr>
+<tr>
+<td><a href="NextTask_CommandEventBus.html"><code>NextTask_CommandEventBus.md</code></a></td>
+<td>Open design brief — the <strong>config-declared, runtime-modifiable, unified command <em>and</em> event subscription bus</strong> (off the hot path). The four mechanisms today, multiple solution options, a recommended <code>MessageBus</code> plan + phased steps + a measured validation. Closes the retired <code>todo.txt</code> items 5–6 / Status §31.</td>
 </tr>
 </tbody>
 </table>

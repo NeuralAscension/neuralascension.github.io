@@ -260,7 +260,8 @@ granularity</strong>, and cannot be recovered downstream. The lever is the produ
 </blockquote>
 <h2 id="the-asap-low-latency-flag">The ASAP / low-latency flag<a class="headerlink" href="#the-asap-low-latency-flag" title="Permanent link">#</a></h2>
 <p><code>low_latency: true</code> on a <strong>source</strong> node makes it deliver in the smallest blocks the clock allows, trading
-CPU for freshness. It is <strong>opt-in and per-source</strong>, so only configs that actually close a loop pay for it:</p>
+CPU for freshness. It is <strong>per-source</strong>; the ripple / closed-loop configs now ship with it <strong>on by default</strong>
+and plain-streaming configs leave it off, so only loop-closing configs pay for it:</p>
 <pre><code class="language-yaml">sources:
   - name: &quot;source.npx.simdata&quot;
     inject_ripples: true
@@ -268,7 +269,26 @@ CPU for freshness. It is <strong>opt-in and per-source</strong>, so only configs
 </code></pre>
 <p>Implementation: <code>SimulatedDataSource::initDataSource</code> parses the key and forwards it to
 <code>SimNpx1Worker::setLowLatency</code>, which drops the production tick from 1 ms to 0 (fire on every event-loop
-pass). Default is unchanged (1 ms), so <strong>no existing config changes behaviour</strong>.</p>
+pass). The <strong>NP2 sim</strong> source (<code>SimulatedData2Source</code> / <code>SimNpx2Worker</code>) honours it identically as of
+2026-07-24 — it previously <strong>hardcoded the 1 ms tick and silently ignored <code>low_latency</code></strong>, so ASAP had no
+effect in NP2 simulation. The code default stays <code>false</code> (1 ms), so plain-streaming configs are unchanged —
+but the everyday ripple configs now set <code>low_latency: true</code>, so <strong>ripple detection defaults to ASAP</strong> on both
+probes (<code>SimNpx{1,2}Ripples</code>, <code>SimNpx{1,2}RippleModule</code>, <code>SimNpx{1,2}NiDaqRipples</code>, <code>SimNpx2RealNiDaqRipples</code>;
+real NP2 hardware already delivered ASAP via <code>Npx2MSProbe::setLowLatency</code>).</p>
+<blockquote>
+<p><strong>Module developer note — ASAP is opt-in, and only the ripple detector opts in by default.</strong>
+<code>low_latency</code> is a <strong>per-source</strong> flag whose code default is <code>false</code>. By project convention, the <strong>only</strong>
+module that enables it by default is the <strong>ripple detector</strong> (its configs set <code>low_latency: true</code> because it
+closes a sub-millisecond loop). <strong>Every other module — live display, recording, LFP derivation, audio, and
+any new processor or source you add — runs at the normal 1 ms poll and must NOT assume ASAP.</strong> If a new
+module genuinely needs sub-block-latency delivery, enable it <em>explicitly</em> on that config's source and
+<strong>measure</strong> the cost first (ASAP busy-spins ≈ one core, ~7× baseline CPU — see "CPU cost of ASAP" above).
+Do <strong>not</strong> flip the code default to make ASAP global: plain streaming/recording would pay the CPU for a
+latency win nothing but the closed loop uses.</p>
+<p><em>Verified on real NP2.0 hardware (2026-07-24): <code>[Npx2MSProbe] acquisition poll interval 0 ms
+(low_latency = true)</code> with the <code>Npx2PxiNiDaqAsap</code> config; NP2 raw 30 kHz × 384 ch and NI-DAQ 40 kHz
+(AI + DI) streamed at rate.</em></p>
+</blockquote>
 <p>Benchmark configs <code>SimNpx1LatencyBaseline</code> / <code>SimNpx1LatencyAsap</code> differ only in this flag (plus a 0.5 s
 ripple period so 1000 samples take ~9 min instead of ~33).</p>
 <h3 id="measured-effect-ab-n1000-each-live-pi-simulation">Measured effect (A/B, n=1000 each, live Pi, simulation)<a class="headerlink" href="#measured-effect-ab-n1000-each-live-pi-simulation" title="Permanent link">#</a></h3>

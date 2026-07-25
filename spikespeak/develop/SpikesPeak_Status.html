@@ -219,6 +219,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-07-22</strong></td>
 <td><strong>Issue #6 confirmed on Windows</strong> (console <code>connect</code>/<code>play</code>/<code>pause</code>/<code>disconnect</code>/<code>quit</code> + <code>--no-browser</code> no-GUI mode); <strong>control CLI gained full ripple-detector control</strong> (<code>ripple channels</code>/<code>param</code>/<code>z</code>/<code>start</code>/<code>pause</code>/<code>retrain</code>/<code>stim*</code>/<code>arm</code>/<code>disarm</code>); CLI docs split dev (<code>ControlCLI.md</code>) / user (new <code>CommandLineControl.md</code>); measured ASAP CPU cost (≈1 core busy-spin, ~7× baseline) added to <code>LatencyProfiling.md</code></td>
 </tr>
+<tr>
+<td><strong>S34</strong></td>
+<td><strong>2026-07-24</strong></td>
+<td><strong>NP2.0 + NI-DAQ digital-input parity (AI+DI); ripple detection now defaults to ASAP (NP2 sim now honours <code>low_latency</code>); command/event bus design brief + open questions (§31.1)</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -2323,7 +2328,8 @@ now tracked here:</p>
   today is approximated by config-wired data streams + Qt signals/slots + per-module <code>Q_INVOKABLE</code> + the
   vestigial <code>CommandDispatcher</code>. Design brief: <code>NextSessionPrompts/01_command_event_subscription.md</code>;
   current-state analysis: architecture review §11.6; the module-command standard is
-  <code>developer_docs/ModuleCommunication.md</code>.</li>
+  <code>developer_docs/ModuleCommunication.md</code>. <strong>Solution options + recommended plan (2026-07-24):</strong>
+  <code>developer_docs/NextTask_CommandEventBus.md</code> — the open design questions are collected in §31.1 below.</li>
 <li><strong>More probes</strong> — Neuropixels <strong>OneBox</strong> is not implemented (<code>source.npx.onebox</code> unregistered; selecting the
   profile raises a hardware error). NP1.0 and NP2.0 multishank are done; NP2 single-shank parses/serializes only.</li>
 <li><strong>Spike processing</strong> — spike-band filtering and spike detection processors are not built (LFP filtering and
@@ -2333,6 +2339,26 @@ now tracked here:</p>
   complete error/invalid-state strategy is still future work (architecture review §11).</li>
 </ul>
 <p>The original <code>todo.txt</code> checklist text is preserved in git history; the file itself is now a short pointer here.</p>
+<h3 id="311-open-design-questions-for-the-commandevent-bus-resolve-before-building-2026-07-24">31.1 Open design questions for the command/event bus — resolve before building  (2026-07-24)<a class="headerlink" href="#311-open-design-questions-for-the-commandevent-bus-resolve-before-building-2026-07-24" title="Permanent link">#</a></h3>
+<p>A full design brief with four solution options, a recommended <code>MessageBus</code> plan, phased steps, and a
+<em>measured</em> validation now lives in <code>developer_docs/NextTask_CommandEventBus.md</code>. The recommendation is
+<strong>Option B</strong> — a new <code>MessageBus</code> sibling that supersedes <code>CommandDispatcher</code>: string <code>cmd.*</code>/<code>evt.*</code> topics,
+JSON-in-<code>QByteArray</code> payload, <code>Qt::QueuedConnection</code> delivery to each subscriber's own thread, and a global
+<code>getMessageBus()</code> cleared on teardown. The following are <strong>left open for the team to settle</strong> before a future
+agent implements it (a suggested answer is in parentheses, to accept or override):</p>
+<ol>
+<li><strong>Topic granularity</strong> — flat topic strings only, or wildcard/prefix subscriptions (<code>evt.ripple.*</code>)?
+   <em>(Suggest: start flat; add prefix matching only if a real need appears.)</em></li>
+<li><strong>Command-vs-event marker</strong> — an explicit <code>kind</code> enum, or the <code>cmd.*</code> / <code>evt.*</code> naming convention?
+   <em>(Suggest: the naming convention — simpler and self-documenting in YAML.)</em></li>
+<li><strong><code>CommandDispatcher</code> disposition</strong> — retire it fully, or thin-shim it onto the new bus for one release?
+   <em>(Suggest: full removal — its one subscriber is inert and its one dispatch path is dead code.)</em></li>
+<li><strong>Payload contract</strong> — JSON-in-<code>QByteArray</code> for every structured topic, or allow raw binary for specific
+   high-rate topics? <em>(Suggest: JSON by default; revisit only for a measured high-rate case.)</em></li>
+<li><strong>Handler contract</strong> — one virtual <code>slOnBusMessage(topic, payload)</code> per module, or per-topic named
+   handlers declared in YAML? <em>(Suggest: the single virtual slot — minimal boilerplate.)</em></li>
+</ol>
+<p><strong>Status: not started</strong> — for discussion between the maintainers, then hand to a future agent.</p>
 <h2 id="32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21">32. HTTP UI PORT MOVED 8080 → 8234 (SpikesPeak-specific)  (2026-07-21)<a class="headerlink" href="#32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21" title="Permanent link">#</a></h2>
 <p>The backend's static-UI HTTP port was hardcoded to <strong>8080</strong>, which on the Windows rig is permanently held by
 the <strong>NI Application Web Server</strong> service (<code>NIApplicationWebServer</code>, auto-start, part of the NI stack — the
@@ -2349,7 +2375,74 @@ with NI at all (the NI service can stay running).</p>
   from the (updated) <code>.txt</code> sources.</li>
 <li>Left as a fixed port (not configurable); a <code>--http-port</code> flag / <code>SPIKESPEAK_HTTP_PORT</code> env override is a
   possible future enhancement if a machine ever collides with :8234 too.</li>
-</ul></article>
+</ul>
+<h2 id="34-np2-ni-daq-digital-input-parity-ripple-detection-defaults-to-asap-commandevent-bus-brief-2026-07-24">34. NP2 NI-DAQ DIGITAL-INPUT PARITY + RIPPLE DETECTION DEFAULTS TO ASAP; COMMAND/EVENT BUS BRIEF  (2026-07-24)<a class="headerlink" href="#34-np2-ni-daq-digital-input-parity-ripple-detection-defaults-to-asap-commandevent-bus-brief-2026-07-24" title="Permanent link">#</a></h2>
+<p>Three pieces of work this session.</p>
+<h3 id="341-commandevent-subscription-bus-design-brief-open-questions-design-only-nothing-built">34.1 Command/event subscription bus — design brief + open questions (design only, nothing built)<a class="headerlink" href="#341-commandevent-subscription-bus-design-brief-open-questions-design-only-nothing-built" title="Permanent link">#</a></h3>
+<p>Wrote the design brief for the one still-live architectural TODO (§31, the retired <code>todo.txt</code> items 5–6): a
+config-declared, runtime-modifiable, unified <strong>command + event</strong> subscription bus that dispatches <strong>off the hot
+path</strong>. It inventories the four current mechanisms (config-wired data plane, hardcoded Qt signals,
+<code>Q_INVOKABLE</code>, the vestigial <code>CommandDispatcher</code>), gives <strong>four solution options</strong> with trade-offs, a
+recommended <strong><code>MessageBus</code></strong> plan (string <code>cmd.*</code>/<code>evt.*</code> topics, JSON-in-<code>QByteArray</code>, <code>Qt::QueuedConnection</code>
+delivery to each subscriber's thread, <code>getMessageBus()</code> cleared on teardown), phased steps, and a <strong>measured</strong>
+validation → <code>developer_docs/NextTask_CommandEventBus.md</code> (indexed under "Open task briefs"). The <strong>open design
+questions</strong> are collected in <strong>§31.1</strong> above for the maintainers to settle before a future agent builds it.</p>
+<h3 id="342-np20-ni-daq-now-streams-digital-input-ai-di-parity-with-np10">34.2 NP2.0 + NI-DAQ now streams DIGITAL input (AI + DI parity with NP1.0)<a class="headerlink" href="#342-np20-ni-daq-now-streams-digital-input-ai-di-parity-with-np10" title="Permanent link">#</a></h3>
+<p>The NP1.0+NI-DAQ config (<code>Npx1PxiNiDaq.yaml</code>) streamed both NI-DAQ <strong>analog</strong> (<code>data.nidaq.raw</code>) and <strong>digital</strong>
+(<code>data.nidaq.di</code>) inputs; the NP2.0+NI-DAQ configs streamed analog only. Closed the gap — a <strong>config-only</strong>
+change, because the real <code>NIDAQSource</code> already produces <code>data.nidaq.di</code> probe-agnostically (the DI producer +
+per-line 0/1 mirror in <code>NiDaqInterface.cpp</code>; <code>data.nidaq.di</code> + <code>interp.nidaq.di</code> are registered on all
+platforms). Added the three DI blocks — source <code>outputs</code> <code>data.nidaq.di</code>, a <code>proc.nidaq.display</code> input at
+<code>scale: 5.0</code>, and a <code>proc.nidaq.recorder</code> recording (<code>interp.nidaq.di</code>, <code>nidaq_di</code>, channels 0–7 @ 40 kHz) — to
+<strong><code>NpxPxiNiDaq.yaml</code></strong> and <strong><code>Npx2PxiNiDaqAsap.yaml</code></strong>, keeping them "identical except <code>low_latency</code>". Both
+parse-verified. (The <strong>sim</strong> NI-DAQ <code>source.nidaq.sim</code> still carries digital only as the analog packet's
+<code>digitalBitmask</code> — no first-class <code>data.nidaq.di</code>; unchanged, a real-source-only stream.)</p>
+<h3 id="343-ripple-detection-now-defaults-to-asap-and-np2-sim-now-honours-the-flag">34.3 Ripple detection now defaults to ASAP — and NP2 sim now honours the flag<a class="headerlink" href="#343-ripple-detection-now-defaults-to-asap-and-np2-sim-now-honours-the-flag" title="Permanent link">#</a></h3>
+<p><code>low_latency</code> (ASAP delivery: source poll 1 ms → 0) is a <strong>per-source</strong> flag, code default <code>false</code>. Made the
+ripple detector default to ASAP in two parts:
+- <strong>Config:</strong> set <code>low_latency: true</code> on the NPX source of the everyday ripple configs — <code>SimNpx1Ripples</code>,
+  <code>SimNpx2Ripples</code>, <code>SimNpx{1,2}RippleModule</code>, <code>SimNpx{1,2}NiDaqRipples</code>, <code>SimNpx2RealNiDaqRipples</code>. Left the
+  <strong>baseline↔ASAP A/B experiment pairs untouched</strong> (<code>SimNpx1LatencyBaseline</code>/<code>Asap</code>, and the <code>PxiNiDaq</code>
+  baselines vs their <code>*Asap</code> twins) so the latency methodology is preserved.
+- <strong>Code:</strong> the <strong>NP2 sim</strong> worker <code>SimNpx2Worker::slStartAcquiringData</code> hardcoded <code>setInterval(1)</code> and
+  silently ignored <code>low_latency</code>, so ASAP had <strong>no effect in NP2 simulation</strong>. Fixed it to mirror the NP1 sim
+  exactly — parse in <code>SimulatedData2Source::initDataSource</code>, forward via <code>setLowLatency</code> in <code>startAcq</code>,
+  <code>setInterval(mLowLatency ? 0 : 1)</code> + the confirming <code>production tick interval 0 ms (low_latency = true)</code> log
+  line (<code>src/modules/neuropixels/SimData2Source.{hpp,cpp}</code>). Real NP2 <strong>hardware</strong> already delivered ASAP via
+  <code>Npx2MSProbe::setLowLatency</code>; NP1 (sim + hw) already honoured it.</p>
+<p><strong>Build-verified</strong> (MSVC2019 incremental via <code>_rebuild.bat</code>, exit 0: the changed TU + <code>Utils.cpp</code> + MOC
+recompiled and <code>SpikesPeak.exe</code> linked). Runtime A/B <strong>not</strong> re-measured — the change is a line-for-line mirror
+of the validated NP1 ASAP path and self-reports the tick interval in the log. <code>LatencyProfiling.md</code> updated
+(it had said the flag was "opt-in / off by default" and that "no existing config changes behaviour").</p>
+<h3 id="344-hardware-verification-asap-confirmed-live-on-the-real-np20-ni-daq-2026-07-24">34.4 Hardware verification — ASAP confirmed LIVE on the real NP2.0 + NI-DAQ  (2026-07-24)<a class="headerlink" href="#344-hardware-verification-asap-confirmed-live-on-the-real-np20-ni-daq-2026-07-24" title="Permanent link">#</a></h3>
+<p>Ran the built backend headless against the <strong>real NP2.0 multishank probe + NI-DAQ</strong> (<code>Npx2PxiNiDaqAsap</code>) via
+<code>spikespeak_cli.py --script</code> (connect → <code>waitready</code> → play → 5 s record → stop → pause → disconnect → graceful
+<code>quit</code>). Confirmed for an imminent in vivo session:
+- <strong>Compiles + runs:</strong> <code>python scripts/spikespeak.py build</code> → exit 0 (ninja no-op, exe current); backend up,
+  <code>Found Neuropixels 2.0 Multi-Shank Probe</code>, <code>deviceReady</code>.
+- <strong>ASAP active on real NP2:</strong> <code>[Npx2MSProbe] acquisition poll interval 0 ms (low_latency = true)</code> — the
+  config's <code>low_latency: true</code> reaches <code>Npx2MSProbe::setLowLatency</code>, exactly the latency-profiling expectation.
+- <strong>Correct rates:</strong> NP2 raw 30 kHz × 384 ch + NI-DAQ 40 kHz × 8 ch — proven by a 5 s recording (raw ≈120 MB ⇒
+  ~162 k samples ⇒ ~5.4 s @ 30 kHz; NI-DAQ ⇒ ~5.4 s @ 40 kHz).
+- <strong>NI-DAQ AI + DI both live on hardware:</strong> <code>Stream nidaq ready: 8 channels</code> + <code>Stream nidaq_di ready: 8
+  channels</code>; the recording wrote <code>data.nidaq.di</code>/<code>interp.nidaq.di</code> — the §34.2 digital-input parity works on
+  the real rig.
+- <strong>Graceful shutdown:</strong> DAQmx tasks closed, FIFO flushed, registries cleared, exit 0; no residual process; no
+  errors/warnings in <code>output.log</code> (the lone "fails" hit reads <code>fails= 0</code>). The 149 MB transient test recording
+  was removed.
+- <strong>⚠️ Stim note:</strong> the detector armed the stimulator on connect (<code>ARM stim -&gt; 192.168.1.100:8888</code>) and no
+  disarm line was logged on <code>quit</code>. No animal was connected and detection never ran (0 channels) so no pulses
+  fired — but confirm the stimulator's state before beginning in vivo.</p>
+<h3 id="345-source-architecture-reorg-planning-brief-design-only-nothing-built-2026-07-24">34.5 Source-architecture reorg — planning brief (design only, nothing built)  (2026-07-24)<a class="headerlink" href="#345-source-architecture-reorg-planning-brief-design-only-nothing-built-2026-07-24" title="Permanent link">#</a></h3>
+<p>Wrote <code>developer_docs/NextTask_SourceArchitecture.md</code>: how to tame the <strong>23-config explosion</strong> + the two
+hand-synced pickers, and cleanly support (2) arbitrary NPX simulation, (3) a NeuroNexus/Intan hardware family,
+and (4) <strong>replay-a-recording-by-hitting-Play</strong>. Inventories the 6 source classes / 23 configs / dual selection
+path, then gives <strong>four options</strong> — A (config consolidation + one capability-tagged picker), B (unify the two
+NPX sim classes into one geometry-parameterized <code>NpxSimSource</code> + a general <code>FilePlaybackSource</code> aligned to the
+recorder's <code>.bin</code>+<code>.bin.json</code>), C (a source-type <strong>descriptor</strong> registry that kills the name-substring
+routing), D (a <code>modules/intan/</code> NeuroNexus source mirroring <code>NIDAQSource</code>) — plus a phased recommendation
+(A → B → C, D with the hardware). Honours the <code>SimDataLinux.md</code> "one sim class per hardware family" ruling. For
+the maintainer + collaborator to pick a direction — <strong>not implemented.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2478,8 +2571,19 @@ with NI at all (the NI service can stay running).</p>
 <li><a href="#305-next">30.5 Next</a></li>
 </ul>
 </li>
-<li><a href="#31-open-items-backlog-folded-from-the-retired-todotxt-2026-07-21">31. OPEN ITEMS / BACKLOG — folded from the retired todo.txt (2026-07-21)</a></li>
+<li><a href="#31-open-items-backlog-folded-from-the-retired-todotxt-2026-07-21">31. OPEN ITEMS / BACKLOG — folded from the retired todo.txt (2026-07-21)</a><ul>
+<li><a href="#311-open-design-questions-for-the-commandevent-bus-resolve-before-building-2026-07-24">31.1 Open design questions for the command/event bus — resolve before building (2026-07-24)</a></li>
+</ul>
+</li>
 <li><a href="#32-http-ui-port-moved-8080-8234-spikespeak-specific-2026-07-21">32. HTTP UI PORT MOVED 8080 → 8234 (SpikesPeak-specific) (2026-07-21)</a></li>
+<li><a href="#34-np2-ni-daq-digital-input-parity-ripple-detection-defaults-to-asap-commandevent-bus-brief-2026-07-24">34. NP2 NI-DAQ DIGITAL-INPUT PARITY + RIPPLE DETECTION DEFAULTS TO ASAP; COMMAND/EVENT BUS BRIEF (2026-07-24)</a><ul>
+<li><a href="#341-commandevent-subscription-bus-design-brief-open-questions-design-only-nothing-built">34.1 Command/event subscription bus — design brief + open questions (design only, nothing built)</a></li>
+<li><a href="#342-np20-ni-daq-now-streams-digital-input-ai-di-parity-with-np10">34.2 NP2.0 + NI-DAQ now streams DIGITAL input (AI + DI parity with NP1.0)</a></li>
+<li><a href="#343-ripple-detection-now-defaults-to-asap-and-np2-sim-now-honours-the-flag">34.3 Ripple detection now defaults to ASAP — and NP2 sim now honours the flag</a></li>
+<li><a href="#344-hardware-verification-asap-confirmed-live-on-the-real-np20-ni-daq-2026-07-24">34.4 Hardware verification — ASAP confirmed LIVE on the real NP2.0 + NI-DAQ (2026-07-24)</a></li>
+<li><a href="#345-source-architecture-reorg-planning-brief-design-only-nothing-built-2026-07-24">34.5 Source-architecture reorg — planning brief (design only, nothing built) (2026-07-24)</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

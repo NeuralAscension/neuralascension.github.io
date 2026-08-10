@@ -1,0 +1,297 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Backlog — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page on" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="backlog">Backlog</h1>
+<p>Live list. Items are closed in place rather than deleted, so the reasoning stays visible. Last reviewed 2026-08-07 after the first real USB sessions.</p>
+<hr>
+<h2 id="1-logo-svgs-dropped">1. <del>Logo SVGs</del> — dropped</h2>
+<p>Closed 2026-08-07: no longer wanted now the console design is settled. The <code>.console-logo</code> slot remains in the markup if that changes.</p>
+<hr>
+<h2 id="2-esp32-firmware-usb-serial-core-affinity-done">2. <del>ESP32 firmware: USB serial + core affinity</del> — done</h2>
+<p>Closed 2026-08-07. <code>microcontrollerCode/adafruitESP32Feather_s3_usb/</code> replaces the Wi-Fi soft-AP build. Acquisition pinned to core 0, USB comms to core 1, a non-blocking queue between them, <code>TRIGGERPIN</code> driven by direct register write. Detection logic byte-for-byte unchanged.</p>
+<p>Measured on hardware: 358 KB flash (was 930 KB), 94 ms loop period (unchanged), zero dropped messages across 2241, detection latency 211 ms vs 207 ms on Wi-Fi — so the transport change did not move closed-loop timing.</p>
+<p>Research that informed it: <a href="https://github.com/NeuralAscension/pegboard/blob/main/docs/archive/ESP32_DUAL_CORE_RESEARCH.md">archive/ESP32_DUAL_CORE_RESEARCH.md</a>.</p>
+<p><b>Still worth doing:</b> re-check whether a <code>usb_mode=1</code> (hardware CDC) build behaves better under a slow reader. The TinyUSB default works, so this is an optimisation rather than a fix.</p>
+<hr>
+<h2 id="3-waveshare-touchscreen-done">3. <del>Waveshare touchscreen</del> — done</h2>
+<p>Closed 2026-08-07. Panel is 720x1560 portrait, ~60x110 mm. UI reworked for it: height-aware type scale, guided 4-step flow, on-screen keyboard, calendar picker, ± session steppers, status lamps, power button.</p>
+<p>Orientation was outstanding here and is now closed under item 10.</p>
+<hr>
+<h2 id="4-hardware-detected-indicator-done">4. <del>Hardware-detected indicator</del> — done</h2>
+<p>Closed 2026-08-07. Two lamps in the status strip, updated ~1.5 s from the server: <b>ESP32 OK / NOT CONNECTED / SILENT</b> and <b>STIM GPIO26 OK / NOT CONNECTED</b>. Terse when healthy, verbose on fault. A disk-free readout sits beside them.</p>
+<hr>
+<h2 id="5-led-check-lights-for-built-in-self-tests-done">5. <del>LED check lights for built-in self tests</del> — done</h2>
+<p>Closed 2026-08-10. The firmware change anticipated here was indeed needed; it shipped in <code>pegboard-usb 1.1.0</code>. (Current firmware is 1.3.0.)</p>
+<p><b>22 checks</b>, 12 in firmware and 10 on the Pi, reduced to one <b>SELF-TEST</b> greenlight in the status strip. Tapping it opens a panel of per-test LEDs with plain-English names, the measurement taken and the band it had to be in.</p>
+<table><thead><tr><th>where</th><th>commands / entry points</th></tr></thead><tbody>
+<tr><td>firmware</td><td><code>selftest</code>, <code>selftest_trigger</code>, <code>fw_info</code>; one passive suite runs at boot</td></tr>
+<tr><td>Pi</td><td><code>raspberry-pi5/bist.py</code>; socket events <code>run_selftest</code>, <code>run_trigger_selftest</code>, <code>bist_update</code></td></tr>
+<tr><td>record</td><td>every result lands in <code>events.csv</code> as <code>bist</code> / <code>bist_run</code></td></tr>
+</tbody></table>
+<p>Wire format is ASCII lines like the rest, so the raw log stays readable without a parser:</p>
+<pre><code>BIST: hx711_rate, status: PASS, value: 89.69, unit: SPS, lo: 60.00, hi: 110.00, note: ok, Seq: 38</code></pre>
+<h3 id="the-design-decisions-worth-keeping">The design decisions worth keeping</h3>
+<p><b>Two suites, split on whether they can stimulate.</b> The passive suite is safe any time the task is not running. The trigger wire test drives <code>TRIGGERPIN</code> for 50 ms — a real pulse — and is the only way to prove the wire to GPIO26 is intact, because the Pi can confirm stimulation is being recorded only by seeing an edge it knows was sent. It is never automatic and has its own confirmation.</p>
+<p><b>The greenlight is never green on absence.</b> Any check that has not reported leaves the verdict <code>unknown</code>, not <code>pass</code>. A lamp that goes green because a test never ran would be trusted and would be wrong. The two trigger tests are the exception: not having stimulated is not a fault, so they are excluded until they have a result.</p>
+<p><b>Firmware results are dropped when the board resets.</b> Opening the serial port asserts DTR and reboots the board, so results from before describe a different boot. They also expire after 30 minutes.</p>
+<p><b>Limits are tied to the real constants.</b> <code>scale_noise</code> passes below half <code>minWeightChangeReq</code> and fails at it, because noise at the detection threshold means the rig invents placements and stimulates on them.</p>
+<h3 id="measured-on-hardware-2026-08-10">Measured on hardware, 2026-08-10</h3>
+<p>11/11 passive tests pass. <code>hx711_rate</code> <b>89.69 SPS</b>, <code>loop_period</code> <b>93.94 ms</b> (matches the 94 ms in item 2), <code>scale_noise</code> <b>0.033 g</b> against a 1.25 g threshold, <code>adc_headroom</code> 12.4%, heap 281 KB, zero drops. The trigger pulse measured <b>50.00 ms</b> on two consecutive runs and left the line idle-low.</p>
+<h3 id="one-thing-found-doing-it">One thing found doing it</h3>
+<p><b>The board's boot-time self test is lost.</b> It writes into a USB endpoint no host is draining yet, so nothing arrives. <code>app.py</code> therefore sends <code>selftest</code> itself immediately after opening the port — that is what actually produces a report. Same class of problem as the <code>stream_data</code> re-arm.</p>
+<p><b><code>process_data()</code> now drains the serial link even when not streaming.</b> It previously skipped the read entirely, so a self test run before STREAM DATA sat unread in the kernel buffer — which is exactly when an operator wants to run one. Acknowledgements and task-reset messages were being missed for the same reason.</p>
+<h3 id="the-hx711-hang-fixed-2026-08-10">The HX711 hang — fixed 2026-08-10</h3>
+<p>Found while writing the self tests: <code>HX711::read()</code> waits on DOUT with nothing but <code>yield()</code> and no timeout, so an unpowered or unplugged amplifier hung core 0 until the 5 s task watchdog reset the board. The symptom is the board going silent — indistinguishable from the <code>taskYIELD()</code> bug, which sends you at the wrong fault.</p>
+<p>Guarding the call sites would not have been enough: <code>get_units(8)</code> spends ~82 ms of a ~94 ms pass inside <code>read_average()</code>, so a lead coming off lands mid-average roughly seven times in eight. Every conversion is now bounded (<code>waitReady</code>/<code>readRawAverage</code>/<code>readUnits</code>, 400 ms per conversion), which meant doing the averaging in the sketch. The arithmetic is deliberately identical to the library's — same conversions, same mean, same offset, same calibration — so the detection sequence and every tuned constant are untouched. Only the blocking behaviour of an individual read changed.</p>
+<p>A failed read abandons the pass without publishing a reading or attempting detection, so the rig can never stimulate on an amplifier that has stopped answering. The fault is reported through the self-test channel as <code>hx711_present FAIL</code>, repeated every 5 s, so it lights the same red lamp with the same words as any other failure.</p>
+<p><b>Verified on hardware</b> by injecting the fault — a temporary build drove DOUT high from the ESP32, which is exactly what an unplugged amplifier presents:</p>
+<table><thead><tr><th></th><th>before</th><th>after</th></tr></thead><tbody>
+<tr><td>amplifier dies</td><td>board resets at 5 s (watchdog)</td><td>stays alive, reports <code>hx711_present FAIL</code></td></tr>
+<tr><td>amplifier restored</td><td>—</td><td>recovers by itself, emits <code>PASS</code>, resumes streaming</td></tr>
+<tr><td>healthy timing</td><td>89.69 SPS, 93.94 ms</td><td><b>89.69 SPS, 93.97 ms — unchanged</b></td></tr>
+</tbody></table>
+<p>The fault-injection command was removed before the production flash.</p>
+<p>One thing that fell out of the test: passes spent waiting out a timeout were being counted into the cadence average and dragged the reported loop period from 94 ms to 131 ms, so the self test warned about a loop that was fine. The accumulator now excludes faulted passes and resets on recovery.</p>
+<hr>
+<h2 id="6-upload-saved-data-to-a-server-dropped">6. <del>Upload saved data to a server</del> — dropped</h2>
+<p>Removed 2026-08-10 at Shayok's request. Getting data off the Pi is item 13 instead, by Ethernet to a laptop or desktop.</p>
+<hr>
+<h2 id="7-stimulation-latency-measured-decomposed-reported-done">7. <del>Stimulation latency — measured, decomposed, reported</del> — done</h2>
+<p>Closed enough to use, with a stated next step. The one-off script became a routine report: <a href="https://github.com/NeuralAscension/pegboard/blob/main/analysis/latency_report.py"><code>analysis/latency_report.py</code></a> generates a self-contained HTML page modelled on the SpikeSpeak closed-loop latency page — headline table with median/IQR/p95/n, a "where the time goes" stage decomposition, per-session detail, method, and how to reproduce. Plots are inline SVG in the console's own palette, so a figure in the report and a chart on the touchscreen are recognisably the same instrument.</p>
+<pre><code>python3 analysis/latency_report.py experiments/&lt;subject&gt;/&lt;date&gt;/* \
+    -o docs/CLOSED_LOOP_LATENCY.html</code></pre>
+<h3 id="the-firmware-now-measures-its-own-stages">The firmware now measures its own stages</h3>
+<p>Firmware 1.2.0 emits one <code>Profile:</code> line per placement. Measured on the bench, <b>12 placements</b>, 2026-08-10 (<a href="https://github.com/NeuralAscension/pegboard/blob/main/analysis/bench-profile-20260810.txt"><code>analysis/bench-profile-20260810.txt</code></a>):</p>
+<table><thead><tr><th>stage</th><th>median</th><th>range</th><th>notes</th></tr></thead><tbody>
+<tr><td>acquisition <code>get_units(8)</code></td><td><b>93.36 ms</b></td><td>92.99&amp;ndash;93.95</td><td>8 conversions at ~86 SPS</td></tr>
+<tr><td>settle <code>delay(100)</code></td><td><b>99.63 ms</b></td><td>99.04&amp;ndash;100.00</td><td>tick-quantised, slightly under 100</td></tr>
+<tr><td>confirming read <code>get_units(3)</code></td><td><b>17.85 ms</b></td><td>17.50&amp;ndash;18.45</td><td><b>half what 3 conversions should cost</b></td></tr>
+<tr><td>verify &amp;rarr; trigger</td><td><b>0.006 ms</b></td><td>0.005&amp;ndash;0.011</td><td>5&amp;ndash;11 microseconds</td></tr>
+<tr><td><b>board total</b></td><td><b>210.85 ms</b></td><td>210.49&amp;ndash;211.44</td><td>matches the firmware's own <code>Detection Latency: 211 ms</code></td></tr>
+</tbody></table>
+<p>The chain is almost perfectly deterministic: <b>0.95 ms of spread across 12 placements</b>, which is what a fixed sequence of blocking calls should look like and is worth having on record as a baseline.</p>
+<p>Two findings that only measurement could produce:</p>
+<p><b>The verify-to-trigger interval is 6 us.</b> That is the interval nothing may be inserted into, and it is now a number rather than an assertion.</p>
+<p><b>The confirming read costs half what it should.</b> Three conversions at 89.7 SPS is ~33 ms; it measures 17.9. The HX711 keeps converting <i>during</i> <code>delay(100)</code>, so the first sample is already waiting when the read begins — the settle and the converter overlap. Worth knowing before anyone "optimises" the settle: shortening it would not buy the full amount back.</p>
+<p><b>Instrumentation cost: 0.0049 ms</b>, measured on the board by the new <code>profile_cost</code> self test, against a 1 ms budget. Four <code>micros()</code> calls, two of which only run on a confirming pass. Everything else sits below <code>TRIG_HIGH()</code>. <code>loop_period</code> was 93.97 ms before the instrumentation and 94.00 ms after.</p>
+<h3 id="reconciled-and-it-found-a-real-bug">Reconciled — and it found a real bug</h3>
+<p>Two sessions were recorded on the Pi with 1.2.0 (<code>20260810/005</code> Right/taVNS and <code>006</code> Left/Sham, 25 pegs and 25 stimulations each, 25 profiles each) so both views describe the <i>same</i> placements. The gap did not go away; it became consistent, which is what made it findable:</p>
+<table><thead><tr><th></th><th>005</th><th>006</th></tr></thead><tbody>
+<tr><td>board, pass start &amp;rarr; trigger</td><td>211.06 ms</td><td>211.22 ms</td></tr>
+<tr><td>recording, "firmware share"</td><td>136 ms</td><td>135 ms</td></tr>
+<tr><td>difference</td><td>&amp;minus;75.1 ms</td><td>&amp;minus;76.2 ms</td></tr>
+</tbody></table>
+<p>A systematic 75 ms offset, not scatter. The cause is in the firmware, at <code>adafruitESP32Feather_s3_usb.ino:786</code> and <code>:847</code>:</p>
+<pre><code>unsigned long currenttime = millis() - startTime;   // top of the pass
+...
+readUnits(8, &amp;current_weight);                      // ~93 ms of conversions
+...
+emit(MSG_WEIGHT, currenttime, current_weight);      // stamped with the OLD time</code></pre>
+<p><b>Every weight sample is timestamped ~93 ms before the reading it carries was finished.</b> The stamp is taken at the top of the pass; the value is the mean of eight conversions taken over the following 93 ms. So the load trace is systematically attributed earlier than it happened.</p>
+<p>That is why the two views disagree, and the size matches: the board counts from the top of the pass, the recording can only count from the sample reporting that read, and the acquisition read is 93.4 ms. The residual few ms is the clock model absorbing the fixed stamp-to-transmit lag into its offset.</p>
+<p><b>Neither latency figure is wrong.</b> They measure from different origins and both are correctly labelled — the report says "pass start &amp;rarr; trigger" for one and "landing &amp;rarr; stimulation" for the other. What <i>is</i> wrong is the sample timestamp, and it affects more than this analysis: anything that asks "when did the load change" is reading a trace shifted ~93 ms early.</p>
+<p><b>Not fixed here, deliberately.</b> The obvious change — stamp at read completion rather than pass start — alters the meaning of <code>mcu_time_ms</code> in every recording, and therefore what the clock model is fitting and what <code>t_ms</code> means. That is a schema-level decision, not a bug fix to slip in at the end of a session. It needs Shayok's call on whether existing recordings should be reinterpreted or left as they are.</p>
+<p>Filed as its own item rather than buried here: <b>see item 14.</b></p>
+<hr>
+<h2 id="8-pi-installation-script-done">8. <del>Pi installation script</del> — done</h2>
+<p>Closed 2026-08-10. <a href="https://github.com/NeuralAscension/pegboard/blob/main/raspberry-pi5/install-pi.sh"><code>raspberry-pi5/install-pi.sh</code></a>, 18 steps, idempotent:</p>
+<pre><code>git clone https://github.com/NeuralAscension/pegboard.git ~/Documents/Code/pegboard
+cd ~/Documents/Code/pegboard &amp;&amp; ./raspberry-pi5/install-pi.sh
+./raspberry-pi5/install-pi.sh --check     # report what would change, change nothing</code></pre>
+<p>Verified against the working rig: <code>--check</code> on an already-configured Pi reported <b>18 already done, 0 changed</b>, and a second full run reported <b>0 changed</b>. It is the intended way to apply an update, not just to build a new card.</p>
+<p>It found a real gap doing so: the analysis package had never been installed in the Pi's own venv, so <code>import pegboard</code> failed there. Now it works on the Pi (6 sessions, cross-checks pass).</p>
+<p>Two safety behaviours worth keeping: it <b>refuses to run while a session is open</b> — detected by a <code>session.json</code> with no <code>closed_utc</code>, not by asking the app — and it never touches <code>experiments/</code>.</p>
+<p>Beyond the original list it also installs the rotate launcher, the labwc <code>autostart</code> entry that re-applies orientation at boot, the labwc <code>rc.xml</code> touch-to-output mapping, and the guest-Wi-Fi autoconnect that keeps the clock right; it removes the retired pegboard soft-AP profiles and Wi-Fi lock if an old card still carries them; and it finishes by running the test suite and checking the service, the port, the serial device, <code>gpiochip0</code> and the clock.</p>
+<h3 id="the-original-list-for-reference">The original list, for reference</h3>
+<p>Everything configured by hand today needs to be in it, otherwise it is lost on the next card:</p>
+<table><thead><tr><th>what</th><th>detail</th></tr></thead><tbody>
+<tr><td>venv</td><td><code>python3 -m venv venv</code>, <code>pip install -r raspberry-pi5/requirements.txt</code></td></tr>
+<tr><td>system numpy</td><td>flip <code>include-system-site-packages = true</code> in <code>venv/pyvenv.cfg</code> (apt <code>python3-numpy</code> is present; pip-installing numpy on a Pi is slow)</td></tr>
+<tr><td>analysis package</td><td><code>pip install -e .</code></td></tr>
+<tr><td>systemd unit</td><td>install <code>raspberry-pi5/pegboard-display.service</code>, <code>daemon-reload</code>, <code>enable --now</code></td></tr>
+<tr><td>Wi-Fi policy</td><td><b>being removed</b> — data moves to USB, see item 2</td></tr>
+<tr><td>Wi-Fi lock</td><td><b>being removed</b> with the above; script kept at <code>raspberry-pi5/10-pegboard-wifi-lock</code> in case it is wanted again</td></tr>
+<tr><td>emoji font</td><td>install Noto Color Emoji + <code>fc-cache -f</code></td></tr>
+<tr><td>ethernet</td><td>static 192.168.1.100, profile named <code>MS-Study-pi</code></td></tr>
+<tr><td>GPIO access</td><td>user in the <code>gpio</code> group</td></tr>
+<tr><td>desktop icons</td><td>install <code>raspberry-pi5/desktop/*.desktop</code> to <code>~/Desktop</code>, <code>chmod +x</code>, and <code>gio set … metadata::trusted true</code> or the launcher shows an untrusted prompt</td></tr>
+<tr><td>verify</td><td>run <code>tests/test_display.py</code> and report pass/fail at the end</td></tr>
+</tbody></table>
+<p>Should be idempotent — safe to re-run after every pull, not just on a fresh card.</p>
+<h3 id="os-facts-already-captured-2026-08-06">OS facts already captured (2026-08-06)</h3>
+<p>No need to re-derive these; they were read off the running Pi today:</p>
+<pre><code>Raspberry Pi 5 (BCM2712)
+storage: Timetec 1TB NVMe (nvme0n1) -- NOT an SD card
+         / = nvme0n1p2, ext4, rw,noatime      /boot/firmware = nvme0n1p1
+         ~950 GB free; recordings live here at ~300 KB/session
+Debian GNU/Linux 12 (bookworm), aarch64          -&gt; Raspberry Pi OS Bookworm 64-bit
+kernel 6.12.20+rpt-rpi-2712
+hostname raspberrypi, user remyelin-pi (passwordless sudo)
+Python 3.11.2 · pip 23.0.1 · setuptools 66.1.1
+apt python3-numpy 1.24.2 · gpiod 2.3.0 (venv) · Flask 3.1.1 · Flask-SocketIO 5.5.1
+network: NetworkManager (ifupdown managed=false)
+desktop: lightdm -&gt; labwc Wayland session (LXDE-pi-labwc), wayvnc enabled
+GPIO: /dev/gpiochip0 = pinctrl-rp1, 54 lines (gpiochip4 is the same device)
+present: chromium, firefox, grim, scrot, ffmpeg, gpioinfo/gpioset
+absent:  iw, iwgetid, rfkill, node, fonts-noto-color-emoji (installed manually)</code></pre>
+<h3 id="still-to-verify-on-the-pi">Still to verify on the Pi</h3>
+<ul><li><code>/etc/rpi-issue</code> — the exact Raspberry Pi OS image and release date. Never read.</li><li>Whether it is the Desktop or Lite image, and the full apt manifest, so the script installs only what is genuinely missing.</li></ul>
+<h3 id="network-access-resolved">Network access — resolved</h3>
+<p>The Pi had no internet on 2026-08-06 (<code>apt-get</code> failed to resolve <code>deb.debian.org</code>), which would have forced the script to vendor every dependency. <b>That is no longer a constraint:</b> once the pegboard link moves to USB, <code>wlan0</code> is free and the Pi joins <code>CU Anschutz Guest</code>.</p>
+<p>So the script can use <code>apt</code> and <code>pip</code> normally. Two caveats to confirm on the day: the guest network is open and probably captive (test with an HTTP fetch, not a ping), and joining it means the app's <code>0.0.0.0:5000</code> bind becomes reachable from that subnet — set <code>PEGBOARD_HOST=127.0.0.1</code>, since the browser is local.</p>
+<h3 id="layout-resolved-2026-08-10">Layout — resolved 2026-08-10</h3>
+<p>The Pi was stranded at commit <code>1404476</code>, from before <code>display/</code> became <code>raspberry-pi5/</code>, with every later change copied on top. That cost real time twice: the systemd unit needed hand-patching after each deploy, and a stray <code>raspberry-pi5/</code> directory holding only the desktop launchers made <code>unittest discover</code> import nothing and report one cryptic error.</p>
+<p>The Pi now uses <code>raspberry-pi5/</code> throughout — service, desktop launchers, tests — matching the repo, so a path that works on a laptop works there. <code>display/</code> is gone (backed up to <code>/tmp</code> at the time). The installation script must keep it that way and should leave the Pi as a genuine checkout rather than a copy.</p>
+<h2 id="9-autobuilt-documentation-html-done">9. <del>Autobuilt documentation HTML</del> — done</h2>
+<p>Closed 2026-08-10. <a href="https://github.com/NeuralAscension/pegboard/blob/main/tools/build_docs.py"><code>tools/build_docs.py</code></a> renders the Markdown in <code>docs/</code> to a small static site.</p>
+<pre><code>python3 tools/build_docs.py            # -&gt; docs/site/
+python3 tools/build_docs.py --check    # parse only, write nothing</code></pre>
+<p>Standard library only, one file, no generator. That is deliberate: the point of this documentation is that it can be read on the rig itself, by whoever is standing in front of it, without a build environment. A static-site generator would mean a toolchain, a lockfile, a network to install from, and a version of all three that still works in two years.</p>
+<p>It inherits the console palette from <a href="https://github.com/NeuralAscension/pegboard/blob/main/analysis/latency_report.py"><code>analysis/latency_report.py</code></a>, which took it from the Plotly theme in <code>index.html</code> — so the docs, the latency report and the touchscreen read as one system rather than three.</p>
+<p>The Markdown subset is exactly what these documents use: headings, tables, fenced and inline code, lists, blockquotes, links, images, bold/italic, rules. Cross-document links are rewritten from <code>.md</code> to <code>.html</code>; links into <code>archive/</code> and out of <code>docs/</code> are left alone so they still resolve against the repository. <code>docs/site/</code> is gitignored — it is a build product.</p>
+<p>Verified: 9 pages, all 10 operator screenshots loading, 8 tables on the operator guide alone, and no unconverted <code>.md</code> links anywhere.</p>
+<p><b>The archive is deliberately not rendered.</b> It is explicitly historical, and building it into the site would suggest otherwise.</p>
+<h3 id="publishing">Publishing</h3>
+<p><code>.github/workflows/docs.yml</code> builds the site and pushes it into the public <code>neuralascension.github.io</code> repository, which serves <b>neuralascension.com/pegboard/</b>. GitHub Pages is <i>not</i> enabled on this repository — it is private, and Pages will not serve a private repo on this plan. Pushing the built HTML into the organisation's website repository, as spikespeak already does, keeps this one private.</p>
+<p>Every branch publishes to <code>/pegboard/&lt;branch&gt;/</code>, and <code>/pegboard/index.html</code> is a generated list of whichever versions exist. Setup — the one secret it needs and how to scope it — is in <a href="ENGINEERING_GUIDE.html"><code>ENGINEERING_GUIDE.md</code></a>, "Publishing the docs".</p>
+<p><b>A bug caught in rehearsal, worth not reintroducing.</b> The first version published <code>main</code> to <code>/pegboard/</code> directly. Because the copy step is <code>rsync --delete</code>, publishing <code>main</code> would have deleted <code>/pegboard/develop/</code> as though it were a stale file. Every branch now lives one level down, so the delete cannot reach a sibling.</p>
+<hr>
+<h2 id="10-persist-the-display-rotation-and-calibrate-touch-done">10. <del>Persist the display rotation and calibrate touch</del> — done</h2>
+<p>Closed 2026-08-10. It had already bitten: the panel was found running upright after a reboot, displaying a layout built for sideways.</p>
+<p><b>Both orientations are now first-class</b>, and the operator chooses with a <b>Rotate the Screen</b> icon on the desktop (<code>raspberry-pi5/desktop/rotate-pegboard.sh</code>). The choice is written to <code>~/.config/pegboard/orientation</code> and re-applied at login by an entry in <code>~/.config/labwc/autostart</code>.</p>
+<p><b>Upright is the default</b> — it is what the panel does with no configuration at all, so if the script, the config file and the autostart entry all vanish, the display still comes up in an orientation the interface is designed for.</p>
+<h3 id="the-root-cause-which-was-not-the-rotation">The root cause, which was not the rotation</h3>
+<p>The whole touchscreen design lived inside <code>@media (max-height: 820px)</code>. Upright the viewport is 1560 px tall, so <b>none of it applied</b> and a 60 mm-wide panel was rendered with desktop styles: fields clipped to slivers, two charts squeezed side by side, the status strip running off the edge. The condition is now "short <b>or</b> narrow". Either dimension being panel-sized is what identifies a panel.</p>
+<p>Portrait-specific layout is a separate block at the <b>end</b> of the stylesheet — media queries add no specificity, so placed earlier it was overridden by every lamp and dialog rule that followed. Stacked charts, one field per row, two keys per row, a wrapping status strip.</p>
+<p>Three things that did not survive rotation on their own and now do:</p>
+<ul><li><b>Plotly does not track its container.</b> A <code>ResizeObserver</code> on <code>.graph-container</code> resizes both charts.</li><li><b>The metadata sheet is positioned in absolute pixels</b> over the chart it covers, measured once. It is re-measured on any re-layout.</li><li><b>The sheet covers the histogram, not both charts.</b> Covering both in portrait meant STREAM appeared to do nothing — no trace was visible. The room comes from the grid instead: the histogram's row grows while the sheet is open.</li></ul>
+<p><b>Touch needs no calibration matrix.</b> labwc is told to map the panel's touch device to the output in <code>~/.config/labwc/rc.xml</code> (<code>&lt;touch deviceName=&quot;Waveshare  Waveshare -079-HD&quot; mapToOutput=&quot;HDMI-A-2&quot;&gt;</code>) and applies the output transform to touch coordinates itself. <b>Still unconfirmed by a human finger in both orientations</b> — verified by configuration, not by a tap.</p>
+<p>Verified on the panel: every control, field, dialog, the on-screen keyboard and the calendar fit inside the viewport in both orientations, with no page scroll and no clipped text.</p>
+<hr>
+<h2 id="11-validate-the-analysis-package-against-real-v3-data-done">11. <del>Validate the analysis package against real v3 data</del> — done</h2>
+<p>Closed 2026-08-10, against <b>six</b> real sessions (two from 2026-08-07, four from 2026-08-10) rather than the two originally available.</p>
+<p>The check that matters compares two <i>independent</i> measurements of the same events: the Pi's intervals, derived from <code>t_ms</code> through the fitted clock model, against the firmware's own figures. Synthetic data cannot exercise that.</p>
+<table><thead><tr><th>check</th><th>result</th></tr></thead><tbody>
+<tr><td>peg-to-peg intervals, Pi vs firmware</td><td><b>within 4 ms, median 1 ms</b>, all six sessions</td></tr>
+<tr><td>pegs confirmed vs stimulation pulses on GPIO26</td><td><b>exact match</b> in every session (25/25, 25/25, 25/25, 25/25, 8/8, 10/10)</td></tr>
+<tr><td>stimulation pulse width</td><td>1032–1036 ms against a commanded 1000 ms</td></tr>
+<tr><td><code>t_ms</code> monotonic</td><td>yes, all sessions</td></tr>
+<tr><td>empty session (<code>20260807/003</code>, 0 pegs)</td><td>handled without error; metrics return <code>nan</code></td></tr>
+<tr><td>legacy <code>.txt</code> and forgiving subject lookup</td><td>still work</td></tr>
+</tbody></table>
+<p>That 4 ms agreement is the real result here: it says the clock model, the unified timebase and the event recording are all sound on real data.</p>
+<p>Now a permanent regression test, <code>test_real_v3_sessions</code> in <code>tests/test_pegboard.py</code>. It skips silently where <code>experiments/</code> is absent, so a clean checkout still passes.</p>
+<h3 id="what-it-turned-up">What it turned up</h3>
+<p><b>The first inter-peg interval is not an inter-peg interval.</b> It disagreed with the firmware by 621–683 ms in every session, consistently, while every other interval agreed to 4 ms. The cause is real and permanent: <code>timer_start</code> is stamped when the operator presses the button, but the firmware sets its own reference only after <code>reset_scale()</code> has re-tared — <code>tare(10)</code> plus <code>get_units(40)</code>, about 50 conversions, ~590 ms at 85 SPS.</p>
+<p>So <code>ipis_ms(include_first=True)[0]</code> contains roughly 600 ms of scale settling, during which the participant may already be moving. It is a coarse reaction-time proxy at best. Documented on both methods; the data-quality comparison against the firmware should start at index 1.</p>
+<p><b>Not changed:</b> the firmware could set <code>startTime</code> before re-taring instead, which would make the first interval meaningful. That moves a tuned constant in the start-up path, so it is left alone deliberately — flagged here rather than fixed.</p>
+<hr>
+<h2 id="12-verify-the-gui-power-off-on-hardware-done">12. <del>Verify the GUI power-off on hardware</del> — done</h2>
+<p>Closed 2026-08-10. Validated by Shayok on the rig: powered the Pi off from the GUI deliberately, from a healthy connected session rather than by the queued command that fired it accidentally on 2026-08-07.</p>
+<p>The reboot afterwards also confirmed, for the first time across a real power cycle, that the service comes back <code>enabled</code> and <code>active</code>, that the display orientation is re-applied from <code>~/.config/pegboard/orientation</code> by the labwc autostart entry, that <code>wlan0</code> rejoins the guest network and the clock re-synchronises, and that the board is detected.</p>
+<hr>
+<p><b>Still open:</b> the <b>close the display only</b> branch has still never been run.</p>
+<hr>
+<h2 id="13-data-transfer-script-done">13. <del>Data-transfer script</del> — done</h2>
+<p>Closed 2026-08-10. <a href="https://github.com/NeuralAscension/pegboard/blob/main/tools/fetch_sessions.py"><code>tools/fetch_sessions.py</code></a>. Operator walkthrough is in <a href="OPERATOR_GUIDE.html">OPERATOR_GUIDE.md</a>, "Copying the data onto another computer".</p>
+<p>Written in Python rather than PowerShell, at Shayok's request: one implementation for Windows, macOS and Linux instead of a Windows-only script that could not be exercised here. That decision paid for itself immediately — <b>the whole thing was run against the live Pi</b>, rather than shipped on the strength of a static syntax check.</p>
+<p>Standard library only, and no SSH library: it shells out to <code>ssh</code> and <code>scp</code>, which ship with Windows 10 1809+, macOS and every Linux. A locked-down study PC needs nothing but Python — no virtualenv, no pip, no paramiko.</p>
+<p>The questions the original note left open, and how they were answered:</p>
+<table><thead><tr><th>question</th><th>answer</th></tr></thead><tbody>
+<tr><td>Everything, or only what is new?</td><td><b>Only what is new.</b> A session counts as present only if <i>every</i> file is there, so an interrupted run resumes instead of being mistaken for complete</td></tr>
+<tr><td>Authentication</td><td><b>Offers to install a key on the first run</b>, one password entry, never asked again. Declining still works, with more prompts. The password goes straight into ssh's own prompt — the script never sees or stores it</td></tr>
+<tr><td>Verify after copy</td><td><b>SHA-256 per file</b>, against hashes the Pi computes in the same inventory call</td></tr>
+<tr><td>Move or copy?</td><td><b>Copy.</b> Nothing is ever removed from the Pi</td></tr>
+<tr><td>Shape</td><td>One file, double-clickable or <code>python3 tools/fetch_sessions.py</code>. Folder picked with tkinter, falling back to a typed path where there is no display; the choice is remembered per-platform in the usual config location</td></tr>
+</tbody></table>
+<p>Each session is staged in a temporary directory and moved into place only once verified, so a session directory never exists at the destination in a half-copied state — which is what makes the "already present" test safe to trust in the first place.</p>
+<h3 id="verified-against-the-live-pi">Verified against the live Pi</h3>
+<table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>first run</td><td>6 sessions, <b>30 files SHA-256 verified</b></td></tr>
+<tr><td>second run</td><td>copied <b>0</b>, "everything is already here"</td></tr>
+<tr><td>half-copied session (a file deleted)</td><td>detected as incomplete, re-fetched</td></tr>
+<tr><td>corrupted file, <code>--verify</code></td><td><b>found and named</b>; not deleted, because the Pi still holds a good copy and the local one might be a deliberate edit</td></tr>
+<tr><td>Pi unreachable</td><td>plain-language message naming the cable, the power and the address — no stack trace</td></tr>
+<tr><td><code>--dry-run</code></td><td>lists what it would copy, copies nothing</td></tr>
+</tbody></table>
+<p><code>--verify</code> exists because the incremental test is presence, not contents: re-hashing the whole archive on every run gets slower without bound as it grows. A copy that arrived intact and rotted later is only found if you ask.</p>
+<h3 id="the-original-note-for-reference">The original note, for reference</h3>
+<p><b>Raised 2026-08-07.</b></p>
+<p>A script the user double-clicks on a Windows PC that copies the pegboard recordings off the Pi into a folder they pick from a normal file-explorer dialog. Run when the Pi is connected to the Windows machine by Ethernet.</p>
+<h3 id="what-is-already-known">What is already known</h3>
+<ul><li>The Pi's Ethernet is a <b>static 192.168.1.100/24</b>, NetworkManager profile <code>MS-Study-pi</code>. The Windows machine has to be on the same subnet — either a static address in <code>192.168.1.x</code> or a crossover/direct link with one assigned. Worth deciding whether the script should detect and explain this, because it is the most likely failure and the least obvious to a non-technical user.</li><li>Recordings live at <code>/home/remyelin-pi/Documents/Code/pegboard/experiments/&lt;subject&gt;/&lt;date&gt;/&lt;session&gt;/</code>, five files each, a few hundred KB per session.</li><li><code>ssh</code>/<code>sshd</code> are enabled on the Pi, user <code>remyelin-pi</code>.</li><li><b>Windows 10 1809+ ships OpenSSH</b>, so <code>scp</code> is available without installing anything. That is probably the whole transport.</li></ul>
+<h3 id="questions-to-settle-before-writing-it">Questions to settle before writing it</h3>
+<ul><li><b>Everything, or only what is new?</b> Copying the whole tree every time gets slow and risks overwriting. Incremental — skip sessions already present at the destination — is better but needs a comparison rule.</li><li><b>Authentication.</b> Password prompt each run is simplest and needs no setup; a key pair is smoother but has to be installed on every PC that will be used.</li><li><b>Verify after copy.</b> These are research recordings; a size or checksum comparison before reporting success is cheap insurance.</li><li><b>Move or copy?</b> Almost certainly copy — leave the Pi as the primary until someone deliberately clears it.</li><li><b>Shape.</b> A <code>.ps1</code> doing the work with a <code>.bat</code> wrapper so it is double-clickable, or a single <code>.bat</code>. PowerShell gives a real folder picker via <code>System.Windows.Forms.FolderBrowserDialog</code>.</li></ul>
+<h3 id="the-operator-facing-part">The operator-facing part</h3>
+<p>Same audience as the operator guide: it should say what it is doing, where it put the files, how many sessions it copied, and — if it fails — whether the problem is the cable, the network, or the Pi. A bare error is no use to a research associate.</p>
+<hr>
+<h2 id="14-weight-samples-are-timestamped-93-ms-early-done">14. ~~Weight samples are timestamped ~93 ms early~~ — done</h2>
+<p><b>Found 2026-08-10</b> while reconciling the two latency views, which is exactly what having two of them was for. <b>Closed 2026-08-10 with option 2.</b></p>
+<p><code>adafruitESP32Feather_s3_usb.ino</code> stamps a weight frame with <code>millis()</code> read at the <b>top</b> of the acquisition pass, then spends ~93 ms in <code>get_units(8)</code> before emitting that stamp with the resulting value. Every sample in every recording is therefore attributed about one acquisition read earlier than the measurement it represents.</p>
+<p>Consequences, in order of how much they matter:</p>
+<ul><li><b>Anything asking "when did the load change" reads a trace shifted ~93 ms early.</b> That includes the landing instant this report reconstructs.</li><li><b>The clock model absorbs it.</b> The fit is a lower envelope of (mcu, arrival); a constant 93 ms stamp-to-send lag on every weight frame goes straight into the offset. So <code>t_ms</code> for a sample lands near when it was <i>sent</i>, and the error partly cancels — which is why nothing looked wrong for months.</li><li><b>Stimulation timing is unaffected.</b> GPIO26 edges are stamped by the Pi's kernel at interrupt time and never touch this path. Every latency figure that ends at the trigger edge is sound.</li></ul>
+<h3 id="the-options">The options</h3>
+<ol><li><b>Stamp at read completion.</b> One line moved. Correct going forward, but <code>mcu_time_ms</code> changes meaning, so the clock model fits something different and old recordings are no longer directly comparable to new ones.</li><li><b>Emit both stamps</b> — pass start and read completion — and let the analysis choose. Costs one field on the wire, keeps old data interpretable, and makes the ~93 ms explicit rather than implicit.</li><li><b>Leave it and document it.</b> It has been this way for every recording ever made, the error is nearly constant, and the clock model already hides most of it.</li></ol>
+<p>Option 2 is the one that loses nothing.</p>
+<h3 id="what-shipped">What shipped</h3>
+<p>Option 2, as <b>schema v4</b>. The firmware emits both stamps on every weight frame:</p>
+<pre><code>Weight: %.5f, Time: %lu, ReadTime: %lu, Seq: %u</code></pre>
+<p><code>Time</code> is the top of the acquisition pass, <code>ReadTime</code> is when the read completed. <code>samples.csv</code> gained one column, <code>mcu_read_ms</code>, and the clock model fits on it where it exists, falling back to <code>mcu_time_ms</code> for v3 recordings. <code>ReadTime</code> is parsed as optional, so a v3 board and a v4 Pi still work together.</p>
+<p>The analysis package reads both versions (<code>SUPPORTED_SCHEMAS = (3, 4)</code>) and exposes the difference rather than hiding it: <code>has_read_timestamps</code>, <code>acquisition_lag_ms()</code>, <code>clock_model()</code>, <code>mcu_to_pi_ms()</code>. Old recordings stay directly comparable, and the ~93 ms is now explicit instead of implicit.</p>
+<p>Documented in <a href="DEVELOPER_GUIDE.html"><code>DEVELOPER_GUIDE.md</code></a> §6 and, for the research associate, in <a href="ANALYSIS_GUIDE.html"><code>ANALYSIS_GUIDE.md</code></a>.</p>
+<hr>
+<h2 id="decided-for-the-record">Decided, for the record</h2>
+<p><b>No self-termination.</b> <code>targetWeight</code> stays above what 25 pegs weigh, so a run never ends by itself. A knock to the table could otherwise both end a session early and register a false placement. The operator always stops the run.</p>
+<p><b>Task time is not recording time.</b> <code>session.json</code> now carries <code>task_duration_ms</code> (timer start → last peg) alongside <code>recording_duration_ms</code>. They differ by more than 3× on a typical run, and reporting only the latter was actively misleading.</p>
+<p><b>A shutdown must never be queueable.</b> Socket.IO buffers emits while disconnected and replays them on reconnect, so a shutdown pressed against a dead server fires whenever the server next starts — potentially unattended and mid-session. Both power actions now refuse to send unless the socket is connected, and the dialog closes itself if the link drops.</p>
+<p><b>Storage is a 1 TB NVMe, not an SD card.</b> <code>/</code> is <code>nvme0n1p2</code>, ext4 <code>noatime</code>, ~885 GB free. More power-cut tolerant than an SD card, but not immune — the shutdown path still matters, and it also disarms the stimulator.</p>
+<ul><li><b>Emoji icons, not SVG.</b> Button icons are the emoji the operator already knows. SVG line icons remain as an automatic fallback if colour emoji are unavailable (e.g. after a card reimage drops the manually installed font) — detected at load by a canvas probe that sets <code>.no-emoji</code> on <code>&lt;html&gt;</code>. Both paths verified rendering.</li></ul><footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

@@ -1,0 +1,292 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Analysing data — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page on" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="analysing-pegboard-data">Analysing pegboard data</h1>
+<p>For getting numbers out of the recordings. Written for whoever is running the study — you need to be comfortable running a Python script, but nothing here assumes an engineering background, and every concept is explained the first time it appears.</p>
+<p>If you are <b>running participants</b>, that is <a href="OPERATOR_GUIDE.html">OPERATOR_GUIDE.md</a>. If you are <b>changing the equipment</b>, <a href="ENGINEERING_GUIDE.html">ENGINEERING_GUIDE.md</a>.</p>
+<hr>
+<h2 id="what-a-recording-contains">What a recording contains</h2>
+<p>One session is one folder, named for the participant, the date and the session number:</p>
+<pre><code>experiments/ThumperBunny/20260810/005/</code></pre>
+<p>Inside are five files. You will mostly use the analysis package rather than opening these, but it helps to know what is there:</p>
+<table><thead><tr><th>file</th><th>what it holds</th></tr></thead><tbody>
+<tr><td><code>session.json</code></td><td>who, when, which hand, which condition, plus a summary</td></tr>
+<tr><td><code>samples.csv</code></td><td>the weight on the board, about eleven times a second</td></tr>
+<tr><td><code>events.csv</code></td><td>every peg placement, every stimulation, and equipment checks</td></tr>
+<tr><td><code>clock_sync.csv</code></td><td>a record of how the two clocks were aligned (see below)</td></tr>
+<tr><td><code>raw_udp.log</code></td><td>everything the pegboard said, verbatim, for troubleshooting</td></tr>
+</tbody></table>
+<p>They are ordinary CSV files, so Excel, R and MATLAB open them directly. The Python package is just a convenient reader that knows what the columns mean.</p>
+<hr>
+<h2 id="getting-the-data-onto-your-computer">Getting the data onto your computer</h2>
+<p>See <a href="OPERATOR_GUIDE.html">"Copying the data onto another computer"</a> in the operator guide for the click-by-click version. In short:</p>
+<pre><code>python3 tools/fetch_sessions.py</code></pre>
+<p>It copies only what is new, checks every file arrived intact, and never changes anything on the Pi.</p>
+<hr>
+<h2 id="setting-up-once">Setting up, once</h2>
+<pre><code>pip install -e .</code></pre>
+<p>That installs the <code>pegboard</code> package. It needs only <code>numpy</code>, so it will work in almost any Python environment you already have.</p>
+<p>Check it worked:</p>
+<pre><code>import pegboard
+print(pegboard.__version__)</code></pre>
+<hr>
+<h2 id="your-first-five-minutes">Your first five minutes</h2>
+<pre><code>import pegboard
+
+s = pegboard.load_session(&quot;experiments/ThumperBunny/20260810/005&quot;)
+
+print(s.label)              # ThumperBunny/20260810/005
+print(s.hand)               # Right
+print(s.session_type)       # taVNS
+print(s.n_pegs)             # 25
+print(round(s.duration_s))  # how long the recording ran</code></pre>
+<p>The two numbers you probably came for:</p>
+<pre><code>print(s.ipis_ms())          # gap between each peg and the next, milliseconds
+print(s.stim_onsets_ms())   # when each stimulation actually started</code></pre>
+<p>An <b>inter-peg interval (IPI)</b> is the time between one peg going in and the next. It is the main performance measure: faster, steadier intervals mean better manual dexterity.</p>
+<hr>
+<h2 id="summary-numbers">Summary numbers</h2>
+<p>Rather than computing them yourself:</p>
+<pre><code>from pegboard import metrics
+
+print(metrics.mean_ipi(s))        # average interval, ms
+print(metrics.median_ipi(s))      # middle interval — ignores one fumbled peg
+print(metrics.sd_ipi(s))          # how variable the intervals were
+print(metrics.cv_ipi(s))          # variability relative to speed
+print(metrics.pegs_per_min(s))    # throughput
+print(metrics.task_duration_s(s)) # how long the task itself took</code></pre>
+<p><b>Use <code>median_ipi</code> when a participant fumbles one peg.</b> One long interval drags the mean up and makes a good run look bad; the median ignores it.</p>
+<p><b><code>task_duration_s</code> is not the length of the recording.</b> The operator starts recording before the task and stops after, so a 60-second task can sit inside a 200-second recording. <code>duration_s</code> is the recording; <code>task_duration_s</code> is the task. For performance you almost always want the latter.</p>
+<hr>
+<h2 id="several-sessions-at-once">Several sessions at once</h2>
+<pre><code>import pegboard
+
+ds = pegboard.Dataset(&quot;experiments&quot;)
+
+print(ds.subjects())                       # everyone with recordings
+print(ds.dates(&quot;Thumper Bunny&quot;))           # all their session dates
+print(ds.trend(&quot;Thumper Bunny&quot;, &quot;mean_ipi&quot;))   # that metric, session by session</code></pre>
+<p>Names are matched forgivingly, so <code>&quot;Thumper Bunny&quot;</code>, <code>&quot;thumperbunny&quot;</code> and <code>&quot;ThumperBunny&quot;</code> all find the same participant.</p>
+<p>Loop over everything:</p>
+<pre><code>import numpy as np
+from pegboard import metrics
+
+for s in ds.sessions():
+    ipi = metrics.mean_ipi(s)
+    # A session that was started and abandoned has no pegs, so its metrics are
+    # &quot;not a number&quot;. That is normal in real data, and round() raises on it —
+    # so check before formatting.
+    print(s.label, s.hand, s.session_type,
+          &quot;n/a&quot; if np.isnan(ipi) else round(ipi))</code></pre>
+<blockquote><p><b>You will meet <code>nan</code> a lot.</b> It means "not a number" and is how missing results are represented. Guard with <code>np.isnan(x)</code> before rounding, printing or comparing — <code>nan</code> is not equal to anything, including itself.</p></blockquote>
+<h3 id="comparing-conditions">Comparing conditions</h3>
+<pre><code>import pegboard
+from pegboard import metrics
+
+ds = pegboard.Dataset(&quot;experiments&quot;)
+groups = {}
+for s in ds.sessions():
+    if s.n_pegs == 0:
+        continue                       # an aborted session has nothing to compare
+    groups.setdefault(s.session_type, []).append(metrics.mean_ipi(s))
+
+for condition, values in sorted(groups.items()):
+    mean = sum(values) / len(values)
+    print(f&quot;{condition:8s} n={len(values):2d}  mean IPI {mean:6.0f} ms&quot;)</code></pre>
+<p>Swap <code>s.session_type</code> for <code>s.hand</code> to compare hands instead.</p>
+<hr>
+<h2 id="checking-a-session-is-sound-before-you-analyse-it">Checking a session is sound before you analyse it</h2>
+<p>Worth doing once per session. It costs seconds and it catches the sessions you should not draw conclusions from.</p>
+<h3 id="did-every-peg-get-stimulated">Did every peg get stimulated?</h3>
+<p>The pegboard counts placements; the Raspberry Pi separately watches the stimulation wire. They come from <b>different pieces of hardware</b>, so if they agree you have real evidence the participant got what the protocol says.</p>
+<pre><code>for s in pegboard.Dataset(&quot;experiments&quot;).sessions():
+    stims = len(s.stim_onsets_ms())
+    verdict = &quot;ok&quot; if stims == s.n_pegs else &quot;MISMATCH — investigate&quot;
+    print(f&quot;{s.label}: {s.n_pegs} pegs, {stims} stimulations  {verdict}&quot;)</code></pre>
+<h3 id="was-the-equipment-healthy">Was the equipment healthy?</h3>
+<p>Every self-test result is written into the recording, so a session carries its own evidence:</p>
+<pre><code>problems = [d for d in s.events.of(&quot;bist&quot;).detail if &quot;status=PASS&quot; not in d]
+print(&quot;all checks passed&quot; if not problems else problems)</code></pre>
+<p>An empty list here means every check passed while that session was being recorded. (Sessions record self-test results only if a check ran while recording was active, so an empty result can also simply mean none ran.)</p>
+<h3 id="were-any-measurements-lost">Were any measurements lost?</h3>
+<pre><code>print(&quot;clock aligned:&quot;, s.clock_converged)</code></pre>
+<p>If this is <code>False</code>, the two clocks were never matched well and the <i>sample</i> timings are less trustworthy. <b>Stimulation timings are unaffected</b> — those are recorded a different way (see below).</p>
+<hr>
+<h2 id="about-time-and-why-there-is-more-than-one-clock">About time, and why there is more than one clock</h2>
+<p>This is the one genuinely confusing part of the data, and it is worth ten minutes.</p>
+<p>There are <b>two separate computers</b> in the rig, each with its own clock:</p>
+<ul><li>the <b>pegboard</b> (the small ESP32 board), which reads the scale</li><li>the <b>Raspberry Pi</b>, which records everything</li></ul>
+<p>Neither clock knows about the other, and they run at very slightly different speeds. So the Pi continuously works out the relationship between them and uses it to put every measurement onto <b>one shared timeline</b>.</p>
+<p>That shared timeline is the column called <b><code>t_ms</code></b> — milliseconds since the recording started. <b>Use <code>t_ms</code> for everything.</b> It means the same thing for a weight reading and for a stimulation, which is the entire reason it exists.</p>
+<pre><code>s.t_ms          # the shared timeline
+s.weight_g      # weight on the board, grams
+s.gpio26        # 1 while stimulation is being delivered, else 0</code></pre>
+<h3 id="why-stimulation-times-are-the-most-trustworthy">Why stimulation times are the most trustworthy</h3>
+<p>When the pegboard fires the stimulator it also puts a voltage on a wire to the Pi. The Pi's operating system timestamps that voltage change the instant it happens, directly on the shared timeline — no estimation involved.</p>
+<p>So <code>stim_onsets_ms()</code> is exact, and stays exact even if the clock alignment is poor. Weight readings involve an estimate; stimulation times do not.</p>
+<h3 id="if-you-want-the-detail">If you want the detail</h3>
+<pre><code>model = s.clock_model()
+print(model[&quot;converged&quot;])    # was the alignment good enough to trust?
+print(model[&quot;skew_ppm&quot;])     # how differently the two clocks run, in parts per million
+print(model[&quot;offset_ms&quot;])    # the constant difference between them
+print(model[&quot;fitted_on&quot;])    # which pegboard timestamp the alignment used</code></pre>
+<p>You can also put a raw pegboard time onto the shared timeline yourself:</p>
+<pre><code>print(s.mcu_to_pi_ms(4821.0))</code></pre>
+<h3 id="the-two-pegboard-timestamps">The two pegboard timestamps</h3>
+<p>Recordings made from 10 August 2026 onwards store <b>two</b> times from the pegboard for each weight reading:</p>
+<ul><li><code>mcu_time_ms</code> — when it <i>started</i> taking the reading</li><li><code>mcu_read_ms</code> — when it <i>finished</i>, about 93 ms later</li></ul>
+<p>The gap is real: a reading is the average of eight measurements, and taking eight measurements takes time.</p>
+<pre><code>if s.has_read_timestamps:
+    print(&quot;acquisition window:&quot;, s.acquisition_lag_ms().mean().round(1), &quot;ms&quot;)
+else:
+    print(&quot;older recording — only the start time was stored&quot;)</code></pre>
+<p>Older recordings have only the first, which meant weight readings were filed about 93 ms earlier than they actually happened. <b>Both are kept now</b>, so old and new recordings stay directly comparable. If you are comparing timings across recordings made before and after that date, this is the one difference to be aware of.</p>
+<hr>
+<h2 id="making-figures">Making figures</h2>
+<pre><code>import matplotlib.pyplot as plt
+import pegboard
+
+s = pegboard.load_session(&quot;experiments/ThumperBunny/20260810/005&quot;)
+
+fig, ax = plt.subplots(figsize=(11, 4))
+ax.plot(s.t_ms / 1000, s.weight_g, lw=1)
+
+# Shade each stimulation.
+for start, end in zip(s.stim_onsets_ms(), s.stim_offsets_ms()):
+    ax.axvspan(start / 1000, end / 1000, color=&quot;red&quot;, alpha=0.15)
+
+ax.set_xlabel(&quot;time (s)&quot;)
+ax.set_ylabel(&quot;weight (g)&quot;)
+ax.set_ylim(bottom=0)          # weight cannot be negative
+fig.tight_layout()
+fig.savefig(&quot;session.png&quot;, dpi=150)</code></pre>
+<p>Each step up in the trace is one peg. The red bands are stimulations.</p>
+<h3 id="a-histogram-of-intervals">A histogram of intervals</h3>
+<pre><code>import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()
+ax.hist(s.ipis_ms() / 1000, bins=12)
+ax.set_xlabel(&quot;inter-peg interval (s)&quot;)
+ax.set_ylabel(&quot;count&quot;)
+fig.savefig(&quot;intervals.png&quot;, dpi=150)</code></pre>
+<hr>
+<h2 id="getting-the-data-into-other-tools">Getting the data into other tools</h2>
+<h3 id="a-spreadsheet-r-or-matlab">A spreadsheet, R, or MATLAB</h3>
+<p>The CSV files open directly — no conversion needed:</p>
+<pre><code>experiments/ThumperBunny/20260810/005/samples.csv</code></pre>
+<h3 id="pandas">pandas</h3>
+<pre><code>import pandas as pd
+import pegboard
+
+s = pegboard.load_session(&quot;experiments/ThumperBunny/20260810/005&quot;)
+df = pd.DataFrame({&quot;t_ms&quot;: s.t_ms, &quot;weight_g&quot;: s.weight_g, &quot;gpio26&quot;: s.gpio26})
+df.to_csv(&quot;session005.csv&quot;, index=False)</code></pre>
+<p>Or skip the package entirely:</p>
+<pre><code>import pandas as pd
+pd.read_csv(&quot;experiments/ThumperBunny/20260810/005/samples.csv&quot;)</code></pre>
+<h3 id="a-summary-table-of-every-session">A summary table of every session</h3>
+<pre><code>import csv
+import pegboard
+from pegboard import metrics
+
+rows = []
+for s in pegboard.Dataset(&quot;experiments&quot;).sessions():
+    rows.append({
+        &quot;subject&quot;: s.subject, &quot;date&quot;: s.date, &quot;session&quot;: s.session,
+        &quot;hand&quot;: s.hand, &quot;condition&quot;: s.session_type,
+        &quot;pegs&quot;: s.n_pegs,
+        &quot;mean_ipi_ms&quot;: round(metrics.mean_ipi(s), 1),
+        &quot;median_ipi_ms&quot;: round(metrics.median_ipi(s), 1),
+        &quot;task_s&quot;: round(metrics.task_duration_s(s), 1),
+        &quot;stimulations&quot;: len(s.stim_onsets_ms()),
+    })
+
+with open(&quot;summary.csv&quot;, &quot;w&quot;, newline=&quot;&quot;) as fh:
+    writer = csv.DictWriter(fh, fieldnames=rows[0].keys())
+    writer.writeheader()
+    writer.writerows(rows)
+print(f&quot;wrote {len(rows)} sessions to summary.csv&quot;)</code></pre>
+<p>That is usually the most useful thing to produce first: one row per session, ready for statistics.</p>
+<hr>
+<h2 id="writing-your-own-measure">Writing your own measure</h2>
+<p>Any function that takes a session and returns a number works:</p>
+<pre><code>import numpy as np
+import pegboard
+
+def slowest_third_mean_ipi(session):
+    &quot;&quot;&quot;Average of the slowest third of intervals — a rough fatigue measure.&quot;&quot;&quot;
+    ipis = np.sort(session.ipis_ms())
+    if len(ipis) &lt; 3:
+        return float(&quot;nan&quot;)
+    return float(ipis[-len(ipis) // 3:].mean())
+
+for s in pegboard.Dataset(&quot;experiments&quot;).sessions():
+    value = slowest_third_mean_ipi(s)
+    # An aborted session has no pegs, so the result is &quot;not a number&quot;.
+    print(s.label, &quot;n/a&quot; if np.isnan(value) else round(value))</code></pre>
+<p>Always handle the not-a-number case: an aborted or empty session is normal in real data, and <code>round()</code> raises an error on it.</p>
+<hr>
+<h2 id="older-recordings">Older recordings</h2>
+<p>Recordings from before this format existed are read deliberately, never by guessing:</p>
+<pre><code>from pegboard import legacy
+rows = legacy.load_legacy_txt(&quot;experiments/20250523/ThumperBunny/001/001.txt&quot;)</code></pre>
+<p>The reader accepts the current format and the one before it. Anything older raises an error rather than being silently misinterpreted — the columns did not mean the same thing, and quietly reading them as if they did would produce plausible, wrong numbers.</p>
+<hr>
+<h2 id="if-something-looks-wrong">If something looks wrong</h2>
+<table><thead><tr><th>what you see</th><th>what it usually means</th></tr></thead><tbody>
+<tr><td><code>UnsupportedSchemaError</code></td><td>the recording predates this reader; use <code>pegboard.legacy</code></td></tr>
+<tr><td>Fewer stimulations than pegs</td><td>check the session's self-test results, and the trigger wire</td></tr>
+<tr><td><code>clock_converged</code> is <code>False</code></td><td>too little data for a good alignment; stimulation times are still exact</td></tr>
+<tr><td>Metrics come back <code>nan</code></td><td>the session has no pegs — usually an aborted run</td></tr>
+<tr><td>Times look ~90 ms off between old and new recordings</td><td>the two pegboard timestamps, above</td></tr>
+</tbody></table>
+<p>For anything that looks like an equipment fault rather than an analysis question, <a href="DEBUGGING.html">DEBUGGING.md</a> is the place, and the <a href="CLOSED_LOOP_LATENCY.html">closed-loop latency report</a> documents the timing of the whole chain from a peg landing to stimulation being delivered.</p><footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

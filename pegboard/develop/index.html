@@ -1,0 +1,91 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Pegboard — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main>
+<h1>Pegboard</h1>
+<p>Grooved peg test with load-cell peg detection and closed-loop taVNS
+triggering. A participant moves 25 pegs into a pegboard sitting on a load cell;
+firmware on an ESP32-S3 watches for the ~2.5&nbsp;g step each peg adds and, on a
+confirmed placement, pulses a trigger that fires a Spark Biomedical stimulator.
+A Raspberry Pi records the load trace, the placements, and &mdash; independently,
+on its own GPIO &mdash; the stimulation itself.</p>
+
+<blockquote><p><b>The ESP32 runs the experiment. The Pi records it.</b> Peg
+detection and stimulation do not depend on the Pi at all. If the display dies
+mid-session the participant is still being stimulated &mdash; it just is not
+being written down.</p></blockquote>
+
+<h2>Start here</h2>
+<table><thead><tr><th>If you are</th><th>Read</th></tr></thead><tbody>
+<tr><td>running participants</td><td><a href="OPERATOR_GUIDE.html">Running a session</a></td></tr>
+<tr><td>analysing recordings</td><td><a href="ANALYSIS_GUIDE.html">Analysing data</a></td></tr>
+<tr><td>running or changing the equipment</td><td><a href="ENGINEERING_GUIDE.html">Engineering guide</a></td></tr>
+<tr><td>fixing something</td><td><a href="DEBUGGING.html">Debugging</a></td></tr>
+<tr><td>changing the code</td><td><a href="DEVELOPER_GUIDE.html">Developer guide</a></td></tr>
+<tr><td>picking up open work</td><td><a href="BACKLOG.html">Backlog</a></td></tr>
+</tbody></table>
+
+<h2>Citation</h2>
+<p>The system and the task are published. If you use either, please cite:</p>
+<blockquote><p>S.&nbsp;Dutta, A.&nbsp;Ellett, and C.&nbsp;Welle, &ldquo;Flexible,
+Real-Time Sensorized Grooved Pegboard Test Platform for Closed-Loop
+Neuromodulation,&rdquo; <i>2025 12th International IEEE/EMBS Conference on
+Neural Engineering (NER)</i>, San Diego, CA, USA, 2025, pp.&nbsp;119&ndash;124,
+doi: <a href="https://doi.org/10.1109/NER61569.2025.11589061">10.1109/NER61569.2025.11589061</a>.</p></blockquote>
+
+<p><b>The paper describes an earlier build.</b> Its validation still stands and
+the detection algorithm is structurally the same, but the transport, the
+thresholds and the timing have all moved on since. Read the paper for the design
+rationale and these pages for what actually runs &mdash;
+<a href="SINCE_THE_PAPER.html">Updates since the paper</a> sets the two side by
+side.</p>
+<footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

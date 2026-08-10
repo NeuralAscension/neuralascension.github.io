@@ -1,0 +1,135 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Windows check — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page on" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="checking-the-transfer-tool-on-windows">Checking the transfer tool on Windows</h1>
+<p>A runnable checklist for validating <a href="https://github.com/NeuralAscension/pegboard/blob/main/tools/fetch_sessions.py"><code>tools/fetch_sessions.py</code></a> on a real Windows machine. Written for an agent or engineer with a Windows box and network access to the Pi.</p>
+<p><b>Why this document exists.</b> The transfer tool was written and exercised on Linux against the live Pi — the algorithm is verified, and every failure path was triggered deliberately. What has <i>never</i> run is the Windows side: the folder picker, the paths, the console, and OpenSSH-on-Windows. Those are the parts most likely to differ, and none of them can be tested from here.</p>
+<p>Everything below is a check with an expected result. Record what actually happened, not what should have.</p>
+<hr>
+<h2 id="0-before-you-start">0. Before you start</h2>
+<table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>Windows</td><td>10 build 1809 or later, or Windows 11</td></tr>
+<tr><td>Python</td><td>3.8+, from python.org, installed with <b>"Add Python to PATH"</b> ticked</td></tr>
+<tr><td>Network</td><td>An Ethernet cable to the Pi, and this machine set to <code>192.168.1.50/255.255.255.0</code></td></tr>
+<tr><td>The Pi</td><td>Switched on, <code>192.168.1.100</code>, user <code>remyelin-pi</code></td></tr>
+<tr><td>The repo</td><td>Cloned or copied so <code>tools\fetch_sessions.py</code> is present</td></tr>
+</tbody></table>
+<p>Confirm the prerequisites first, because a failure here looks like a failure of the tool:</p>
+<pre><code>python --version
+where ssh
+where scp
+ping 192.168.1.100</code></pre>
+<p><code>where ssh</code> returning nothing means OpenSSH Client is off. Turn it on under Settings → Apps → Optional features → Add a feature → OpenSSH Client. That is itself a finding worth recording: it means the tool's "missing tools" message will fire on a stock machine.</p>
+<hr>
+<h2 id="1-the-checks">1. The checks</h2>
+<h3 id="1-1-it-refuses-cleanly-with-no-network">1.1 It refuses cleanly with no network</h3>
+<p>Unplug the Ethernet cable, then:</p>
+<pre><code>python tools\fetch_sessions.py</code></pre>
+<p><b>Expect:</b> the "Cannot see the pegboard Pi" block, listing cable → power → address, and a wait for Enter. <b>No Python traceback.</b> If you see <code>Traceback (most recent call last)</code>, that is a bug — capture it.</p>
+<p>Plug the cable back in.</p>
+<h3 id="1-2-first-run-with-the-key-offer">1.2 First run, with the key offer</h3>
+<pre><code>python tools\fetch_sessions.py</code></pre>
+<p><b>Expect, in order:</b></p>
+<ol><li><code>Found it.</code></li><li>An offer to set up passwordless access. Answer <b>Y</b>.</li><li><code>ssh-keygen</code> runs if <code>%USERPROFILE%\.ssh\id_ed25519</code> does not exist.</li><li>A password prompt from ssh itself. Type the Pi's password.</li><li><code>Done. This computer can now copy data without a password.</code></li></ol>
+<p><b>Watch for:</b> the key generation is invoked with an empty passphrase via <code>-N &quot;&quot;</code>. Python's <code>subprocess</code> passes that as a genuinely empty argument, but this is the single most likely Windows-specific failure in the whole tool. If <code>ssh-keygen</code> instead prompts for a passphrase, or errors, record the exact message.</p>
+<p><b>Then confirm it took:</b></p>
+<pre><code>ssh -o BatchMode=yes remyelin-pi@192.168.1.100 true
+echo %ERRORLEVEL%</code></pre>
+<p><code>0</code> means key auth works.</p>
+<h3 id="1-3-the-folder-picker">1.3 The folder picker</h3>
+<p>Still in the same run:</p>
+<p><b>Expect:</b> a normal Windows folder-choosing window, titled "Choose the folder to copy the pegboard recordings into". It may open <i>behind</i> the console — the script warns about that, and whether the warning is warranted is itself worth recording.</p>
+<p>Choose a new empty folder, e.g. <code>%USERPROFILE%\Documents\pegboard-data</code>.</p>
+<p><b>Watch for:</b> tkinter is bundled with the python.org installer but absent from some minimal or store installs. If it is missing the script should fall back to asking for a typed path rather than crashing. Force that path with:</p>
+<pre><code>python -c &quot;import tkinter&quot; </code></pre>
+<p>If that errors, the fallback is what you will be testing.</p>
+<h3 id="1-4-the-copy">1.4 The copy</h3>
+<p><b>Expect:</b> one line per session, each ending <code>copied and checked (5 files)</code>, then a summary naming the folder.</p>
+<p><b>Then verify independently of the tool</b> — do not take its word for it:</p>
+<pre><code>dir /s /b %USERPROFILE%\Documents\pegboard-data</code></pre>
+<p>Every session should hold exactly five files: <code>session.json</code>, <code>samples.csv</code>, <code>events.csv</code>, <code>clock_sync.csv</code>, <code>raw_udp.log</code>.</p>
+<p>Spot-check one hash against the Pi:</p>
+<pre><code>certutil -hashfile &quot;%USERPROFILE%\Documents\pegboard-data\ThumperBunny\20260810\001\session.json&quot; SHA256
+ssh remyelin-pi@192.168.1.100 &quot;sha256sum Documents/Code/pegboard/experiments/ThumperBunny/20260810/001/session.json&quot;</code></pre>
+<p>They must match. <code>certutil</code> prints the hash with spaces and in upper case; compare ignoring those.</p>
+<h3 id="1-5-it-does-not-copy-twice">1.5 It does not copy twice</h3>
+<p>Run it again, same folder.</p>
+<p><b>Expect:</b> <code>Already on this computer : N</code>, <code>To copy : 0</code>, and <code>Everything is already here. Nothing to do.</code></p>
+<h3 id="1-6-an-interrupted-copy-resumes">1.6 An interrupted copy resumes</h3>
+<p>Delete one file out of one session, then re-run:</p>
+<pre><code>del &quot;%USERPROFILE%\Documents\pegboard-data\ThumperBunny\20260810\001\samples.csv&quot;
+python tools\fetch_sessions.py --dest &quot;%USERPROFILE%\Documents\pegboard-data&quot;</code></pre>
+<p><b>Expect:</b> <code>To copy : 1</code>, and that session re-fetched. A session missing a file must not count as present.</p>
+<h3 id="1-7-corruption-is-caught">1.7 Corruption is caught</h3>
+<p>Append a byte to a copied file and ask for a verification pass:</p>
+<pre><code>echo tampered &gt;&gt; &quot;%USERPROFILE%\Documents\pegboard-data\ThumperBunny\20260810\002\events.csv&quot;
+python tools\fetch_sessions.py --dest &quot;%USERPROFILE%\Documents\pegboard-data&quot; --verify</code></pre>
+<p><b>Expect:</b> <code>DAMAGED  ThumperBunny/20260810/002</code>, and an instruction to delete the folder and re-run. It must <b>not</b> delete anything itself.</p>
+<h3 id="1-8-long-and-awkward-paths">1.8 Long and awkward paths</h3>
+<p>Windows is where path handling breaks. Try a destination with a space and one that is deep:</p>
+<pre><code>python tools\fetch_sessions.py --dest &quot;%USERPROFILE%\Documents\peg board data&quot;
+python tools\fetch_sessions.py --dest &quot;%USERPROFILE%\Documents\a\b\c\d\e\f\g\h\i\j\pegboard&quot;</code></pre>
+<p><b>Expect:</b> both work. The space is the important one — it is passed to <code>scp</code> as an argument.</p>
+<h3 id="1-9-double-clicking">1.9 Double-clicking</h3>
+<p>In Explorer, double-click <code>tools\fetch_sessions.py</code>.</p>
+<p><b>Expect:</b> a console window opens, the tool runs, and the window <b>stays open</b> at the end waiting for Enter. If it closes instantly the operator can never read the summary, which defeats the point — record it.</p>
+<p>This depends on <code>.py</code> being associated with the Python launcher. If it opens in an editor instead, that is a finding: the operator guide would then need to tell people to right-click → Open with → Python.</p>
+<hr>
+<h2 id="2-what-to-report-back">2. What to report back</h2>
+<p>For each check: pass, fail, or not-run, and for anything that failed, the exact message. Then:</p>
+<ul><li>Windows version and build, Python version.</li><li>Whether OpenSSH was already enabled or had to be turned on.</li><li>Whether tkinter was present.</li><li>Whether double-clicking worked.</li><li>Anything in the wording that would confuse a research associate rather than an engineer — that is as much a defect here as a crash.</li></ul>
+<p>Update the "Verified" section of item 13 in <a href="BACKLOG.html">BACKLOG.md</a> with the result, and note the Windows version it was verified on. Right now that section says the Windows side is unverified; it should say what actually happened.</p>
+<hr>
+<h2 id="3-known-untested-in-priority-order">3. Known-untested, in priority order</h2>
+<p>If time is short, these are the checks most likely to find something:</p>
+<ol><li><b>1.2</b> — <code>ssh-keygen -N &quot;&quot;</code> with an empty argument.</li><li><b>1.9</b> — double-click behaviour, since that is how an operator will run it.</li><li><b>1.8</b> — a destination path containing a space.</li><li><b>1.3</b> — tkinter presence, and the picker opening behind the console.</li></ol>
+<p>Everything else was exercised against the live Pi on Linux and is unlikely to be platform-specific.</p><footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

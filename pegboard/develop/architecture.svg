@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="846" viewBox="0 0 1120 846" font-family="'DejaVu Sans',Verdana,sans-serif">
+  <!--
+    As-built architecture. Every element carries BOTH a presentation attribute
+    (light theme) and a class. Where the <style> block survives, the class wins
+    and the diagram follows the reader's colour scheme; where a renderer strips
+    CSS, the attribute remains and the light theme renders exactly as before.
+    Nothing is ever left unstyled.
+  -->
+  <style>
+    :root {
+      --page:#ffffff; --ink:#0f172a; --ink2:#334155; --ink3:#64748b; --faint:#94a3b8;
+      --card:#ffffff; --rule:#cbd5e1;
+      --hw-bg:#f8fafc;  --hw-line:#94a3b8; --hw-ttl:#0f172a; --hw-sub:#475569; --hw-cl:#cbd5e1;
+      --mcu-bg:#eff6ff; --mcu-line:#1d4ed8; --mcu-ttl:#1e3a8a; --mcu-sub:#1e40af; --mcu-cl:#bfdbfe;
+      --pi-bg:#fef2f2;  --pi-line:#b91c1c; --pi-ttl:#7f1d1d; --pi-sub:#991b1b; --pi-cl:#fecaca;
+      --sp-bg:#fdf4ff;  --sp-line:#a21caf; --sp-ttl:#701a75; --sp-sub:#86198f; --sp-fade:#a855f7;
+      --lat-bg:#fffbeb; --lat-line:#d97706; --lat-ttl:#92400e; --lat-body:#78350f;
+      --tb-bg:#f0fdf4;  --tb-line:#15803d; --tb-ttl:#14532d; --tb-body:#166534;
+      --arrow:#334155; --red:#b91c1c; --blue:#1d4ed8; --blue2:#3b82f6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --page:#0d1117; --ink:#e6edf3; --ink2:#c9d1d9; --ink3:#9aa5b1; --faint:#6e7681;
+        --card:rgba(0,0,0,.30); --rule:#30363d;
+        --hw-bg:#161b22;  --hw-line:#6e7681; --hw-ttl:#e6edf3; --hw-sub:#9aa5b1; --hw-cl:#30363d;
+        --mcu-bg:#0d1f33; --mcu-line:#58a6ff; --mcu-ttl:#a5d6ff; --mcu-sub:#79c0ff; --mcu-cl:#1f4b7a;
+        --pi-bg:#2a1215;  --pi-line:#f85149; --pi-ttl:#ffbdb6; --pi-sub:#ff9492; --pi-cl:#5f2426;
+        --sp-bg:#24172e;  --sp-line:#bc8cff; --sp-ttl:#e2c5ff; --sp-sub:#d2a8ff; --sp-fade:#a371f7;
+        --lat-bg:#2b2213; --lat-line:#e3b341; --lat-ttl:#f8e3a1; --lat-body:#e3b341;
+        --tb-bg:#12261a;  --tb-line:#3fb950; --tb-ttl:#aff5b4; --tb-body:#7ee787;
+        --arrow:#9aa5b1; --red:#f85149; --blue:#58a6ff; --blue2:#79c0ff;
+      }
+    }
+    .pg{fill:var(--page)} .t1{fill:var(--ink)} .t2{fill:var(--ink2)}
+    .t3{fill:var(--ink3)} .t4{fill:var(--faint)} .card{fill:var(--card)}
+    .bx-hw{fill:var(--hw-bg);stroke:var(--hw-line)}    .h-hw{fill:var(--hw-ttl)}  .s-hw{fill:var(--hw-sub)}  .c-hw{stroke:var(--hw-cl)}
+    .bx-mcu{fill:var(--mcu-bg);stroke:var(--mcu-line)} .h-mcu{fill:var(--mcu-ttl)} .s-mcu{fill:var(--mcu-sub)} .c-mcu{stroke:var(--mcu-cl)}
+    .bx-pi{fill:var(--pi-bg);stroke:var(--pi-line)}    .h-pi{fill:var(--pi-ttl)}  .s-pi{fill:var(--pi-sub)}  .c-pi{stroke:var(--pi-cl)}
+    .bx-sp{fill:var(--sp-bg);stroke:var(--sp-line)}    .h-sp{fill:var(--sp-ttl)}  .s-sp{fill:var(--sp-sub)}  .f-sp{fill:var(--sp-fade)}
+    .bx-lat{fill:var(--lat-bg);stroke:var(--lat-line)} .h-lat{fill:var(--lat-ttl)} .b-lat{fill:var(--lat-body)}
+    .bx-tb{fill:var(--tb-bg);stroke:var(--tb-line)}    .h-tb{fill:var(--tb-ttl)}  .b-tb{fill:var(--tb-body)}
+    .ar{stroke:var(--arrow)} .ar-r{stroke:var(--red)} .ar-b{stroke:var(--blue)}
+    .mk{fill:var(--arrow)} .mk-r{fill:var(--red)} .mk-b{fill:var(--blue)}
+    .tr{fill:var(--red)} .tb2{fill:var(--blue)} .tb3{fill:var(--blue2)}
+    .rule{stroke:var(--rule)}
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="mk" fill="#334155"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="mk-r" fill="#b91c1c"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" class="mk-b" fill="#1d4ed8"/>
+    </marker>
+  </defs>
+
+  <rect width="1120" height="846" class="pg" fill="#ffffff"/>
+
+  <text x="28" y="36" font-size="21" font-weight="bold" class="t1" fill="#0f172a">Pegboard — as-built system architecture</text>
+  <text x="28" y="58" font-size="12.5" class="t2" fill="#334155">Grooved peg test with load-cell peg detection and closed-loop taVNS triggering over USB.</text>
+  <text x="28" y="76" font-size="11" class="t4" fill="#94a3b8">Generated 2026-08-10 from microcontrollerCode/adafruitESP32Feather_s3_usb/*.ino and raspberry-pi5/*.py — update this file when either changes.</text>
+
+  <!-- ================= PEGBOARD HARDWARE ================= -->
+  <rect x="28" y="100" width="228" height="236" rx="8" class="bx-hw" fill="#f8fafc" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="40" y="123" font-size="13" font-weight="bold" class="h-hw" fill="#0f172a">Pegboard hardware</text>
+
+  <rect x="40" y="136" width="204" height="54" rx="5" class="card c-hw" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="50" y="155" font-size="11.5" class="t2" fill="#334155">Grooved pegboard, 25 pegs</text>
+  <text x="50" y="172" font-size="10.5" class="t3" fill="#64748b">~2.5 g added per peg</text>
+
+  <rect x="40" y="200" width="204" height="76" rx="5" class="card c-hw" fill="#ffffff" stroke="#cbd5e1"/>
+  <text x="50" y="219" font-size="11.5" class="t2" fill="#334155">Load cell + HX711 ADC</text>
+  <text x="50" y="236" font-size="10.5" class="t3" fill="#64748b">24-bit ratiometric bridge amp</text>
+  <text x="50" y="251" font-size="10.5" class="t3" fill="#64748b">strapped 80 SPS (measured 89.7)</text>
+  <text x="50" y="266" font-size="10.5" class="t3" fill="#64748b">DAT / CLK on pins 5 / 9</text>
+
+  <text x="40" y="298" font-size="10.5" class="t3" fill="#64748b">STLs in physicalAttachments/:</text>
+  <text x="40" y="313" font-size="10.5" class="t3" fill="#64748b">loadCellTopPlate, squishyDampner…</text>
+
+  <!-- ================= MICROCONTROLLER ================= -->
+  <rect x="304" y="100" width="310" height="344" rx="8" class="bx-mcu" fill="#eff6ff" stroke="#1d4ed8" stroke-width="1.8"/>
+  <text x="317" y="123" font-size="13" font-weight="bold" class="h-mcu" fill="#1e3a8a">ESP32-S3 Feather — firmware</text>
+  <text x="317" y="140" font-size="10.5" class="s-mcu" fill="#1e40af">pegboard-usb 1.3.0 · peg detection lives here</text>
+
+  <rect x="317" y="152" width="284" height="100" rx="5" class="card c-mcu" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="326" y="170" font-size="11" font-weight="bold" class="h-mcu" fill="#1e3a8a">Peg detection (firmware, not the Pi)</text>
+  <text x="326" y="187" font-size="10.5" class="t2" fill="#334155">rising step in load, 1.25 g &lt; Δ &lt; 4 g</text>
+  <text x="326" y="202" font-size="10.5" class="t2" fill="#334155">re-checked after 100 ms to reject noise</text>
+  <text x="326" y="217" font-size="10.5" class="t2" fill="#334155">on confirm: assert D12, count the peg,</text>
+  <text x="326" y="232" font-size="10.5" class="t2" fill="#334155">compute the inter-peg interval</text>
+  <text x="326" y="246" font-size="9.5" class="t3" fill="#64748b">nothing may be inserted before the assert</text>
+
+  <rect x="317" y="262" width="284" height="76" rx="5" class="card c-mcu" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="326" y="280" font-size="11" font-weight="bold" class="h-mcu" fill="#1e3a8a">Two cores, one job each</text>
+  <text x="326" y="297" font-size="10.5" class="t2" fill="#334155">core 0 — acquire and detect, never blocked</text>
+  <text x="326" y="312" font-size="10.5" class="t2" fill="#334155">core 1 — USB out, via a non-blocking queue</text>
+  <text x="326" y="327" font-size="10.5" class="t2" fill="#334155">every HX711 read is bounded (400 ms)</text>
+
+  <rect x="317" y="348" width="284" height="82" rx="5" class="card c-mcu" fill="#ffffff" stroke="#bfdbfe"/>
+  <text x="326" y="366" font-size="11" font-weight="bold" class="h-mcu" fill="#1e3a8a">Self tests — 12 here, 10 on the Pi</text>
+  <text x="326" y="383" font-size="10.5" class="t2" fill="#334155">sample rate, cell drift, rail, trigger pin,</text>
+  <text x="326" y="398" font-size="10.5" class="t2" fill="#334155">queue health, flash, watchdog…</text>
+  <text x="326" y="413" font-size="10.5" class="t2" fill="#334155">commands: stream_data · start_timer ·</text>
+  <text x="326" y="426" font-size="10.5" class="t2" fill="#334155">reset · selftest · selftest_trigger · fw_info</text>
+
+  <!-- ================= RASPBERRY PI ================= -->
+  <rect x="744" y="100" width="348" height="434" rx="8" class="bx-pi" fill="#fef2f2" stroke="#b91c1c" stroke-width="1.8"/>
+  <text x="757" y="123" font-size="13" font-weight="bold" class="h-pi" fill="#7f1d1d">Raspberry Pi 5</text>
+  <text x="757" y="140" font-size="10.5" class="s-pi" fill="#991b1b">Debian 12 · records everything, decides nothing</text>
+
+  <rect x="757" y="152" width="322" height="76" rx="5" class="card c-pi" fill="#ffffff" stroke="#fecaca"/>
+  <text x="766" y="170" font-size="11" font-weight="bold" class="h-pi" fill="#7f1d1d">raspberry-pi5/app.py — Flask + SocketIO</text>
+  <text x="766" y="187" font-size="10.5" class="t2" fill="#334155">binds 127.0.0.1:5000 under systemd</text>
+  <text x="766" y="202" font-size="10.5" class="t2" fill="#334155">parses the serial frames, drives the UI,</text>
+  <text x="766" y="217" font-size="10.5" class="t2" fill="#334155">owns all recording</text>
+
+  <rect x="757" y="238" width="322" height="62" rx="5" class="card c-pi" fill="#ffffff" stroke="#fecaca"/>
+  <text x="766" y="256" font-size="11" font-weight="bold" class="h-pi" fill="#7f1d1d">clock_sync.py — board time → Pi time</text>
+  <text x="766" y="273" font-size="10.5" class="t2" fill="#334155">lower-envelope linear fit of millis()</text>
+  <text x="766" y="288" font-size="10.5" class="t2" fill="#334155">onto CLOCK_MONOTONIC</text>
+
+  <rect x="757" y="310" width="322" height="62" rx="5" class="card c-pi" fill="#ffffff" stroke="#fecaca"/>
+  <text x="766" y="328" font-size="11" font-weight="bold" class="h-pi" fill="#7f1d1d">GPIO26 — stimulation trigger in</text>
+  <text x="766" y="345" font-size="10.5" class="t2" fill="#334155">/dev/gpiochip0, both edges, kernel stamps</text>
+  <text x="766" y="360" font-size="10.5" class="t2" fill="#334155">3.3 V direct from D12, shared ground</text>
+
+  <rect x="757" y="382" width="322" height="92" rx="5" class="card c-pi" fill="#ffffff" stroke="#fecaca"/>
+  <text x="766" y="400" font-size="11" font-weight="bold" class="h-pi" fill="#7f1d1d">experiments/ — schema v4</text>
+  <text x="766" y="416" font-size="10.5" class="t2" fill="#334155">&lt;subject&gt;/&lt;date&gt;/&lt;session&gt;/</text>
+  <text x="776" y="431" font-size="10.5" class="t3" fill="#64748b">session.json · samples.csv · events.csv</text>
+  <text x="776" y="446" font-size="10.5" class="t3" fill="#64748b">clock_sync.csv · raw_udp.log</text>
+  <text x="766" y="464" font-size="10" class="t4" fill="#94a3b8">flushed as produced, not at session end</text>
+
+  <rect x="757" y="484" width="322" height="44" rx="5" class="card c-pi" fill="#ffffff" stroke="#fecaca"/>
+  <text x="766" y="502" font-size="11" font-weight="bold" class="h-pi" fill="#7f1d1d">Chromium on the Waveshare touchscreen</text>
+  <text x="766" y="518" font-size="10.5" class="t2" fill="#334155">720×1560 upright, or rotated to 1560×720</text>
+
+  <!-- ================= SPARK ================= -->
+  <rect x="304" y="470" width="310" height="88" rx="8" class="bx-sp" fill="#fdf4ff" stroke="#a21caf" stroke-width="1.8"/>
+  <text x="317" y="493" font-size="13" font-weight="bold" class="h-sp" fill="#701a75">Spark Biomedical taVNS stimulator</text>
+  <text x="317" y="512" font-size="10.5" class="s-sp" fill="#86198f">driven by the ESP32 directly, never by the Pi</text>
+  <text x="317" y="528" font-size="10.5" class="s-sp" fill="#86198f">3.3 V pulse in via BNC · 1036–1044 ms per peg</text>
+  <text x="317" y="546" font-size="10" class="f-sp" fill="#a855f7">the Pi only observes this line</text>
+
+  <!-- ================= ARROWS ================= -->
+  <path d="M 256 238 L 300 238" class="ar" stroke="#334155" stroke-width="2" fill="none" marker-end="url(#arrow)"/>
+  <text x="258" y="231" font-size="9.5" class="t3" fill="#64748b">HX711</text>
+
+  <!-- USB serial, both directions -->
+  <text x="622" y="170" font-size="10" font-weight="bold" class="tb2" fill="#1d4ed8">USB serial</text>
+  <path d="M 614 190 L 740 190" class="ar-b" stroke="#1d4ed8" stroke-width="2.4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="618" y="184" font-size="9" class="tb3" fill="#3b82f6">weight · events</text>
+  <path d="M 740 220 L 614 220" class="ar-b" stroke="#1d4ed8" stroke-width="2.4" fill="none" marker-end="url(#arrowBlue)"/>
+  <text x="618" y="236" font-size="9" class="tb3" fill="#3b82f6">commands</text>
+  <text x="618" y="250" font-size="9" class="t4" fill="#94a3b8">ASCII, every line</text>
+  <text x="618" y="262" font-size="9" class="t4" fill="#94a3b8">sequence-numbered</text>
+
+  <!-- trigger to Spark -->
+  <path d="M 400 444 L 400 467" class="ar-r" stroke="#b91c1c" stroke-width="2.2" fill="none" marker-end="url(#arrowRed)"/>
+  <text x="408" y="462" font-size="10" class="tr" fill="#b91c1c">D12 TRIGGERPIN</text>
+
+  <!-- same trigger line branched to the Pi -->
+  <path d="M 520 452 L 690 452 L 690 341 L 753 341" class="ar-r" stroke="#b91c1c" stroke-width="2.2" fill="none" stroke-dasharray="7,4" marker-end="url(#arrowRed)"/>
+  <text x="620" y="398" font-size="9.5" class="tr" fill="#b91c1c">same wire,</text>
+  <text x="620" y="410" font-size="9.5" class="tr" fill="#b91c1c">branched</text>
+
+  <!-- ================= LATENCY ================= -->
+  <rect x="28" y="588" width="586" height="230" rx="8" class="bx-lat" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="42" y="612" font-size="12.5" font-weight="bold" class="h-lat" fill="#92400e">Where the 229 ms goes — peg landing to stimulation, 50 pegs</text>
+
+  <text x="42" y="638" font-size="10.5" class="b-lat" fill="#78350f">sampling lag — the peg lands between two HX711 reads</text>
+  <text x="590" y="638" font-size="10.5" text-anchor="end" class="b-lat" fill="#78350f">94.0 ms</text>
+  <text x="42" y="660" font-size="10.5" class="b-lat" fill="#78350f">firmware detect + settle — averaging, then the 100 ms re-check</text>
+  <text x="590" y="660" font-size="10.5" text-anchor="end" class="b-lat" fill="#78350f">135.0 ms</text>
+  <text x="54" y="681" font-size="9.5" class="t3" fill="#64748b">of which acquire 93.5 · settle 99.4 · recheck 18.1 · verify → TRIG_HIGH 0.006</text>
+
+  <path d="M 42 696 L 590 696" class="rule" stroke="#cbd5e1" stroke-width="1"/>
+
+  <text x="42" y="716" font-size="11.5" font-weight="bold" class="h-lat" fill="#92400e">landing → stimulation recorded on GPIO26</text>
+  <text x="590" y="716" font-size="11.5" font-weight="bold" text-anchor="end" class="h-lat" fill="#92400e">229.0 ms</text>
+
+  <text x="42" y="744" font-size="10.5" class="b-lat" fill="#78350f">The ~200 ms of averaging is not a defect. It is what months of testing</text>
+  <text x="42" y="759" font-size="10.5" class="b-lat" fill="#78350f">across MS patients and healthy controls established as necessary for a</text>
+  <text x="42" y="774" font-size="10.5" class="b-lat" fill="#78350f">stable reading — documented, not to be trimmed.</text>
+  <text x="42" y="792" font-size="10" class="t3" fill="#64748b">The board's own chain, pass start → trigger, is 211.1 ms — that is the figure comparable to</text>
+  <text x="42" y="805" font-size="10" class="t3" fill="#64748b">the 212.5 ms in the paper. It excludes the 94 ms sampling lag. Quote 229, not 211.</text>
+
+  <!-- ================= TIME BASE ================= -->
+  <rect x="744" y="588" width="348" height="230" rx="8" class="bx-tb" fill="#f0fdf4" stroke="#15803d" stroke-width="1.5"/>
+  <text x="757" y="612" font-size="12.5" font-weight="bold" class="h-tb" fill="#14532d">Time base — one axis, schema v4</text>
+
+  <text x="757" y="634" font-size="10.5" class="b-tb" fill="#166534">t_ms carries everything. Weight samples and</text>
+  <text x="757" y="649" font-size="10.5" class="b-tb" fill="#166534">GPIO26 trigger edges share the one column.</text>
+
+  <text x="757" y="672" font-size="10.5" class="b-tb" fill="#166534">A sample is filed under when the reading was</text>
+  <text x="757" y="687" font-size="10.5" class="b-tb" fill="#166534">taken, not when its packet arrived.</text>
+
+  <text x="757" y="712" font-size="10.5" font-weight="bold" class="h-tb" fill="#14532d">Both board stamps are kept:</text>
+  <text x="757" y="729" font-size="10.5" class="b-tb" fill="#166534">mcu_ms — start of the acquisition pass</text>
+  <text x="757" y="744" font-size="10.5" class="b-tb" fill="#166534">mcu_read_ms — when that read completed</text>
+  <text x="757" y="759" font-size="10.5" class="b-tb" fill="#166534">They differ by ~93 ms; the fit uses the</text>
+  <text x="757" y="774" font-size="10.5" class="b-tb" fill="#166534">second, which is the honest one.</text>
+  <text x="757" y="798" font-size="10" class="t3" fill="#64748b">session.json records t0_unix_s for wall clock.</text>
+</svg>

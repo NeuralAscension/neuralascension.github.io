@@ -41,6 +41,15 @@ blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
 blockquote p:last-child { margin-bottom:0; }
 img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
       box-shadow:0 2px 14px rgba(0,0,0,.5); }
+/* The latency report's diagrams are authored at a fixed pixel width. Without
+   this they set the page width on a phone and the whole body scrolls
+   sideways. */
+svg { max-width:100%; height:auto; }
+figure { margin:18px 0; max-width:100%; }
+figcaption { color:#8C9497; font-size:13px; margin-top:6px; }
+/* Long unbreakable tokens -- /dev/serial/by-id/usb-Adafruit_Feather... -- push
+   the line past the viewport otherwise. */
+code, a { overflow-wrap:break-word; }
 hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
 del { color:#7b8386; }
 footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
@@ -49,8 +58,31 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
   .shell { flex-direction:column; }
   nav { flex:none; height:auto; position:static; }
   main { padding:24px 18px 70px; }
+  h1 { font-size:26px; }
+  h2 { font-size:20px; }
+  /* Let tables reflow rather than making the reader swipe sideways. The
+     nowrap on headers and the desktop padding are what force the extra
+     width; drop both and most tables fit. Any that still cannot will scroll
+     inside their own box, which is why the overflow-x above stays. */
+  table { font-size:13px; }
+  th { white-space:normal; letter-spacing:0; }
+  /* Descendants too: the long cell is usually a <code> holding a session path
+     like ThumperBunny/20260810/005, and overflow-wrap does not inherit past an
+     inline element that sets its own. */
+  th, td, th *, td * { padding:7px 8px; overflow-wrap:anywhere; }
+  th *, td * { padding:0; }
 }
-</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page on" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="updates-since-the-paper">Updates since the paper</h1>
+/* Phone-width. The widest table in the docs is the seven-column per-session
+   summary in the latency report, which still overflowed at the breakpoint
+   above; trimming the type and the cell padding once more lands it inside a
+   375 px viewport. */
+@media (max-width: 520px) {
+  main { padding:20px 14px 60px; }
+  table { font-size:11.5px; }
+  th, td { padding:5px 5px; }
+  pre { font-size:12px; padding:11px 12px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page on" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analyzing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="updates-since-the-paper">Updates since the paper</h1>
 <p>This repository is a later build of the platform described in:</p>
 <blockquote><p>S. Dutta, A. Ellett, C. Welle, "Flexible, Real-Time Sensorized Grooved Pegboard Test Platform for Closed-Loop Neuromodulation", <i>IEEE NER 2025</i>, San Diego, pp. 119–124, doi <a href="https://doi.org/10.1109/NER61569.2025.11589061">10.1109/NER61569.2025.11589061</a>.</p></blockquote>
 <p>If you arrived from the paper or its DOI, this page tells you exactly where the system you read about and the system in this repository differ.</p>
@@ -62,7 +94,7 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <tr><td>GUI and host</td><td>experimenter GUI on a networked laptop, reached over Ethernet/SSH</td><td>GUI on the Raspberry Pi's own touchscreen; the systemd unit sets <code>PEGBOARD_HOST=127.0.0.1</code></td></tr>
 <tr><td>Accepted weight-change band</td><td>1.5 g to 3.5 g</td><td>1.25 g to 4 g (<code>minWeightChangeReq = 1.25</code>, <code>weightThreshold = 4</code>)</td></tr>
 <tr><td>Initial sampling</td><td>load cell read twice, ~25 ms</td><td><code>get_units(8)</code>, ~94 ms (93.54 ms median)</td></tr>
-<tr><td>Stabilisation delay</td><td>150 ms</td><td>100 ms (<code>delay(100)</code>), 99.45 ms measured</td></tr>
+<tr><td>Stabilization delay</td><td>150 ms</td><td>100 ms (<code>delay(100)</code>), 99.45 ms measured</td></tr>
 <tr><td>Confirming read</td><td>three reads, ~37.5 ms</td><td><code>get_units(3)</code>, 18.07 ms measured (IQR 17.8–18.4) — about half the paper's figure, because the converter keeps running during the settle, so the settle and the confirming read overlap</td></tr>
 <tr><td>Detection chain, acquisition pass start to trigger</td><td>212.5 ms predicted, 213–215 ms measured</td><td>211.07 ms median over 50 placements</td></tr>
 <tr><td>Landing to stimulation</td><td>not reported — the paper's chain is timed from the acquisition pass, not from the landing</td><td>229 ms median over 50 pegs (IQR 227–231 ms, p95 320 ms)</td></tr>
@@ -88,7 +120,7 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p>The paper's 212.5 ms is the acquisition pass start to the stimulation trigger — sampling, settle, confirming read. Measured directly on the board, those same stages now take 211.07 ms median over 50 placements.</p>
 <table><thead><tr><th>step</th><th>paper</th><th>now (measured, n = 50)</th><th>change</th></tr></thead><tbody>
 <tr><td>Initial sampling</td><td>~25 ms (2 reads)</td><td>93.54 ms (8 reads)</td><td><b>+68.54 ms</b></td></tr>
-<tr><td>Stabilisation delay</td><td>150 ms</td><td>99.45 ms</td><td><b>−50.55 ms</b></td></tr>
+<tr><td>Stabilization delay</td><td>150 ms</td><td>99.45 ms</td><td><b>−50.55 ms</b></td></tr>
 <tr><td>Confirming read</td><td>~37.5 ms (3 reads)</td><td>18.07 ms (3 reads)</td><td><b>−19.43 ms</b></td></tr>
 <tr><td>Verify to <code>TRIG_HIGH</code></td><td>not counted</td><td>0.006 ms</td><td><b>+0.006 ms</b></td></tr>
 <tr><td></td><td><b>212.5 ms</b></td><td><b>211.07 ms</b></td><td><b>net −1.43 ms</b></td></tr>
@@ -108,7 +140,7 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p><b>A Pi install script.</b> <code>raspberry-pi5/install-pi.sh</code> builds a card from a clean clone and is idempotent, so it is also how an update is applied. <code>--check</code> reports what it would change without changing anything.</p>
 <p>The paper used an NI-DAQ both in early prototyping and in the validation study, where it recorded the 3.3 V trigger pulses and supplied the primary event timings, cross-verified against the patterns in the GUI-logged weight data. It is not part of the current rig: that role is now filled by the Pi's own kernel-timestamped GPIO26 edges together with firmware profiling.</p>
 <hr>
-<h2 id="what-to-cite-and-where-to-look-for-current-behaviour">What to cite, and where to look for current behaviour</h2>
+<h2 id="what-to-cite-and-where-to-look-for-current-behavior">What to cite, and where to look for current behavior</h2>
 <p><b>Cite the paper</b>, by DOI: <a href="https://doi.org/10.1109/NER61569.2025.11589061">10.1109/NER61569.2025.11589061</a>. It is the citable description of the platform and of the validation.</p>
 <p><b>Do not cite this page for the validation numbers</b> — cite the paper. Cite this repository only for the current implementation.</p>
 <p>For how the system behaves today:</p>

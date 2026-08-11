@@ -2,7 +2,7 @@
   <!--
     As-built architecture. Every element carries BOTH a presentation attribute
     (light theme) and a class. Where the <style> block survives, the class wins
-    and the diagram follows the reader's colour scheme; where a renderer strips
+    and the diagram follows the reader's color scheme; where a renderer strips
     CSS, the attribute remains and the light theme renders exactly as before.
     Nothing is ever left unstyled.
   -->

@@ -41,6 +41,15 @@ blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
 blockquote p:last-child { margin-bottom:0; }
 img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
       box-shadow:0 2px 14px rgba(0,0,0,.5); }
+/* The latency report's diagrams are authored at a fixed pixel width. Without
+   this they set the page width on a phone and the whole body scrolls
+   sideways. */
+svg { max-width:100%; height:auto; }
+figure { margin:18px 0; max-width:100%; }
+figcaption { color:#8C9497; font-size:13px; margin-top:6px; }
+/* Long unbreakable tokens -- /dev/serial/by-id/usb-Adafruit_Feather... -- push
+   the line past the viewport otherwise. */
+code, a { overflow-wrap:break-word; }
 hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
 del { color:#7b8386; }
 footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
@@ -49,8 +58,31 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
   .shell { flex-direction:column; }
   nav { flex:none; height:auto; position:static; }
   main { padding:24px 18px 70px; }
+  h1 { font-size:26px; }
+  h2 { font-size:20px; }
+  /* Let tables reflow rather than making the reader swipe sideways. The
+     nowrap on headers and the desktop padding are what force the extra
+     width; drop both and most tables fit. Any that still cannot will scroll
+     inside their own box, which is why the overflow-x above stays. */
+  table { font-size:13px; }
+  th { white-space:normal; letter-spacing:0; }
+  /* Descendants too: the long cell is usually a <code> holding a session path
+     like ThumperBunny/20260810/005, and overflow-wrap does not inherit past an
+     inline element that sets its own. */
+  th, td, th *, td * { padding:7px 8px; overflow-wrap:anywhere; }
+  th *, td * { padding:0; }
 }
-</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page on" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analysing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="running-a-pegboard-session">Running a pegboard session</h1>
+/* Phone-width. The widest table in the docs is the seven-column per-session
+   summary in the latency report, which still overflowed at the breakpoint
+   above; trimming the type and the cell padding once more lands it inside a
+   375 px viewport. */
+@media (max-width: 520px) {
+  main { padding:20px 14px 60px; }
+  table { font-size:11.5px; }
+  th, td { padding:5px 5px; }
+  pre { font-size:12px; padding:11px 12px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page on" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analyzing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="running-a-pegboard-session">Running a pegboard session</h1>
 <p>A step-by-step guide for running the grooved peg test. No technical background needed — if you can follow a lab protocol, you can run this.</p>
 <p>Everything happens on the small touchscreen attached to the Raspberry Pi. You tap the screen; there is no keyboard or mouse to find.</p>
 <hr>
@@ -126,7 +158,7 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p><b>Tap the light</b> to open the full list. Each check has its own small light, a plain-English name, and the measurement it took. A green one shows the range it was allowed to be in; a red one explains what it means and what it affects.</p>
 <p>Some of these catch faults that are otherwise invisible. <i>Load cell sample rate</i> is the clearest example: if the amplifier gets strapped to its slow setting, everything still works — the chart moves, pegs are detected, stimulation fires — but every participant is stimulated about three quarters of a second later than the protocol says, and nothing else on the screen would ever tell you.</p>
 <h3 id="two-checks-that-say-not-run">Two checks that say "not run"</h3>
-<p>Near the bottom of the list, <b>Trigger pulse sent</b> and <b>Trigger wire to the Pi</b> are usually grey and say <i>not run</i>. That is normal and it does not count against the green light.</p>
+<p>Near the bottom of the list, <b>Trigger pulse sent</b> and <b>Trigger wire to the Pi</b> are usually gray and say <i>not run</i>. That is normal and it does not count against the green light.</p>
 <p>They are the only way to prove the thin trigger wire between the pegboard and the Pi is intact — and the only way to test a wire that carries stimulation is to send some. Pressing <b>Test the trigger wire</b> makes the pegboard fire a real pulse, 50 milliseconds long, about a twentieth of the one a peg produces. The Spark stimulator <i>will</i> fire if it is connected and switched on.</p>
 <p>So: <b>take the electrodes off the participant first.</b> The screen asks you to confirm before it sends anything.</p>
 <p>Worth doing at the start of a day, or any time the wiring has been disturbed — it is the check that catches the fault where stimulation is still delivered but silently stops being recorded.</p>
@@ -145,7 +177,7 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p>Four things to set. <b>Tap any of them to change it.</b></p>
 <p><b>Subject name</b> — tap it and a keyboard appears on screen. Type the name, then tap <b>DONE</b>. (<b>SHIFT</b> gives capitals, <b>⌫</b> deletes, <b>CANCEL</b> leaves it unchanged.)</p>
 <p><img src="screenshots/operator/20-keyboard.png" alt="the on-screen keyboard"></p>
-<p><b>Date</b> — tap the 📅 button next to it for a calendar. Today is already selected and outlined, so usually you can leave it alone. Future dates are greyed out on purpose.</p>
+<p><b>Date</b> — tap the 📅 button next to it for a calendar. Today is already selected and outlined, so usually you can leave it alone. Future dates are grayed out on purpose.</p>
 <p><img src="screenshots/operator/21-calendar.png" alt="the calendar"></p>
 <p><b>Session number</b> — use the <b>−</b> and <b>+</b> buttons. This counts up automatically after each session, so normally you don't touch it.</p>
 <p><b>Session type</b> and <b>Hand</b> — tap to choose. Remember to switch <b>Hand</b> when the participant swaps hands.</p>

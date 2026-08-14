@@ -1,0 +1,153 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Handoff — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+/* The latency report's diagrams are authored at a fixed pixel width. Without
+   this they set the page width on a phone and the whole body scrolls
+   sideways. */
+svg { max-width:100%; height:auto; }
+figure { margin:18px 0; max-width:100%; }
+figcaption { color:#8C9497; font-size:13px; margin-top:6px; }
+/* Long unbreakable tokens -- /dev/serial/by-id/usb-Adafruit_Feather... -- push
+   the line past the viewport otherwise. */
+code, a { overflow-wrap:break-word; }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+  h1 { font-size:26px; }
+  h2 { font-size:20px; }
+  /* Let tables reflow rather than making the reader swipe sideways. The
+     nowrap on headers and the desktop padding are what force the extra
+     width; drop both and most tables fit. Any that still cannot will scroll
+     inside their own box, which is why the overflow-x above stays. */
+  table { font-size:13px; }
+  th { white-space:normal; letter-spacing:0; }
+  /* Descendants too: the long cell is usually a <code> holding a session path
+     like ThumperBunny/20260810/005, and overflow-wrap does not inherit past an
+     inline element that sets its own. */
+  th, td, th *, td * { padding:7px 8px; overflow-wrap:anywhere; }
+  th *, td * { padding:0; }
+}
+/* Phone-width. The widest table in the docs is the seven-column per-session
+   summary in the latency report, which still overflowed at the breakpoint
+   above; trimming the type and the cell padding once more lands it inside a
+   375 px viewport. */
+@media (max-width: 520px) {
+  main { padding:20px 14px 60px; }
+  table { font-size:11.5px; }
+  th, td { padding:5px 5px; }
+  pre { font-size:12px; padding:11px 12px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analyzing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page on" href="AGENT_HANDOFF.html">Handoff<small>state, traps, and what is unverified</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="handoff-read-this-before-changing-anything">Handoff — read this before changing anything</h1>
+<p>Written 2026-08-14, at the end of the session that made the data transfer work on Windows. For whoever picks this up next, human or agent.</p>
+<p>It says what is genuinely verified against what is merely written, where the traps are, and what is left. It does <b>not</b> repeat the architecture — that is <a href="DEVELOPER_GUIDE.html">DEVELOPER_GUIDE.md</a>, and the one fact that matters most is already there:</p>
+<blockquote><p><b>The ESP32 runs the experiment. The Pi records it.</b> Peg detection and stimulation happen on the microcontroller and do not depend on the Pi. If the Pi dies mid-session the participant is still being stimulated; it just is not being recorded.</p></blockquote>
+<p>An older handoff from 2026-08-07 is in <a href="https://github.com/NeuralAscension/pegboard/blob/main/docs/archive/AGENT_HANDOFF.md"><code>archive/AGENT_HANDOFF.md</code></a>. It is superseded.</p>
+<hr>
+<h2 id="1-where-things-stand">1. Where things stand</h2>
+<table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>firmware</td><td><code>pegboard-usb 1.3.0</code> on an Adafruit ESP32-S3 Feather</td></tr>
+<tr><td>recording schema</td><td>v4; the analysis package reads 3 and 4</td></tr>
+<tr><td>analysis package</td><td><code>pegboard</code> 0.1.0 — the <i>package</i> version, not the system version</td></tr>
+<tr><td>the rig</td><td>verified working end to end, including a real transfer to a Windows PC</td></tr>
+<tr><td>the docs site</td><td>every branch publishes to <code>neuralascension.com/pegboard/&lt;branch&gt;/</code></td></tr>
+</tbody></table>
+<p><b>Branches.</b> <code>develop</code> is where work happens. <code>main</code> matches it. <code>v1.0</code> is a fixed snapshot whose README states the versions it runs — it is a <i>branch</i>, not a tag, deliberately, so it can still be corrected. If you add a doc to <code>develop</code>, decide whether <code>v1.0</code> needs it too; they will otherwise drift.</p>
+<p><b>The Pi's <code>experiments/</code> is empty.</b> Eight ThumperBunny sessions were copied to the study PC and then deliberately cleared from the Pi on 2026-08-14, exercising the new clearing feature. The subject and date folders were left in place so the next recording lands where it always did. Those recordings now exist only on the study PC, in two folders on one disk — which is redundancy against a bad file, not against a dead drive.</p>
+<hr>
+<h2 id="2-the-trap-that-produced-five-of-the-six-most-recent-bugs">2. The trap that produced five of the six most recent bugs</h2>
+<p>Every one of these was a place where <b>Python silently guesses a platform-dependent default</b>, and every one was invisible from Linux:</p>
+<table><thead><tr><th>what was guessed</th><th>what it cost</th></tr></thead><tbody>
+<tr><td>line endings — <code>subprocess</code> text mode translates <code>\n</code> to the local ending</td><td>the tool sent bash a CRLF script and <b>could not read the Pi's contents from any Windows machine, ever</b></td></tr>
+<tr><td>file encoding — <code>read_text()</code> uses the locale code page</td><td><code>build_docs.py</code> died on the first em-dash and had never run on Windows</td></tr>
+<tr><td>temp-directory permissions — <code>mkdtemp</code> creates 0700, and a move keeps permissions rather than re-inheriting</td><td>recordings arrived that the user could not open, <i>after</i> copying and verifying perfectly</td></tr>
+<tr><td>inherited stdin — <code>ssh</code> forwards its own stdin to the remote command</td><td>the tool hung after "Found it." until somebody pressed a key</td></tr>
+</tbody></table>
+<p>If you write anything that touches files, subprocesses or encodings: <b>state the behavior explicitly rather than letting it be inherited.</b> <code>encoding=&quot;utf-8&quot;</code>, <code>stdin=subprocess.DEVNULL</code>, bytes rather than text for anything crossing to the Pi.</p>
+<h3 id="the-meta-trap-a-harness-that-hides-the-bug-it-is-testing">The meta-trap: a harness that hides the bug it is testing</h3>
+<p>The stdin hang was invisible to every automated check in this repository, because those checks pipe the tool's output. A pipe hits EOF immediately; an interactive console does not. <b>The tool only misbehaved when run the way an operator actually runs it</b>, and it was reported from the rig before it was reproduced here.</p>
+<p>So: if a check redirects the thing's streams, it has changed the thing. Anything console-facing needs at least one run in a real console before it is believed.</p>
+<hr>
+<h2 id="3-tools-fetch-sessions-py-what-to-know-before-editing">3. <code>tools/fetch_sessions.py</code> — what to know before editing</h2>
+<p>Standard library only, no SSH library, shells out to <code>ssh</code> and <code>scp</code>. That is deliberate: a locked-down study PC needs nothing but Python. Keep it that way.</p>
+<p><b>The design rules, in priority order:</b></p>
+<ol><li><b>Copy, never move</b> — except through the explicit clearing prompt below.</li><li><b>Never overwrite.</b> A session already present is skipped.</li><li><b>Verified by SHA-256, per file.</b> Size comparison is not enough.</li><li><b>Every failure names the culprit</b> — cable, address, Pi, or password. A bare error is useless to a research associate.</li></ol>
+<p><b>Staging is a plain <code>mkdir</code>, not <code>mkdtemp</code>.</b> Do not "tidy" this back. See the permissions row above; the comment at the call site explains it.</p>
+<p><b>The clearing prompt is deliberately awkward</b> and should stay that way. It is never offered unless <i>both</i> stdin and stdout are a console; every session is re-verified against the Pi's hashes at that moment rather than trusted from the copy minutes earlier; a session with no <code>closed_utc</code> is refused because it may still be recording; the session name is checked against a strict <code>subject/date/number</code> pattern before it goes anywhere near <code>rm -rf</code>; and the operator types <code>DELETE</code>. Guard tests live in the session record, not in the test suite — if you touch this, re-prove that declining, pressing Enter, typing <code>yes</code>, typing lowercase <code>delete</code>, and a scripted run all delete nothing.</p>
+<p><b><code>--dest</code> does not update the remembered folder.</b> Only a folder a person picked by hand does. A path-handling test once left its scratch directory as the next operator's default, and the next real run copied a study's data into it.</p>
+<hr>
+<h2 id="4-the-rig-s-network-which-is-stranger-than-it-looks">4. The rig's network, which is stranger than it looks</h2>
+<p>The documented setup is the Pi at a static <code>192.168.1.100</code> and the PC at <code>192.168.1.50/24</code>. Both of those are true and neither is the whole story.</p>
+<p><b>The Windows link is not persistent.</b> <code>tools/fetch-sessions-windows.cmd</code> configures the adapter, copies, and <b>puts the network back on every exit path including failure</b> — so between transfers the wired adapter is on DHCP with no DHCP server, and <code>192.168.1.100</code> is unreachable. That is correct behavior, not a fault. A failed transfer must not strand a study PC on a fixed address with no route to the internet.</p>
+<p><b>Do not address the Pi by name.</b> <code>raspberrypi.local</code> has resolved to as many as four addresses at once: the cable's IPv6 link-local, the static IPv4, the Pi's guest-Wi-Fi IPv4, and a global IPv6 over that Wi-Fi. <code>ssh</code> takes whichever comes back first and spends <code>ConnectTimeout</code> on each dead one. This looked exactly like an intermittent transfer failure — roughly one run in four — until the timing gave it away: <b>every failed run took 18.5 s and every successful one 6.2 s.</b> Six calls to a single address ran 6/6 in ~650 ms. Use an address.</p>
+<p>Two related facts worth not rediscovering:</p>
+<ul><li>The Pi's guest-Wi-Fi address is useless from the study PC — client isolation.</li><li>Windows interface indices change. The wired adapter's scope id went from <code>%25</code> to <code>%4</code> between sessions, which silently breaks any hard-coded link-local address.</li></ul>
+<p><b><code>scp</code> cannot take an IPv6 address the way <code>ssh</code> can.</b> The colons are indistinguishable from the host/path separator, so it needs <code>user@[fe80::1%eth0]:path</code>. Given the bare form it reports <code>scp: Connection closed</code>, which reads like a network fault and is a quoting one. <code>scp_target()</code> handles it.</p>
+<hr>
+<h2 id="5-driving-the-windows-gui-if-you-ever-need-to-again">5. Driving the Windows GUI, if you ever need to again</h2>
+<p>The operator-guide screenshots (<code>40-</code> to <code>45-</code>) were taken by driving the real windows. Three things cost time:</p>
+<p><b><code>SetForegroundWindow</code> is refused to a process that does not already own the foreground.</b> So <code>SendKeys</code> goes wherever the user's focus happens to be. At one point four consoles were stacked up talking over each other, and the operator spotted it on screen before any log showed it. Drive dialogs with posted messages instead — <code>BM_CLICK</code> for real Win32 buttons, <code>WM_CLOSE</code> for a Tk window (Tk draws its own widgets, so they are not child windows and <code>BM_CLICK</code> cannot find them).</p>
+<p><b>Capture <code>DWMWA_EXTENDED_FRAME_BOUNDS</code>, not <code>GetWindowRect</code>.</b> The latter includes Windows' invisible resize border, so a capture picks up a strip of whatever is behind the window. These images publish to a public site.</p>
+<p><b>Assert that exactly one of your windows exists</b> before and after each step, and run each dialog in its own short-lived process. Guessing which window is yours is how the above happens.</p>
+<hr>
+<h2 id="6-what-is-verified-and-what-is-not">6. What is verified, and what is not</h2>
+<p><b>Verified on hardware:</b> all ten checks in the Windows checklist (now archived); 100 consecutive copy-verify-delete cycles clean (800 <code>scp</code> invocations, 4000 verified files, 4.4–5.4 s each); the clearing exercised on the rig against two independently hash-checked copies; 22 built-in self tests; the analysis package against six real v3 sessions; the GUI power-off; the install script idempotent at 18 steps.</p>
+<p><b>Written but not proven:</b></p>
+<ul><li><b>Touch is configured, not confirmed by a finger</b> in both orientations (backlog item 10). It is mapped in <code>rc.xml</code> and believed correct.</li><li><b>The "close the display only" branch of the power dialog has never run</b> (backlog item 12).</li><li><b><code>usb_mode=1</code> hardware CDC</b> has never been tried against a slow reader (backlog item 2). The TinyUSB default works; this is an optimization.</li></ul>
+<p><b>Two test failures on Windows are pre-existing and not yours:</b> <code>test_pegboard.py</code> needs numpy, which is in the repo venv and not in the system Python; and <code>test_free_space_is_not_the_same_as_writable</code> probes the POSIX path <code>/proc/nonexistent/pegboard</code> expecting it to be unwritable, which does not hold on Windows. 51 tests, 1 failure, 1 error, 4 skipped is the expected result there.</p>
+<hr>
+<h2 id="7-repository-hygiene-worth-knowing">7. Repository hygiene worth knowing</h2>
+<p><b><code>.gitignore</code> has no effect on files already in the index.</b> <code>venv/</code> and <code>experiments/</code> are both correctly listed and had both been force-added at some point, so 1,601 files sat staged and the ignore rules were silently bypassed for them. They were removed from the index on 2026-08-11 (files untouched on disk). If they reappear, this is why — <code>git rm --cached -r</code>, not another ignore rule.</p>
+<p><b><code>docs/site/</code> is a build product</b> and gitignored. Regenerate with <code>python3 tools/build_docs.py</code>; <code>--check</code> parses without writing.</p>
+<p><b>The archive is not rendered into the site</b>, deliberately — it is explicitly historical and building it would suggest otherwise.</p>
+<hr>
+<h2 id="8-if-you-are-picking-a-next-task">8. If you are picking a next task</h2>
+<p>The backlog is the real list, and closed items are kept in place with their reasoning rather than deleted — read them before re-litigating a decision. The things most worth doing, in rough order:</p>
+<ol><li><b>Get the recordings off the study PC.</b> Two copies on one disk is the weakest link in the whole chain right now.</li><li><b>Confirm touch in both orientations with a finger</b> — the last unverified thing in the operator-facing path.</li><li><b>Decide whether <code>pyproject.toml</code> should track the system version.</b> It is at 0.1.0 while the system is 1.0; the README explains the split, but a future reader will still ask.</li><li><b>The first inter-peg interval is not an inter-peg interval</b> (item 11). It contains ~600 ms of scale settling. Documented on both methods, not fixed, because the fix moves a tuned constant in the start-up path.</li></ol>
+<p>Two standing rules from the person who owns this rig, worth internalizing:</p>
+<blockquote><p><b>"Transient" is not an explanation.</b> If something fails intermittently, script it in a loop until the mechanism is named. The 100-cycle stress run exists because of this, and it found the real cause.</p></blockquote>
+<blockquote><p><b>Do not claim a check passed before observing it</b>, and do not touch the git index unasked.</p></blockquote><footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

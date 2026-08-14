@@ -245,21 +245,32 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p>Nothing else needs installing. No extra packages.</p>
 <h3 id="setting-the-computer-s-network-address-one-time-only">Setting the computer's network address — one time only</h3>
 <p>The Pi always answers at the address <b>192.168.1.100</b>. The other computer has to be on the same stretch of network to reach it, and it will not arrange that by itself over a direct cable.</p>
-<p>Someone technical needs to do this once per computer:</p>
+<p><b>On Windows, the Desktop shortcut below does this for you</b> and undoes it afterwards, so there is nothing to set up and nothing left changed. To do it by hand instead, or on a Mac, someone technical needs to do this once per computer:</p>
 <blockquote><p><b>Windows</b> — Settings → Network &amp; Internet → Ethernet → Edit IP assignment → Manual → IPv4 on. IP address <code>192.168.1.50</code>, Subnet mask <code>255.255.255.0</code>. Leave gateway and DNS blank.</p>
 <p><b>Mac</b> — System Settings → Network → Ethernet → Details → TCP/IP → Configure IPv4: Manually. Same address and mask.</p></blockquote>
 <p>If this has not been done, the script says so in plain words and stops without changing anything. It is the most common reason it does not work first time.</p>
+<h3 id="the-windows-shortcut">The Windows shortcut</h3>
+<p>On the study computer there is a <b><code>setupInterfaceForPiDataTransfer</code></b> icon on the Desktop. Double-click it and it does the whole job in one go:</p>
+<ol><li>Windows asks permission to change the network adapter — click <b>Yes</b>.</li><li>It puts this computer on the Pi's stretch of network.</li><li>It checks the Pi is answering, and says so in plain words if it is not.</li><li>It copies the data, asking you where to put it.</li><li><b>It puts the network back the way it was</b>, on automatic, under the adapter's original name — so the computer is left as it was found.</li></ol>
+<p>Step 5 happens whether the copying worked or not. A failed attempt cannot strand the computer on a fixed address with no way back onto the internet.</p>
+<p>The icon is a copy of <code>tools\fetch-sessions-windows.cmd</code>. The copying itself is still <code>fetch_sessions.py</code>, the same on every platform; the shortcut only does the two Windows-specific steps Python cannot do without administrator rights.</p>
 <h3 id="copying-the-data">Copying the data</h3>
 <ol><li><b>Plug the network cable</b> into both the Pi and the computer. A small light should come on at each end.</li></ol>
 <ol><li><b>Switch the Pi on</b>, if it is not already. Wait about a minute.</li></ol>
-<ol><li><b>Run the script.</b> Double-click <code>fetch_sessions.py</code>, or from a terminal:</li></ol>
+<ol><li><b>Run the script.</b> On Windows, double-click the <b><code>setupInterfaceForPiDataTransfer</code></b> icon on the Desktop, which sets the network up first and puts it back afterwards. Otherwise double-click <code>fetch_sessions.py</code>, or from a terminal:</li></ol>
 <p>   ``<code>    python3 tools/fetch_sessions.py    </code>``</p>
 <p>   A window opens and tells you what it is doing.</p>
 <ol><li><b>The first time only</b>, it offers to set things up so you never need the password again. Answer <b>Y</b>, then type the Pi's password when asked. It will not appear on screen as you type — that is normal. You will not be asked again on this computer.</li></ol>
 <ol><li><b>Choose where to put the data.</b> A normal folder-picking window opens. Pick or create a folder — somewhere in Documents is fine. It remembers your choice for next time.</li></ol>
-<blockquote><p>If the window does not appear, look behind the other one.</p></blockquote>
-<ol><li><b>Wait.</b> It lists what the Pi has, works out what this computer does not already have, and copies only that. Each session is checked after it arrives to make sure it came across intact. A session is a few hundred kilobytes, so this is quick — seconds, not minutes.</li></ol>
-<ol><li><b>Read the summary</b> at the end. It tells you how many sessions were copied, how many were already there, and where it put them.</li></ol>
+<p>   <img src="screenshots/operator/40-transfer-choose-folder.png" alt="choosing the folder to copy into"></p>
+<ol><li><b>Choose which recordings to copy.</b> A second window lists everything the Pi has that this computer does not, one row per session with its date and how many files it holds. Everything is ticked, so if you want all of it — which is usual — just press <b>Copy these</b>. Untick anything you do not want.</li></ol>
+<p>   <img src="screenshots/operator/41-transfer-choose-recordings.png" alt="choosing which recordings to copy"></p>
+<ol><li><b>Wait.</b> Each session is checked after it arrives to make sure it came across intact. A session is a few hundred kilobytes, so this is quick — seconds, not minutes.</li></ol>
+<p>   A bar along the bottom shows how far along it is:</p>
+<p>   <img src="screenshots/operator/42-transfer-copying.png" alt="copying, with the progress bar part-way"></p>
+<ol><li><b>Read the summary.</b> It tells you how many sessions were copied, how many were already there, and where it put them.</li></ol>
+<p>   <img src="screenshots/operator/43-transfer-finished.png" alt="the summary, and the offer to clear the Pi"></p>
+<ol><li><b>It asks whether to clear the Pi.</b> Answer <b>no</b> unless you have been told otherwise — see below. Pressing Enter answers no.</li></ol>
 <ol><li>Press <b>Enter</b> to close the window.</li></ol>
 <h3 id="what-it-does-that-is-worth-knowing">What it does that is worth knowing</h3>
 <p><b>It never copies the same session twice.</b> Anything already on the computer is left alone. So you can run it after every session, or once a week — it only ever fetches what is new.</p>
@@ -267,6 +278,14 @@ footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
 <p><b>A session never appears half-copied.</b> It is assembled out of sight and only put into place once it has been checked.</p>
 <p><b>It is safe to run twice.</b> If everything is already copied it says so and does nothing.</p>
 <p><b>It is safe to interrupt.</b> Close the window and nothing is left in a bad state; run it again and it picks up the rest.</p>
+<h3 id="clearing-the-recordings-off-the-pi">Clearing the recordings off the Pi</h3>
+<p>At the end it asks whether to remove from the Pi the recordings that are now on this computer. <b>The answer is no unless someone has told you otherwise.</b> The Pi is the original copy, and the point of this tool is that there are two.</p>
+<p>Pressing Enter answers no. If you do say yes, it lists exactly what it is about to remove and asks you to type the word <code>DELETE</code> — nothing happens until you do, and a stray keystroke cannot do it.</p>
+<p><img src="screenshots/operator/44-transfer-confirm-clear.png" alt="the confirmation, listing what would be removed"></p>
+<p>Before removing anything it checks every file against the Pi again, so it is only ever deleting recordings it has just proved are here and intact. It will refuse to remove a session that was never closed properly, because that one may still be in use. Anything it refuses is listed with the reason and left alone.</p>
+<p><img src="screenshots/operator/45-transfer-pi-cleared.png" alt="the recordings removed from the Pi"></p>
+<p>It removes the recordings themselves and leaves the subject and date folders behind, empty. That is deliberate: the next session recorded on the Pi lands where it always did.</p>
+<p><b>It cannot be undone.</b> After that, what is on this computer is the only copy, so it should not be done until that copy is somewhere backed up. Two copies on one computer is not a backup.</p>
 <h3 id="checking-older-copies-are-still-good">Checking older copies are still good</h3>
 <p>Files on a disk can go bad over time, and a copy made months ago is not re-checked on every run — that would get slower and slower as the archive grows. To check everything you already have against the Pi:</p>
 <pre><code>python3 tools/fetch_sessions.py --verify</code></pre>

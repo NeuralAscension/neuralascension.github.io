@@ -1,0 +1,374 @@
+<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Running a session — Pegboard</title><style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+body { margin:0; background:#00171A; color:#E8EDEE;
+       font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+.shell { display:flex; min-height:100vh; }
+nav { flex:0 0 250px; background:#00252A; padding:26px 18px; position:sticky; top:0;
+      height:100vh; overflow-y:auto; box-shadow: inset -1px 0 0 rgba(255,255,255,.06); }
+nav .brand { font-size:19px; font-weight:700; letter-spacing:.06em; color:#A8E1E6;
+             text-transform:uppercase; margin-bottom:4px; display:block;
+             text-decoration:none; }
+nav .tag { color:#8C9497; font-size:12.5px; margin-bottom:22px; }
+nav a.page { display:block; padding:8px 10px; margin:2px -10px; border-radius:7px;
+             color:#DDE4E6; text-decoration:none; font-size:14.5px; }
+nav a.page small { display:block; color:#8C9497; font-size:12px; }
+nav a.page:hover { background:rgba(255,255,255,.05); }
+nav a.page.on { background:rgba(168,225,230,.13); color:#A8E1E6; }
+nav .sect { margin-top:22px; font-size:11.5px; letter-spacing:.12em; color:#7b8386;
+            text-transform:uppercase; }
+main { flex:1 1 auto; padding:36px 40px 90px; max-width:940px; }
+h1 { font-size:31px; margin:0 0 6px; }
+h2 { font-size:22px; margin:40px 0 10px; padding-bottom:6px;
+     border-bottom:1px solid rgba(165,172,175,.22); }
+h3 { font-size:17.5px; margin:26px 0 8px; color:#A8E1E6; }
+h4 { font-size:15.5px; margin:20px 0 6px; color:#CDD4D6; }
+p, li { color:#DDE4E6; }
+a { color:#7FD9E4; }
+table { border-collapse:collapse; width:100%; margin:16px 0; font-size:14.5px;
+        display:block; overflow-x:auto; }
+th,td { text-align:left; padding:8px 11px; border-bottom:1px solid rgba(165,172,175,.16);
+        vertical-align:top; }
+th { color:#A5ACAF; font-weight:600; font-size:12.5px; text-transform:uppercase;
+     letter-spacing:.05em; white-space:nowrap; }
+code,pre { font-family:ui-monospace,"DejaVu Sans Mono",monospace; }
+code { background:rgba(255,255,255,.07); padding:1px 5px; border-radius:4px; font-size:.9em; }
+pre { background:rgba(0,0,0,.34); padding:14px 16px; border-radius:8px; overflow-x:auto;
+      font-size:13.5px; box-shadow: inset 0 0 0 1px rgba(255,255,255,.06); }
+pre code { background:none; padding:0; }
+blockquote { border-left:3px solid #F0A23B; background:rgba(240,162,59,.09);
+             margin:16px 0; padding:12px 16px; border-radius:0 8px 8px 0; }
+blockquote p:last-child { margin-bottom:0; }
+img { max-width:100%; height:auto; border-radius:8px; margin:14px 0;
+      box-shadow:0 2px 14px rgba(0,0,0,.5); }
+/* The latency report's diagrams are authored at a fixed pixel width. Without
+   this they set the page width on a phone and the whole body scrolls
+   sideways. */
+svg { max-width:100%; height:auto; }
+figure { margin:18px 0; max-width:100%; }
+figcaption { color:#8C9497; font-size:13px; margin-top:6px; }
+/* Long unbreakable tokens -- /dev/serial/by-id/usb-Adafruit_Feather... -- push
+   the line past the viewport otherwise. */
+code, a { overflow-wrap:break-word; }
+hr { border:0; border-top:1px solid rgba(165,172,175,.18); margin:34px 0; }
+del { color:#7b8386; }
+footer { margin-top:60px; padding-top:16px; color:#8C9497; font-size:13px;
+         border-top:1px solid rgba(165,172,175,.18); }
+@media (max-width: 820px) {
+  .shell { flex-direction:column; }
+  nav { flex:none; height:auto; position:static; }
+  main { padding:24px 18px 70px; }
+  h1 { font-size:26px; }
+  h2 { font-size:20px; }
+  /* Let tables reflow rather than making the reader swipe sideways. The
+     nowrap on headers and the desktop padding are what force the extra
+     width; drop both and most tables fit. Any that still cannot will scroll
+     inside their own box, which is why the overflow-x above stays. */
+  table { font-size:13px; }
+  th { white-space:normal; letter-spacing:0; }
+  /* Descendants too: the long cell is usually a <code> holding a session path
+     like ThumperBunny/20260810/005, and overflow-wrap does not inherit past an
+     inline element that sets its own. */
+  th, td, th *, td * { padding:7px 8px; overflow-wrap:anywhere; }
+  th *, td * { padding:0; }
+}
+/* Phone-width. The widest table in the docs is the seven-column per-session
+   summary in the latency report, which still overflowed at the breakpoint
+   above; trimming the type and the cell padding once more lands it inside a
+   375 px viewport. */
+@media (max-width: 520px) {
+  main { padding:20px 14px 60px; }
+  table { font-size:11.5px; }
+  th, td { padding:5px 5px; }
+  pre { font-size:12px; padding:11px 12px; }
+}
+</style></head><body><div class='shell'><nav><a class="brand" href="index.html">Pegboard</a><div class="tag">grooved peg test &middot; taVNS</div><a class="page" href="SINCE_THE_PAPER.html">Since the paper<small>what changed since publication</small></a><a class="page on" href="OPERATOR_GUIDE.html">Running a session<small>for the research associate</small></a><a class="page" href="ANALYSIS_GUIDE.html">Analyzing data<small>for the research associate</small></a><a class="page" href="ENGINEERING_GUIDE.html">Engineering<small>running and changing the rig</small></a><a class="page" href="DEBUGGING.html">Debugging<small>when something is broken</small></a><a class="page" href="DEVELOPER_GUIDE.html">Developer guide<small>architecture and decisions</small></a><a class="page" href="WINDOWS_CHECK.html">Windows check<small>validating the transfer tool</small></a><a class="page" href="BACKLOG.html">Backlog<small>open work, with reasoning</small></a><div class="sect">Reports</div><a class="page" href="CLOSED_LOOP_LATENCY.html">Closed-loop latency</a><div class="sect">Source</div><a class="page" href="https://github.com/NeuralAscension/pegboard">GitHub<small>NeuralAscension/pegboard</small></a></nav><main><h1 id="running-a-pegboard-session">Running a pegboard session</h1>
+<p>A step-by-step guide for running the grooved peg test. No technical background needed — if you can follow a lab protocol, you can run this.</p>
+<p>Everything happens on the small touchscreen attached to the Raspberry Pi. You tap the screen; there is no keyboard or mouse to find.</p>
+<hr>
+<h2 id="what-this-equipment-does">What this equipment does</h2>
+<p>The participant moves 25 pegs into a pegboard. The pegboard sits on a scale, so every peg makes the total weight go up by a small step. The system watches for those steps.</p>
+<p>Each time it sees a peg go in, it sends a signal to the stimulator, which delivers the taVNS stimulation. It also records everything: the weight over time, when each peg went in, and when each stimulation fired.</p>
+<p><b>You do not have to time anything or press anything during the task.</b> Your job is to set it up, press start, and press stop at the end.</p>
+<hr>
+<h2 id="the-parts-and-what-each-one-is-called">The parts, and what each one is called</h2>
+<p>You don't need to understand how these work, but you will see these names on screen and in this guide, so it helps to know what is what.</p>
+<h3 id="the-pegboard-end">The pegboard end</h3>
+<p><b>Load cell</b> — the scale underneath the pegboard. A metal bar that bends very slightly under weight; that bending is what gets measured. It is sensitive enough to see a single peg (about 2.5 grams) but that also means it reacts to knocks and leaning on the table.</p>
+<p><b>HX711</b> — the small chip that reads the load cell and converts the bending into a number. It takes a fresh reading about 85 times a second.</p>
+<p><b>ESP32-S3</b> — the small circuit board (about the size of a stick of gum) bolted near the pegboard. This is a <i>microcontroller</i>: a tiny computer that does one job continuously. Its job is to read the scale, decide when a peg has genuinely gone in, and fire the stimulator. <b>It, not the Raspberry Pi, makes the decision</b> — so stimulation happens even if the screen freezes.</p>
+<p>You'll see "ESP32" on the status light. That's this board.</p>
+<h3 id="the-computer-end">The computer end</h3>
+<p><b>Raspberry Pi</b> — a small, complete computer, roughly the size of a deck of cards, in a case near the screen. It runs the display you tap on, and it saves all the data onto its own drive. It is a real computer running a real operating system, which is why it needs shutting down properly rather than unplugging (see the end of this guide).</p>
+<p><b>Touchscreen</b> — the small screen attached to the Pi. Everything you do happens here. There is no keyboard or mouse; an on-screen keyboard appears when you need to type.</p>
+<p><b>NVMe drive</b> — the Pi's storage. Unlike most Raspberry Pis, which run from a small memory card, this one has a proper 1 terabyte solid-state drive inside it. That is where the operating system lives <i>and</i> where all your recordings are saved. There is a lot of room: a session is a few hundred kilobytes, so the drive holds effectively unlimited sessions. The screen shows the free space in the strip along the middle so you can keep an eye on it anyway.</p>
+<h3 id="the-cables-between-them">The cables between them</h3>
+<p><b>USB cable</b> — carries the scale readings from the ESP32 to the Raspberry Pi, and also powers the ESP32. If this is loose, the <b>ESP32</b> light goes red and no data arrives.</p>
+<p><b>Stimulation wire</b> — a thin single wire from the ESP32 to the Raspberry Pi, plus a shared ground wire. When the ESP32 fires the stimulator, it also puts a voltage on this wire, and the Pi watches for it. That's how the recording contains proof of what the participant actually received, rather than just what the system intended.</p>
+<p><b>GPIO26</b> — the name of the specific socket on the Raspberry Pi that the stimulation wire plugs into. "GPIO" means <i>general-purpose input/output</i>: the Pi has a row of 40 numbered pins along one edge, and this is number 26. The number matters only so that you plug the wire into the right one; it's on the status light so you can check at a glance.</p>
+<p><b>Stimulator</b> — the Spark Biomedical taVNS device that delivers the stimulation to the participant. The ESP32 triggers it directly over its own cable.</p>
+<h3 id="how-they-fit-together">How they fit together</h3>
+<pre><code>   pegs → pegboard → load cell → HX711 → ESP32-S3 ──USB──→ Raspberry Pi → touchscreen
+                                            │                    ↑
+                                            │                    │
+                                            └── stimulation wire ┘  (into GPIO26)
+                                            │
+                                            └──→ Spark stimulator → participant</code></pre>
+<p>The important thing to take from this: <b>the ESP32 runs the experiment, and the Raspberry Pi records it.</b> They are two separate computers doing two separate jobs, joined by two cables — and each of the two status lights on screen is telling you about one of those cables.</p>
+<hr>
+<h2 id="before-the-participant-arrives">Before the participant arrives</h2>
+<h3 id="turn-it-on">Turn it on</h3>
+<p>Power up the Raspberry Pi and the pegboard hardware. On the desktop you'll see three icons:</p>
+<table><thead><tr><th>icon</th><th>what it does</th></tr></thead><tbody>
+<tr><td><b>Pegboard</b></td><td>opens the session screen — this is the one you use</td></tr>
+<tr><td><b>Pegboard Data</b></td><td>opens the folder on the Pi's drive where recordings are saved</td></tr>
+<tr><td><b>Shut Down Pegboard</b></td><td>turns the Pi off safely at the end of the day</td></tr>
+</tbody></table>
+<p>There is also a <b>⏻ POWER</b> button on the session screen itself, which does the same thing without going back to the desktop.</p>
+<p>Double-tap <b>Pegboard</b>. The session screen opens full-screen. Give it about ten seconds.</p>
+<h3 id="turning-the-screen">Turning the screen</h3>
+<p>The screen works <b>either way up</b> — tall (upright) or wide (sideways) — and the layout rearranges itself to fit. Use whichever suits how the cart is set up.</p>
+<p>Double-tap <b>Rotate the Screen</b> on the desktop. It switches to the other way up and tells you which it chose. <b>It remembers</b>, so it comes back the same way next time you turn the Pi on.</p>
+<p>Every screenshot in this guide shows both: upright on the left, sideways on the right. They are the same screen with the same buttons in the same order — only the arrangement differs.</p>
+<h3 id="check-the-lights">Check the lights</h3>
+<p>Look at the <b>bottom-right corner</b> of the screen. There are three small lights:</p>
+<p><img src="screenshots/operator/01-idle-ready.png" alt="the session screen when it is ready"></p>
+<table><thead><tr><th>light</th><th>meaning</th></tr></thead><tbody>
+<tr><td>🟢 <b>ESP32</b></td><td>the USB cable is good — the ESP32 microcontroller on the pegboard is talking to the Raspberry Pi</td></tr>
+<tr><td>🟢 <b>STIM GPIO26</b></td><td>the Pi is watching pin GPIO26, so stimulation will be recorded</td></tr>
+<tr><td>🟢 <b>SELF-TEST</b></td><td>every automatic check of the equipment passed — see below</td></tr>
+<tr><td><b>950 GB</b></td><td>free space left on the Pi's drive. It will be a long time before this matters</td></tr>
+</tbody></table>
+<p><b>A green dot on its own means that light is fine.</b> When something is wrong the light turns <b>red or amber and spells out the problem</b> — for example <b>ESP32 NOT CONNECTED</b>, <b>STIM GPIO26 NOT CONNECTED</b>, or <b>SELF-TEST 2 FAILED</b>. So short and green is good; a light with words on it is asking for attention.</p>
+<p><b>All three must be green before you run a participant.</b></p>
+<p>If <b>ESP32</b> is red, the USB cable between the ESP32 board and the Raspberry Pi is loose or unplugged. Reseat it at both ends and wait a few seconds.</p>
+<p>If <b>STIM GPIO26</b> is red, the Pi cannot watch the stimulation wire, so <b>stimulation would not be recorded even if it fired</b>. Check the thin wire is pushed firmly onto pin 26 of the Pi's 40-pin header, and that the ground wire beside it is also seated.</p>
+<p>Note the difference between the two: a red <b>ESP32</b> light means you will get no data at all, which is obvious immediately. A red <b>STIM</b> light means everything <i>looks</i> fine — the chart moves, pegs are detected, the participant is even being stimulated — but the record of that stimulation is missing. That one is much easier to miss, which is why it has its own light.</p>
+<blockquote><p><b>Why this matters.</b> A red STIM light does not stop the session from running. It stops the <i>evidence</i> from being recorded. If you run a participant with it red, you will have their movement data but no proof of what stimulation they received, and there is no way to recover that afterwards.</p></blockquote>
+<hr>
+<h2 id="the-self-test">The self test</h2>
+<p>The two lights above check the <i>cables</i>. The <b>SELF-TEST</b> light checks the equipment itself.</p>
+<p>It runs automatically whenever the session screen starts, takes about three seconds, and covers around twenty things — that the load cell amplifier is answering, that it is reading fast enough, that an untouched pegboard is sitting still rather than drifting, that the stimulation trigger is not stuck on, that the Pi can actually write to its drive, and so on.</p>
+<table><thead><tr><th>the light says</th><th>what to do</th></tr></thead><tbody>
+<tr><td>🟢 <b>SELF-TEST</b></td><td>nothing. Everything passed</td></tr>
+<tr><td>⚫ <b>SELF-TEST NOT RUN</b></td><td>tap it, then tap <b>Run the self test</b></td></tr>
+<tr><td>🟠 <b>SELF-TEST 1 WARNING</b></td><td>tap it and read the amber line. Usually worth mentioning, rarely worth stopping for</td></tr>
+<tr><td>🔴 <b>SELF-TEST 2 FAILED</b></td><td>tap it and read the red lines. <b>Do not run a participant</b> until you know why</td></tr>
+</tbody></table>
+<p><b>Tap the light</b> to open the full list. Each check has its own small light, a plain-English name, and the measurement it took. A green one shows the range it was allowed to be in; a red one explains what it means and what it affects.</p>
+<p>Some of these catch faults that are otherwise invisible. <i>Load cell sample rate</i> is the clearest example: if the amplifier gets strapped to its slow setting, everything still works — the chart moves, pegs are detected, stimulation fires — but every participant is stimulated about three quarters of a second later than the protocol says, and nothing else on the screen would ever tell you.</p>
+<h3 id="two-checks-that-say-not-run">Two checks that say "not run"</h3>
+<p>Near the bottom of the list, <b>Trigger pulse sent</b> and <b>Trigger wire to the Pi</b> are usually gray and say <i>not run</i>. That is normal and it does not count against the green light.</p>
+<p>They are the only way to prove the thin trigger wire between the pegboard and the Pi is intact — and the only way to test a wire that carries stimulation is to send some. Pressing <b>Test the trigger wire</b> makes the pegboard fire a real pulse, 50 milliseconds long, about a twentieth of the one a peg produces. The Spark stimulator <i>will</i> fire if it is connected and switched on.</p>
+<p>So: <b>take the electrodes off the participant first.</b> The screen asks you to confirm before it sends anything.</p>
+<p>Worth doing at the start of a day, or any time the wiring has been disturbed — it is the check that catches the fault where stimulation is still delivered but silently stops being recorded.</p>
+<h3 id="if-it-refuses">If it refuses</h3>
+<p>If you ask for a self test while a task is running, the board says no and the screen tells you so. That is deliberate: the test reads the scale, and doing that mid-task would delay the participant's stimulation. Stop the run first.</p>
+<hr>
+<h2 id="running-a-session">Running a session</h2>
+<p>The screen walks you through it. The <b>large text along the top always tells you what to do next</b>, and the buttons along the bottom are numbered <b>1 2 3 4</b> in the order you press them.</p>
+<p>A button you cannot use yet is dimmed and says why underneath — for example <i>"needs the stream running"</i>. That's normal, not an error.</p>
+<h3 id="step-1-tap-stream">Step 1 — tap STREAM</h3>
+<p>This starts the live feed from the scale.</p>
+<p><img src="screenshots/operator/b1-streaming.png" alt="after tapping stream"></p>
+<p>The left-hand chart begins moving. With nothing on the pegboard it sits flat near zero — a flat line is correct, not a fault.</p>
+<p>If nothing moves, check the ESP32 light again.</p>
+<h3 id="step-2-fill-in-who-this-is-then-tap-metadata">Step 2 — fill in who this is, then tap METADATA</h3>
+<p>Four things to set. <b>Tap any of them to change it.</b></p>
+<p><b>Subject name</b> — tap it and a keyboard appears on screen. Type the name, then tap <b>DONE</b>. (<b>SHIFT</b> gives capitals, <b>⌫</b> deletes, <b>CANCEL</b> leaves it unchanged.)</p>
+<p><img src="screenshots/operator/20-keyboard.png" alt="the on-screen keyboard"></p>
+<p><b>Date</b> — tap the 📅 button next to it for a calendar. Today is already selected and outlined, so usually you can leave it alone. Future dates are grayed out on purpose.</p>
+<p><img src="screenshots/operator/21-calendar.png" alt="the calendar"></p>
+<p><b>Session number</b> — use the <b>−</b> and <b>+</b> buttons. This counts up automatically after each session, so normally you don't touch it.</p>
+<p><b>Session type</b> and <b>Hand</b> — tap to choose. Remember to switch <b>Hand</b> when the participant swaps hands.</p>
+<p>Then tap <b>2 METADATA</b>. The top of the screen should say <i>metadata save successful</i>, and the badge in the strip changes from <b>NOT SAVED</b> to <b>SAVED</b>.</p>
+<p><img src="screenshots/operator/b2-metadata-saved.png" alt="metadata saved"></p>
+<blockquote><p><b>If the session number turns red</b>, a recording with those exact details already exists. Tapping save will offer to <b>use the next free number instead</b> — take that option. The other choice overwrites the earlier recording permanently, so only use it if you are certain.</p></blockquote>
+<h3 id="step-3-tap-record">Step 3 — tap RECORD</h3>
+<p>Now it is writing to disk. The screen border turns red and the clock resets.</p>
+<p><img src="screenshots/operator/b3-recording.png" alt="recording armed"></p>
+<p>Nothing is being timed yet. You can still settle the participant.</p>
+<h3 id="step-4-tap-timing-and-the-participant-begins">Step 4 — tap TIMING, and the participant begins</h3>
+<p><b>This is the one to remember.</b> Tapping <b>4 TIMING</b> does two things: it starts the clock, <i>and</i> it enables stimulation.</p>
+<p><img src="screenshots/operator/b4-stimulating.png" alt="the task running, with stimulation"></p>
+<p>The top of the screen changes to <b>TASK + STIMULATION LIVE</b> and the clock turns green and starts counting.</p>
+<blockquote><p><b>If you forget this step</b>, the session still records weight and movement, but <b>no stimulation is delivered at all</b>. The task runs, the data looks plausible, and the participant receives nothing. This is the single easiest mistake to make, which is why it is step 4 of 4 with its own warning.</p></blockquote>
+<p>Now the participant works through the pegs. You don't need to do anything.</p>
+<p>As they go, you'll see:</p>
+<ul><li>the weight chart climbing in steps, one per peg</li><li><b>red bands</b> on the chart marking each stimulation</li><li>the <b>STIM</b> counter in the top-right counting up</li></ul>
+<p><img src="screenshots/operator/06-session-full.png" alt="part-way through a session"></p>
+<p>The STIM counter should match the number of pegs placed. If pegs are going in but the counter isn't moving, stop and check the stimulation wire.</p>
+<h3 id="step-5-tap-record-again-to-finish">Step 5 — tap RECORD again to finish</h3>
+<p>When the participant places the final peg, tap <b>RECORD</b> again.</p>
+<p><img src="screenshots/operator/b5-saved.png" alt="saved"></p>
+<p>The screen confirms <b>Data saved!</b> and the session number moves on ready for the next run. That's it — the recording is on disk.</p>
+<p><b>Stop promptly.</b> The system does not stop by itself, on purpose: that way a knock to the table can never end a run early. But it means any delay after the last peg is recorded as part of the session.</p>
+<hr>
+<h2 id="running-another-session">Running another session</h2>
+<p>For the same participant with the other hand:</p>
+<ol><li>Take all the pegs off the board.</li><li>Tap <b>RESET/TARE</b> — this re-zeroes the scale with the board empty. Do this with nothing on the board.</li><li>Change <b>Hand</b>.</li><li>Then steps 2 → 3 → 4 again: METADATA, RECORD, TIMING.</li></ol>
+<p>The session number will already have moved on for you.</p>
+<p><img src="screenshots/operator/09-left-running.png" alt="second session running"></p>
+<hr>
+<h2 id="finishing-for-the-day">Finishing for the day</h2>
+<p><b>On the screen</b>, tap the red <b>⏻ POWER</b> button on the right of the middle strip. You'll be asked which of two things you want:</p>
+<table><thead><tr><th>choice</th><th>what happens</th></tr></thead><tbody>
+<tr><td><b>Close the display only</b></td><td>quits this screen. <b>The Pi stays on.</b> Reopen any time with the Pegboard icon. Use this if you just want the screen out of the way.</td></tr>
+<tr><td><b>Shut down the whole Pi</b></td><td>powers the computer off completely. Use this at the end of the day.</td></tr>
+<tr><td><b>Cancel</b></td><td>nothing happens</td></tr>
+</tbody></table>
+<p>Either way, if a recording is still running it is stopped and saved first, and the stimulator is switched off.</p>
+<p>There is also a <b>Shut Down Pegboard</b> icon on the desktop that does the same full shutdown, for when the display isn't open.</p>
+<h3 id="then-wait-before-unplugging">Then wait before unplugging</h3>
+<p><b>After choosing to shut down, wait until the green light on the Raspberry Pi itself stops blinking.</b> It takes a few seconds. Then it is safe to switch off the power.</p>
+<blockquote><p><b>Please don't just pull the plug.</b> The Pi is a computer, and it may still be writing to its drive for a moment after you finish. Cutting power mid-write can leave a recording incomplete, or in a bad case leave the Pi unable to start next time.</p>
+<p>The drive in this Pi is a solid-state NVMe drive rather than the memory card most Raspberry Pis use, which makes it considerably more robust — but "more robust" is not "safe", and the shutdown button costs you five seconds.</p>
+<p>There is a second reason: shutting down properly also tells the pegboard hardware to stop, so no stimulation can be delivered after you have finished.</p></blockquote>
+<h2 id="where-the-data-goes">Where the data goes</h2>
+<p>Everything is saved on the Pi's own 1 TB drive — nothing goes to the internet and nothing is stored on a removable card.</p>
+<p>Double-tap <b>Pegboard Data</b> on the desktop. Recordings are filed as:</p>
+<pre><code>participant name  →  date  →  session number</code></pre>
+<p>for example <code>ThumperBunny / 20260807 / 001</code>.</p>
+<p>Each session folder holds five files. You don't need to open them — they are for analysis later — but the useful one to know is <code>session.json</code>, which holds the details you typed plus a summary of the run.</p>
+<p><b>Never rename or move these folders.</b> The names are how the analysis software finds them.</p>
+<hr>
+<h2 id="copying-the-data-onto-another-computer">Copying the data onto another computer</h2>
+<p>The recordings live on the Pi. To work with them — or to back them up — you copy them onto a normal computer with a network cable. This works the same on Windows, on a Mac, and on Linux.</p>
+<p><b>Nothing is ever deleted from the Pi.</b> This makes a copy. The Pi stays the original until somebody deliberately clears it.</p>
+<h3 id="what-you-need-once">What you need, once</h3>
+<table><thead><tr><th></th><th></th></tr></thead><tbody>
+<tr><td>A network cable</td><td>An ordinary Ethernet cable between the Pi and the computer</td></tr>
+<tr><td>The file</td><td><code>tools/fetch_sessions.py</code> from the pegboard folder</td></tr>
+<tr><td>Python</td><td>Already on a Mac or Linux. On Windows, install it once from python.org — tick <b>"Add Python to PATH"</b> during setup</td></tr>
+<tr><td>The Pi's password</td><td>You will be asked for it the first time only</td></tr>
+</tbody></table>
+<p>Nothing else needs installing. No extra packages.</p>
+<h3 id="setting-the-computer-s-network-address-one-time-only">Setting the computer's network address — one time only</h3>
+<p>The Pi always answers at the address <b>192.168.1.100</b>. The other computer has to be on the same stretch of network to reach it, and it will not arrange that by itself over a direct cable.</p>
+<p><b>On Windows, the Desktop shortcut below does this for you</b> and undoes it afterwards, so there is nothing to set up and nothing left changed. To do it by hand instead, or on a Mac, someone technical needs to do this once per computer:</p>
+<blockquote><p><b>Windows</b> — Settings → Network &amp; Internet → Ethernet → Edit IP assignment → Manual → IPv4 on. IP address <code>192.168.1.50</code>, Subnet mask <code>255.255.255.0</code>. Leave gateway and DNS blank.</p>
+<p><b>Mac</b> — System Settings → Network → Ethernet → Details → TCP/IP → Configure IPv4: Manually. Same address and mask.</p></blockquote>
+<p>If this has not been done, the script says so in plain words and stops without changing anything. It is the most common reason it does not work first time.</p>
+<h3 id="the-windows-shortcut">The Windows shortcut</h3>
+<p>On the study computer there is a <b><code>setupInterfaceForPiDataTransfer</code></b> icon on the Desktop. Double-click it and it does the whole job in one go:</p>
+<ol><li>Windows asks permission to change the network adapter — click <b>Yes</b>.</li><li>It puts this computer on the Pi's stretch of network.</li><li>It checks the Pi is answering, and says so in plain words if it is not.</li><li>It copies the data, asking you where to put it.</li><li><b>It puts the network back the way it was</b>, on automatic, under the adapter's original name — so the computer is left as it was found.</li></ol>
+<p>Step 5 happens whether the copying worked or not. A failed attempt cannot strand the computer on a fixed address with no way back onto the internet.</p>
+<p>The icon is a copy of <code>tools\fetch-sessions-windows.cmd</code>. The copying itself is still <code>fetch_sessions.py</code>, the same on every platform; the shortcut only does the two Windows-specific steps Python cannot do without administrator rights.</p>
+<h3 id="copying-the-data">Copying the data</h3>
+<ol><li><b>Plug the network cable</b> into both the Pi and the computer. A small light should come on at each end.</li></ol>
+<ol><li><b>Switch the Pi on</b>, if it is not already. Wait about a minute.</li></ol>
+<ol><li><b>Run the script.</b> On Windows, double-click the <b><code>setupInterfaceForPiDataTransfer</code></b> icon on the Desktop, which sets the network up first and puts it back afterwards. Otherwise double-click <code>fetch_sessions.py</code>, or from a terminal:</li></ol>
+<p>   ``<code>    python3 tools/fetch_sessions.py    </code>``</p>
+<p>   A window opens and tells you what it is doing.</p>
+<ol><li><b>The first time only</b>, it offers to set things up so you never need the password again. Answer <b>Y</b>, then type the Pi's password when asked. It will not appear on screen as you type — that is normal. You will not be asked again on this computer.</li></ol>
+<ol><li><b>Choose where to put the data.</b> A normal folder-picking window opens. Pick or create a folder — somewhere in Documents is fine. It remembers your choice for next time.</li></ol>
+<p>   <img src="screenshots/operator/40-transfer-choose-folder.png" alt="choosing the folder to copy into"></p>
+<ol><li><b>Choose which recordings to copy.</b> A second window lists everything the Pi has that this computer does not, one row per session with its date and how many files it holds. Everything is ticked, so if you want all of it — which is usual — just press <b>Copy these</b>. Untick anything you do not want.</li></ol>
+<p>   <img src="screenshots/operator/41-transfer-choose-recordings.png" alt="choosing which recordings to copy"></p>
+<ol><li><b>Wait.</b> Each session is checked after it arrives to make sure it came across intact. A session is a few hundred kilobytes, so this is quick — seconds, not minutes.</li></ol>
+<p>   A bar along the bottom shows how far along it is:</p>
+<p>   <img src="screenshots/operator/42-transfer-copying.png" alt="copying, with the progress bar part-way"></p>
+<ol><li><b>Read the summary.</b> It tells you how many sessions were copied, how many were already there, and where it put them.</li></ol>
+<p>   <img src="screenshots/operator/43-transfer-finished.png" alt="the summary, and the offer to clear the Pi"></p>
+<ol><li><b>It asks whether to clear the Pi.</b> Answer <b>no</b> unless you have been told otherwise — see below. Pressing Enter answers no.</li></ol>
+<ol><li>Press <b>Enter</b> to close the window.</li></ol>
+<h3 id="what-it-does-that-is-worth-knowing">What it does that is worth knowing</h3>
+<p><b>It never copies the same session twice.</b> Anything already on the computer is left alone. So you can run it after every session, or once a week — it only ever fetches what is new.</p>
+<p><b>It checks every file after copying it.</b> Not just the size — a full fingerprint of the contents, compared against the Pi's. If a file arrives damaged, that session is removed rather than left half-copied, and the summary says so. Run it again and it will fetch it properly.</p>
+<p><b>A session never appears half-copied.</b> It is assembled out of sight and only put into place once it has been checked.</p>
+<p><b>It is safe to run twice.</b> If everything is already copied it says so and does nothing.</p>
+<p><b>It is safe to interrupt.</b> Close the window and nothing is left in a bad state; run it again and it picks up the rest.</p>
+<h3 id="clearing-the-recordings-off-the-pi">Clearing the recordings off the Pi</h3>
+<p>At the end it asks whether to remove from the Pi the recordings that are now on this computer. <b>The answer is no unless someone has told you otherwise.</b> The Pi is the original copy, and the point of this tool is that there are two.</p>
+<p>Pressing Enter answers no. If you do say yes, it lists exactly what it is about to remove and asks you to type the word <code>DELETE</code> — nothing happens until you do, and a stray keystroke cannot do it.</p>
+<p><img src="screenshots/operator/44-transfer-confirm-clear.png" alt="the confirmation, listing what would be removed"></p>
+<p>Before removing anything it checks every file against the Pi again, so it is only ever deleting recordings it has just proved are here and intact. It will refuse to remove a session that was never closed properly, because that one may still be in use. Anything it refuses is listed with the reason and left alone.</p>
+<p><img src="screenshots/operator/45-transfer-pi-cleared.png" alt="the recordings removed from the Pi"></p>
+<p>It removes the recordings themselves and leaves the subject and date folders behind, empty. That is deliberate: the next session recorded on the Pi lands where it always did.</p>
+<p><b>It cannot be undone.</b> After that, what is on this computer is the only copy, so it should not be done until that copy is somewhere backed up. Two copies on one computer is not a backup.</p>
+<h3 id="checking-older-copies-are-still-good">Checking older copies are still good</h3>
+<p>Files on a disk can go bad over time, and a copy made months ago is not re-checked on every run — that would get slower and slower as the archive grows. To check everything you already have against the Pi:</p>
+<pre><code>python3 tools/fetch_sessions.py --verify</code></pre>
+<p>It lists any session that no longer matches. It does <b>not</b> delete anything: the Pi still has a good copy, so delete the local folder it names and run the script again to fetch a clean one.</p>
+<h3 id="if-it-does-not-work">If it does not work</h3>
+<p>The script names the problem rather than showing an error code. The three you are likely to see:</p>
+<table><thead><tr><th>what it says</th><th>what to do</th></tr></thead><tbody>
+<tr><td><b>Cannot see the pegboard Pi</b></td><td>Check the cable at both ends, check the Pi is on, and check the computer's address has been set as above</td></tr>
+<tr><td><b>This computer is missing the tools needed</b></td><td>On Windows, ask IT to turn on "OpenSSH Client" in Settings → Apps → Optional features</td></tr>
+<tr><td><b>Could not read the recordings</b></td><td>The Pi answered but would not let us in. Usually the password was mistyped — try again</td></tr>
+</tbody></table>
+<p>If it fails, <b>nothing has been copied and nothing has been changed</b> on either machine. It is always safe to try again.</p>
+<hr>
+<h2 id="when-something-looks-wrong">When something looks wrong</h2>
+<table><thead><tr><th>what you see</th><th>what to do</th></tr></thead><tbody>
+<tr><td><b>ESP32</b> light is red</td><td>reseat the USB cable between pegboard and Pi, wait 10 s</td></tr>
+<tr><td><b>STIM GPIO26</b> light is red</td><td>check the thin stimulation wire is firmly on its pin. Don't run a participant until it's green</td></tr>
+<tr><td>chart is flat and not moving</td><td>make sure you tapped <b>1 STREAM</b>; if you did, check the ESP32 light</td></tr>
+<tr><td>chart looks like random noise near zero</td><td>this is normal with an empty board — it's just the scale's sensitivity</td></tr>
+<tr><td>pegs going in, but no red bands and STIM stays at 0</td><td>stimulation is not reaching the system. Stop, check the stimulation wire, start a new session</td></tr>
+<tr><td>session number is outlined in red</td><td>that recording already exists. Choose <b>use the next free number</b></td></tr>
+<tr><td>screen is frozen or blank</td><td>tap <b>⏻ POWER</b> → <b>Close the display only</b>, then reopen with the Pegboard icon. Your saved data is safe</td></tr>
+<tr><td>weight looks wrong or drifts</td><td>take everything off the board and tap <b>RESET/TARE</b></td></tr>
+<tr><td>nothing works and you're stuck</td><td>shut down with the icon, wait 10 s, power back on</td></tr>
+<tr><td><b>anything not in this table</b></td><td><b>photograph the screen and report it — see below.</b> Don't improvise a workaround</td></tr>
+</tbody></table>
+<p><b>Data already saved is never lost by restarting the screen.</b> Each session is written to the card as it goes, not held in memory until the end.</p>
+<hr>
+<h2 id="which-part-is-responsible-for-what">Which part is responsible for what</h2>
+<p>When something goes wrong it saves a lot of time to know <i>which half</i> of the system is at fault. The two halves fail in completely different ways.</p>
+<p><b>The pegboard end (load cell → HX711 → ESP32) runs the experiment.</b> It reads the scale, decides a peg went in, and fires the stimulator. It does this whether or not the Raspberry Pi is even switched on.</p>
+<p><b>The Raspberry Pi end records it.</b> It draws the charts, saves the files, and watches the stimulation wire. It never decides anything about the task.</p>
+<p>The practical consequence: <b>if the screen dies mid-session, the participant is still being stimulated</b> — the pegboard hardware carries on regardless. And the reverse: if the pegboard hardware stops, the screen will look fine but nothing will move.</p>
+<h3 id="symptom-what-is-actually-wrong">Symptom → what is actually wrong</h3>
+<table><thead><tr><th>what you see</th><th>the part at fault</th><th>what it means</th><th>who fixes it</th></tr></thead><tbody>
+<tr><td>Weight reads a few grams off with an empty board</td><td><b>load cell</b> — drift, normal</td><td>not a fault</td><td>you: <b>RESET/TARE</b> with the board clear</td></tr>
+<tr><td>Weight jumps when someone leans on the table</td><td><b>load cell</b> — it is that sensitive</td><td>not a fault</td><td>you: keep the table clear, re-tare</td></tr>
+<tr><td>Weight drifts steadily during a session</td><td><b>load cell</b> — temperature or something resting on the board</td><td>not a fault</td><td>you: clear the board, re-tare, restart the session</td></tr>
+<tr><td>Weight is wildly wrong — 200 g for one peg, or negative</td><td><b>load cell or HX711</b> — likely a loose connector or a knocked mount</td><td>the scale needs recalibrating</td><td><b>engineering.</b> Stop, don't run participants</td></tr>
+<tr><td>Pegs go in but aren't detected, or one peg counts as two</td><td><b>ESP32 detection settings</b></td><td>the sensitivity thresholds are off, or the board is being knocked</td><td><b>engineering.</b> Report it with the session number</td></tr>
+<tr><td>Nothing on the chart at all, <b>ESP32</b> light red</td><td><b>USB cable or ESP32</b></td><td>the Pi is hearing nothing</td><td>you: reseat the USB cable. If still red, engineering</td></tr>
+<tr><td>Chart works, but <b>STIM</b> light red</td><td><b>stimulation wire / GPIO26 on the Pi</b></td><td>stimulation may still be firing — it just is not being recorded</td><td>you: reseat the thin wire on pin 26. Don't run participants until green</td></tr>
+<tr><td>Chart and red bands fine, but the participant feels nothing</td><td><b>Spark stimulator or its electrodes</b></td><td>the trigger is reaching the stimulator; the problem is past that point</td><td>you: check electrode contact and the stimulator's own settings</td></tr>
+<tr><td>Screen frozen, but pegs are still being detected</td><td><b>Pi display software only</b></td><td>the pegboard hardware is unaffected and stimulation continues</td><td>you: close the display and reopen. <b>Data already saved is safe</b></td></tr>
+<tr><td>Cannot save a session / "already exists"</td><td><b>Pi, filing only</b></td><td>nothing is broken; the name is taken</td><td>you: use the next free session number</td></tr>
+<tr><td>Pi will not start at all</td><td><b>Pi</b></td><td>pegboard hardware is fine</td><td>engineering</td></tr>
+</tbody></table>
+<h3 id="the-rule-of-thumb">The rule of thumb</h3>
+<ul><li><b>Anything about weight or peg detection</b> → the pegboard end. Nothing on the Pi is broken, and restarting the Pi will not help.</li><li><b>Anything about charts, saving, or the screen</b> → the Pi end. The pegboard hardware is fine and the participant is unaffected.</li><li><b>Anything about the stimulation itself reaching the participant</b> → the Spark stimulator and electrodes, which sit past both.</li></ul>
+<h3 id="a-note-on-calibration">A note on calibration</h3>
+<p>The scale's calibration — how a bend in the load cell becomes a number in grams — is set in the ESP32's software, not on the Pi and not on this screen. So:</p>
+<ul><li><b>Taring</b> (re-zeroing with an empty board) is a normal operator action. Use <b>RESET/TARE</b> freely, and always with the board clear.</li><li><b>Recalibrating</b> (making a known weight read correctly) is an engineering job. If a single peg is not reading roughly 2.5 grams, that is a calibration problem — report it rather than working around it.</li></ul>
+<p>A run made on a mis-calibrated scale can look perfectly normal and still be unusable, because peg detection depends on the size of the weight step.</p>
+<hr>
+<h2 id="if-something-breaks-what-to-write-down">If something breaks — what to write down</h2>
+<p>If you hit a problem you can't clear with the table above, <b>stop and report it rather than working around it.</b> A session run on a half-working rig can look completely normal and still be unusable.</p>
+<p>What makes a report fixable is knowing <i>what the system was doing at the time</i>. Please note these five things — a photo of the screen covers most of them:</p>
+<ol><li><b>What you were doing</b> — which step, which button you'd just tapped.</li><li><b>What the two lights showed</b> — ESP32 and STIM GPIO26, green or red.</li><li><b>The exact wording along the top of the screen.</b> It usually names the problem directly. "Microcontroller not reachable" and "data not streaming" are different faults with different fixes.</li><li><b>Participant, date and session number</b> from the strip across the middle — this identifies the recording on disk.</li><li><b>Whether any data was saved</b> — did you see <i>Data saved!</i> before it went wrong?</li></ol>
+<p><b>A photo of the whole screen is the single most useful thing you can send.</b> It captures the lights, the message, the charts and the session details at once.</p>
+<h3 id="also-worth-noting">Also worth noting</h3>
+<ul><li><b>Was anything unplugged, moved, or knocked?</b> Including the table.</li><li><b>Did it work earlier the same day?</b> "It worked this morning" narrows things down enormously.</li><li><b>Is it every time, or occasional?</b> Intermittent faults and constant faults have very different causes.</li><li><b>Roughly what time it happened.</b> The Pi keeps its own detailed log, and a time lets us find the right moment in it.</li></ul>
+<h3 id="don-t-do-these">Don't do these</h3>
+<ul><li><b>Don't delete or rename a session folder</b> that looks wrong. Even a partial recording usually says what went wrong. Note the name and leave it.</li><li><b>Don't re-run over the top of it.</b> If the system offers to use the next free session number, take it.</li><li><b>Don't pull the power to reset it.</b> Use <b>Shut Down Pegboard</b>, wait for the light, then power back on.</li></ul>
+<h3 id="the-technical-detail-is-already-saved-for-us">The technical detail is already saved for us</h3>
+<p>You don't need to find any of this — it's recorded automatically, and mentioning the <i>time</i> is enough for us to retrieve it:</p>
+<ul><li>the Pi logs everything the software did, continuously</li><li>every session folder holds <code>raw_udp.log</code>, a word-for-word copy of everything the pegboard hardware said during that run</li><li><code>session.json</code> in each folder records which cables were connected and whether stimulation was being watched</li></ul>
+<p>So a report like <i>"3:20pm, second session, STIM light was red, top of screen said stimulation not armed, photo attached"</i> is genuinely enough to work from.</p>
+<h3 id="who-to-tell">Who to tell</h3>
+<p>Send it to Shayok. If a participant is waiting and both lights are green, you can usually finish the session and report afterwards — but <b>if the STIM light is red, stop</b>, because that data cannot be reconstructed later.</p>
+<hr>
+<h2 id="quick-reference">Quick reference</h2>
+<p>Stick this by the rig:</p>
+<pre><code>   BOTH LIGHTS GREEN, bottom right, before every participant
+
+   1  STREAM     live feed on
+   2  METADATA   name / date / session / type / hand   -&gt; SAVED
+   3  RECORD     starts writing to disk
+   4  TIMING     starts the clock AND the stimulation   &lt;-- easy to forget
+
+   ... participant does the task ...
+
+      RECORD     tap again to stop and save
+
+   Between runs:   clear the board -&gt; RESET/TARE -&gt; change Hand
+   End of day:     tap POWER -&gt; &quot;Shut down the whole Pi&quot;
+                   wait for the Pi&#x27;s green light to stop blinking, then unplug</code></pre><footer>Pegboard documentation &middot; built from the Markdown in <code>docs/</code> by <code>tools/build_docs.py</code>.</footer></main></div></body></html>

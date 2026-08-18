@@ -235,6 +235,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-08-18</strong></td>
 <td><strong>Neuropixels OneBox support — USB basestation source, 12-ch ADC stream, graceful-close fix (the "bricking" bug), GUI tip-referencing for NP1.0/NP2.0, PXIe-vs-OneBox noise matrix, and the intro logo splash</strong></td>
 </tr>
+<tr>
+<td><strong>S36</strong></td>
+<td><strong>2026-08-18</strong></td>
+<td><strong>Simulated OneBox (12-ch ADC sim source + two sim configs); fixed the IMRO panel binding to the wrong npx source (NP1.0 had no probe map) and channel numbers bleeding through the idle splash</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -2643,7 +2648,92 @@ source material the animation was derived from.</p>
    grown organically and now also carries the splash <code>z-index</code> interaction from §35.7).</li>
 <li>WavePlayer/DAC as the second stim path (deferred decision from this session's start).</li>
 <li>Cosmetic: a real "V" axis label for the ADC column.</li>
-</ol></article>
+</ol>
+<h2 id="36-simulated-onebox-12-ch-adc-two-gui-bugs-the-sim-exposed-2026-08-18">36. SIMULATED ONEBOX (12-CH ADC) + TWO GUI BUGS THE SIM EXPOSED  (2026-08-18)<a class="headerlink" href="#36-simulated-onebox-12-ch-adc-two-gui-bugs-the-sim-exposed-2026-08-18" title="Permanent link">#</a></h2>
+<p>Hardware-free OneBox, so OneBox work can continue while the rig is busy (the NP2.0 probe was tied up with
+grounding/noise work). Also fixes two frontend bugs, one of which the sim itself surfaced.</p>
+<h3 id="361-simulating-onebox-vs-pxie-only-the-adc-differs">36.1 Simulating OneBox vs PXIe: only the ADC differs<a class="headerlink" href="#361-simulating-onebox-vs-pxie-only-the-adc-differs" title="Permanent link">#</a></h3>
+<p>Asked directly whether a simulated OneBox differs from a simulated PXIe basestation. For the <strong>probe
+stream it does not</strong> -- once a basestation is open the path is identical (same <code>Npx1Probe</code>/<code>Npx2MSProbe</code>
+workers, same IMRO pipeline, same <code>data.npx.ap/lfp/raw</code>). That is precisely why the real <code>OneBoxSource</code>
+inherits all of it and overrides only how the basestation is FOUND and CLOSED (S35.1) -- and those
+overrides are pure IMEC-API calls (<code>np_checkFtdiDriver</code>, <code>np_mapBS</code>, <code>setSyncAsInput</code>) that a sim never
+performs, so "simulating" them would exercise nothing.</p>
+<p>What OneBox genuinely adds, data-wise, is the <strong>12-channel ADC</strong>. So that is the only new sim class, and
+the simulated OneBox is <strong>composed, not subclassed</strong>: the existing sim probe (<code>source.npx.simdata</code> /
+<code>source.npx.sim2</code>, untouched) + the new ADC source, wired together in YAML. Same shape as how
+<code>source.nidaq.sim</code> composes with a probe sim. The DOWNSTREAM wiring -- <code>data.npx.adc</code>, <code>interp.npx.adc</code>,
+the 12-trace display band, the recorder -- is what the real OneBox config uses, and that is the part worth
+exercising. (<code>data.npx.adc</code> + <code>interp.npx.adc</code> were already registered OUTSIDE the <code>NPX_HW_ENABLED</code> guard,
+so no registry change was needed.)</p>
+<ul>
+<li><strong><code>src/modules/neuropixels/SimOneBoxAdcSource.{hpp,cpp}</code></strong> (NEW) -- <code>source.npx.simadc</code>. Worker on its
+  own QThread, wall-clock paced like <code>SimNpx2Worker</code>, writing int16 + <code>PacketInfo</code> into <code>data.npx.adc</code>.
+  Built unconditionally (NOT behind <code>NPX_HW_ENABLED</code>), so it works on Linux / sim-only too.</li>
+<li>Signal model, in volts, quantised with the hardware's own 5 V/32768 factor so a volt lands on exactly
+  the count the real device would produce: <strong>ch0</strong> = 0/3.3 V TTL square (the standalone "ADC" SMA),
+  <strong>ch1</strong> = GROUNDED (noise floor only -- the same visible contrast as grounding an input on the rig),
+  <strong>ch2</strong> = slow DC drift, <strong>ch3</strong> = 50 Hz mains + harmonic, <strong>ch4+</strong> = sines spread 1 Hz..1 kHz. Gaussian
+  noise floor on every channel. All knobs YAML-editable.</li>
+<li><strong><code>config/SimNpx1OneBox.yaml</code></strong> / <strong><code>config/SimNpx2OneBox.yaml</code></strong> (NEW) -- both appear in the GUI
+  "Simulated Data" picker as <em>Neuropixels 1.0 / 2.0 Multishank (OneBox + ADC)</em>.</li>
+</ul>
+<p><strong>Verified live</strong>, both variants: probe + ADC streaming together, 0 warnings/errors, including a
+mid-session source swap. NP1.0 confirmed streaming <strong>AP and LFP bands simultaneously</strong> alongside the
+12-channel ADC (3 columns at once). The ADC traces render on the volts scale exactly as the real OneBox
+ADC does.</p>
+<h3 id="362-bug-the-imro-panel-bound-to-the-wrong-source-so-np10-had-no-probe-map">36.2 BUG -- the IMRO panel bound to the wrong source, so NP1.0 had no probe map<a class="headerlink" href="#362-bug-the-imro-panel-bound-to-the-wrong-source-so-np10-had-no-probe-map" title="Permanent link">#</a></h3>
+<p><code>NetworkClient.js</code> picked the probe module with <code>keys.find(k =&gt; k.includes("npx") &amp;&amp; !k.includes("recorder"))</code>.
+That also matches a <strong>non-probe</strong> npx source, and the new ADC registers as <code>source.npx.simadc</code>. With two
+npx sources present, <code>find</code> returns whichever key comes first -- so the outcome depended on ORDER:</p>
+<table>
+<thead>
+<tr>
+<th>config</th>
+<th>keys</th>
+<th><code>find</code> picks</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP2 OneBox sim</td>
+<td><code>sim2</code>, <code>simadc</code></td>
+<td><code>sim2</code> ("2" &lt; "a")</td>
+<td>worked, by luck</td>
+</tr>
+<tr>
+<td>NP1 OneBox sim</td>
+<td><code>simadc</code>, <code>simdata</code></td>
+<td><strong><code>simadc</code></strong> ("a" &lt; "d")</td>
+<td><strong>empty Probe Map</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The ADC source has no IMRO surface, so the panel bound to it silently drew nothing -- and the status badge
+read "Found simulated OneBox ADC" instead of the probe. Fixed by selecting on <strong>capability, not name</strong>:
+prefer the npx module that actually exposes <code>getImroAsJson</code>, falling back to the old heuristic. This also
+protects any future non-probe npx source from hijacking the panel.</p>
+<p>One fix, three symptoms gone: the NP1.0 probe map now renders (single shank, Bank 0/1/2, reference
+electrode 959 flagged), the right per-probe controls show (<code>np1-quick-formats</code>, not NP2's shank/bank
+selector), and the live-view band selector rebuilds correctly per source -- an NP2-&gt;NP1 switch without a
+page reload now lists <code>ap,lfp,adc</code> instead of carrying a stale <code>raw</code> and leaving the chart silently blank.</p>
+<h3 id="363-bug-channel-numbers-bled-through-the-idle-splash">36.3 BUG -- channel numbers bled through the idle splash<a class="headerlink" href="#363-bug-channel-numbers-bled-through-the-idle-splash" title="Permanent link">#</a></h3>
+<p>On Disconnect the splash covers the chart area, but the channel-number labels are an HTML overlay,
+<code>.labels-overlay</code>, at <strong>z-index 10</strong> -- above the splash's 5, so "19R, 18L, ..." floated over the logo.
+The toolbar was ALSO at 10, so simply raising the splash would have covered the toolbar too. Fixed by
+separating the layers: <code>.toolbar</code> -&gt; <strong>20</strong>, <code>#logo-splash</code> -&gt; <strong>11</strong>, leaving <code>.labels-overlay</code> at 10
+underneath. <code>#sim-picker-modal</code> (1000) and <code>#ripple-dock</code> (50) still sit above the splash, which is right
+-- the sim picker has to be usable while the idle splash is up.</p>
+<h3 id="364-notes">36.4 Notes<a class="headerlink" href="#364-notes" title="Permanent link">#</a></h3>
+<ul>
+<li><code>scripts/spikespeak_cli.py</code>, referenced in older notes, does not exist in this tree; the python launcher
+  also does not relay stdin, so console-command scripting is unavailable. Drive headless runs via the GUI
+  or the WebSocket.</li>
+<li>The HTTP server roots at <code>&lt;exe&gt;/../webinterface</code>, i.e. the BUILD tree, not the repo -- frontend edits
+  need syncing there (the build's POST_BUILD copy does it). It also 404s on query strings, so <code>?cachebust</code>
+  probes report a false "File not found".</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2795,6 +2885,13 @@ source material the animation was derived from.</p>
 <li><a href="#357-the-intro-splash-webinterfacelogosplashjs-new">35.7 The intro splash — webinterface/LogoSplash.js (NEW)</a></li>
 <li><a href="#358-verified-vs-not-an-explicit-line">35.8 Verified vs not — an explicit line</a></li>
 <li><a href="#359-next-tasks">35.9 Next tasks</a></li>
+</ul>
+</li>
+<li><a href="#36-simulated-onebox-12-ch-adc-two-gui-bugs-the-sim-exposed-2026-08-18">36. SIMULATED ONEBOX (12-CH ADC) + TWO GUI BUGS THE SIM EXPOSED (2026-08-18)</a><ul>
+<li><a href="#361-simulating-onebox-vs-pxie-only-the-adc-differs">36.1 Simulating OneBox vs PXIe: only the ADC differs</a></li>
+<li><a href="#362-bug-the-imro-panel-bound-to-the-wrong-source-so-np10-had-no-probe-map">36.2 BUG -- the IMRO panel bound to the wrong source, so NP1.0 had no probe map</a></li>
+<li><a href="#363-bug-channel-numbers-bled-through-the-idle-splash">36.3 BUG -- channel numbers bled through the idle splash</a></li>
+<li><a href="#364-notes">36.4 Notes</a></li>
 </ul>
 </li>
 </ul>

@@ -42,6 +42,7 @@
 <a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
@@ -79,7 +80,11 @@
 is going. Began as the Neuropixels 1.0 / IMRO status record (this branch's original purpose)
 and now also tracks cross-cutting architecture work (module communication) and the planned
 overhauls. Renamed from SpikesPeak_IMRO_Status.txt on 2026-06-25 as scope grew past IMRO.</p>
-<p><strong>STATUS DATE: 2026-07-21</strong> -- BOTH probes' closed loops fully quantified: the complete quorum x
+<p><strong>STATUS DATE: 2026-08-18</strong> -- <strong>Neuropixels OneBox is a working acquisition source.</strong> A real NP2.0
+multishank probe on a real OneBox connects, streams, records, pauses/plays, disconnects and RECONNECTS
+cleanly, with its 12-channel ADC streaming alongside as its own live column in real volts. Tip
+referencing is now a GUI toggle for NP1.0 and NP2.0. NP1.0-on-OneBox is the next hardware test.</p>
+<p>PRIOR MILESTONE (2026-07-21) -- BOTH probes' closed loops fully quantified: the complete quorum x
 delivery matrix at 1000 detections per cell on NP1.0 AND NP2.0. Sub-millisecond with ASAP delivery at
 every quorum level on both -- NP1.0 0.94-0.98 ms, NP2.0 0.55-0.61 ms. ASAP now works on NP2.0
 (<code>Npx2MSProbe::setLowLatency</code>). The closed loop is validated end to end on both probes.</p>
@@ -224,6 +229,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S34</strong></td>
 <td><strong>2026-07-24</strong></td>
 <td><strong>NP2.0 + NI-DAQ digital-input parity (AI+DI); ripple detection now defaults to ASAP (NP2 sim now honours <code>low_latency</code>); command/event bus design brief + open questions (§31.1)</strong></td>
+</tr>
+<tr>
+<td><strong>S35</strong></td>
+<td><strong>2026-08-18</strong></td>
+<td><strong>Neuropixels OneBox support — USB basestation source, 12-ch ADC stream, graceful-close fix (the "bricking" bug), GUI tip-referencing for NP1.0/NP2.0, PXIe-vs-OneBox noise matrix, and the intro logo splash</strong></td>
 </tr>
 </tbody>
 </table>
@@ -2443,7 +2453,197 @@ NPX sim classes into one geometry-parameterized <code>NpxSimSource</code> + a ge
 recorder's <code>.bin</code>+<code>.bin.json</code>), C (a source-type <strong>descriptor</strong> registry that kills the name-substring
 routing), D (a <code>modules/intan/</code> NeuroNexus source mirroring <code>NIDAQSource</code>) — plus a phased recommendation
 (A → B → C, D with the hardware). Honours the <code>SimDataLinux.md</code> "one sim class per hardware family" ruling. For
-the maintainer + collaborator to pick a direction — <strong>not implemented.</strong></p></article>
+the maintainer + collaborator to pick a direction — <strong>not implemented.</strong></p>
+<h2 id="35-neuropixels-onebox-support-usb-basestation-12-ch-adc-tip-referencing-intro-splash-2026-08-18">35. NEUROPIXELS ONEBOX SUPPORT — USB BASESTATION, 12-CH ADC, TIP REFERENCING, INTRO SPLASH  (2026-08-18)<a class="headerlink" href="#35-neuropixels-onebox-support-usb-basestation-12-ch-adc-tip-referencing-intro-splash-2026-08-18" title="Permanent link">#</a></h2>
+<p>Branch <code>feature/OneBoxSupport</code>. Reference implementation: the local OpenEphys <code>neuropixels-pxi</code> copy
+(<code>Source-OpenEphys-Neuropixels-PXI/</code>, gitignored — clone from
+<a href="https://github.com/open-ephys-plugins/neuropixels-pxi">https://github.com/open-ephys-plugins/neuropixels-pxi</a>). Plan + design:
+<code>developer_docs/NextTask_OneBoxSupport.md</code>.</p>
+<p><strong>Headline — the OneBox is a working acquisition source.</strong> A real <strong>Neuropixels 2.0 multishank probe on a
+real OneBox</strong> connects, detects the headstage, streams, records, pauses/plays, disconnects and — the part
+that took the longest — <strong>reconnects cleanly</strong>, with its <strong>12-channel ADC streaming alongside as its own
+live column in real volts</strong>. Everything below marked "verified" was verified on that hardware, not in sim.
+<strong>NP1.0-on-OneBox is untested</strong> (it shares the code path; it is the next hardware task, §35.9).</p>
+<h3 id="351-why-onebox-is-a-separate-source-class-not-a-config-flag">35.1 Why OneBox is a separate source class, not a config flag<a class="headerlink" href="#351-why-onebox-is-a-separate-source-class-not-a-config-flag" title="Permanent link">#</a></h3>
+<p>OneBox is the <strong>USB (FTDI FT601) sibling</strong> of the PXIe basestation: same IMEC NeuropixAPI v4, same probe
+workers, same <code>CircularBuffer</code> streaming — but a different <em>enumeration and open</em> path, plus hardware PXIe
+does not have (a 12-ch ADC, a DAC/WavePlayer, its own switch matrix). <code>NpInterface.cpp</code> was already ~2 k
+lines, so OneBox went in its own pair:</p>
+<ul>
+<li><strong><code>src/modules/neuropixels/OneBoxSource.{hpp,cpp}</code></strong> (NEW, 105 + 380 lines) — <code>class OneBoxSource : public
+  NeuropixelsSource</code>. Everything probe-side is inherited; only basestation-specific behaviour is overridden.</li>
+<li><strong><code>NpInterface.{hpp,cpp}</code></strong> grew two <strong>virtual hooks</strong> whose defaults are the existing PXIe behaviour, so
+  the PXIe path is untouched by construction:</li>
+<li><code>virtual bool openBasestation()</code> — default: PXIe scan/open. OneBox: <code>np_checkFtdiDriver</code> → <code>np_scanBS</code> →
+    pick the device whose <code>basestationID.platformid == NPPlatform_USB</code> → <code>np_mapBS(serial, 16)</code> → <code>np_openBS</code>.</li>
+<li><code>virtual int detectProbePort()</code> — default: the PXIe <code>np_openPort</code>-gated sweep of ports 1–4. OneBox: ports 1–2.</li>
+<li>Members moved <code>private</code> → <code>protected</code>; <code>initBasestation()</code> STEP 1/STEP 2 now call the two hooks.</li>
+<li><code>initDataSource</code> now calls <code>closeDataSource()</code> when <code>initBasestation()</code> fails, so a failed attempt does
+    not leave the device half-open.</li>
+<li>Registry (<code>src/core/Utils.cpp</code>): <code>source.npx.onebox</code>, <code>data.npx.adc</code>, <code>interp.npx.adc</code>.</li>
+<li>Configs: <strong><code>config/Npx1OneBox.yaml</code></strong>, <strong><code>config/Npx2OneBox.yaml</code></strong> (NEW). <strong><code>config/OneBoxTest.yaml</code>
+  DELETED</strong> — it was a phantom source (referenced an unregistered type, so selecting it only produced the
+  "not supported" dialog).</li>
+<li>GUI: two new source options, <code>NPX 1.0 (OneBox)</code> / <code>NPX 2.0 Multishank (OneBox)</code>.</li>
+</ul>
+<p><strong>Driver:</strong> OneBox needs <strong>FTDI D3XX 1.3.0.10</strong> — <em>not</em> the 1.4.0.x line. Installed by the maintainer this
+session. Status LED: <strong>red = idle / not opened, green = opened</strong>. The OneBox lives at <strong>virtual slot 16</strong>.</p>
+<h3 id="352-the-connect-bug-pxie-gates-ports-with-np_openport-onebox-does-not">35.2 The connect bug: PXIe gates ports with <code>np_openPort</code>, OneBox does not<a class="headerlink" href="#352-the-connect-bug-pxie-gates-ports-with-np_openport-onebox-does-not" title="Permanent link">#</a></h3>
+<p>The first hardware attempt failed with <strong>"No Headstage detected on any port"</strong>. Root cause: the initial
+implementation reused the PXIe port sweep verbatim, and OpenEphys's <code>OneBox.cpp</code> calls <code>np_detectHeadStage</code>
+<strong>directly</strong> on ports 1–2 — <code>np_openPort</code> is a PXIe-only call and is absent from their OneBox path. That is
+exactly what <code>detectProbePort()</code> exists to express.</p>
+<p>Worth recording because it contradicts the reference: on <strong>this</strong> OneBox, calling <code>np_openPort</code> best-effort
+<em>before</em> <code>detectHeadStage</code> is what actually works — detection succeeds on <strong>attempt 0</strong> with it. The override
+therefore does best-effort <code>np_openPort</code> + <code>np_detectHeadStage</code>, wrapped in a <strong>retry loop (8 × 500 ms)</strong>
+because the headstage is not always up the instant the basestation opens. Verified live:
+<code>[OneBox] Auto-detected Headstage at Port: 1 (attempt 0)</code>.</p>
+<h3 id="353-safety-the-bricking-bug-and-how-onebox-must-be-closed">35.3 ⚠️ SAFETY — the "bricking" bug, and how OneBox must be closed<a class="headerlink" href="#353-safety-the-bricking-bug-and-how-onebox-must-be-closed" title="Permanent link">#</a></h3>
+<p>Several times the OneBox came back <strong>blinking red</strong> with <code>np_scanBS</code> finding nothing — it looked bricked.
+Two independent causes, both now fixed, both worth knowing:</p>
+<ol>
+<li><strong>Hard-killing the backend.</strong> The FTDI handle is released <strong>only on a clean exit</strong>. <code>TaskStop</code> /
+   <code>Stop-Process</code> / <code>taskkill</code> on a backend with an open OneBox leaves the device claimed. This is the same
+   rule already in force for the PXIe probe + NI-DAQ: <strong>always</strong> shut down via the WS <code>Disconnect</code>/<code>quit</code>
+   path. Force-kill is <strong>sim-only</strong>.</li>
+<li><strong>The close sequence itself was wrong.</strong> <code>closeDataSource</code> had been left on the inherited PXIe path, which
+   routes <code>SM_Output_SMA &lt;- SM_Input_PXI0</code> — i.e. it <strong>drives the OneBox's SMA line</strong>. The maintainer asked
+   directly whether this matched OpenEphys; it did not. <code>OneBoxSource::closeDataSource</code> now mirrors
+   <code>OneBox.cpp</code>: ADC off → <strong><code>setSyncAsInput()</code></strong> (clear the StatusBit + SMA <em>outputs</em>, then StatusBit &lt;- SMA)
+   → <code>closeProbe</code> → <code>closeBS</code> → <code>np_unmapBS</code>. It deliberately does <strong>not</strong> call the base implementation.</li>
+</ol>
+<p>The maintainer confirmed OpenEphys re-opened the device stably green afterwards — i.e. the device was in a
+bad <em>configuration</em>, never damaged. Connect → disconnect → <strong>reconnect</strong> is now verified repeatedly.</p>
+<h3 id="354-the-12-channel-adc-as-its-own-stream">35.4 The 12-channel ADC as its own stream<a class="headerlink" href="#354-the-12-channel-adc-as-its-own-stream" title="Permanent link">#</a></h3>
+<p>Decision (maintainer): the OneBox ADC is a <strong>stream alongside NI-DAQ</strong>, not a replacement — NI-DAQ stays for
+PXIe rigs and is not wired to the OneBox.</p>
+<ul>
+<li><code>OneBoxSource::initDataSource</code> does the base init, then <code>np_ADC_enableProbe</code>,
+  <code>np_ADC_setVoltageRange(ADC_RANGE_5V)</code>, and logs <code>np_ADC_getStreamConversionFactor</code>.</li>
+<li>The ADC runs on <strong>its own <code>QThread</code></strong> with its own worker (<code>OneBoxAdcWorker</code>), independent of the probe
+  workers; <code>startAcq</code>/<code>stopAcq</code> own its lifecycle.</li>
+<li><strong><code>DisplayProcessor.cpp</code>: <code>num_channels</code> is now per-stream configurable.</strong> It was hardcoded <code>384</code> in two
+  places (the <code>calcMinMax</code> AVX loop — which also needed a scalar tail — and the <code>advanceBucket</code>
+  serialisation). A 12-channel stream was impossible before this.</li>
+<li><strong>Scale is real volts, not µV.</strong> <code>ChartColumn.isProbeStream()</code> is true only for 384-wide streams, so the
+  12-ch ADC renders on the NI-DAQ "×V" volts scale; feeding it a µV scale factor overflowed that scale and
+  looked like noise. Now <code>5.0f/32768.0f</code>; the hardware's own conversion factor reads <code>0.000152588 V/count</code>,
+  which agrees exactly.</li>
+<li><strong>The "it's just noise" report was correct behaviour</strong> — floating inputs picking up ambient. Grounding the
+  inputs visibly changed the trace, which is the confirmation that the path is real.</li>
+<li><code>ChartColumn.streamLabel</code> gained <code>adc: 'OneBox ADC'</code>.</li>
+</ul>
+<p><strong>Fixed this session:</strong> <code>stopAcq</code> relied on the signal chain alone to stop the ADC thread and logged <em>"worker
+did not stop within 2s"</em> on every teardown. It now calls <code>mAdcThread-&gt;quit()</code> directly — verified <strong>0 warnings</strong>.</p>
+<h3 id="355-tip-referencing-a-gui-toggle-for-np10-and-np20-not-onebox-specific">35.5 Tip referencing — a GUI toggle for NP1.0 and NP2.0 (not OneBox-specific)<a class="headerlink" href="#355-tip-referencing-a-gui-toggle-for-np10-and-np20-not-onebox-specific" title="Permanent link">#</a></h3>
+<p>Requested as "relatively important", mirroring OpenEphys. <code>NeuropixelsSource</code> gained
+<code>Q_INVOKABLE setTipReferencing(bool)</code> / <code>isTipReferencing()</code> + <code>bool mTipReferencing</code> (default <code>false</code> =
+external reference), written to hardware immediately like <em>Apply Map</em>. On NP2.0 multishank each channel
+references <strong>its own shank's tip</strong>. Front end: a <code>#chk-tip-ref</code> checkbox in the probe-map panel
+(<code>index.html</code>, wired in <code>ImroManager.js</code>).</p>
+<h3 id="356-pxie-vs-onebox-noise-matrix-recordings-complete">35.6 PXIe vs OneBox noise matrix — recordings complete<a class="headerlink" href="#356-pxie-vs-onebox-noise-matrix-recordings-complete" title="Permanent link">#</a></h3>
+<p><code>RecordingTests/2026-08-18_pxie_vs_onebox_noise/</code> — a 2 × 2 matrix (<code>cells.json</code>): <strong>PXIe</strong> grounded /
+ungrounded, <strong>OneBox</strong> grounded / ungrounded (the OneBox-ungrounded cell is
+<code>RecordingTests/onebox_np2_baseline/</code>). The <strong>OneBox + SMA-grounded</strong> cell was recorded this session to
+complete the set; the quantification was carried by the parallel opus-4.8 agent, whose outputs (figures,
+<code>noise_metrics.json</code>, <code>noise_table.md</code>, <code>report.html</code>, plus <code>ONEBOX_CONNECT_ISSUE.md</code> and
+<code>SESSION_CHANGES.md</code>) are in that directory's <code>analysis/</code>.</p>
+<p><strong>Repo hygiene:</strong> the raw <code>.bin</code> cells total <strong>~240 MB</strong> and must NOT be committed — no <code>.bin</code> is tracked
+under <code>RecordingTests/</code> today (156 tracked files, 0 <code>.bin</code>). Only <code>analysis/</code> (3.3 MB) is commit-worthy.</p>
+<h3 id="357-the-intro-splash-webinterfacelogosplashjs-new">35.7 The intro splash — <code>webinterface/LogoSplash.js</code> (NEW)<a class="headerlink" href="#357-the-intro-splash-webinterfacelogosplashjs-new" title="Permanent link">#</a></h3>
+<p>Replaces the old static <code>#logo-watermark</code>. Self-contained; the animation morphs a <strong>mountain ridge into an
+action potential</strong> (the NeuralAscension mark into the SpikesPeak mark), with a scan dot tracking the trace and
+a breathing glow.</p>
+<p><strong>Behaviour</strong> — iterated with the maintainer, and the final rule is not the obvious one: visibility keys off
+<strong>connected</strong>, <em>not</em> streaming. So it shows at startup, pulses "connecting to source…" once a source is
+picked, <strong>fades the instant the device is ready</strong> (not on Play), stays gone across <strong>pause</strong>, and <strong>returns on
+Disconnect</strong> — where it covers the empty chart grid instead of leaving bare SciChart panes. Hooks:
+<code>reflectSource → setSource</code>, <code>handleDeviceReady → setConnected</code>, <code>setPlayingUI → setStreaming</code>; the local
+Disconnect handler calls <code>setSource(null)</code> (which clears connected) because the C++ side sends no
+<code>deviceReady</code> on disconnect. The overlay paints <code>#1c1c1c</code>, so <code>.toolbar</code> was raised to <code>z-index:10</code> to stay
+reachable underneath it.</p>
+<p><strong>Composition, measured rather than eyeballed</strong> — the spike apex sits at viewBox x=228 (47.5 %), and every
+element is pinned to it: the <code>s|P</code> seam is a 2-column grid at 47.5 %, and "by" + the NeuralAscension lockup
+use <code>padding-right:5%</code> so their <em>content box</em> centre lands on 47.5 % at any viewport. The wordmark is tracked
+so its ink is symmetric about the apex (<code>Spikes -.025em</code> / <code>Peak +.09em</code> → 169.1 px vs 163.7 px, 5.5 px residual).</p>
+<p><strong>Colour — sampled from the rendered trace, not picked.</strong> The trace was rasterised to a canvas (glow filter
+and mountain fill stripped) and sampled column by column. <code>Spikes</code> = the flat baseline's colour <strong>#82ba64</strong>;
+<code>Peak</code> = the apex colour <strong>#5fd0f0</strong>. The previous <code>#92bd4b</code>/<code>#3caed7</code> were the gradient's <em>raw stops</em>, which
+the trace only actually reaches at the undershoot trough and mid-flank — so both words were slightly off-tone.</p>
+<p>Two colour experiments were <strong>tried and rejected</strong>, recorded in-file so they are not re-litigated:
+- <em>Painting the trace's per-x colour onto the letters.</em> Geometrically exact (0.0 px residual) but the spike is
+  narrow, so the whole green→cyan→green swing lands inside ~40 px of a ~350 px wordmark and breaks mid-glyph —
+  it reads as a rendering fault.
+- <em>Stretching that gradient to the word's scale.</em> Smooth, but it ends "Peak" in green, fighting the name.</p>
+<p><strong>Flat two-colour type won</strong>, because the colour story is already told <strong>structurally</strong> (the seam sits on the
+apex, so each half wears the colour of the trace above it), and flat survives favicon sizes and one-colour
+reproduction, which gradient-filled letterforms do not. The <strong>artwork</strong> did take the palette discipline: the
+<code>lsSpike</code> gradient collapsed from three hues to exactly the two brand colours (<code>0%/35% #5fd0f0</code>,
+<code>78%/100% #82ba64</code>), measuring <strong>94.4 % of the trace as pure brand colour</strong>, blending only across the limbs.
+A sweep of that hold offset (22/35/45/55/65/75 %) showed <strong>35 % is the optimum</strong>, not a compromise — it is the
+maximum of the purity column, and 75 % collapses to 22 % purity because the flat baseline sits at 91 % of the
+bounding box and falls inside the fade.</p>
+<p><strong>Timing:</strong> morph ~4× slower than the first draft (<code>morphE += 0.003</code>, ~5.5 s) so the mountain actually reads
+before it sharpens; the scan dot kept brisk (1400 ms connecting / 2800 ms idle) since it represents live signal.</p>
+<p><strong>Logo asset:</strong> <code>webinterface/na-logo.svg</code> — the maintainer's own export with text converted to outlines, so
+the Technovier face is <strong>not</strong> shipped (it is personal-use licensed). <code>webinterface/logoAnimation/</code> holds the
+source material the animation was derived from.</p>
+<h3 id="358-verified-vs-not-an-explicit-line">35.8 Verified vs not — an explicit line<a class="headerlink" href="#358-verified-vs-not-an-explicit-line" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OneBox + <strong>NP2.0 multishank</strong>: connect, headstage detect, stream, pause/play, record, disconnect, <strong>reconnect</strong></td>
+<td><strong>verified on hardware</strong></td>
+</tr>
+<tr>
+<td>OneBox <strong>12-ch ADC</strong>: streams as its own column, real volts, grounding visibly changes the trace</td>
+<td><strong>verified on hardware</strong></td>
+</tr>
+<tr>
+<td>ADC worker stop (no 2 s warning)</td>
+<td><strong>verified</strong> — 0 warnings</td>
+</tr>
+<tr>
+<td>Graceful close / re-open cycle</td>
+<td><strong>verified</strong>, repeatedly</td>
+</tr>
+<tr>
+<td>PXIe path unchanged (the virtual hooks default to the old behaviour)</td>
+<td><strong>verified</strong> — PXIe still connects</td>
+</tr>
+<tr>
+<td>Splash behaviour (idle → connecting → fade on ready → gone on pause → returns on disconnect)</td>
+<td><strong>verified</strong> live</td>
+</tr>
+<tr>
+<td><strong>NP1.0 on OneBox</strong></td>
+<td><strong>NOT TESTED</strong> — shares the code path; next hardware task</td>
+</tr>
+<tr>
+<td><strong>WavePlayer / DAC stim output</strong></td>
+<td><strong>NOT BUILT</strong> — decided as a <em>second</em> stim option beside the validated UDP path; only referenced in a comment today</td>
+</tr>
+<tr>
+<td>OneBox ADC axis unit label (uses the NI-DAQ "×V" scale, no dedicated "V" label)</td>
+<td>cosmetic, open</td>
+</tr>
+</tbody>
+</table>
+<h3 id="359-next-tasks">35.9 Next tasks<a class="headerlink" href="#359-next-tasks" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>NP1.0 probe on the OneBox</strong> — the immediate hardware test. The code path is shared with NP2.0 and
+   <code>config/Npx1OneBox.yaml</code> exists, so this is a bring-up + verification pass, not new development.</li>
+<li><strong>GUI fixes — the top menu / toolbar</strong> and assorted minor items (maintainer to enumerate; the toolbar has
+   grown organically and now also carries the splash <code>z-index</code> interaction from §35.7).</li>
+<li>WavePlayer/DAC as the second stim path (deferred decision from this session's start).</li>
+<li>Cosmetic: a real "V" axis label for the ADC column.</li>
+</ol></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2583,6 +2783,18 @@ the maintainer + collaborator to pick a direction — <strong>not implemented.</
 <li><a href="#343-ripple-detection-now-defaults-to-asap-and-np2-sim-now-honours-the-flag">34.3 Ripple detection now defaults to ASAP — and NP2 sim now honours the flag</a></li>
 <li><a href="#344-hardware-verification-asap-confirmed-live-on-the-real-np20-ni-daq-2026-07-24">34.4 Hardware verification — ASAP confirmed LIVE on the real NP2.0 + NI-DAQ (2026-07-24)</a></li>
 <li><a href="#345-source-architecture-reorg-planning-brief-design-only-nothing-built-2026-07-24">34.5 Source-architecture reorg — planning brief (design only, nothing built) (2026-07-24)</a></li>
+</ul>
+</li>
+<li><a href="#35-neuropixels-onebox-support-usb-basestation-12-ch-adc-tip-referencing-intro-splash-2026-08-18">35. NEUROPIXELS ONEBOX SUPPORT — USB BASESTATION, 12-CH ADC, TIP REFERENCING, INTRO SPLASH (2026-08-18)</a><ul>
+<li><a href="#351-why-onebox-is-a-separate-source-class-not-a-config-flag">35.1 Why OneBox is a separate source class, not a config flag</a></li>
+<li><a href="#352-the-connect-bug-pxie-gates-ports-with-np_openport-onebox-does-not">35.2 The connect bug: PXIe gates ports with np_openPort, OneBox does not</a></li>
+<li><a href="#353-safety-the-bricking-bug-and-how-onebox-must-be-closed">35.3 ⚠️ SAFETY — the "bricking" bug, and how OneBox must be closed</a></li>
+<li><a href="#354-the-12-channel-adc-as-its-own-stream">35.4 The 12-channel ADC as its own stream</a></li>
+<li><a href="#355-tip-referencing-a-gui-toggle-for-np10-and-np20-not-onebox-specific">35.5 Tip referencing — a GUI toggle for NP1.0 and NP2.0 (not OneBox-specific)</a></li>
+<li><a href="#356-pxie-vs-onebox-noise-matrix-recordings-complete">35.6 PXIe vs OneBox noise matrix — recordings complete</a></li>
+<li><a href="#357-the-intro-splash-webinterfacelogosplashjs-new">35.7 The intro splash — webinterface/LogoSplash.js (NEW)</a></li>
+<li><a href="#358-verified-vs-not-an-explicit-line">35.8 Verified vs not — an explicit line</a></li>
+<li><a href="#359-next-tasks">35.9 Next tasks</a></li>
 </ul>
 </li>
 </ul>

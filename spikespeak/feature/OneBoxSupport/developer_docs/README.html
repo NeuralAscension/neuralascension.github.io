@@ -42,6 +42,7 @@
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
@@ -349,6 +350,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="NextTask_SourceArchitecture.html"><code>NextTask_SourceArchitecture.md</code></a></td>
 <td>Open design brief — <strong>reorganizing "source options"</strong>: taming the 23-config explosion + the dual picker, and supporting arbitrary NPX simulation, NeuroNexus/Intan probes, and <strong>replay-a-recording-by-hitting-Play</strong>. Current-state map + four options + a phased plan. Planning only.</td>
+</tr>
+<tr>
+<td><a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a></td>
+<td><strong>Implementation plan for Neuropixels OneBox</strong> (USB basestation) — verified v4 API deltas vs PXI (platform + <code>mapBS</code> + FTDI check), reuse of the probe workers/IMRO, the new 12-ch ADC stream, and the DAC/WavePlayer native closed-loop stim output. One new file pair (<code>OneBoxSource.*</code>) + a thin virtual seam; phased 0→5. Includes the exact FTDI D3XX 1.3.0.10 driver + link.</td>
 </tr>
 </tbody>
 </table>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a class="active" href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci">Driving &amp; screenshotting the SpikesPeak GUI headlessly (for agents / CI)<a class="headerlink" href="#driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci" title="Permanent link">#</a></h1>
+<p>The UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — SciChart renders in the
+<em>browser</em>, not the backend. So to verify frontend work (probe map, record-channel selection, the sim
+picker, live view, NP2.0 editor) <strong>without a human at the mouse</strong>, you drive a real browser
+programmatically and screenshot <em>it</em>. This was used heavily to build/verify the 2026-07-06 work and is the
+recommended way to check any GUI change.</p>
+<p>Two layers:
+- <strong>Backend commands</strong> (select/play/record/quit) → <code>python/spikespeak_cli.py</code> over WS:1234. See
+  <a href="ControlCLI.html">ControlCLI.md</a>. A watching browser mirrors CLI actions live.
+- <strong>Browser rendering + clicks/drags + screenshots</strong> → <strong>Chrome DevTools Protocol (CDP)</strong> against a
+  Chromium-family browser (Brave/Chrome/Edge). Driver: <code>python/tools/cdp.py</code>. <strong>Cross-platform</strong> (works on
+  Windows too — CDP screenshots are browser-based, not OS-screen-based).</p>
+<blockquote>
+<p>Alternative quick screenshot (Linux/X11 only): <code>DISPLAY=:0 import -window &lt;wid&gt; out.png</code> (ImageMagick),
+window id from <code>wmctrl -l</code>. Not portable; prefer CDP's <code>Page.captureScreenshot</code> (clean page-only image).</p>
+</blockquote>
+<hr />
+<h2 id="1-launch-one-backend-one-browser">1. Launch: one backend + one browser<a class="headerlink" href="#1-launch-one-backend-one-browser" title="Permanent link">#</a></h2>
+<p><strong>Backend</strong> (headless; <code>--no-browser</code> so it doesn't open its own window):</p>
+<pre><code class="language-bash"># Linux (this box): Qt 6.11.1; offscreen because WebEngineWidgets needs a platform plugin.
+cd build/Desktop_Qt_6_11_1_Release
+LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib QT_QPA_PLATFORM=offscreen ./bin/SpikesPeak --no-browser &amp;
+# Windows: run the exe (PATH set per ControlCLI.md); --no-browser to skip the auto app-window.
+</code></pre>
+<p><strong>Browser with the CDP debug port</strong> — an isolated app-window that does NOT touch the user's normal
+browser profile:</p>
+<pre><code class="language-bash"># Linux:
+brave-browser --user-data-dir=/tmp/bravesp --remote-debugging-port=9222 &quot;--remote-allow-origins=*&quot; \
+  --no-first-run --no-default-browser-check --disable-features=Translate,TranslateUI \
+  --app=http://localhost:8234 --window-size=1760,1080 &amp;
+# Windows (adjust the exe path): brave.exe / chrome.exe / msedge.exe with the SAME flags.
+</code></pre>
+<h3 id="gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them">Gotchas (each cost real time on 2026-07-06 — don't repeat them)<a class="headerlink" href="#gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>QUOTE <code>"--remote-allow-origins=*"</code>.</strong> A bare <code>*</code> gets <strong>glob-expanded by the shell</strong> → the flag is
+  corrupted → CDP handshake fails 403. Chromium requires this flag OR a suppressed Origin header (the
+  driver does <code>suppress_origin=True</code>, but keep the flag too).</li>
+<li><strong>IPv4/IPv6:</strong> the debug port sometimes binds <code>[::1]</code> only, so <code>localhost</code> (IPv4) refuses. <code>cdp.py</code>
+  already tries <code>127.0.0.1</code>, <code>[::1]</code>, <code>localhost</code>.</li>
+<li><strong>Don't <code>Page.reload</code> when the browser is the only client.</strong> Reload drops the WS → the backend's 2 s
+  grace-timer <strong>quits the backend</strong>. Relaunch the browser fresh instead of reloading.</li>
+<li><strong><code>window.app</code></strong> is exposed for inspection (the AppController): <code>c.eval("JSON.stringify(window.app.simVariants)")</code>,
+  <code>window.app.dataStore.streams</code>, etc.</li>
+</ul>
+<hr />
+<h2 id="2-drive-it-pythontoolscdppy">2. Drive it (python/tools/cdp.py)<a class="headerlink" href="#2-drive-it-pythontoolscdppy" title="Permanent link">#</a></h2>
+<pre><code class="language-python">import sys; sys.path.insert(0, &quot;python/tools&quot;)
+from cdp import CDP
+c = CDP()                                  # attaches to the page target on :9222
+c.eval(&quot;document.title&quot;)                   # -&gt; &quot;SpikesPeak&quot;
+c.eval(&quot;document.getElementById('playPauseBtn').click();&quot;)
+c.screenshot(&quot;/tmp/shot.png&quot;)              # then Read the PNG to eyeball it
+c.click(x, y)                              # viewport pixels
+c.drag(x0, y0, x1, y1)                     # e.g. a vertical box-select over the probe scatter
+c.wheel(x, y, dy, times=n)                 # scroll the probe map's y-axis (dy&gt;0 -&gt; toward the tip)
+</code></pre>
+<p><strong>Ready-made scenarios + helpers: <code>python/tools/gui_scenarios.py</code></strong> (built on <code>cdp.py</code>). It consolidates the
+one-off drivers used to build/verify the NP1/NP2 GUI work into a <code>Gui</code> helper (connect_sim / connect_source /
+wait_ready / set_mode / tab / np2_drag / rec_set / shank_counts / shot) plus runnable scenarios:</p>
+<pre><code class="language-bash">python python/tools/gui_scenarios.py np2_smoke        # sim NP2: editor + record mode + live view
+python python/tools/gui_scenarios.py hw1_record t1 15 # real 1.0 GUI record flow (arm -&gt; Set -&gt; Record 15s)
+python python/tools/gui_scenarios.py np2_crossshank   # build a cross-shank NP2 map + record a subset
+python python/tools/gui_scenarios.py mismatch_check   # select &quot;NPX 2.0&quot; and report the mismatch dialog
+</code></pre>
+<p>Import <code>from gui_scenarios import Gui</code> for custom flows. Screenshots land in <code>&lt;build&gt;/bin/RecordingTests/</code>.
+<code>c.eval</code> <strong>awaits promises</strong>, so QWebChannel calls work:
+<code>c.eval("window.activeNpxModule.getImroAsJson().then(s=&gt;JSON.parse(s).channels.length)")</code>.</p>
+<h3 id="ui-element-ids-drive-by-id-not-pixels-where-possible">UI element ids (drive by id, not pixels, where possible)<a class="headerlink" href="#ui-element-ids-drive-by-id-not-pixels-where-possible" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>id / selector</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source dropdown</td>
+<td><code>#selectSource</code> (set <code>.value</code> + dispatch <code>change</code>). Value <code>"__sim_picker__"</code> opens the sim picker</td>
+</tr>
+<tr>
+<td>Sim picker buttons</td>
+<td><code>#sim-picker-card button</code> (text = the <code>sim_variant</code> label)</td>
+</tr>
+<tr>
+<td>Play / pause</td>
+<td><code>#playPauseBtn</code> · Record</td>
+</tr>
+<tr>
+<td>Record modal</td>
+<td><code>#rec-name</code>, <code>#rec-dir</code>, <code>#rec-start</code> (Set Location)</td>
+</tr>
+<tr>
+<td>Tabs</td>
+<td><code>#tab-btn-map</code> (Probe Map) · <code>#tab-btn-data</code> (Live Data)</td>
+</tr>
+<tr>
+<td>Probe mode radio</td>
+<td><code>input[name="probe-mode"][value="edit"|"record"]</code></td>
+</tr>
+<tr>
+<td>Probe record buttons</td>
+<td><code>#btn-rec-all</code> · <code>#btn-rec-none</code> · <code>#btn-rec-set</code></td>
+</tr>
+<tr>
+<td>Bank presets (NP1)</td>
+<td><code>#btn-bank0</code> · <code>#btn-bank1</code> · <code>#btn-bank2</code> · Apply</td>
+</tr>
+<tr>
+<td>NI-DAQ record grid</td>
+<td><code>#nidaq-channel-grid .nidaq-ch</code> (label = 1-indexed) · <code>#btn-nidaq-all</code> · <code>#btn-nidaq-none</code></td>
+</tr>
+<tr>
+<td>Probe scatter (for <code>click</code>/<code>drag</code>)</td>
+<td><code>#scichart-imro-root</code> — use <code>getBoundingClientRect()</code> to map data rows to pixels</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-connect-a-sim-play-pick-record-channels-record-verify">Example: connect a sim, play, pick record channels, record, verify<a class="headerlink" href="#example-connect-a-sim-play-pick-record-channels-record-verify" title="Permanent link">#</a></h3>
+<pre><code class="language-python"># select &quot;Simulated Data...&quot; -&gt; picker -&gt; a variant
+c.eval(&quot;&quot;&quot;(()=&gt;{const s=document.getElementById('selectSource');
+  s.value='__sim_picker__'; s.dispatchEvent(new Event('change',{bubbles:true}));})()&quot;&quot;&quot;)
+c.eval(&quot;&quot;&quot;[...document.querySelectorAll('#sim-picker-card button')]
+  .find(b=&gt;/NI-DAQ/.test(b.textContent)).click();&quot;&quot;&quot;)
+# wait for connect, then play (record needs streaming; also makes the NI-DAQ grid populate)
+# ... poll: c.eval(&quot;!!window.activeNpxModule&quot;) ...
+c.eval(&quot;document.getElementById('playPauseBtn').click();&quot;)
+# record-selection mode, pick channels, Set, then the Record button flow (modal -&gt; Set Location -&gt; Record)
+</code></pre>
+<p>Then verify the actual bytes with <code>spikespeak_postprocess</code> (channels, shape, sync) — see
+<a href="RecordingTest.html">RecordingTest.md</a>. That numpy check is stronger than eyeballing plots.</p>
+<hr />
+<h2 id="3-teardown-discipline-dont-leave-messes-dont-crash-the-probe">3. Teardown discipline (don't leave messes; don't crash the probe)<a class="headerlink" href="#3-teardown-discipline-dont-leave-messes-dont-crash-the-probe" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>One backend + one browser at a time.</strong> Multiple GUIs = confusing state.</li>
+<li><strong>Correct teardown order:</strong> <code>stop → pause → disconnect → quit</code> (CLI or by clicking <code>#disconnect</code> then
+  quitting). <strong>Never change/apply a probe map while streaming</strong> (invalid on real hardware).</li>
+<li><strong>Safe kills:</strong> backend <code>pkill -x SpikesPeak</code> (exact name — <code>pkill -f bin/SpikesPeak</code> also matches your
+  own shell!). Test browser: kill by the debug-port owner (<code>ss -ltnp | grep 9222</code> → pid → kill its pgid),
+  or the isolated profile — <strong>never blanket-kill <code>brave</code>/<code>chrome</code></strong> (that kills the user's real browser).</li>
+<li>The backend auto-quits ~2 s after the last WS client disconnects (grace timer), so a one-shot CLI <code>list</code>
+  can kill it if no browser is attached.</li>
+</ul>
+<hr />
+<h2 id="4-environment-notes">4. Environment notes<a class="headerlink" href="#4-environment-notes" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Linux (this repo's dev box):</strong> Python harness needs <code>requests</code> + <code>websocket-client</code> + matplotlib →
+  use <strong>conda base</strong> (<code>source ~/anaconda3/bin/activate base</code>; the system python lacks pip). <code>pip install -e
+  python</code> gives <code>spikespeak_postprocess</code>. cmake/ninja live under <code>~/Qt/Tools</code>.</li>
+<li><strong>Windows (hardware box):</strong> same CDP flow with <code>brave.exe</code>/<code>chrome.exe</code>/<code>msedge.exe</code>. CDP screenshots are
+  cross-platform, so <code>python/tools/cdp.py</code> works unchanged; just launch the browser with the same flags.
+  For a whole-screen grab instead, any Windows screenshot util works, but CDP's page-only PNG is cleaner.</li>
+<li>The backend's own launch (no <code>--no-browser</code>) opens a <strong>dedicated browser app-window</strong> by default
+  (<code>main.cpp launchDedicatedBrowser</code>); <code>--tab</code> opens a normal tab. For automated tests use <code>--no-browser</code>
+  and drive your own CDP browser.</li>
+</ul>
+<hr />
+<h2 id="6-toolbar-button-colors-one-shot-functional-smoke-test-verified-2026-07-12">6. Toolbar button colors + one-shot functional smoke test (verified 2026-07-12)<a class="headerlink" href="#6-toolbar-button-colors-one-shot-functional-smoke-test-verified-2026-07-12" title="Permanent link">#</a></h2>
+<p>The two toolbar <strong>state buttons</strong> are CSS-driven (<code>webinterface/style.css</code>), scoped
+<code>.toolbar button.&lt;class&gt;</code> so the base <code>.toolbar button {color:#fff}</code> rule does <strong>not</strong> override them
+(a CSS-specificity bug — 0,1,1 base beat 0,1,0 — fixed 2026-07-12; it was why play/record stayed
+white/gray):</p>
+<table>
+<thead>
+<tr>
+<th>Button</th>
+<th>State</th>
+<th>Class</th>
+<th>Look</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>▶/⏸ Play</td>
+<td>paused</td>
+<td><code>play-ready</code></td>
+<td><strong>green</strong> ▶ icon <code>rgb(40,167,69)</code> ("press to play")</td>
+</tr>
+<tr>
+<td>▶/⏸ Play</td>
+<td>streaming</td>
+<td><code>play-streaming</code></td>
+<td><strong>white</strong> ⏸ icon inside a <strong>green pulsing ring</strong> (<code>play-stream-pulse</code>, <code>rgb(40,167,69)</code>)</td>
+</tr>
+<tr>
+<td>● Record</td>
+<td>armed</td>
+<td><code>record-armed</code></td>
+<td>hollow pulsing red-orange ring</td>
+</tr>
+<tr>
+<td>● Record</td>
+<td>recording</td>
+<td><code>record-color</code></td>
+<td><strong>solid red</strong> bg <code>rgb(229,57,53)</code>, white ●</td>
+</tr>
+</tbody>
+</table>
+<p>Applied by <code>setPlayingUI()</code> / <code>handleDeviceReady()</code> / <code>reflectRecording()</code> / <code>toggleRecord()</code> in <code>main.js</code>.
+The play rules are scoped <code>:enabled</code> so a disabled (no-source) button stays grey, never green. The green
+streaming ring is the <code>@keyframes play-stream-pulse</code> animation (the green twin of <code>rec-arm-pulse</code>).</p>
+<p><strong>One-shot smoke test (CDP, no human).</strong> With a sim source connected on the port-9222 Chrome, these
+9 checks ran and <strong>all PASS</strong> on 2026-07-12 (shots in <code>benchmarks/shots/</code>):</p>
+<ol>
+<li>play → streaming (frame count + bytes climb); play button = <strong>white ⏸ in a green ring</strong> while streaming, <strong>green ▶</strong> when paused</li>
+<li><strong>traces render</strong> — every column's SciChart series have points &gt;0 (guards the blank-traces regression)</li>
+<li>Vertical⇄Horizontal orientation toggle, traces persist</li>
+<li><strong>per-column DIFFERENT counts</strong>: <code>col0.setTracesPerColumn(20)</code> vs <code>col1(60)</code> → 20 vs 60 series, both render
+5–8. record: Set Location <strong>arms</strong> (<code>record-armed</code>) → start = <strong>solid red</strong> → stop clean → <code>.bin</code>+<code>.json</code> on disk</li>
+<li>config inventory: all 16 <code>config/*.yaml</code> resolve their <code>name:</code> identity</li>
+</ol>
+<p>Recipe: <code>app.togglePlay()</code>, <code>app.toggleOrientation()</code>, <code>app.columns[i].setTracesPerColumn(n)</code>,
+<code>app.toggleRecord()</code> (opens the in-page <code>#record-modal</code>; set <code>#rec-name</code> + <code>#rec-dir</code> then click
+<code>#rec-start</code> to arm — do <strong>not</strong> click <code>#rec-browse</code>, that fires the native Qt directory picker).
+Read a column's series count via <code>col.sciChartSurface.renderableSeries.get(0).dataSeries.count()</code>.</p>
+<h2 id="browser-lifecycle-closing-on-backend-disconnect-2026-07-14">Browser lifecycle — closing on backend disconnect (2026-07-14)<a class="headerlink" href="#browser-lifecycle-closing-on-backend-disconnect-2026-07-14" title="Permanent link">#</a></h2>
+<p>The UI runs in an <strong>external</strong> browser (the backend opens a Chromium <code>--app=</code> window via <code>main.cpp</code>;
+<code>--tab</code> opens a normal tab; <code>--no-browser</code> opens nothing). Because it is a separate process, a stale
+front-end used to linger after the backend shut down. Fixed in <code>webinterface/NetworkClient.js</code>:</p>
+<ul>
+<li>The socket now has an <strong><code>onclose</code></strong> handler, and the <strong><code>serverQuitting</code></strong> message both call one
+  idempotent <code>handleServerGone()</code>.</li>
+<li><code>handleServerGone()</code> calls <strong><code>window.close()</code></strong> — which a Chromium <code>--app</code> window is allowed to close
+  — so the UI window closes itself when the backend quits <strong>or</strong> the connection drops. If the browser
+  refuses the scripted close (a normal <em>tab</em> blocks it), it blanks the page with a clear
+  "server disconnected" notice instead of leaving a frozen UI. It runs once even though both
+  <code>serverQuitting</code> and <code>onclose</code> fire.</li>
+</ul>
+<p><strong>Verified</strong>: with the UI in a Chromium <code>--app</code> window, a backend <code>quit</code> closed the window itself
+(the CDP page target on the debug port disappeared; 0 window processes remained). Multiple windows
+(e.g. one per monitor) each get the event and each close.</p>
+<h3 id="teardown-discipline-for-cdp-test-browsers">Teardown discipline for CDP test browsers<a class="headerlink" href="#teardown-discipline-for-cdp-test-browsers" title="Permanent link">#</a></h3>
+<p>A CDP harness usually launches Chrome as a <strong>normal window</strong> (<code>--new-window</code>), which <code>window.close()</code>
+canNOT close — so the fallback notice shows, and <strong>you must still kill the process yourself</strong>. Kill
+<strong>only</strong> the isolated debug profile you launched (match its unique <code>--user-data-dir</code> tag), never a
+blanket <code>taskkill /IM chrome.exe</code> (that closes the user's real browser). Launch test browsers with a
+throwaway <code>--user-data-dir=...&lt;unique tag&gt;...</code> so they are easy to target on teardown.</p>
+<h2 id="backend-auto-quit-on-last-client-2026-07-14">Backend auto-quit on last client (2026-07-14)<a class="headerlink" href="#backend-auto-quit-on-last-client-2026-07-14" title="Permanent link">#</a></h2>
+<p><code>WebSocketServer</code> <strong>shuts the whole backend down ~2 s after the LAST WebSocket client disconnects</strong>
+("Last client gone; quitting in 2000 ms unless a client reconnects"). This is intentional — closing the
+browser exits the server. Consequence for <strong>testing</strong>: a CLI-only script that connects, does work, and
+disconnects will cause the server to <strong>exit</strong> shortly after (it looks like a crash but is not). To drive
+<strong>multiple</strong> connect/disconnect cycles headlessly, keep a persistent client connected (e.g. an <code>--app</code>
+browser window on a debug port) for the duration, so the auto-quit never fires. Disconnecting the
+<em>source</em> (not the WebSocket) does NOT trigger this — the browser stays connected.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/GuiTesting.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-launch-one-backend-one-browser">1. Launch: one backend + one browser</a><ul>
+<li><a href="#gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them">Gotchas (each cost real time on 2026-07-06 — don't repeat them)</a></li>
+</ul>
+</li>
+<li><a href="#2-drive-it-pythontoolscdppy">2. Drive it (python/tools/cdp.py)</a><ul>
+<li><a href="#ui-element-ids-drive-by-id-not-pixels-where-possible">UI element ids (drive by id, not pixels, where possible)</a></li>
+<li><a href="#example-connect-a-sim-play-pick-record-channels-record-verify">Example: connect a sim, play, pick record channels, record, verify</a></li>
+</ul>
+</li>
+<li><a href="#3-teardown-discipline-dont-leave-messes-dont-crash-the-probe">3. Teardown discipline (don't leave messes; don't crash the probe)</a></li>
+<li><a href="#4-environment-notes">4. Environment notes</a></li>
+<li><a href="#6-toolbar-button-colors-one-shot-functional-smoke-test-verified-2026-07-12">6. Toolbar button colors + one-shot functional smoke test (verified 2026-07-12)</a></li>
+<li><a href="#browser-lifecycle-closing-on-backend-disconnect-2026-07-14">Browser lifecycle — closing on backend disconnect (2026-07-14)</a><ul>
+<li><a href="#teardown-discipline-for-cdp-test-browsers">Teardown discipline for CDP test browsers</a></li>
+</ul>
+</li>
+<li><a href="#backend-auto-quit-on-last-client-2026-07-14">Backend auto-quit on last client (2026-07-14)</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

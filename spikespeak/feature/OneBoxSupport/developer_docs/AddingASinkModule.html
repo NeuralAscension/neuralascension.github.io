@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Developer Guide — Adding a New Sink (Processor) Module - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / Developer Guide — Adding a New Sink (Processor) Module</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a class="active" href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="developer-guide-adding-a-new-sink-processor-module">Developer Guide — Adding a New <strong>Sink</strong> (Processor) Module<a class="headerlink" href="#developer-guide-adding-a-new-sink-processor-module" title="Permanent link">#</a></h1>
+<p>A <strong>sink</strong> (a.k.a. <em>processor</em>) <strong>consumes</strong> data a source produced and does something with it:
+decimate for display, write to disk, run DSP, drive stimulation, or produce a <em>new</em> derived
+stream. In SpikesPeak a sink is an <code>IProcessor</code> subclass. This guide shows how to add one that
+matches the existing processors and rules.</p>
+<blockquote>
+<p>Read <a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a> §4–§6 first
+(factory/registry/config + CircularBuffer). For producers, see
+<a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a>. To let the browser <strong>command</strong> your sink, see
+§5 and <a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a> (mind the worker-thread rule).</p>
+</blockquote>
+<hr />
+<h2 id="0-the-contract-srccoreiprocessorhpp">0. The contract (<code>src/core/IProcessor.hpp</code>)<a class="headerlink" href="#0-the-contract-srccoreiprocessorhpp" title="Permanent link">#</a></h2>
+<pre><code class="language-cpp">class IProcessor : public QObject {
+    Q_OBJECT
+public:
+    virtual bool configure(ryml::ConstNodeRef cfg) = 0;   // read your config subtree, bind inputs
+signals:
+    void sigIpStarted(const QString&amp; processorName);      // MUST emit when ready (see §1)
+    void sigIpStopped(const QString&amp; processorName);       // emit after you stop
+    void sigIpDataReady(const QByteArray&amp; data);           // optional: bytes → browser
+    void sigIpErrorOccurred(const QString&amp; errMsg);
+public slots:
+    virtual void slIpStartProcessor() = 0;                 // runs ON your own thread at start
+    virtual void slIpStopProcessor() = 0;                  // stop request from ProcessorManager
+};
+</code></pre>
+<p><code>ProcessorManager</code> (<code>ProcessorManager.cpp:70-104</code>) gives <strong>every</strong> processor its own <code>QThread</code>,
+<code>moveToThread</code>s it, and wires:
+<code>QThread::started → slIpStartProcessor</code> · <code>sigPmStopProcessing → slIpStopProcessor</code> ·
+<code>sigIpStopped → QThread::quit</code> · <code>sigIpStarted → ready counter</code>.</p>
+<hr />
+<h2 id="1-the-two-iron-rules">1. The two iron rules<a class="headerlink" href="#1-the-two-iron-rules" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Emit <code>sigIpStarted(name)</code> once you're ready.</strong> On play, <code>MainController</code> starts <strong>all
+   processors first</strong> and only starts the <strong>source</strong> after every processor has reported
+   <code>sigIpStarted</code> (<code>ProcessorManager.cpp:132-142</code>, <code>MainController.cpp:124-145</code>). If you never
+   emit it, <strong>the source never starts</strong> and nothing streams. This ordering guarantees you're a
+   registered consumer <em>before</em> the producer commits a single sample.</li>
+<li><strong>Do your work on your own thread, and stop cleanly.</strong> Either a <code>QTimer</code> (poll) or a blocking
+   loop (semaphore) — but <code>slIpStopProcessor</code> must end it and <code>emit sigIpStopped(name)</code> so the
+   thread can quit.</li>
+</ol>
+<hr />
+<h2 id="2-consumption-patterns-pick-one">2. Consumption patterns — pick one<a class="headerlink" href="#2-consumption-patterns-pick-one" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Pattern</th>
+<th>Mechanism</th>
+<th>Latency</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Poll</strong></td>
+<td><code>QTimer</code> tick → <code>getTotalSamplesAdded()</code> → read <code>available = total − myReadInd</code></td>
+<td>~timer interval</td>
+<td><code>DisplayProcessor</code> (20 ms), <code>RecordProcessor</code> (50 ms)</td>
+</tr>
+<tr>
+<td><strong>Block</strong></td>
+<td><code>addWaitingConsumer(id)</code> once, then loop on <code>waitForAvailable(id, ms, &amp;got)</code></td>
+<td>minimal</td>
+<td><code>RippleDetector</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both read samples via <code>constDataAt(i)</code> / <code>constAuxDataAt(i)</code> with an <strong>independent</strong> read index —
+you never disturb other consumers of the same buffer (review §6).</p>
+<blockquote>
+<p>A blocking loop must still service its stop flag. <code>RippleDetector</code> calls
+<code>QCoreApplication::processEvents()</code> in its loop so <code>slIpStopProcessor</code> (which sets an atomic
+<code>mQuitProcessing</code>) is seen.</p>
+</blockquote>
+<hr />
+<h2 id="3-output-pick-what-fits">3. Output — pick what fits<a class="headerlink" href="#3-output-pick-what-fits" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>To the browser:</strong> <code>emit sigIpDataReady(QByteArray)</code>. For the <em>display</em> stream, match the wire
+  format in review §2 (so <code>NetworkClient.handleMessage</code> parses it). <code>WebSocketServer::setPlaying</code>
+  connects the configured display processor's <code>sigIpDataReady → broadcastData</code>.</li>
+<li><strong>To disk:</strong> delegate to an <code>IDataInterpreter</code> (the <code>RecordProcessor</code> pattern). Each
+  <code>recordings:</code> entry names a <code>data_*</code>, a <code>data_interpreter_name</code>, and an <code>output_filename</code>; the
+  interpreter's <code>serializeAvailableData(QDataStream&amp;, filter)</code> does the format-specific write.</li>
+<li><strong>A new derived stream:</strong> become a <strong>producer</strong> too — register a <code>CircularBuffer</code> in <code>Utils.cpp</code>,
+  <code>addProducer</code>, write + <code>commitWrite</code> (the <code>RippleDetector</code> ripple-band/envelope outputs). Now
+  <em>other</em> sinks can consume your output.</li>
+</ul>
+<hr />
+<h2 id="4-step-by-step">4. Step-by-step<a class="headerlink" href="#4-step-by-step" title="Permanent link">#</a></h2>
+<h3 id="41-create-the-class">4.1 Create the class<a class="headerlink" href="#41-create-the-class" title="Permanent link">#</a></h3>
+<p><code>src/modules/&lt;yourmod&gt;/MySink.{hpp,cpp}</code>, subclass <code>IProcessor</code>, add <code>Q_OBJECT</code>.</p>
+<h3 id="42-configurecfg-bind-inputs-from-your-config-subtree">4.2 <code>configure(cfg)</code> — bind inputs from your config subtree<a class="headerlink" href="#42-configurecfg-bind-inputs-from-your-config-subtree" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">bool MySink::configure(ryml::ConstNodeRef cfg) {
+    for (auto in : cfg[&quot;inputs&quot;].children()) {
+        std::string name = SP::Utils::toStdString(in[&quot;name&quot;].val());   // e.g. &quot;data.npx.lfp&quot;
+        auto* obj = SP::getDataRegistry().getDataByName(name);
+        if (!obj) return false;
+        auto* buf = static_cast&lt;SP::CircularBuffer&lt;int16, Neuropixels::PacketInfo&gt;*&gt;(obj);
+        // poll: stash buf + a currReadInd; or block: buf-&gt;addWaitingConsumer(mConsumerId);
+    }
+    return true;
+}
+</code></pre>
+<p><code>cfg</code> is <em>your</em> processor node from the YAML (<code>inputs:</code>, <code>recordings:</code>, or your own keys).</p>
+<h3 id="43-slipstartprocessor-start-then-announce">4.3 <code>slIpStartProcessor()</code> — start, then announce<a class="headerlink" href="#43-slipstartprocessor-start-then-announce" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">void MySink::slIpStartProcessor() {
+    mTimer = new QTimer(this);                 // poll pattern
+    mTimer-&gt;setTimerType(Qt::PreciseTimer);
+    mTimer-&gt;setInterval(20);
+    connect(mTimer, &amp;QTimer::timeout, this, &amp;MySink::slProcess);
+    mTimer-&gt;start();
+    emit sigIpStarted(&quot;proc.mymod.thing&quot;);     // &lt;-- rule #1
+}
+</code></pre>
+<p>(Block pattern: spin your <code>while(!mQuit)</code> loop here after emitting <code>sigIpStarted</code>.)</p>
+<h3 id="44-process-45-stop-cleanly">4.4 Process + 4.5 stop cleanly<a class="headerlink" href="#44-process-45-stop-cleanly" title="Permanent link">#</a></h3>
+<p><code>slProcess</code> reads available samples and produces output (§3). <code>slIpStopProcessor</code> stops the
+timer/loop, flushes, and <code>emit sigIpStopped("proc.mymod.thing")</code>.</p>
+<h3 id="46-register-the-type-srccoreutilscpp">4.6 Register the type — <code>src/core/Utils.cpp</code><a class="headerlink" href="#46-register-the-type-srccoreutilscpp" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">SP::registerProcessor&lt;SP::MyMod::MySink&gt;(&quot;proc.mymod.thing&quot;);
+// if you write files: SP::registerDataInterpreter&lt;…&gt;(&quot;interp.mymod.x&quot;);
+// if you emit a derived stream: SP::registerData&lt;SP::CircularBuffer&lt;float,float&gt;&gt;(&quot;data.mymod.out&quot;);
+</code></pre>
+<h3 id="47-add-to-a-config-profiles-processors-list">4.7 Add to a config profile's <code>processors:</code> list<a class="headerlink" href="#47-add-to-a-config-profiles-processors-list" title="Permanent link">#</a></h3>
+<pre><code class="language-yaml">processors:
+  - name: &quot;proc.mymod.thing&quot;
+    inputs: [ { data: &quot;lfp&quot;, name: &quot;data.npx.lfp&quot; } ]
+</code></pre>
+<p>Add it to whichever <code>config/*.yaml</code> profiles should run it. Processors are optional per profile
+(<code>ProcessorManager</code> treats "no processors" as success).</p>
+<h3 id="48-cmake">4.8 CMake<a class="headerlink" href="#48-cmake" title="Permanent link">#</a></h3>
+<p><code>target_sources(SpikesPeak PRIVATE MySink.hpp MySink.cpp)</code> in the module <code>CMakeLists.txt</code>
+(+ <code>add_subdirectory</code> if new).</p>
+<hr />
+<h2 id="5-web-commands-from-the-browser-the-recording-example">5. Web commands from the browser (the recording example)<a class="headerlink" href="#5-web-commands-from-the-browser-the-recording-example" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>Full standard + recipe:</strong> <a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a>. <code>RecordProcessor</code>
+is the worked <strong>sink</strong> example there.</p>
+</blockquote>
+<p>To let the browser drive your sink, expose a <code>Q_INVOKABLE</code> — the same per-module "Option A" pattern a
+source uses (<a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a> §8). <code>RecordProcessor::setRecording(bool)</code>
+is the reference. (Recording happens to be a <em>multi-instance</em> case — a profile can have several recorders,
+so the browser binds them into <code>window.activeRecorders</code> and the Record button calls each; a single-instance
+sink just binds to one global. See <a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a> §2.2 / §4.)</p>
+<p><strong>⚠ The one difference that bites a sink: threads.</strong> A source's invokables run on the main thread, but
+<strong>every sink is <code>moveToThread</code>'d onto its own worker thread</strong> (§0). QWebChannel invokes a <code>Q_INVOKABLE</code>
+with <code>Qt::DirectConnection</code> — i.e. <strong>on the GUI thread, not your worker thread</strong>. So the invokable body
+must <strong>not</strong> touch state owned by your worker thread (timers, file handles, read indices) directly —
+<strong>marshal it onto your own thread first:</strong></p>
+<pre><code class="language-cpp">// header:  Q_INVOKABLE void setRecording(bool enable);
+void MySink::setRecording(bool enable) {
+    // Runs on the GUI thread (QWebChannel/DirectConnection). Hop to OUR thread so we never
+    // race slProcess (the timer/loop slot) on shared state.
+    QMetaObject::invokeMethod(this,
+        [this, enable]() { applyState(enable); },   // applyState runs on this sink's thread
+        Qt::QueuedConnection);
+}
+</code></pre>
+<p>Consequences of the marshal:
+- The invokable is <code>void</code> (the real work happens later, off-thread) — <strong>don't</strong> return a result from a
+  sink invokable; a main-thread source can, a worker-thread sink can't.
+- Report the outcome <strong>asynchronously</strong> via <code>emit sigIpErrorOccurred(msg)</code> (or your own signal).
+  <code>WebSocketServer</code> relays it to the browser toolbar as a <code>recordingStatus</code> event — mirror that wiring
+  for your sink (<code>ModuleCommunication.md</code> §4–§6).</p>
+<p><strong>Registration is NOT automatic for sinks.</strong> A source is auto-registered by the generic <code>registerObject</code>
+loop; a sink is not. Add an explicit <code>mWebChannel-&gt;registerObject("proc.mymod.thing", proc)</code> in
+<code>WebSocketServer::onSourceSelection</code> (and a matching <code>deregisterObject</code> in the <code>Disconnect</code> handler), the
+way the recorder is wired. Then bind it in JS by a registry-name substring (<code>ModuleCommunication.md</code> §2).</p>
+<hr />
+<h2 id="checklist">Checklist<a class="headerlink" href="#checklist" title="Permanent link">#</a></h2>
+<ul>
+<li>[ ] <code>MySink : IProcessor</code> with <code>Q_OBJECT</code></li>
+<li>[ ] <code>configure(cfg)</code> binds inputs from the registry by name</li>
+<li>[ ] Consumption: poll (<code>getTotalSamplesAdded</code>) <strong>or</strong> block (<code>addWaitingConsumer</code>/<code>waitForAvailable</code>)</li>
+<li>[ ] <code>slIpStartProcessor</code> sets up work <strong>and emits <code>sigIpStarted(name)</code></strong> (rule #1)</li>
+<li>[ ] <code>slIpStopProcessor</code> stops + flushes + emits <code>sigIpStopped(name)</code></li>
+<li>[ ] Output wired: <code>sigIpDataReady</code> / <code>IDataInterpreter</code> file / new producer buffer</li>
+<li>[ ] <code>registerProcessor&lt;…&gt;("proc.…")</code> in <code>Utils.cpp</code></li>
+<li>[ ] Added to the relevant <code>config/*.yaml</code> <code>processors:</code> lists</li>
+<li>[ ] <code>target_sources</code> in the module <code>CMakeLists.txt</code></li>
+<li>[ ] (optional) <code>Q_INVOKABLE</code> web command — <strong>marshal to your thread</strong> + explicit <code>registerObject</code> (§5)</li>
+<li>[ ] Builds clean (see <a href="README.html"><code>README.md</code></a> → Build)</li>
+</ul>
+<p><strong>Reference implementations:</strong> <code>DisplayProcessor</code> (poll → AVX2 min/max → <code>sigIpDataReady</code>) ·
+<code>RecordProcessor</code> (poll → <code>IDataInterpreter</code> → file) · <code>RippleDetector</code> (block → IIR DSP →
+stimulation + derived producer buffers).</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/AddingASinkModule.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#0-the-contract-srccoreiprocessorhpp">0. The contract (src/core/IProcessor.hpp)</a></li>
+<li><a href="#1-the-two-iron-rules">1. The two iron rules</a></li>
+<li><a href="#2-consumption-patterns-pick-one">2. Consumption patterns — pick one</a></li>
+<li><a href="#3-output-pick-what-fits">3. Output — pick what fits</a></li>
+<li><a href="#4-step-by-step">4. Step-by-step</a><ul>
+<li><a href="#41-create-the-class">4.1 Create the class</a></li>
+<li><a href="#42-configurecfg-bind-inputs-from-your-config-subtree">4.2 configure(cfg) — bind inputs from your config subtree</a></li>
+<li><a href="#43-slipstartprocessor-start-then-announce">4.3 slIpStartProcessor() — start, then announce</a></li>
+<li><a href="#44-process-45-stop-cleanly">4.4 Process + 4.5 stop cleanly</a></li>
+<li><a href="#46-register-the-type-srccoreutilscpp">4.6 Register the type — src/core/Utils.cpp</a></li>
+<li><a href="#47-add-to-a-config-profiles-processors-list">4.7 Add to a config profile's processors: list</a></li>
+<li><a href="#48-cmake">4.8 CMake</a></li>
+</ul>
+</li>
+<li><a href="#5-web-commands-from-the-browser-the-recording-example">5. Web commands from the browser (the recording example)</a></li>
+<li><a href="#checklist">Checklist</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

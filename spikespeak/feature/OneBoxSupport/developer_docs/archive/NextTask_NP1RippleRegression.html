@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../../index.html"><img class="brand-logo" src="../../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Archive (historical) / NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../../README.html">SpikesPeak</a>
+<a href="../../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="../BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../README.html">SpikesPeak — Developer Docs</a>
+<a href="../SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="../RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../../benchmarks/README.html">Benchmarks</a>
+<a href="../../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a class="active" href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-repeat-the-closed-loop-ripplestim-validation-on-neuropixels-10-regression">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels <strong>1.0</strong> (regression)<a class="headerlink" href="#next-task-repeat-the-closed-loop-ripplestim-validation-on-neuropixels-10-regression" title="Permanent link">#</a></h1>
+<p><strong>Goal:</strong> run the SAME 100-ripple closed-loop recording + offline analysis that was just done on NP2.0, but on
+a real <strong>NP1.0</strong> probe, to confirm the NP2-focused changes in the last commit did <strong>not</strong> break NP1. Then clear
+the result into <code>RecordingTests/NP1_RIPPLE_TESTS.md</code> + memory. This is a <strong>hardware</strong> task on the Windows rig
+(real NP1.0 + NI-DAQ PXI-6133 + the live Pi 3B+ stim server at 192.168.1.100).</p>
+<p>Read first: <a href="../RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> (the exact offline pipeline + the sync
+fix), <a href="../RippleDetection.html"><code>RippleDetection.md</code></a> (per-probe detector input), <code>RecordingTests/NP2_RIPPLE_TESTS.md</code>
+(the NP2 result this mirrors). The user prefers <strong>directive, falsifiable claims</strong> ("check X") over hedged
+suggestions — state what you'll verify, run the decisive test, let them correct you.</p>
+<h2 id="what-changed-in-the-last-commit-the-regression-surface">What changed in the last commit (the regression surface)<a class="headerlink" href="#what-changed-in-the-last-commit-the-regression-surface" title="Permanent link">#</a></h2>
+<p>The commit "NP2.0 closed-loop ripple→stim validation + robust NI-DAQ↔NPX sync" touched shared code. For each,
+the claim to verify on NP1:</p>
+<table>
+<thead>
+<tr>
+<th>Change</th>
+<th>NP1 risk</th>
+<th>Verify (claim to falsify)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sync.py</code> → <code>match="auto"</code> (default), <code>reader.py</code></td>
+<td><strong>Shared.</strong> NP1 sync uses the same aligner.</td>
+<td>NP1 <code>synchronize()</code> still gives ~10 ppm / &lt;0.02 ms residual and 0-unmatched ai4↔detection.</td>
+</tr>
+<tr>
+<td><code>RippleDetector.cpp</code> sidecar + config-driven input/decimation/threshold</td>
+<td><strong>Shared.</strong> NP1 must resolve to <code>data.npx.lfp</code>, <strong>decimation 1</strong> (NOT ÷12).</td>
+<td>The <code>_ripple.json</code> sidecar for NP1 lists the correct read-out channels + thresholds; NP1 decimation = 1.</td>
+</tr>
+<tr>
+<td><code>WebSocketServer</code>/<code>RecordProcessor</code> channels override</td>
+<td><strong>Shared.</strong> NP1 records <strong>two</strong> bands (<code>ap</code>+<code>lfp</code>).</td>
+<td>The channels override + sidecar apply correctly to NP1's ap+lfp; NI-DAQ still keeps ai0+ai4.</td>
+</tr>
+<tr>
+<td><code>DisplayProcessor</code> re-baseline on hw-timestamp reset</td>
+<td><strong>Shared display path</strong> — highest NP1 risk.</td>
+<td>NP1 pause→play + pick-channels do NOT freeze/blank the live view (this was the NP2 symptom).</td>
+</tr>
+<tr>
+<td><code>NpInterface</code> (Npx2MSProbe seed, <code>np_setSWTrigger</code> gating)</td>
+<td>NP2-probe-class specific; should be inert for NP1.</td>
+<td>NP1 connect/play/pause/pick-channels stream normally.</td>
+</tr>
+<tr>
+<td><code>NetworkClient.js</code> NP2 raw AC-coupling</td>
+<td>NP1 uses <code>ap</code>/<code>lfp</code>, not <code>raw</code> — should be untouched.</td>
+<td>NP1 live traces render (not off-screen/flat).</td>
+</tr>
+<tr>
+<td><code>StimulatorClient</code> GUI stim params</td>
+<td>Shared, probe-agnostic.</td>
+<td><code>fire 60 10 1 500</code> → one pulse/detection on ai4 (same as NP2).</td>
+</tr>
+<tr>
+<td><code>config/Npx1PxiNiDaq.yaml</code> (record all channels)</td>
+<td>NP1 config edited.</td>
+<td>It connects, streams ap+lfp, and records.</td>
+</tr>
+<tr>
+<td><code>analyze_recording.py</code> exact-NP2-detector additions</td>
+<td>NP1 branch (<code>detector_input()</code> <code>if "lfp" in bands</code>) is <strong>separate</strong> — reads <code>lfp</code> directly, no Bessel.</td>
+<td>NP1 analysis produces a clean, tight, non-negative latency (0 unmatched).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="np1-specific-facts-differ-from-np2">NP1-specific facts (differ from NP2)<a class="headerlink" href="#np1-specific-facts-differ-from-np2" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Source / config:</strong> <code>--source "NPX 1.0 with NI-DAQ"</code> (config <code>name:</code> in <code>config/Npx1PxiNiDaq.yaml</code>). Records
+  <code>ap</code>+<code>lfp</code> [0..383] + NI-DAQ [0..7].</li>
+<li><strong>Detector input:</strong> NP1 reads the native <strong>2.5 kHz <code>lfp</code> band DIRECTLY</strong> (int16, <strong>decimation 1</strong>, no
+  <code>proc.lfp</code>, no Bessel). The AP band is high-passed → unusable for ripples. (NP2 was raw→Bessel <code>data.lfp</code>→÷12.)</li>
+<li><strong>electrode ≈ read-out channel</strong> on NP1 (contiguous), unlike NP2 (electrode ≠ channel). <code>record_ripples.py</code>
+  still records <code>rig.resolved_channels()</code>, so this is handled — but sanity-check the sidecar channel ids.</li>
+<li>Earlier NP1 closed loop was validated 2026-07-09/16 (115 ripples→112 ai4, sync ~10 ppm) but with the OLD
+  end-to-end latency method; recompute with the current <strong>pulse-anchored online-instant</strong> method (expect a few ms,
+  comparable to NP2's 1.94–3.45 ms).</li>
+</ul>
+<h2 id="procedure-mirror-the-3-np2-tests">Procedure (mirror the 3 NP2 tests)<a class="headerlink" href="#procedure-mirror-the-3-np2-tests" title="Permanent link">#</a></h2>
+<ol>
+<li>Confirm the Pi stim server is up (<code>ss</code>/<code>systemctl</code> over SSH per [<code>stim-server-pi3-live</code>] memory; do NOT trust
+   journalctl program logs). User plays the synthetic NP1 ripple signal
+   (<code>ripple_tools/gen_synthetic_ripples.py --probe 1.0</code>) into saline.</li>
+<li>Launch: <code>python run_spikespeak.py</code> + a browser. Connect <strong>"NPX 1.0 with NI-DAQ"</strong>. Eyeball the Live Data view
+   for the strongest LFP ripple electrodes.</li>
+<li>Record 3 tests with <code>ripple_tools/record_ripples.py</code> (100 ripples each), e.g. into
+   <code>RecordingTests/np1_{1channel_1required,2channel_2required,4channel_3required}/</code>:
+   - <code>--source "NPX 1.0 with NI-DAQ" --channels &lt;e&gt; --quorum 1 --z 2.5 --n 100 --dir &lt;abs&gt; --name np1_1channel_1required</code>
+   - <code>--channels &lt;e1&gt;,&lt;e2&gt; --quorum 2 ... --name np1_2channel_2required</code>
+   - <code>--channels &lt;e1&gt;,&lt;e2&gt;,&lt;e3&gt;,&lt;e4&gt; --quorum 3 ... --name np1_4channel_3required</code>
+   Stim is single-pulse (<code>--stim-freq 1.0 --stim-train-ms 500</code> = one pulse/detection) on <strong>ai4</strong>.</li>
+<li>Analyze each: <code>python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl --quorum "&lt;N&gt; ch, &lt;M&gt; required" --figs &lt;recdir&gt;/analysis</code>.
+   Optionally <code>verify_quorum.py</code> per test.</li>
+<li>Write <code>RecordingTests/NP1_RIPPLE_TESTS.md</code> (mirror the NP2 report), update memory ([[ripple-recording-100-setup]]),
+   regenerate the docs book (<code>python scripts/build_docs.py</code>).</li>
+</ol>
+<h2 id="success-criteria">Success criteria<a class="headerlink" href="#success-criteria" title="Permanent link">#</a></h2>
+<ul>
+<li>Each test: 100 online detections → ~100 ai4 pulses, <strong>0 unmatched</strong>, tight non-negative closed-loop latency
+  (a few ms). If a test shows "orphans"/unmatched, <strong>first</strong> check NPX-vs-NI-DAQ sync pulse counts (the auto fix
+  should handle a mismatch, but confirm) and the per-channel envelope-vs-threshold + the ripples-vs-pulses raster
+  — do NOT theorise about hardware before looking at those (see the sync-bug lesson in
+  <a href="../RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>).</li>
+<li>NP1 live view, pause/play, and pick-channels all work (the shared <code>DisplayProcessor</code>/streaming changes didn't
+  regress NP1).</li>
+</ul>
+<h2 id="safety-hardware-attached-non-negotiable">Safety (hardware attached — non-negotiable)<a class="headerlink" href="#safety-hardware-attached-non-negotiable" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Graceful shutdown only</strong> (WS Disconnect / <code>quit</code>) — a force-kill strands the IMEC board + leaves the
+  stimulator ARMED ([[graceful-hardware-shutdown]]).</li>
+<li>Do <strong>not</strong> leave the rig streaming during unrelated work ([[stop-streaming-when-idle]]); shut EVERYTHING down
+  when done — backend + test browser + streaming ([[dont-leave-rigs-running-for-user]]). Report via saved
+  screenshots/plots.</li>
+<li>Kill only the debug-port-9222 / isolated-profile Chrome on GUI teardown, never a blanket chrome kill
+  ([[gui-browser-teardown]]).</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_NP1RippleRegression.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#what-changed-in-the-last-commit-the-regression-surface">What changed in the last commit (the regression surface)</a></li>
+<li><a href="#np1-specific-facts-differ-from-np2">NP1-specific facts (differ from NP2)</a></li>
+<li><a href="#procedure-mirror-the-3-np2-tests">Procedure (mirror the 3 NP2 tests)</a></li>
+<li><a href="#success-criteria">Success criteria</a></li>
+<li><a href="#safety-hardware-attached-non-negotiable">Safety (hardware attached — non-negotiable)</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Live Data View (waveform display) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / SpikesPeak — Live Data View (waveform display)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a class="active" href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-live-data-view-waveform-display">SpikesPeak — Live Data View (waveform display)<a class="headerlink" href="#spikespeak-live-data-view-waveform-display" title="Permanent link">#</a></h1>
+<p>How the streaming waveform view works: the data plane, the <strong>depth / shank / electrode-column
+model</strong>, the per-column filters, and the orientation. Read this before touching <code>ChartColumn.js</code>,
+<code>DataStore.js</code>, <code>NetworkClient.js</code>, or the live-view glue in <code>main.js</code> / <code>ImroManager.js</code>.</p>
+<blockquote>
+<p>Sibling docs: probe-map editor + IMRO is in [<code>../SpikesPeak_Status.md</code>]; the whole-system
+picture (hosting, threading, QWebChannel) is in [<code>SpikesPeak_Architecture_Review.md</code>].</p>
+</blockquote>
+<hr />
+<h2 id="1-data-plane-how-a-sample-reaches-a-trace">1. Data plane (how a sample reaches a trace)<a class="headerlink" href="#1-data-plane-how-a-sample-reaches-a-trace" title="Permanent link">#</a></h2>
+<pre><code>C++ DisplayProcessor ─► WebSocket :1234 (binary) ─► NetworkClient.handleMessage()
+   per-pixel min/max decimation                         │  parses [streamId][nPts][ts, (min,max)*nCh]...
+                                                         ▼
+                              DataStore.streams[streamId] = [ channel0, channel1, … channel383 ]
+                                                         │   each channel = { dataSeries, yOffset, zoom, color }
+                                                         ▼
+                              ChartColumn(s) — each a SciChartSurface; its renderable series POINT at
+                              the shared channel.dataSeries and zoom the y-axis to a slice.
+</code></pre>
+<ul>
+<li>The browser receives <strong>decimated</strong> data (min+max per timebin), not the raw 30 kHz — volumes are
+  modest. <code>NetworkClient</code> appends with <strong>one</strong> <code>appendRange()</code> per channel per batch.</li>
+<li><strong>THE key constraint:</strong> the vertical position (<code>yOffset</code>) is <strong>baked into the data values</strong>
+  (<code>y = channel.yOffset + value*zoom</code>), and columns share a channel's series ⇒ <strong>a channel sits at one
+  vertical position <em>per series</em>.</strong> Because the <code>L+R</code> view needs a <em>different</em> ordering than <code>L</code>/<code>R</code>
+  (interleaved vs packed — §5), each channel carries <strong>two</strong> series, each with its own baked offset:
+  <code>js
+  yPacked[o]      = channel.yOffset            + value*zoom;   // dataSeries            (L / R / non-probe)
+  yInterleaved[o] = channel.yOffsetInterleaved + value*zoom;   // dataSeriesInterleaved (L+R)</code>
+  <code>NetworkClient</code> appends only the series the visible columns actually need (default <code>B</code> ⇒ interleaved
+  only), per <code>dataStore.appendPacked</code> / <code>appendInterleaved</code> set by <code>AppController.updateAppendModes()</code>.
+  Two fixed orderings is the ceiling — arbitrary <em>per-column</em> positioning would still need per-column
+  data (§5).</li>
+</ul>
+<hr />
+<h2 id="2-probe-geometry-np1-and-np2">2. Probe geometry (NP1 and NP2)<a class="headerlink" href="#2-probe-geometry-np1-and-np2" title="Permanent link">#</a></h2>
+<p>Electrodes form <strong>2 columns</strong> with rows of increasing depth:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>electrodes</th>
+<th>shanks</th>
+<th>within-shank index <code>e</code></th>
+<th>column</th>
+<th>row (depth)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NP1</strong></td>
+<td>960</td>
+<td>1</td>
+<td><code>e = channel + 384*bank</code></td>
+<td><code>e &amp; 1</code> (even=<strong>L</strong>, odd=<strong>R</strong>)</td>
+<td><code>e &gt;&gt; 1</code> (0…479)</td>
+</tr>
+<tr>
+<td><strong>NP2</strong></td>
+<td>1280 / shank</td>
+<td>4</td>
+<td><code>e = electrodeId</code> (shank from map)</td>
+<td><code>e &amp; 1</code></td>
+<td><code>e &gt;&gt; 1</code> (0…639)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>Row 0 is the TIP</strong> (deepest in the brain). Higher electrode number ⇒ shallower, up the shank.</li>
+<li>Electrodes <code>2k</code> (left) and <code>2k+1</code> (right) share <strong>row k = the same depth</strong>.</li>
+</ul>
+<hr />
+<h2 id="3-the-depth-shank-column-model">3. The depth / shank / column model<a class="headerlink" href="#3-the-depth-shank-column-model" title="Permanent link">#</a></h2>
+<p>Computed in <strong><code>ImroManager.js → recomputeDepthOrdering()</code></strong> from the <strong>applied</strong> map, re-run on every
+map apply. Every active read-out channel gets a global <strong>slot</strong>:</p>
+<pre><code>slot = rank of the channel when ALL channels are sorted by  (shank ASC, column ASC [L before R], row ASC [deep first])
+</code></pre>
+<p><code>main.js → relayoutByDepth()</code> then sets <code>channel.yOffset = slot * spacing</code> and clears the (now-stale)
+data. Because the y-axis is <strong>normal</strong> (min at the bottom), <strong>slot 0 = the tip sits at the bottom</strong>.</p>
+<h3 id="bands">Bands<a class="headerlink" href="#bands" title="Permanent link">#</a></h3>
+<p>A contiguous run of slots for one <code>(shank, column)</code> selection. Since L precedes R within a shank, a
+shank's "both" band is just their union — also contiguous:</p>
+<pre><code>NP1 slots:  [ shank0 Left  by row ][ shank0 Right by row ]
+            └──── band &quot;0-L&quot; ─────┘└──── band &quot;0-R&quot; ─────┘
+            └──────────────── band &quot;0-B&quot; (both) ─────────┘
+NP2 slots:  [s0L][s0R][s1L][s1R][s2L][s2R][s3L][s3R]   (each by row)
+</code></pre>
+<p>A column showing <code>L</code> or <code>R</code> just <strong>zooms its y-axis to that band's slot range</strong> — packed, depth-sorted,
+no gaps.</p>
+<h3 id="interleaved-ordering-the-lr-view">Interleaved ordering (the <code>L+R</code> view)<a class="headerlink" href="#interleaved-ordering-the-lr-view" title="Permanent link">#</a></h3>
+<p><code>L+R</code> reads <strong>by electrode number</strong> (<code>0L, 1R, 2L, 3R, …</code>), not L-block-then-R-block. That's a <em>second</em>
+ordering, <strong><code>(shank ASC, row ASC, col ASC)</code></strong> → <code>slotI</code> + per-shank band <code>bandI(shank)</code> (each shank's
+run is contiguous, so its whole-shank band is that run). A single baked offset can't be both interleaved
+and packed, so the <code>L+R</code> view binds the channel's <strong>interleaved</strong> series (<code>dataSeriesInterleaved</code>,
+positioned by <code>slotI</code>); <code>L</code>/<code>R</code> keep the packed series. <code>relayoutByDepth</code> sets <strong>both</strong> offsets
+(<code>yOffset = slot·spacing</code>, <code>yOffsetInterleaved = slotI·spacing</code>). When an active electrode's L/R partner
+is absent (custom map), interleaved order just shows consecutive same-side electrodes (e.g. <code>50L, 52L</code>)
+— still strictly electrode-ascending.</p>
+<h3 id="reserved-channel-np1-ch-191-ref">Reserved channel (NP1 ch 191 → <code>REF</code>)<a class="headerlink" href="#reserved-channel-np1-ch-191-ref" title="Permanent link">#</a></h3>
+<p>The NP1 reserved internal-reference channel (191) is <strong>not</strong> a recording electrode. The probe-map editor
+never re-banks it, so it stays on bank 0 (electrode 191); left to float by depth it sorts to the
+<strong>deepest</strong> slot on any non-bank-0 map (it becomes the smallest active electrode) and confusingly lands
+at the bottom-right. Instead <code>recomputeDepthOrdering</code> <strong>pins</strong> reserved channels (<code>NP1_RESERVED_CHANNELS</code>)
+to the <strong>shallow (top)</strong> end of their column via a sentinel sort row (<code>REF_ROW = 1e6</code>), and <code>ChartColumn</code>
+labels the trace <strong><code>REF</code></strong> (<code>imroLiveView.isRef</code>). The reference trace stays visible at a fixed, marked
+spot (right column, since electrode 191 is odd; absent from the <code>Left</code> view). NP2 has no equivalent here.</p>
+<h3 id="windowimroliveview-api-the-contract-between-imromanager-and-the-live-view"><code>window.imroLiveView</code> API (the contract between ImroManager and the live view)<a class="headerlink" href="#windowimroliveview-api-the-contract-between-imromanager-and-the-live-view" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>method</th>
+<th>returns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>hasOrdering()</code></td>
+<td><code>true</code> once an NP1/NP2 applied map exists</td>
+</tr>
+<tr>
+<td><code>kind()</code></td>
+<td><code>'NP1'</code> | <code>'NP2'</code> | <code>null</code></td>
+</tr>
+<tr>
+<td><code>shanks()</code></td>
+<td>sorted shank indices present, e.g. <code>[0]</code> or <code>[0,1,2,3]</code></td>
+</tr>
+<tr>
+<td><code>slotOf(channelId)</code> / <code>channelAtSlot(slot)</code></td>
+<td><strong>packed</strong> slot ↔ channel (L/R views)</td>
+</tr>
+<tr>
+<td><code>slotIOf(channelId)</code> / <code>channelAtSlotI(slot)</code></td>
+<td><strong>interleaved</strong> slot ↔ channel (the L+R view)</td>
+</tr>
+<tr>
+<td><code>electrodeOf(channelId)</code></td>
+<td>within-shank electrode index</td>
+</tr>
+<tr>
+<td><code>shankOf(channelId)</code> / <code>colOf(channelId)</code></td>
+<td>shank / <code>0</code>=L <code>1</code>=R</td>
+</tr>
+<tr>
+<td><code>isRef(channelId)</code></td>
+<td>true for a reserved internal-reference channel (NP1 ch 191) — pinned + labeled <code>REF</code></td>
+</tr>
+<tr>
+<td><code>band(shank, colKey)</code></td>
+<td>packed <code>{start, count}</code>; <code>colKey ∈ {'L','R','B'}</code></td>
+</tr>
+<tr>
+<td><code>bandI(shank)</code></td>
+<td>interleaved <code>{start, count}</code> for a shank (the L+R band)</td>
+</tr>
+<tr>
+<td><code>total()</code></td>
+<td>active channel count (384)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-chartcolumn-per-column-filters-drawing">4. ChartColumn — per-column filters + drawing<a class="headerlink" href="#4-chartcolumn-per-column-filters-drawing" title="Permanent link">#</a></h2>
+<p>Each display column (<code>ChartColumn</code>) owns:
+- <strong>Two header dropdowns</strong> — <code>shankSelector</code> (one entry per shank; <strong>disabled for single-shank NP1</strong>)
+  and <code>colSelector</code> (<code>L+R</code> / <code>Left</code> / <code>Right</code>). <code>refreshFilterOptions()</code> populates them from
+  <code>imroLiveView</code> and is called on map apply (<code>relayoutByDepth</code>) and column (re)build (<code>buildColumns</code>).
+  Both are <strong>hidden</strong> for non-probe sources (audio/NIDAQ) — those fall back to channel order + labels.
+- <strong><code>this.bottomSlot</code></strong> — the lowest (deepest) visible slot; the vertical slider scrolls it within the
+  band. Slider rail is labeled <code>shallow</code> (top) / <code>deep</code> (bottom).
+- <strong><code>draw()</code></strong> — picks the column's <strong>mode</strong>: <code>L+R</code> ⇒ interleaved ordering + <code>dataSeriesInterleaved</code>;
+  <code>L</code>/<code>R</code> ⇒ packed ordering + <code>dataSeries</code>; non-probe ⇒ channel order. Then clamps <code>bottomSlot</code>, sets a
+  <strong>normal</strong> y-axis range, and for each on-screen slot (top-first) shows <code>channels[chanAt(slot)][seriesField]</code>,
+  labeled <strong><code>&lt;electrode&gt;&lt;L|R&gt;</code></strong> (e.g. <code>100L</code>), or <strong><code>REF</code></strong> for a pinned reserved channel; hover shows
+  detail. Changing <code>colSelector</code>
+  calls <code>window.onLiveFilterChange</code> so the needed series starts appending. Selection + wheel-zoom still
+  key off the read-out <strong>channel</strong>.</p>
+<p>Orientation summary: <strong>deep (tip) at the bottom, shallow at the top; electrode labels increase
+upward.</strong> A previous build used an <em>inverted</em> y-axis range; this view uses an explicit <strong>normal</strong> range
+instead — if depth ever appears upside-down, flip the range/<code>slot</code> sign in <code>draw()</code>/<code>relayoutByDepth()</code>.</p>
+<hr />
+<h2 id="5-design-notes-the-baked-offset-constraint">5. Design notes (the baked-offset constraint)<a class="headerlink" href="#5-design-notes-the-baked-offset-constraint" title="Permanent link">#</a></h2>
+<p>The yOffset is baked per series (§1), so each distinct <em>vertical ordering</em> needs its own series:</p>
+<ol>
+<li><strong><code>L+R</code> interleaved vs <code>L</code>/<code>R</code> packed</strong> put the same channel at different positions ⇒ <strong>two series</strong>
+   per channel (<code>dataSeries</code> packed, <code>dataSeriesInterleaved</code> interleaved). To keep cost down,
+   <code>NetworkClient</code> appends only the series in active use (<code>updateAppendModes()</code> from the columns'
+   filters; default <code>B</code> ⇒ interleaved only, so it's ~1× append in the common cases). Switching a
+   column's filter clears + refills the newly-activated series.</li>
+<li><strong>No "all shanks" option.</strong> Each column picks one shank (all-shanks + a single L/R column is
+   non-contiguous in slot space). View all four NP2 shanks with four columns.</li>
+<li><strong>A third ordering</strong> (e.g. arbitrary per-column packing) would still need per-column <code>dataSeries</code>
+   (append ~Ncolumns×) or raw append + a SciChart per-column offset filter — a bigger cost than the
+   current two fixed orderings.</li>
+</ol>
+<hr />
+<h2 id="6-lifecycle-backend-quits-with-the-browser">6. Lifecycle — backend quits with the browser<a class="headerlink" href="#6-lifecycle-backend-quits-with-the-browser" title="Permanent link">#</a></h2>
+<p><code>src/core/WebSocketServer.cpp/.hpp</code>: a single-shot <strong>grace timer</strong> (2 s). When the <strong>last</strong> client
+disconnects the timer starts; a new/again connection (<code>onNewConnection</code>) <strong>cancels</strong> it; on timeout it
+calls <code>QCoreApplication::quit()</code>. Net effect: <strong>closing the browser quits <code>SpikesPeak.exe</code></strong>, but a
+<strong>page refresh</strong> (disconnect→reconnect within 2 s) does <strong>not</strong>. If no browser ever connects, nothing
+schedules a quit. (Works alongside <code>quitOnLastWindowClosed(false)</code> — that governs <em>window</em> close, this
+governs <em>client</em> disconnect.)</p>
+<hr />
+<h2 id="7-files-in-this-subsystem">7. Files in this subsystem<a class="headerlink" href="#7-files-in-this-subsystem" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>webinterface/NetworkClient.js</code></td>
+<td>parse binary stream; append into the needed (packed / interleaved) series</td>
+</tr>
+<tr>
+<td><code>webinterface/DataStore.js</code></td>
+<td>per-stream channels: <strong>two</strong> series (<code>dataSeries</code> + <code>dataSeriesInterleaved</code>), <code>yOffset</code>/<code>yOffsetInterleaved</code>, <code>zoom</code>, <code>color</code>; <code>appendPacked</code>/<code>appendInterleaved</code> flags</td>
+</tr>
+<tr>
+<td><code>webinterface/ChartColumn.js</code></td>
+<td>one SciChart column: dropdowns, slider, <code>draw()</code> (mode select), <code>refreshFilterOptions()</code></td>
+</tr>
+<tr>
+<td><code>webinterface/main.js</code></td>
+<td><code>AppController</code>: <code>relayoutByDepth()</code>, <code>updateAppendModes()</code>, column build, status, x-axis</td>
+</tr>
+<tr>
+<td><code>webinterface/ImroManager.js</code></td>
+<td><code>recomputeDepthOrdering()</code> + <code>window.imroLiveView</code> (ordering/bands)</td>
+</tr>
+<tr>
+<td><code>webinterface/Config.js</code></td>
+<td><code>NUM_CHANNELS=384</code>, <code>TRACES_PER_COLUMN=20</code>, <code>CHANNEL_VERTICAL_SPACING</code></td>
+</tr>
+<tr>
+<td><code>src/core/WebSocketServer.*</code></td>
+<td>transport + the lifecycle grace timer</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-status-remaining-2026-06-25">8. Status &amp; remaining (2026-06-25)<a class="headerlink" href="#8-status-remaining-2026-06-25" title="Permanent link">#</a></h2>
+<p><strong>Done (deployed; NP1 path needs a hardware look):</strong>
+- Depth ordering; deep at bottom; electrode+<code>L/R</code> labels.
+- Per-column <strong>shank</strong> + <strong>Left/Right/Both</strong> dropdowns; each column zooms to its band.
+- <strong><code>L+R</code> interleaved by electrode number</strong> (<code>0L,1R,2L,3R…</code>) via the second series; <code>L</code>/<code>R</code> stay packed.
+- <strong>Reserved reference channel (NP1 ch 191) pinned to the top of its column + labeled <code>REF</code></strong> (instead of
+  floating to the deepest slot on non-bank-0 maps). Node self-test: ch191 lands at the R-band top / the
+  interleaved top, never slot 0.
+- Backend auto-quit on browser close (refresh-safe).
+- Self-tested in Node: packed bands contiguous + unchanged; interleaved strictly electrode-ascending
+  (<code>first6 = 0L,1R,2L,3R,4L,5R</code>); NP1 (bank0 + mixed) and NP2 (4-shank).</p>
+<p><strong>To verify on hardware (NP1, task 1 wrap-up):</strong>
+- Orientation reads tip-at-bottom (one-line flip if not).
+- <code>L+R</code> shows <code>0L,1R,2L,3R…</code>; <code>Left</code>/<code>Right</code> still packed; multi-column L|R side-by-side.
+- Browser-close quits the console in ~2 s; refresh keeps it alive.</p>
+<p><strong>Done since (2026-07):</strong>
+- <strong>Task 2</strong> — NP1.0 <strong>recording</strong> verified on hardware (see [<code>Recording.md</code>]).
+- <strong>Task 3</strong> — <strong>NP2.0 multishank</strong> live view + the 4-shank probe-map <strong>editor</strong> are built and verified,
+  including on a <strong>real</strong> 2.0 probe (see [<code>Neuropixels2.0.md</code>]). The geometry above is exercised by both
+  simulated and real 2.0 applied maps.</p>
+<p><strong>Backlog:</strong> "all shanks" view (needs §5.3 decoupling); apFilter (300 Hz high-pass) toggle in the
+IMRO panel; <code>NUM_CHANNELS</code> hard-coded 384.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/LiveDataView.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-data-plane-how-a-sample-reaches-a-trace">1. Data plane (how a sample reaches a trace)</a></li>
+<li><a href="#2-probe-geometry-np1-and-np2">2. Probe geometry (NP1 and NP2)</a></li>
+<li><a href="#3-the-depth-shank-column-model">3. The depth / shank / column model</a><ul>
+<li><a href="#bands">Bands</a></li>
+<li><a href="#interleaved-ordering-the-lr-view">Interleaved ordering (the L+R view)</a></li>
+<li><a href="#reserved-channel-np1-ch-191-ref">Reserved channel (NP1 ch 191 → REF)</a></li>
+<li><a href="#windowimroliveview-api-the-contract-between-imromanager-and-the-live-view">window.imroLiveView API (the contract between ImroManager and the live view)</a></li>
+</ul>
+</li>
+<li><a href="#4-chartcolumn-per-column-filters-drawing">4. ChartColumn — per-column filters + drawing</a></li>
+<li><a href="#5-design-notes-the-baked-offset-constraint">5. Design notes (the baked-offset constraint)</a></li>
+<li><a href="#6-lifecycle-backend-quits-with-the-browser">6. Lifecycle — backend quits with the browser</a></li>
+<li><a href="#7-files-in-this-subsystem">7. Files in this subsystem</a></li>
+<li><a href="#8-status-remaining-2026-06-25">8. Status &amp; remaining (2026-06-25)</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

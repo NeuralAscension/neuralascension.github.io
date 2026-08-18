@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ripple detector — threading & compute trade-off report - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / Ripple detector — threading & compute trade-off report</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a class="active" href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="ripple-detector-threading-compute-trade-off-report">Ripple detector — threading &amp; compute trade-off report<a class="headerlink" href="#ripple-detector-threading-compute-trade-off-report" title="Permanent link">#</a></h1>
+<p><strong>Question:</strong> should each per-electrode detector run on its own thread (with a central arbiter thread),
+or is the current single-thread design right? And is the filtering AVX-accelerated?</p>
+<p><strong>TL;DR (measured on this box, 2026-07-08):</strong> the per-channel filter chain costs <strong>~28 ns / channel-sample</strong>
+(scalar, <code>/O2</code>). At the detector's 2.5 kHz decimated rate a <strong>single thread can process ~14,000 channels</strong>
+within one sample period; the whole <strong>384-channel probe uses 2.7 % of one core</strong>. The dominant closed-loop
+latency is <strong>filter group delay + envelope build (~7–40 ms), which is threading-independent</strong>, so
+multithreading does <strong>not</strong> reduce it at these scales — it adds a small cross-thread synchronization cost for
+the quorum decision. Multithreading only becomes <em>necessary</em> when <code>per-channel-cost × channel-count</code> approaches
+the per-sample budget (thousands of channels, or a much heavier per-channel algorithm, or full-rate 30 kHz
+processing of both). <strong>Before threads, the higher-leverage optimization is AVX (8× per op, zero sync cost)</strong> —
+which this codebase already uses for <code>proc.lfp</code> but the detector does not. Numbers, method, and the crossover
+where multithreading wins are below, plus the plausible reasons a prior version was multithreaded.</p>
+<hr />
+<h2 id="1-what-the-detector-actually-does-today-facts-from-the-code">1. What the detector actually does today (facts, from the code)<a class="headerlink" href="#1-what-the-detector-actually-does-today-facts-from-the-code" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>The ripple-band + envelope filters are SCALAR</strong>, not AVX. <code>RippleDetector</code> holds
+  <code>std::vector&lt;Filter&gt; mRippleBandFilters</code> and <code>mEnvelopeFilters</code> — one <strong>scalar</strong> <code>Filter</code>
+  (<code>src/core/Filter.hpp</code>, Direct-Form IIR/FIR, one sample at a time) <strong>per detection channel</strong>. Per decimated
+  sample it runs, for each selected channel: ripple-band FIR (26-tap) → <code>abs</code> → envelope FIR (10-tap) →
+  threshold/quorum logic.</li>
+<li><strong>AVX is used only by <code>proc.lfp</code></strong> (<code>Avx2Filter</code>, 8 channels per op) to derive <code>data.lfp</code> from <code>data.npx.raw</code>
+  on the <strong>NP2</strong> path. That's a <em>separate processor on its own thread</em>; it is not in the NP1 path and is not the
+  detector's per-channel filtering.</li>
+<li><strong>Threading model:</strong> <code>ProcessorManager</code> moves <strong>each <code>IProcessor</code> onto its own worker thread</strong>
+  (<code>proc.rippledetector</code>, <code>proc.lfp</code>, <code>proc.npx.display</code>, … each dedicated). <strong>Within</strong> the detector's single
+  thread, the N per-electrode detectors run <strong>sequentially in one loop</strong>, and the quorum/stimulation decision is
+  made <strong>inline</strong>. So: one thread for the whole detector — <em>not</em> one-thread-per-electrode + a separate arbiter.</li>
+<li><strong>Rate:</strong> the detector processes the ripple band at <strong>2.5 kHz</strong> (decimated: ÷1 from native NP1 LFP, ÷12 from
+  the 30 kHz NP2-derived LFP). The outer read loop iterates at the input rate (2.5 or 30 kHz) but only does the
+  filter work on decimated samples.</li>
+</ul>
+<hr />
+<h2 id="2-measurement-so-this-isnt-hand-waving">2. Measurement (so this isn't hand-waving)<a class="headerlink" href="#2-measurement-so-this-isnt-hand-waving" title="Permanent link">#</a></h2>
+<p><code>benchmarks/bench_ripple_filter.cpp</code> times the exact per-channel chain (<code>Filter::setDefaultRippleBandFilterCoefs</code>
+→ <code>addSample</code> → <code>abs</code> → <code>Filter::setDefaultEnvelopeCoefs</code> → <code>addSample</code>) over 400 k iterations, compiled the same
+way as Release. Reproduce:</p>
+<pre><code class="language-bat">call &quot;…\VC\Auxiliary\Build\vcvars64.bat&quot;
+cl /O2 /std:c++20 /EHsc /I src\core benchmarks\bench_ripple_filter.cpp src\core\Filter.cpp /Fe:bench.exe
+bench.exe
+</code></pre>
+<p>Result on this box (MSVC2019 <code>/O2</code>, Windows, the SpikesPeak build machine):</p>
+<pre><code>  1 channel :  34.09 ns / channel-sample
+  3 channel :  28.24
+  8 channel :  27.14
+ 64 channel :  26.49
+384 channel :  27.96
+Representative per-channel cost: 28.30 ns
+Single-thread channels within one sample budget:
+  decimated 2.5 kHz (400.0 us): 14133 channels
+  full-rate 30 kHz  ( 33.3 us):  1178 channels
+384-channel sweep, one sample: 10.87 us  (2.7% of the 400 us decimated budget)
+</code></pre>
+<p>So the whole probe's per-channel filtering costs <strong>~11 µs once every 400 µs</strong> — one core sits <strong>~97 % idle</strong>.</p>
+<h3 id="21-repeated-measurement-mean-sem-n-20-reps-11-channel-counts">2.1 Repeated measurement (mean ± SEM, n = 20 reps × 11 channel counts)<a class="headerlink" href="#21-repeated-measurement-mean-sem-n-20-reps-11-channel-counts" title="Permanent link">#</a></h3>
+<p><code>benchmarks/plot_bench.py bench_results.csv developer_docs/images</code> re-runs the sweep 20× per channel count
+and produces the figures below. The per-channel cost is <strong>flat at ~28 ns</strong> (cache-bound; the delay-line shift
++ 26+10 taps fit in L1), with SEM ≤ 0.23 ns — i.e. the number is stable, not a lucky single run.</p>
+<table>
+<thead>
+<tr>
+<th>Channels (N)</th>
+<th>Cost per channel-sample (ns, mean ± SEM)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>33.9 ± 0.08</td>
+</tr>
+<tr>
+<td>2</td>
+<td>31.1 ± 0.23</td>
+</tr>
+<tr>
+<td>4</td>
+<td>28.0 ± 0.07</td>
+</tr>
+<tr>
+<td><strong>6</strong></td>
+<td><strong>28.3 ± 0.06</strong></td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td><strong>28.1 ± 0.08</strong></td>
+</tr>
+<tr>
+<td>16</td>
+<td>27.3 ± 0.06</td>
+</tr>
+<tr>
+<td>32</td>
+<td>27.1 ± 0.09</td>
+</tr>
+<tr>
+<td>64</td>
+<td>27.5 ± 0.13</td>
+</tr>
+<tr>
+<td>128</td>
+<td>29.0 ± 0.18</td>
+</tr>
+<tr>
+<td>256</td>
+<td>29.2 ± 0.16</td>
+</tr>
+<tr>
+<td>384</td>
+<td>28.5 ± 0.06</td>
+</tr>
+</tbody>
+</table>
+<p>Grand mean <strong>28.9 ns/channel-sample</strong> ⇒ a single thread's ceiling is <strong>~13,800 channels</strong> at the 2.5 kHz
+decimated rate, <strong>~1,150</strong> at the full 30 kHz rate.</p>
+<p><img alt="Per-channel filter cost vs channel count (mean ± SEM)" src="images/threading_per_channel_cost.png" /></p>
+<p><em>Per-channel cost is essentially flat with N — the work is O(1) per channel, so N channels cost N × ~28 ns.</em></p>
+<p><img alt="Single-thread sweep time vs channel count, with per-sample budgets" src="images/threading_sweep_time.png" /></p>
+<p><em>Single-thread time to filter ALL N channels for one sample (log-log), against the 2.5 kHz decimated (400 µs)
+and 30 kHz full-rate (33.3 µs) per-sample budgets. At the realistic </em><em>6–8 channels</em><em> it is </em><em>0.056 % of budget</em><em>;
+even the full </em><em>384-channel</em><em> probe is </em><em>2.7 %</em><em>. One thread only runs out of decimated budget past </em><em>~13,800
+channels</em><em> — the crossover where multithreading becomes necessary (§4/§5).</em></p>
+<hr />
+<h2 id="3-where-the-closed-loop-latency-actually-goes-and-it-isnt-the-compute">3. Where the closed-loop latency actually goes (and it isn't the compute)<a class="headerlink" href="#3-where-the-closed-loop-latency-actually-goes-and-it-isnt-the-compute" title="Permanent link">#</a></h2>
+<p>Ripple-onset → stimulation latency, by term:</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Magnitude</th>
+<th>Depends on threading?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ripple-band FIR group delay (26-tap @ 2.5 kHz = (26−1)/2 / 2500)</td>
+<td><strong>~5.0 ms</strong></td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Envelope FIR group delay (10-tap @ 2.5 kHz)</td>
+<td><strong>~1.8 ms</strong></td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Envelope build to threshold crossing (physics of threshold-on-envelope)</td>
+<td><strong>~10–30 ms</strong></td>
+<td><strong>No</strong></td>
+</tr>
+<tr>
+<td>Per-sample compute (filter one channel-set)</td>
+<td><strong>~0.03 µs/ch → ~11 µs for 384 ch</strong></td>
+<td>Marginally</td>
+</tr>
+<tr>
+<td>Semaphore wake of the detector thread on new data (already event-driven)</td>
+<td><strong>~sub-µs–µs</strong></td>
+<td>No</td>
+</tr>
+<tr>
+<td>Stimulator UDP fire → stim server (Pi 3B+ / ESP32)</td>
+<td><strong>~1–2 ms</strong> (network + device)</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>The dominant terms (<strong>~7 ms fixed filter delay + ~10–30 ms envelope build</strong>) are <strong>DSP/physics, not compute</strong>,
+and are identical whether the filtering runs on 1 thread or N. The compute term is <strong>~1000× smaller</strong> than the
+dominant terms and is nowhere near saturating a core. So <strong>splitting the per-channel filtering across threads
+cannot reduce the closed-loop latency at these scales</strong> — the thing you'd parallelize is already 2.7 % of budget.</p>
+<hr />
+<h2 id="4-the-single-thread-ceiling-crossover-when-does-one-thread-run-out-of-time">4. The single-thread ceiling (crossover: when does one thread run out of time?)<a class="headerlink" href="#4-the-single-thread-ceiling-crossover-when-does-one-thread-run-out-of-time" title="Permanent link">#</a></h2>
+<p>A single thread keeps up as long as <code>channel-count × per-channel-cost &lt; sample period</code>. So the ceiling is
+<code>N_max = sample_period / per_channel_cost</code>. With the measured 28 ns:</p>
+<table>
+<thead>
+<tr>
+<th>Per-channel cost</th>
+<th>(relative to now)</th>
+<th>N_max @ 2.5 kHz (400 µs)</th>
+<th>N_max @ 30 kHz (33.3 µs)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>28 ns</strong></td>
+<td>1× (current scalar)</td>
+<td><strong>14,133</strong></td>
+<td>1,178</td>
+</tr>
+<tr>
+<td>112 ns</td>
+<td>4× (heavier filters)</td>
+<td>3,571</td>
+<td>297</td>
+</tr>
+<tr>
+<td>448 ns</td>
+<td>16× (multi-band / spectral)</td>
+<td>893</td>
+<td>74</td>
+</tr>
+<tr>
+<td>1,792 ns</td>
+<td>64× (wavelet / per-ch ML)</td>
+<td>223</td>
+<td><strong>18</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Read this as: <strong>one thread comfortably handles the 384-channel probe</strong> in every row <em>except</em> the extreme
+bottom-right — full-rate (no decimation) <strong>and</strong> a ~64×-heavier per-channel algorithm. That combination
+(≈ full-rate wavelet/ML on every channel) is the regime where a single thread misses the deadline and
+multithreading (or AVX, or GPU) becomes <em>necessary</em>.</p>
+<hr />
+<h2 id="5-what-multithreading-costs-here-and-when-it-wins">5. What multithreading costs here (and when it wins)<a class="headerlink" href="#5-what-multithreading-costs-here-and-when-it-wins" title="Permanent link">#</a></h2>
+<p><strong>Cost at these scales.</strong> A per-electrode-thread + central-arbiter design has to hand each channel's
+threshold-crossing to the arbiter to evaluate the quorum. That hand-off is a cross-thread wake
+(condition variable / semaphore / lock-free queue) costing typically <strong>~1–10 µs</strong> (sub-µs best case, tens of µs
+under contention), plus scheduling jitter from N threads contending for cores. The single-thread design makes
+the same quorum decision <strong>inline</strong> (a loop over N per-channel states, ~tens of ns). So at ≤384 channels,
+per-electrode threads <strong>add</strong> a small amount of decision latency and complexity for <strong>no throughput benefit</strong>
+(one core was 97 % idle). In absolute terms both are dwarfed by the ~7–40 ms DSP/physics floor — but "adds
+latency, buys nothing" is the wrong side of the trade.</p>
+<p><strong>When multithreading genuinely wins:</strong>
+1. <strong><code>N × per-channel-cost</code> approaches the sample period</strong> — i.e. the bottom-right of the §4 table: thousands of
+   channels, or a much heavier per-channel algorithm, <em>and/or</em> processing at full 30 kHz without decimation.
+2. <strong>Isolation / fault-tolerance</strong> as a <em>design</em> goal (one channel's expensive analysis can't stall the loop) —
+   a legitimate architectural reason independent of raw latency.
+3. <strong>Heterogeneous per-channel work</strong> (different algorithms/rates per channel) that doesn't vectorize.</p>
+<hr />
+<h2 id="6-the-higher-leverage-lever-before-threads-avx">6. The higher-leverage lever before threads: AVX<a class="headerlink" href="#6-the-higher-leverage-lever-before-threads-avx" title="Permanent link">#</a></h2>
+<p>The detector's per-channel filters are <strong>scalar</strong>. This codebase already has <code>Avx2Filter</code> (8 channels per op),
+used by <code>proc.lfp</code>. Vectorizing the detector's ripple-band + envelope filters the same way gives <strong>~8× per-op
+throughput with ZERO cross-thread synchronization</strong> — pushing <code>N_max</code> from ~14 k to ~113 k (decimated) or ~9.4 k
+(full-rate). Because SIMD adds no wake/scheduling latency, <strong>for the filtering step AVX beats threads at every
+scale below the point where even 8-wide SIMD saturates a core.</strong> So the optimization order is: <strong>scalar (now,
+plenty) → AVX (if channel counts/algorithms grow) → threads (only if AVX still can't hit the deadline).</strong> A
+cheaper micro-win also exists: <code>Filter</code> uses a <code>std::copy_backward</code> delay-line shift each sample (O(taps) moves);
+a circular buffer would cut that, though at 28 ns it isn't needed yet.</p>
+<hr />
+<h2 id="7-reconciling-with-a-prior-multithreaded-ripple-detector">7. Reconciling with a prior multithreaded ripple detector<a class="headerlink" href="#7-reconciling-with-a-prior-multithreaded-ripple-detector" title="Permanent link">#</a></h2>
+<p>A previous version being multithreaded is <strong>not</strong> contradicted by this analysis — it just implies its operating
+point was in the regime of §4/§5 where threads pay off. Plausible reasons, any of which justify it:
+- It processed <strong>at the full sample rate (no ÷12 decimation)</strong>, cutting the budget 12× (33 µs, not 400 µs).
+- Its per-channel algorithm was <strong>heavier</strong> (higher-order/multi-band filters, spectral/wavelet features, or a
+  per-channel model) — 16–64× the ~28 ns here.
+- It ran on <strong>many more channels</strong> (a large array / multi-probe) or older/slower hardware with fewer cores.
+- It used <strong>scalar</strong> filters (like this one) but at a scale where §4's ceiling was actually reached — where the
+  right fix could equally have been AVX.
+- It was multithreaded for <strong>isolation/modularity</strong> (a design choice), not measured latency.</p>
+<p>None of these are wrong; they're different requirements. The claim here is narrow and measured: <strong>for the
+current implementation (scalar 26+10-tap filters, ≤384 channels, decimated to 2.5 kHz), single-thread inline is
+lower-latency and simpler, with ~37× headroom on one core.</strong></p>
+<hr />
+<h2 id="8-recommendation-decision-guide">8. Recommendation + decision guide<a class="headerlink" href="#8-recommendation-decision-guide" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Keep single-thread</strong> for the current design (scalar filters, ≤384 channels, 2.5 kHz). It's lower-latency
+  (no cross-thread quorum hand-off) and simpler, and one core is 97 % idle.</li>
+<li><strong>If requirements move</strong> — full-rate processing, thousands of channels, or a much heavier per-channel
+  algorithm — reach for <strong>AVX first</strong> (8×, no sync cost), then threads only if AVX still can't meet the deadline.</li>
+<li><strong>Trigger to revisit:</strong> <code>channels × per-channel-cost ≳ 0.5 × sample_period</code> (leave headroom for jitter). Re-run
+  <code>benchmarks/bench_ripple_filter.cpp</code> after any change to the filters/rate to refresh the per-channel cost.</li>
+<li><strong>If you want per-electrode threads anyway</strong> (e.g. isolation, or you know your target algorithm is heavy),
+  say so and I'll implement the worker-per-channel + arbiter design — it slots behind the same config/quorum
+  surface. I'd keep the quorum arbiter as the one "central" thread you described.</li>
+</ul>
+<h2 id="9-caveats">9. Caveats<a class="headerlink" href="#9-caveats" title="Permanent link">#</a></h2>
+<ul>
+<li>The ~28 ns is a <strong>micro-benchmark</strong> of the filter chain in isolation on this box; it excludes buffer/cache
+  effects of the live pipeline and OS scheduling. The <strong>conclusion has ~37× margin</strong>, so those effects don't
+  change it — but the honest way to nail the <em>end-to-end</em> closed-loop latency is to instrument ripple-onset →
+  <code>fire()</code> on the target rig (I can add high-resolution timestamps around the detection path on request).</li>
+<li>Thread wake costs (~1–10 µs) are cited typical values, not measured on this box; they are also ≪ the DSP floor,
+  so they don't change the recommendation either.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/RippleDetectorThreading.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-what-the-detector-actually-does-today-facts-from-the-code">1. What the detector actually does today (facts, from the code)</a></li>
+<li><a href="#2-measurement-so-this-isnt-hand-waving">2. Measurement (so this isn't hand-waving)</a><ul>
+<li><a href="#21-repeated-measurement-mean-sem-n-20-reps-11-channel-counts">2.1 Repeated measurement (mean ± SEM, n = 20 reps × 11 channel counts)</a></li>
+</ul>
+</li>
+<li><a href="#3-where-the-closed-loop-latency-actually-goes-and-it-isnt-the-compute">3. Where the closed-loop latency actually goes (and it isn't the compute)</a></li>
+<li><a href="#4-the-single-thread-ceiling-crossover-when-does-one-thread-run-out-of-time">4. The single-thread ceiling (crossover: when does one thread run out of time?)</a></li>
+<li><a href="#5-what-multithreading-costs-here-and-when-it-wins">5. What multithreading costs here (and when it wins)</a></li>
+<li><a href="#6-the-higher-leverage-lever-before-threads-avx">6. The higher-leverage lever before threads: AVX</a></li>
+<li><a href="#7-reconciling-with-a-prior-multithreaded-ripple-detector">7. Reconciling with a prior multithreaded ripple detector</a></li>
+<li><a href="#8-recommendation-decision-guide">8. Recommendation + decision guide</a></li>
+<li><a href="#9-caveats">9. Caveats</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

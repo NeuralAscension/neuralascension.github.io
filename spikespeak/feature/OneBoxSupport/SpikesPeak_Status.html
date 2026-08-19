@@ -42,6 +42,7 @@
 <a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
@@ -249,6 +250,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S38</strong></td>
 <td><strong>2026-08-18</strong></td>
 <td><strong>Toolbar relayout (two-row grid, grouped controls, joined view tabs) + the "read SciChart geometry before layout" bug class: channel labels off their traces at 60 rows (14.8px -&gt; 0.015px) and the NP1 shank tip stuck at its placeholder width</strong></td>
+</tr>
+<tr>
+<td><strong>S39</strong></td>
+<td><strong>2026-08-18</strong></td>
+<td><strong>Multi-client state snapshot (a browser joining mid-session had a dead toolbar); status text now reports state not provenance; one control vocabulary across the top bar, column strips and probe map. NEXT TASK = OneBox closed-loop latency, NP1.0 + NP2.0</strong></td>
 </tr>
 </tbody>
 </table>
@@ -2987,7 +2993,82 @@ changes.</p>
 <li>The in-app Browser pane used for headless checks stops compositing unpredictably, which also stops
   SciChart rendering (rAF throttled) -- <code>rendered</code> never fires and <code>seriesViewRect</code> stays unreadable.
   Forcing <code>surface.doDrawingLoop()</code> makes layout available for measurement. Not an application fault.</li>
-</ul></article>
+</ul>
+<h2 id="39-multi-client-state-one-vocabulary-for-every-control-surface-2026-08-18">39. MULTI-CLIENT STATE + ONE VOCABULARY FOR EVERY CONTROL SURFACE  (2026-08-18)<a class="headerlink" href="#39-multi-client-state-one-vocabulary-for-every-control-surface-2026-08-18" title="Permanent link">#</a></h2>
+<p>Front-end plus a small backend addition. Done unattended at the maintainer's request.</p>
+<h3 id="391-a-browser-joining-mid-session-had-no-idea-a-session-was-running">39.1 A browser joining mid-session had no idea a session was running<a class="headerlink" href="#391-a-browser-joining-mid-session-had-no-idea-a-session-was-running" title="Permanent link">#</a></h3>
+<p><code>onNewConnection()</code> wired the socket and the QWebChannel transport and <strong>sent the new client nothing</strong>.
+So a second browser -- or the same browser after a refresh -- showed source "None" and a dead toolbar
+while a probe was live and streaming.</p>
+<p>Fixed on both sides:</p>
+<ul>
+<li><strong>Backend.</strong> <code>WebSocketServer::sendStateSnapshot(QWebSocket*)</code> replays the current state to <strong>that
+  socket only</strong>: <code>stateSource</code> → <code>deviceReady</code> → <code>statePlaying</code>. <code>setDeviceState()</code> now remembers its
+  value in <code>mDeviceReady</code> so there is something to replay. The order is not arbitrary and mirrors
+  <code>onSourceSelection()</code>: <strong>the source name must land before <code>deviceReady</code></strong>, because <code>deviceReady</code> is
+  what triggers the browser's QWebChannel bind and that bind is keyed on the source name. The call is
+  queued so it lands after the transport is established.</li>
+<li><strong>Frontend.</strong> <code>reflectSource()</code> set the dropdown value but never the <strong>toolbar state</strong> -- so even once
+  the snapshot arrived, the source picker stayed live and Disconnect stayed greyed. It now restores
+  enablement and the tab bar. It also falls back to the sim picker sentinel for a name that matches
+  neither a listed option nor a known sim variant: every real source is a listed option, so an unmatched
+  name can only be a simulated config whose variant list has not arrived yet -- which is exactly what
+  happens to a late-joining client, since the snapshot beats the <code>sim_variant</code> fetch.</li>
+</ul>
+<p><strong>Not a bug, worth recording:</strong> Disconnect being greyed <em>while streaming</em> is deliberate
+(<code>setPlayingUI</code> does <code>discBtn.disabled = playing</code>) -- pause first. Half of the original report was this
+correct behaviour; the other half was the missing snapshot.</p>
+<p>Verified with two live clients against both a simulated source and the <strong>real NP1.0 probe on the
+OneBox</strong>: the late client shows the right source, locked picker, live Disconnect, visible tabs, bound
+IMRO panel and no splash -- and can drive the session, with the first client reflecting it.</p>
+<h3 id="392-status-text-now-describes-state-not-provenance">39.2 Status text now describes state, not provenance<a class="headerlink" href="#392-status-text-now-describes-state-not-provenance" title="Permanent link">#</a></h3>
+<p>The reflected paths said "Streaming (remote control)" / "Source selected remotely: X" / "Recording
+(remote control)" where the local paths said "Streaming started" / "Connecting to X…" / "Recording …".
+Two browsers watching one rig therefore <strong>disagreed about what the rig was doing</strong>, and a second observer
+could not tell it was streaming without decoding the phrasing.</p>
+<p>The status line reports SYSTEM state, so identical state now reads identically in every client. Where a
+message came from is not what that line is for.</p>
+<h3 id="393-one-vocabulary-for-every-control-surface">39.3 One vocabulary for every control surface<a class="headerlink" href="#393-one-vocabulary-for-every-control-surface" title="Permanent link">#</a></h3>
+<p>The top bar had just been rebuilt (§38) around tokens and recessed bands, but the <strong>per-column strips</strong>
+and the <strong>probe-map panel</strong> still looked like two earlier eras of styling. The column strips were laid
+out with <strong>inline styles in <code>ChartColumn.js</code></strong> — no shared vocabulary at all — and left/right columns
+carry different control COUNTS (a probe stream has band/shank/column/scale; an ADC stream only scale),
+so they read as two unrelated bars.</p>
+<p>All three surfaces now share <code>toolbar.css</code>'s tokens:</p>
+<ul>
+<li><strong>Column strips</strong> (<code>.column-header</code> / <code>.column-controls</code>): the same recessed band, one control height
+  (<code>--tb-h-sm: 24px</code> — shorter than the top bar because vertical space inside a column is the scarce
+  resource), no per-control margins. Inline layout removed from the JS.</li>
+<li>The depth readout (<code>.page-info</code>) <strong>reserves a fixed width</strong>. Without it a 3-digit electrode
+  (<code>e119 ⇕ e60</code>) stole width from its band and wrapped it to a second row while a 2-digit neighbour
+  (<code>e59 ⇕ e0</code>) stayed on one — two columns holding identical controls looked different.</li>
+<li>The redundant <strong>"Scale" caption was dropped</strong>: the unit label beside the input (<code>µV</code> / <code>×V</code>) already
+  names it, the input carries an explanatory tooltip, and removing the word is what let the band fit on
+  ONE row (it was overflowing by ~9 px — needing 442 px in 433 px).</li>
+<li><strong>Probe map</strong>: mode toggle, action row (Apply / Load / Save) and Tip referencing each in a band at the
+  shared control height; the <strong>bank presets joined into a segmented control</strong> because they are mutually
+  exclusive alternatives, exactly like the view tabs; the hint prose moved onto its own line instead of
+  running inline with the buttons.</li>
+</ul>
+<p>Two implementation notes worth keeping:
+- <code>ImroManager.js</code> sets <code>#np1-quick-formats</code> visible with <code>style.display</code>; that inline value <strong>overrides
+  the stylesheet</strong>, so it had to become <code>"flex"</code> rather than <code>"block"</code> or the flex layout never applied.
+- The joined segments need their <strong>own zero-gap wrapper</strong> (<code>.seg-group</code>). The parent needs a gap to
+  separate the run from the shank picker and the hint, and that same gap prises the segments apart.</p>
+<p>Verified live: both column bands identical at 34 px on a single row; bank presets joined with −1 px
+seams at a uniform 30 px; hint on its own line.</p>
+<h3 id="394-next-task-closed-loop-latency-on-the-onebox-np10-and-np20">39.4 NEXT TASK — closed-loop latency on the OneBox, NP1.0 and NP2.0<a class="headerlink" href="#394-next-task-closed-loop-latency-on-the-onebox-np10-and-np20" title="Permanent link">#</a></h3>
+<p>Agreed with the maintainer: the next piece of work is <strong>closed-loop latency recordings and measurements
+for both NP1.0 and NP2.0 with the probe on the OneBox</strong>, driven by the synthetic ripple signal the
+maintainer will stream. Brief: <strong><code>developer_docs/NextTask_OneBoxClosedLoopLatency.md</code></strong>.</p>
+<p>The point is that the OneBox is a <em>different transport</em> (USB3/FTDI vs PCIe/MXI) from the PXIe rig the
+existing sub-millisecond numbers (§29/§30) were measured on — so do not assume it matches; that is the
+measurement.</p>
+<p><strong>Resolve first:</strong> how the stim capture is synchronised to a USB-attached probe. Either the existing
+NPX↔NI-DAQ sync alignment still holds, or — more attractive — the <strong>OneBox's own 12-channel ADC</strong>
+captures the stim pulse, collapsing a two-clock problem into one. Decide deliberately rather than copying
+the PXIe recipe. And per §24, verify closed-loop timing event-by-event, never by nearest-neighbour on a
+periodic signal.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3162,6 +3243,13 @@ changes.</p>
 <li><a href="#383-the-np1-shank-tip-sat-off-centre">38.3 The NP1 shank tip sat off-centre</a></li>
 <li><a href="#384-toolbar-a-two-row-grid">38.4 Toolbar: a two-row grid</a></li>
 <li><a href="#385-open-not-addressed">38.5 Open, not addressed</a></li>
+</ul>
+</li>
+<li><a href="#39-multi-client-state-one-vocabulary-for-every-control-surface-2026-08-18">39. MULTI-CLIENT STATE + ONE VOCABULARY FOR EVERY CONTROL SURFACE (2026-08-18)</a><ul>
+<li><a href="#391-a-browser-joining-mid-session-had-no-idea-a-session-was-running">39.1 A browser joining mid-session had no idea a session was running</a></li>
+<li><a href="#392-status-text-now-describes-state-not-provenance">39.2 Status text now describes state, not provenance</a></li>
+<li><a href="#393-one-vocabulary-for-every-control-surface">39.3 One vocabulary for every control surface</a></li>
+<li><a href="#394-next-task-closed-loop-latency-on-the-onebox-np10-and-np20">39.4 NEXT TASK — closed-loop latency on the OneBox, NP1.0 and NP2.0</a></li>
 </ul>
 </li>
 </ul>

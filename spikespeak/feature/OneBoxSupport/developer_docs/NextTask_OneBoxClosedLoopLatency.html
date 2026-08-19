@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0 - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a class="active" href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-closed-loop-latency-on-the-onebox-np10-and-np20">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 <strong>and</strong> NP2.0<a class="headerlink" href="#next-task-closed-loop-latency-on-the-onebox-np10-and-np20" title="Permanent link">#</a></h1>
+<p><strong>Status:</strong> planned, agreed 2026-08-18. <strong>Blocked on nothing but the rig</strong> — the maintainer streams the
+synthetic ripple signal when back at work (2026-08-19).</p>
+<p><strong>The goal:</strong> closed-loop latency <em>recordings and measurements</em> for the ripple → stim path, with the probe
+on the <strong>OneBox</strong> rather than the PXIe basestation, for <strong>both</strong> NP1.0 and NP2.0.</p>
+<p>This is the OneBox counterpart of the PXIe latency work already in the log (§27–§30). Everything that
+matters there — the definition of latency, the analysis tooling, the ASAP delivery flag — carries over
+unchanged; what is new is the basestation underneath.</p>
+<hr />
+<h2 id="why-this-is-worth-doing">Why this is worth doing<a class="headerlink" href="#why-this-is-worth-doing" title="Permanent link">#</a></h2>
+<p>The closed loop is fully quantified on <strong>PXIe</strong> (§29/§30): sub-millisecond at every quorum level on both
+probes, NP1.0 0.94–0.98 ms and NP2.0 0.55–0.61 ms with ASAP delivery. Nothing equivalent exists for the
+OneBox, and the OneBox is a <em>different transport</em>: USB3/FTDI rather than PCIe/MXI. The open question is
+whether that transport costs latency, and how much.</p>
+<p>That is the whole point of the measurement — do <strong>not</strong> assume it matches PXIe.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
+<ul>
+<li>The maintainer streams the <strong>synthetic ripple signal</strong> into the probe (the same playback used for the
+  PXIe runs). Nothing in this task generates the signal.</li>
+<li><strong>Stim server</strong> reachable — the Pi 3B+ at <code>stimserver@192.168.1.100</code>, UDP 8888 (see
+  <code>raspberrypi_pulsegenerator/</code>). It must be ARMED; the detector arms on connect.</li>
+<li><strong>NI-DAQ</strong> for the ground truth capture: latency is measured offline as
+  <strong>ripple threshold-crossing → the stim pulse on ai4</strong>, so the NI-DAQ must record alongside the probe.
+  ⚠️ This is the part that needs thought — see "The open question" below.</li>
+<li>Calibration CSVs for the NP1.0 probe (<code>22175723312</code>) are <strong>missing</strong>; it currently streams
+  UNCALIBRATED. Worth fixing before taking numbers that will be quoted.</li>
+</ul>
+<h2 id="the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST<a class="headerlink" href="#the-open-question-to-resolve-first" title="Permanent link">#</a></h2>
+<p>On a PXIe rig the probe and the NI-DAQ share a chassis and a sync line, which is what makes the offline
+<code>threshold-crossing → ai4</code> measurement meaningful. <strong>With the probe on the OneBox, work out how the NI-DAQ
+capture is synchronised to it before recording anything</strong>, because the whole measurement rests on that
+alignment:</p>
+<ul>
+<li>Does the existing NPX↔NI-DAQ sync-pulse alignment still hold when the probe is on USB?</li>
+<li>Or should the <strong>OneBox's own 12-channel ADC</strong> capture the stim pulse instead of the NI-DAQ, making the
+  measurement single-device and removing the cross-device sync entirely? The ADC is verified working
+  (0.000152588 V/count, §35.4) and records to <code>data.npx.adc</code> with a well-formed sidecar.</li>
+</ul>
+<p>The second option is the more attractive one and is probably the right answer — it collapses a two-clock
+problem into one clock. Decide deliberately; do not default to copying the PXIe recipe.</p>
+<p>Remember the sync off-by-one that cost 30+ minutes previously (§24): verify closed-loop timing
+<strong>event-by-event</strong>, never by nearest-neighbour matching on a periodic signal.</p>
+<h2 id="method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)<a class="headerlink" href="#method-mirrors-the-pxie-runs" title="Permanent link">#</a></h2>
+<ol>
+<li>Bring up <code>Npx1OneBox</code> / <code>Npx2OneBox</code>, confirm the detector fires on the synthetic signal.</li>
+<li>Record with the detector's resolved read-out channels plus the stim capture channel.</li>
+<li>Run the existing analysis: <code>ripple_tools/analyze_recording.py</code>, <code>latency_breakdown.py</code>,
+   <code>verify_quorum.py</code>. <code>sync.py</code> defaults to <code>match="auto"</code>.</li>
+<li>Repeat the quorum × delivery matrix if time allows; at minimum ASAP vs baseline on both probes.</li>
+<li>Compare against the PXIe numbers and state plainly whether USB3 costs latency.</li>
+</ol>
+<h2 id="deliverables">Deliverables<a class="headerlink" href="#deliverables" title="Permanent link">#</a></h2>
+<ul>
+<li>Recordings under <code>RecordingTests/&lt;date&gt;_onebox_closed_loop/</code>, raw <code>.bin</code> <strong>not committed</strong> (gitignored);
+  derived figures + metrics in that session's <code>analysis/</code>.</li>
+<li>A latency table for NP1.0 and NP2.0 on the OneBox, directly comparable to the PXIe matrix in §29/§30.</li>
+<li>A new dated section in <code>SpikesPeak_Status.md</code>.</li>
+</ul>
+<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">#</a></h2>
+<p><code>developer_docs/LatencyProfiling.md</code> (the definition, the per-stage <code>rippleLatency</code> instrumentation, and
+the <code>low_latency:</code> / ASAP flag), <code>RippleDetection.md</code>, <code>StimClosedLoop_Status.md</code>, and Status §27–§30 for
+the PXIe results this must be compared against.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxClosedLoopLatency.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#why-this-is-worth-doing">Why this is worth doing</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST</a></li>
+<li><a href="#method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)</a></li>
+<li><a href="#deliverables">Deliverables</a></li>
+<li><a href="#reference">Reference</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -240,6 +240,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-08-18</strong></td>
 <td><strong>Simulated OneBox (12-ch ADC sim source + two sim configs); fixed the IMRO panel binding to the wrong npx source (NP1.0 had no probe map) and channel numbers bleeding through the idle splash</strong></td>
 </tr>
+<tr>
+<td><strong>S37</strong></td>
+<td><strong>2026-08-18</strong></td>
+<td><strong>Two basestations on one host: the inverted <code>np_tryGetSlotID</code> bool test (a latent bug the OneBox exposed, which broke PXIe connect), plus releasing the basestation the config does not use; splash morph now runs both ways</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -2733,7 +2738,113 @@ underneath. <code>#sim-picker-modal</code> (1000) and <code>#ripple-dock</code> 
 <li>The HTTP server roots at <code>&lt;exe&gt;/../webinterface</code>, i.e. the BUILD tree, not the repo -- frontend edits
   need syncing there (the build's POST_BUILD copy does it). It also 404s on query strings, so <code>?cachebust</code>
   probes report a false "File not found".</li>
-</ul></article>
+</ul>
+<h2 id="37-two-basestations-on-one-host-the-np_trygetslotid-bool-trap-basestation-release-2026-08-18">37. TWO BASESTATIONS ON ONE HOST: THE <code>np_tryGetSlotID</code> BOOL TRAP + BASESTATION RELEASE  (2026-08-18)<a class="headerlink" href="#37-two-basestations-on-one-host-the-np_trygetslotid-bool-trap-basestation-release-2026-08-18" title="Permanent link">#</a></h2>
+<p>Swapping the NP2.0 probe from the OneBox back to the PXIe chassis failed to connect. Two independent
+problems were stacked, and the software one had been latent in the repo for a long time.</p>
+<h3 id="371-root-cause-np_trygetslotid-returns-a-bool-and-the-test-was-inverted">37.1 ROOT CAUSE -- <code>np_tryGetSlotID</code> returns a <code>bool</code>, and the test was inverted<a class="headerlink" href="#371-root-cause-np_trygetslotid-returns-a-bool-and-the-test-was-inverted" title="Permanent link">#</a></h3>
+<pre><code class="language-c">NP_EXPORT bool NP_APIC np_tryGetSlotID(const basestationID* bsid, int* slotID);
+</code></pre>
+<p>It returns <strong><code>bool</code></strong>, not <code>NP_ErrorCode</code>. The slot search tested <code>errorCode == Neuropixels::SUCCESS</code>,
+i.e. compared that bool against <code>0</code> -- <strong>exactly inverted</strong>. A successful lookup (<code>true</code>) FAILED the
+test; a failed lookup (<code>false</code>) PASSED it.</p>
+<p>This was harmless for as long as only PXI devices were ever attached, which is why it survived: the API
+writes the slot through the pointer regardless, so the loop simply never broke and <code>detectedSlot</code> was
+already correct by the time it fell out. <strong>Attaching a OneBox is what broke it</strong> -- the OneBox returns
+<code>false</code>, matched <code>== SUCCESS</code>, and broke the loop on the <em>first</em> device with no slot resolved. Because
+it depended on device enumeration order it would have looked intermittent and unrelated to the OneBox.
+The give-away in the log was a contradictory pair:</p>
+<pre><code>[MAIN]: Note single basestation supported only. Search stopped at first detected slot.
+[MAIN] ERROR: Failed to resolve a physical PXI Slot ID!
+</code></pre>
+<p>The same trap appeared a second time in the new release helper (§37.2) and was caught the same way --
+<code>Unused PXI device (ID 0) has no resolvable slot</code> while the slot was plainly resolvable. Worth
+remembering: <strong>in this API most calls return <code>NP_ErrorCode</code>, but <code>np_tryGetSlotID</code> returns <code>bool</code>.</strong></p>
+<p>The search now also skips non-PXI devices outright and requires an actually-valid slot before accepting
+it, so a second basestation can neither be mistaken for ours nor abort the search.</p>
+<h3 id="372-releasing-the-basestation-this-profile-will-not-use">37.2 Releasing the basestation this profile will NOT use<a class="headerlink" href="#372-releasing-the-basestation-this-profile-will-not-use" title="Permanent link">#</a></h3>
+<p>Maintainer's directive: <em>"we can have multiple but keep searching for the right one. close the one
+that's not going to be used... which one is used is based on the config file."</em></p>
+<p>New <code>NeuropixelsSource::releaseForeignBasestations(NPPlatformID_t keepPlatform)</code>, called from BOTH
+<code>openBasestation()</code> implementations -- the PXIe path keeps PXI, <code>OneBoxSource</code> keeps USB -- so the config
+(<code>source.npx.pxi</code> vs <code>source.npx.onebox</code>) decides which basestation is ours and everything else is
+handed back. Best-effort throughout; nothing in it is fatal to our own connect.</p>
+<ul>
+<li><strong>USB (OneBox):</strong> it has no physical slot, so it must be mapped to a virtual one before it can be
+  addressed at all. Map -&gt; <strong><code>setSyncAsInput</code></strong> (clear the StatusBit + SMA outputs, then route
+  StatusBit &lt;- SMA) -&gt; <code>closeBS</code> -&gt; <code>unmapBS</code>. The SMA step is NOT optional: closing a basestation does
+  not turn off its SMA output, so a OneBox released without it can be left DRIVING that line -- the
+  bad-configuration state from S35.3. Never route <code>SMA &lt;- anything</code> here.</li>
+<li><strong>PXI:</strong> resolve the slot, <code>closeBS</code>.</li>
+</ul>
+<p>Confirmed on hardware in both directions:</p>
+<pre><code>[MAIN] Released unused OneBox (USB, ID 25420802) -- SMA set to input, basestation closed, virtual slot freed.
+[MAIN] Released unused PXI basestation at slot 3 , closeBS code: 0
+</code></pre>
+<p>The maintainer confirmed the OneBox status LED goes <strong>green</strong> after the release, i.e. it is genuinely
+handed back rather than left claimed.</p>
+<h3 id="373-the-other-half-the-chassis-was-not-enumerated-at-all">37.3 The other half: the chassis was not enumerated at all<a class="headerlink" href="#373-the-other-half-the-chassis-was-not-enumerated-at-all" title="Permanent link">#</a></h3>
+<p>Before any of the above could be judged, the PXIe module had to actually exist on the bus. It did not:</p>
+<pre><code>[MAIN] scanBS enumerated 1 basestation(s):
+[MAIN]   device 0 platformid 2 (USB/OneBox) ID 25420802
+</code></pre>
+<p>Windows had no imec device either (the only driverless PCI entries were Intel chipset parts), so this
+was never a software problem. The host had been power-cycled for grounding/UPS work: <strong>a PXIe chassis
+must be powered BEFORE the host boots or the PCIe link never enumerates.</strong> After a reboot with the
+chassis on, <code>PXI-6133</code> appeared in Windows and <code>scanBS</code> reported 2 basestations.</p>
+<p>Two diagnostics were added so this cannot masquerade as a software bug again:
+- <strong>A device-list dump</strong> on every scan (count + <code>platformid</code> + ID per device). This is what made the
+  whole problem legible; it is the first thing to read when a connect fails.
+- <strong>Split error messages.</strong> "No PXI basestation on the bus" (chassis / cabling / boot order, and the
+  message says so) now reads differently from "a PXI device is present but its slot is unresolvable"
+  (seating). The old single message pointed at seating for both and sent the investigation the wrong way.</p>
+<h3 id="374-splash-fixes-found-along-the-way">37.4 Splash fixes found along the way<a class="headerlink" href="#374-splash-fixes-found-along-the-way" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>"CONNECTING TO SOURCE…" never appeared on a locally-picked source.</strong> <code>connectSource()</code> -- the single
+  funnel for BOTH the source dropdown and the sim picker -- never called <code>logoSplash.setSource()</code>; only
+  <code>reflectSource()</code>, the REMOTE state-broadcast path, did. So the connecting pulse only ever showed when
+  another client drove the backend. Affected every source, not just the OneBox where it was noticed.
+  Sampling confirmed it (<code>connecting=false, statusOpacity=0</code> for the whole connect); it now reaches
+  <code>connecting=true, statusOpacity=0.9</code> within 400 ms.</li>
+<li><strong>The status text is centred on the spike apex</strong> (47.5%) like "by" and the NeuralAscension lockup,
+  rather than on the box centre. <code>padding-right:5%</code> moves the content-box centre onto the apex, and
+  <code>text-indent:.22em</code> cancels the trailing letter-space that <code>.22em</code> tracking adds after the last glyph.
+  Measured residual 1.1 px.</li>
+<li><strong>The morph is now a STATE, not an entrance effect.</strong> It follows whether a source has been picked:
+  idle rests at the <strong>mountain silhouette</strong>, a connect attempt morphs mountain -&gt; action potential, and
+  <strong>disconnect runs the same morph backwards</strong>, action potential -&gt; mountain. Symmetric rate so the
+  reverse reads as deliberate. Verified by recovering morphE from the massif opacity: <code>0.00 -&gt; 0.91</code>
+  on connect, <code>1.00 -&gt; 0.01</code> on disconnect.</li>
+</ul>
+<h3 id="375-verified-on-hardware">37.5 Verified on hardware<a class="headerlink" href="#375-verified-on-hardware" title="Permanent link">#</a></h3>
+<p>The full swap cycle was exercised, with a graceful close between every step and <strong>0 warnings or errors</strong>
+in every run:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PXIe NP2.0 -- connect, stream, close</td>
+<td>slot 3 / port 4 / dock 1, streaming</td>
+</tr>
+<tr>
+<td>swap to OneBox -- connect, probe + 12-ch ADC, close</td>
+<td>slot 16 / port 1 (attempt 0), ADC <code>0.000152588 V/count</code></td>
+</tr>
+<tr>
+<td>swap back to PXIe -- connect, stream, close</td>
+<td>slot 3 / <strong>port 3</strong> (auto-detect followed the physical move)</td>
+</tr>
+<tr>
+<td>release of the unused basestation, both directions</td>
+<td>confirmed in the logs above</td>
+</tr>
+</tbody>
+</table></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -2892,6 +3003,14 @@ underneath. <code>#sim-picker-modal</code> (1000) and <code>#ripple-dock</code> 
 <li><a href="#362-bug-the-imro-panel-bound-to-the-wrong-source-so-np10-had-no-probe-map">36.2 BUG -- the IMRO panel bound to the wrong source, so NP1.0 had no probe map</a></li>
 <li><a href="#363-bug-channel-numbers-bled-through-the-idle-splash">36.3 BUG -- channel numbers bled through the idle splash</a></li>
 <li><a href="#364-notes">36.4 Notes</a></li>
+</ul>
+</li>
+<li><a href="#37-two-basestations-on-one-host-the-np_trygetslotid-bool-trap-basestation-release-2026-08-18">37. TWO BASESTATIONS ON ONE HOST: THE np_tryGetSlotID BOOL TRAP + BASESTATION RELEASE (2026-08-18)</a><ul>
+<li><a href="#371-root-cause-np_trygetslotid-returns-a-bool-and-the-test-was-inverted">37.1 ROOT CAUSE -- np_tryGetSlotID returns a bool, and the test was inverted</a></li>
+<li><a href="#372-releasing-the-basestation-this-profile-will-not-use">37.2 Releasing the basestation this profile will NOT use</a></li>
+<li><a href="#373-the-other-half-the-chassis-was-not-enumerated-at-all">37.3 The other half: the chassis was not enumerated at all</a></li>
+<li><a href="#374-splash-fixes-found-along-the-way">37.4 Splash fixes found along the way</a></li>
+<li><a href="#375-verified-on-hardware">37.5 Verified on hardware</a></li>
 </ul>
 </li>
 </ul>

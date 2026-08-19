@@ -129,8 +129,20 @@ data delivery the loop runs at <strong>0.55–0.61 ms on Neuropixels 2.0</strong
 <td>1.94 – 1.99 ms</td>
 <td>998 – 1000</td>
 </tr>
+<tr>
+<td><strong>NP2.0 on the OneBox — default delivery</strong></td>
+<td><strong>1.087 ms</strong></td>
+<td>0.902 – 1.271</td>
+<td>1.53 ms</td>
+<td>1000</td>
+</tr>
 </tbody>
 </table>
+<blockquote>
+<p>The OneBox row is measured on a <strong>different transport</strong> (USB3/FTDI) and with a <strong>different stim
+capture</strong> (the OneBox's own ADC, not the NI-DAQ) — see <a href="#onebox--usb3-transport-same-clock-capture">OneBox</a>
+below. Compare it against the PXIe <strong>default</strong> row, not the ASAP rows: it has not been run with ASAP yet.</p>
+</blockquote>
 <p>All tests: <strong>0 unmatched</strong> — every stimulus pairs with a preceding detection. Both probes measured across
 the full quorum × delivery matrix at 1000 detections per cell.</p>
 <hr />
@@ -778,7 +790,136 @@ Offline pipeline, exact-detector reproduction and the sync fit:
 <a href="../developer_docs/RippleClosedLoopAnalysis.html"><code>../developer_docs/RippleClosedLoopAnalysis.md</code></a>.</p>
 <p>Recording directories hold the raw <code>.bin</code> bands + sidecars and are <strong>not</strong> version-controlled; the
 <code>analysis/</code> figures, <code>_summary.json</code> and the WS captures' derived results are.
-</content></p></article>
+</content></p>
+<hr />
+<h2 id="onebox-usb3-transport-same-clock-capture">OneBox — USB3 transport, same-clock capture<a class="headerlink" href="#onebox-usb3-transport-same-clock-capture" title="Permanent link">#</a></h2>
+<p>The results above are all PXIe. This section is the <strong>OneBox</strong> equivalent: the same probe and the same
+synthetic ripple, but the basestation is a Neuropixels <strong>OneBox</strong> on USB3/FTDI instead of a PXIe module,
+and the stimulus is captured on the <strong>OneBox's own 12-channel ADC</strong> instead of the NI-DAQ.</p>
+<p><strong>Measured (2026-08-19, real NP2.0 in saline, live Pi 3B+ / AM 2300, n = 1000):</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>median</td>
+<td><strong>1.087 ms</strong></td>
+</tr>
+<tr>
+<td>mean ± sd</td>
+<td>1.087 ± 0.290 ms</td>
+</tr>
+<tr>
+<td>p5 – p95</td>
+<td>0.653 – 1.533 ms</td>
+</tr>
+<tr>
+<td>min / max</td>
+<td>0.420 / 2.377 ms</td>
+</tr>
+<tr>
+<td>n / unmatched</td>
+<td>1000 / <strong>0</strong></td>
+</tr>
+<tr>
+<td>delivery</td>
+<td><strong>default</strong> (<code>low_latency</code> unset → <code>acquisition poll interval 1 ms</code>)</td>
+</tr>
+<tr>
+<td>detection</td>
+<td>1 channel (e0 → ch0), quorum 1, z 2.5, lockout 0.2 s, online threshold 180.8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This is the DEFAULT-delivery number.</strong> ASAP has not been measured on the OneBox. The comparable PXIe
+figure is 1.124 – 1.351 ms, so the OneBox is not slower on this evidence — but do not read that as a
+transport comparison until the ASAP cell exists on both.</p>
+<h3 id="why-this-measurement-is-structurally-simpler-than-the-pxie-one">Why this measurement is structurally simpler than the PXIe one<a class="headerlink" href="#why-this-measurement-is-structurally-simpler-than-the-pxie-one" title="Permanent link">#</a></h3>
+<p>On a PXIe rig the stim pulse lands on the <strong>NI-DAQ</strong>: a second device with its own clock. The pulse edge
+and the probe's detection instant only become comparable after a <strong>sync fit</strong> against a shared TTL train —
+and that fit is where an off-by-one once mis-paired a periodic signal and cost a session (Status §24).</p>
+<p>On a OneBox rig the probe and the ADC are the <strong>same device</strong>. Every sample of both bands carries a tick
+from the one 100 kHz hardware counter, so the two are related by arithmetic:</p>
+<pre><code>t_seconds = (tick - tick_of_first_raw_sample) / (fs_raw × measured_ticks_per_sample)
+</code></pre>
+<p>applied identically to the detection instants and to the pulse edges. <strong>There is no sync model, no sync
+channel, and nothing to mis-pair.</strong> If you have the choice, capture the stim on the OneBox ADC.</p>
+<p><strong>The shared counter is verifiable in the recording itself</strong> — from the 2026-08-19 run:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>raw (probe)</th>
+<th>adc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>first tick</td>
+<td>1,849,63<strong>1</strong></td>
+<td>1,849,63<strong>0</strong></td>
+</tr>
+<tr>
+<td>last tick</td>
+<td>62,708,212</td>
+<td>62,708,105</td>
+</tr>
+</tbody>
+</table>
+<p>The two bands begin <strong>1 tick apart (10 µs)</strong>. Two independent clocks cannot do that; it is the same
+counter. (The 107-tick spread at the end is simply that the last sample of each band is not simultaneous —
+the bands run at 30 kHz and ~30.3 kHz — not drift between clocks.)</p>
+<p>Two properties make this robust, and both are worth understanding before trusting the number:</p>
+<ul>
+<li>The ADC's <strong>own nominal sample rate never enters the calculation</strong>. The edge's actual tick value is
+  used, mapped through the <em>raw</em> band's measured scale. This matters because the ADC's true rate is not
+  exactly its nominal 30300 Hz — deriving edge times from <code>index / fs_adc</code> would inherit that error.</li>
+<li>Detections and pulses pass through the <strong>identical transform</strong>, so a scale error cancels in the
+  difference. Latency is a subtraction of two identically-mapped quantities: at the ~85 ppm implied by
+  this recording and a ~1 ms interval, the residual is 0.085 µs. Negligible by construction, not by luck.</li>
+</ul>
+<h3 id="reading-the-stim-line">Reading the stim line<a class="headerlink" href="#reading-the-stim-line" title="Permanent link">#</a></h3>
+<p>The Pi's On/Off line (GPIO17, header pin 11) goes into a OneBox ADC input — <strong>IO2 → ADC channel 2</strong> for
+this run. It reads as a clean logic line: idle 0.0002 V, peak 3.296 V, pulses ~93 µs wide.</p>
+<p>One biphasic stimulus produces <strong>several rising edges</strong> on that line (phase, interphase gap, phase), so
+edges must be grouped into events. Here 1309 raw edges grouped to exactly <strong>1000 events</strong>, and the count
+is identical for any grouping gap from 1 ms to 100 ms — that insensitivity is what shows the extra edges
+are pulse structure rather than noise or double-triggering. <code>stim_events_same_clock()</code> groups at 20 ms.</p>
+<h3 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h3>
+<pre><code class="language-bash"># record to a ripple target (drives connect -&gt; train -&gt; record; --z 2.5 as used here)
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot;     --channels 0 --quorum 1 --z 2.5 --n 1000 --dir &lt;ABS recdir&gt; --name &lt;name&gt; --timeout 3600
+
+# analyse -- identical to the PXIe invocation apart from the stim source
+python ripple_tools/analyze_recording.py &lt;recdir&gt;/&lt;name&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl     --stim-band adc --stim-channel 2     --z 2.5 --lockout 0.2 --primary 0 --figs &lt;recdir&gt;/analysis
+</code></pre>
+<p><code>--stim-band adc --stim-channel 2</code> is the whole difference: it takes the pulse from a band on the probe's
+own clock and skips the NI-DAQ sync fit. Without it the analyser looks for a <code>nidaq</code> band, finds none, and
+reports no closed-loop latency at all.</p>
+<h3 id="two-traps-this-run-exposed">Two traps this run exposed<a class="headerlink" href="#two-traps-this-run-exposed" title="Permanent link">#</a></h3>
+<p>Both were silent — they produced plausible-looking output rather than an error.</p>
+<ol>
+<li><strong>The <code>setRecording</code> channel override applied to the ADC band too.</strong> It is meant to carry <em>probe</em>
+   read-out indices, but the ADC is also an <code>interp.npx.*</code> recording, so recording "just the detection
+   channel" rewrote the ADC to channel 0 and <strong>discarded the stim capture</strong> — a 670 MB file that looks
+   fine and cannot be analysed. On PXIe this never bit, because the stim lived on the NI-DAQ, a separate
+   recorder. Fixed in <code>RecordProcessor.cpp</code>; verify in the sidecars that <code>raw</code> has your detection channel
+   and <code>adc</code> still has all 12.</li>
+<li><strong>The analyser picked the ADC as the probe band.</strong> Its raw-band heuristic accepted any <code>npx</code>-format
+   band whose name lacked "lfp", which <code>data.npx.adc</code> satisfies — and bands come back alphabetically, so
+   <code>adc</code> beat <code>raw</code>. The reconstruction then ran on the analog inputs and the stim square wave read as
+   ~1000 "ripples" on the stim channel. Fixed; the sanity check is the header line — it must say
+   <code>fs=2500Hz channels=[&lt;your detection channels&gt;]</code>, not <code>fs=2525Hz channels=[0..11]</code>.</li>
+</ol>
+<h3 id="quality-of-this-run">Quality of this run<a class="headerlink" href="#quality-of-this-run" title="Permanent link">#</a></h3>
+<p>Online detections <strong>1000</strong>, offline causal reconstruction <strong>1000</strong>, stim pulses <strong>1000</strong>, <strong>unmatched 0</strong> —
+every pulse paired with a preceding detection, nothing fabricated or dropped. That four-way agreement is
+the check to demand of any closed-loop recording before quoting a latency from it.</p>
+<p>Figures: <code>RecordingTests/2026-08-19_onebox_np2_1000ripples/analysis/</code> (<code>_latency</code>, <code>_closedloop</code>,
+<code>_signalchain</code>, <code>_detection</code>, <code>_summary.json</code>).</p></article>
     <footer class="pagefoot">Generated from <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -789,6 +930,14 @@ Offline pipeline, exact-detector reproduction and the sync fit:
 <li><a href="#method">Method</a></li>
 <li><a href="#corrections-applied">Corrections applied</a></li>
 <li><a href="#how-to-reproduce">How to reproduce</a></li>
+<li><a href="#onebox-usb3-transport-same-clock-capture">OneBox — USB3 transport, same-clock capture</a><ul>
+<li><a href="#why-this-measurement-is-structurally-simpler-than-the-pxie-one">Why this measurement is structurally simpler than the PXIe one</a></li>
+<li><a href="#reading-the-stim-line">Reading the stim line</a></li>
+<li><a href="#reproducing">Reproducing</a></li>
+<li><a href="#two-traps-this-run-exposed">Two traps this run exposed</a></li>
+<li><a href="#quality-of-this-run">Quality of this run</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

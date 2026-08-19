@@ -256,6 +256,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-08-18</strong></td>
 <td><strong>Multi-client state snapshot (a browser joining mid-session had a dead toolbar); status text now reports state not provenance; one control vocabulary across the top bar, column strips and probe map. NEXT TASK = OneBox closed-loop latency, NP1.0 + NP2.0</strong></td>
 </tr>
+<tr>
+<td><strong>S40</strong></td>
+<td><strong>2026-08-19</strong></td>
+<td><strong>First closed-loop latency on the OneBox: NP2.0, n=1000, median 1.087 ms (DEFAULT delivery), 0 unmatched — and the stim captured on the OneBox's OWN ADC, which removes the NI-DAQ sync fit entirely. Two silent traps fixed; ASAP + multichannel configs ready</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -3068,7 +3073,98 @@ measurement.</p>
 NPX↔NI-DAQ sync alignment still holds, or — more attractive — the <strong>OneBox's own 12-channel ADC</strong>
 captures the stim pulse, collapsing a two-clock problem into one. Decide deliberately rather than copying
 the PXIe recipe. And per §24, verify closed-loop timing event-by-event, never by nearest-neighbour on a
-periodic signal.</p></article>
+periodic signal.</p>
+<h2 id="40-first-closed-loop-latency-on-the-onebox-and-a-simpler-way-to-measure-it-2026-08-19">40. FIRST CLOSED-LOOP LATENCY ON THE ONEBOX — AND A SIMPLER WAY TO MEASURE IT  (2026-08-19)<a class="headerlink" href="#40-first-closed-loop-latency-on-the-onebox-and-a-simpler-way-to-measure-it-2026-08-19" title="Permanent link">#</a></h2>
+<p>Real NP2.0 in saline on a <strong>OneBox</strong>, synthetic ripple, live Pi 3B+ / AM 2300. <strong>n = 1000 detections,
+1000 confirmed stim fires, 1000 captured pulses, 0 unmatched.</strong></p>
+<h3 id="401-the-result">40.1 The result<a class="headerlink" href="#401-the-result" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>median</strong></td>
+<td><strong>1.087 ms</strong></td>
+</tr>
+<tr>
+<td>mean ± sd</td>
+<td>1.087 ± 0.290 ms</td>
+</tr>
+<tr>
+<td>p5 – p95</td>
+<td>0.653 – 1.533 ms</td>
+</tr>
+<tr>
+<td>min / max</td>
+<td>0.420 / 2.377 ms</td>
+</tr>
+<tr>
+<td>delivery</td>
+<td><strong>DEFAULT</strong> (<code>low_latency</code> unset → <code>acquisition poll interval 1 ms</code>)</td>
+</tr>
+<tr>
+<td>detection</td>
+<td>1 ch (e0 → ch0), quorum 1, z 2.5, lockout 0.2 s, online threshold 180.8</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This is the default-delivery cell.</strong> ASAP has NOT been measured on the OneBox yet. Compare against the
+PXIe <strong>default</strong> figure (1.124–1.351 ms), not the ASAP rows — on that basis the OneBox is not slower, but
+that is not yet a transport comparison. Full detail, figures and reproduce commands:
+<code>RecordingTests/CLOSED_LOOP_LATENCY.md</code> § "OneBox — USB3 transport, same-clock capture".</p>
+<h3 id="402-the-measurement-is-structurally-simpler-on-a-onebox-the-s394-question-answered">40.2 The measurement is structurally simpler on a OneBox — the S39.4 question, answered<a class="headerlink" href="#402-the-measurement-is-structurally-simpler-on-a-onebox-the-s394-question-answered" title="Permanent link">#</a></h3>
+<p>The brief (§39.4) flagged one thing to settle before recording: how the stim capture is synchronised to a
+USB-attached probe. <strong>Answer: capture it on the OneBox's own ADC, and the problem disappears.</strong></p>
+<p>On a PXIe rig the pulse lands on the NI-DAQ — a second device with its own clock — so the pulse edge and
+the detection instant only become comparable after a <strong>sync fit</strong> against a shared TTL train. That fit is
+where the off-by-one of §24 mis-paired a periodic signal and cost a session. On a OneBox the probe and the
+ADC are the <strong>same device</strong>: every sample of both bands carries a tick from the one 100 kHz counter, so</p>
+<pre><code>t_seconds = (tick - tick_of_first_raw_sample) / (fs_raw × measured_ticks_per_sample)
+</code></pre>
+<p>applied identically to detections and pulse edges puts them on one axis. No sync model, no sync channel,
+nothing to mis-pair. <code>analyze_recording.py --stim-band adc --stim-channel &lt;n&gt;</code>
+(<code>stim_events_same_clock()</code>); without the flag the analyser looks for a <code>nidaq</code> band, finds none, and
+silently reports no closed-loop latency at all.</p>
+<p><strong>Wiring:</strong> Pi On/Off = <strong>GPIO17 = header pin 11</strong> → OneBox <strong>IO2 = ADC channel 2</strong>. Reads as a clean logic
+line (idle 0.0002 V, peak 3.296 V, ~93 µs pulses). One biphasic stimulus puts SEVERAL edges on that line,
+so edges are grouped into events: 1309 raw edges → exactly <strong>1000</strong> events, and the count is identical for
+any grouping gap from 1 ms to 100 ms. That insensitivity is the evidence the extra edges are pulse
+structure rather than noise or double-triggering.</p>
+<h3 id="403-two-silent-traps-this-path-exposed-both-fixed">40.3 Two SILENT traps this path exposed (both fixed)<a class="headerlink" href="#403-two-silent-traps-this-path-exposed-both-fixed" title="Permanent link">#</a></h3>
+<p>Neither raised an error; both produced plausible-looking output.</p>
+<ol>
+<li><strong><code>setRecording</code>'s channel override rewrote the ADC band too.</strong> It carries PROBE read-out indices, but
+   <code>interp.npx.adc</code> also matches <code>contains("npx")</code> — so recording "just the detection channel" set the ADC
+   to channel 0 and <strong>discarded the stim capture</strong>. That is a 670 MB recording that looks complete and
+   cannot be analysed at all. PXIe never hit this because the stim lived on the NI-DAQ, a separate
+   recorder. Fixed in <code>RecordProcessor.cpp</code> (exclude <code>adc</code>). Check the sidecars: <code>raw</code> = your detection
+   channels, <code>adc</code> = all 12.</li>
+<li><strong>The analyser chose the ADC as the PROBE band.</strong> Its raw-band heuristic accepted any <code>npx</code>-format band
+   whose name lacked "lfp" — which <code>data.npx.adc</code> satisfies — and bands come back alphabetically, so <code>adc</code>
+   beat <code>raw</code>. The offline reconstruction then ran on the analog inputs and the stim square wave read as
+   ~1000 "ripples" on the stim channel (reported <code>fs=2525Hz channels=[0..11]</code>, 1011 crossings). Fixed; the
+   sanity check is that header line, which must read <code>fs=2500Hz channels=[&lt;detection channels&gt;]</code>.</li>
+</ol>
+<p>After both fixes the run is four-way consistent: <strong>online 1000 = offline 1000 = pulses 1000, unmatched 0.</strong>
+That agreement is the check to demand before quoting a latency from any closed-loop recording.</p>
+<h3 id="404-ready-for-tomorrow-asap-multichannel">40.4 Ready for tomorrow: ASAP + multichannel<a class="headerlink" href="#404-ready-for-tomorrow-asap-multichannel" title="Permanent link">#</a></h3>
+<ul>
+<li><code>Npx1OneBox.yaml</code> gained the ripple detector (NP1 reads <code>data.npx.lfp</code> DIRECTLY at decimation 1 — no
+  <code>proc.lfp</code> step, unlike NP2). <code>Npx2OneBox.yaml</code> gained it earlier in the session. Both are inert until
+  Started from the GUI dock.</li>
+<li><strong>New <code>Npx1OneBoxAsap.yaml</code> / <code>Npx2OneBoxAsap.yaml</code></strong> — identical to the default profiles except
+  <code>low_latency: true</code> on the source. An A/B is only quotable if the two configs differ by that key ALONE,
+  which is why they are generated from the base rather than hand-written. Script-only: they are NOT in the
+  GUI dropdown, and are selected by config name from <code>record_ripples.py --source</code>.</li>
+<li>Multichannel needs no new plumbing: <code>record_ripples.py --channels 0,1,2 --quorum 2</code> already drives
+  detection and records the detector's RESOLVED read-out channels (on NP2, electrode ≠ read-out channel).</li>
+</ul>
+<p>Remaining for the next session: the ASAP cells on both probes, the quorum × delivery matrix, and NP1.0 on
+the OneBox (the probe was being swapped as this was written).</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3250,6 +3346,13 @@ periodic signal.</p></article>
 <li><a href="#392-status-text-now-describes-state-not-provenance">39.2 Status text now describes state, not provenance</a></li>
 <li><a href="#393-one-vocabulary-for-every-control-surface">39.3 One vocabulary for every control surface</a></li>
 <li><a href="#394-next-task-closed-loop-latency-on-the-onebox-np10-and-np20">39.4 NEXT TASK — closed-loop latency on the OneBox, NP1.0 and NP2.0</a></li>
+</ul>
+</li>
+<li><a href="#40-first-closed-loop-latency-on-the-onebox-and-a-simpler-way-to-measure-it-2026-08-19">40. FIRST CLOSED-LOOP LATENCY ON THE ONEBOX — AND A SIMPLER WAY TO MEASURE IT (2026-08-19)</a><ul>
+<li><a href="#401-the-result">40.1 The result</a></li>
+<li><a href="#402-the-measurement-is-structurally-simpler-on-a-onebox-the-s394-question-answered">40.2 The measurement is structurally simpler on a OneBox — the S39.4 question, answered</a></li>
+<li><a href="#403-two-silent-traps-this-path-exposed-both-fixed">40.3 Two SILENT traps this path exposed (both fixed)</a></li>
+<li><a href="#404-ready-for-tomorrow-asap-multichannel">40.4 Ready for tomorrow: ASAP + multichannel</a></li>
 </ul>
 </li>
 </ul>

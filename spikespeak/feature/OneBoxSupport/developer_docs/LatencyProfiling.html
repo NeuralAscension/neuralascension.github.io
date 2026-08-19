@@ -84,6 +84,15 @@ stimulus pulse being observed on the NI-DAQ.</strong></p>
 offline</strong>, by <code>ripple_tools/analyze_recording.py</code>, because the ai4 pulse edge exists solely in the NI-DAQ
 recording and needs the sync fit to share a clock with the probe. Everything else on this page is a
 <em>decomposition</em> of that interval — useful for finding where the milliseconds live, never a replacement.</p>
+<blockquote>
+<p><strong>On a OneBox rig, read "NI-DAQ" as "the OneBox's own ADC".</strong> The definition is unchanged — threshold
+crossing → observed stimulus pulse — but the pulse is captured on an analog input of the <em>same device</em>
+as the probe, so both instants come from one 100 kHz hardware counter and <strong>no sync fit is involved</strong>.
+That removes the step where a periodic signal can be mis-paired (§24). Pass
+<code>--stim-band adc --stim-channel &lt;n&gt;</code> to the analyser; without it, it looks for a <code>nidaq</code> band, finds
+none, and silently reports no closed-loop latency. Measured results and the two silent traps this path
+exposes: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html#onebox--usb3-transport-same-clock-capture"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
+</blockquote>
 <p><strong>Measured (real hardware, pulse-anchored).</strong> Full results, figures and the delivery-mode comparison:
 <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
 <p>The complete matrix, ~1000 delivered stimuli per cell (2026-07-21). Both probes, both delivery modes:</p>
@@ -621,6 +630,9 @@ python ripple_tools/latency_breakdown.py --source &quot;Latency Bench NP1 (ASAP 
 
 # the DEFINITIVE closed-loop latency, from a recording with NI-DAQ
 python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl --figs &lt;recdir&gt;/analysis
+
+# ...the same, on a OneBox rig where the stim is captured on the OneBox ADC (no sync fit)
+python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl     --stim-band adc --stim-channel 2 --figs &lt;recdir&gt;/analysis
 </code></pre>
 <h2 id="gotchas-that-cost-real-time">Gotchas that cost real time<a class="headerlink" href="#gotchas-that-cost-real-time" title="Permanent link">#</a></h2>
 <ul>

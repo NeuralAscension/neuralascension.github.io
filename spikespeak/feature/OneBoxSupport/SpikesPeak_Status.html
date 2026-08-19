@@ -245,6 +245,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-08-18</strong></td>
 <td><strong>Two basestations on one host: the inverted <code>np_tryGetSlotID</code> bool test (a latent bug the OneBox exposed, which broke PXIe connect), plus releasing the basestation the config does not use; splash morph now runs both ways</strong></td>
 </tr>
+<tr>
+<td><strong>S38</strong></td>
+<td><strong>2026-08-18</strong></td>
+<td><strong>Toolbar relayout (two-row grid, grouped controls, joined view tabs) + the "read SciChart geometry before layout" bug class: channel labels off their traces at 60 rows (14.8px -&gt; 0.015px) and the NP1 shank tip stuck at its placeholder width</strong></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -2844,7 +2849,145 @@ in every run:</p>
 <td>confirmed in the logs above</td>
 </tr>
 </tbody>
-</table></article>
+</table>
+<h2 id="38-toolbar-relayout-the-read-scichart-geometry-before-layout-bug-class-2026-08-18">38. TOOLBAR RELAYOUT + THE "READ SCICHART GEOMETRY BEFORE LAYOUT" BUG CLASS  (2026-08-18)<a class="headerlink" href="#38-toolbar-relayout-the-read-scichart-geometry-before-layout-bug-class-2026-08-18" title="Permanent link">#</a></h2>
+<p>Front-end only. A toolbar the maintainer described as "awkward", and channel labels that did not line up
+with their traces at 60 rows, turned out to share a theme: <strong>three separate places read SciChart geometry
+before layout had run, and each swallowed the resulting failure.</strong></p>
+<h3 id="381-the-bug-class-scichart-geometry-is-only-valid-after-layout">38.1 THE BUG CLASS -- SciChart geometry is only valid after layout<a class="headerlink" href="#381-the-bug-class-scichart-geometry-is-only-valid-after-layout" title="Permanent link">#</a></h3>
+<p><code>sciChartSurface.seriesViewRect</code> and <code>axis.getCurrentCoordinateCalculator()</code> are <strong>not readable until the
+surface has laid out</strong>. Before that, seriesViewRect throws</p>
+<pre><code>Cannot get seriesViewRect before layout has ocurred. Move code that calls to be triggered by sciChartSurface.rendered
+</code></pre>
+<p>and a coordinate calculator comes back with <code>viewportDimension: 0</code>. Both call sites were inside a
+<code>try/catch</code> or behind an <code>if (sv &amp;&amp; sv.height &gt; 0)</code> guard, so <strong>the failure was silent and the fallback
+looked plausible</strong> -- which is why both survived a long time.</p>
+<p><strong>The rule: anything that measures the plot area must run from the surface's <code>rendered</code> event.</strong> Both
+fixes below do that, and <code>draw()</code> also calls the label one opportunistically so it self-corrects on data
+updates once a layout has happened.</p>
+<p>⚠️ One trap when subscribing to <code>rendered</code>: do not write a reactive property unconditionally from the
+handler. <code>shankTip.svgString = ...</code> invalidates the annotation and schedules another render, so an
+unguarded write feeds itself a redraw every frame. Guard on "did the value actually change".</p>
+<h3 id="382-channel-labels-did-not-line-up-with-their-traces-worst-at-60-rows">38.2 Channel labels did not line up with their traces (worst at 60+ rows)<a class="headerlink" href="#382-channel-labels-did-not-line-up-with-their-traces-worst-at-60-rows" title="Permanent link">#</a></h3>
+<p>Two faults compounding:</p>
+<ol>
+<li><strong>The overlay was never pinned to the plot area.</strong> Code existed to do it, but it read <code>seriesViewRect</code>
+   from <code>draw()</code> -- a data-update path, before layout -- so the guard was always false and <strong>the block
+   never executed once</strong>. The overlay kept its full-wrapper height while the traces occupied the inset
+   plot area: measured wrapper <strong>857 px</strong> vs plot area <strong>top 10, height 832</strong>.
+   That produced a DRIFT, not an offset: <strong>first label −9.8 px, last +14.8 px</strong>. At 20 rows the pitch is
+   41.6 px so a 25 px swing stays inside a row and merely looks slightly off; at 60 rows the pitch is
+   13.9 px, so the same swing exceeds a full row -- which is when it became obvious.</li>
+<li><strong><code>justify-content: space-around</code> collapses once the labels stop fitting.</strong> A label is ~19 px tall, so
+   60 of them need 1140 px in an 832 px plot. Free space goes negative, flex stops distributing, and the
+   labels bunch.</li>
+</ol>
+<p>Fixed by placing each label <strong>arithmetically</strong> at <code>(i + 0.5) / shownSlots</code> of the plot area -- the same
+maths as the axis range (<code>[bottom*spacing - spacing/2, topRange*spacing + spacing/2]</code> spans exactly
+<code>shownSlots</code> rows, each trace centred in its row). Exact at any density, independent of label height, and
+it also handles a gap mid-band, which the flex version could not.</p>
+<p>Label type now scales with the row pitch (11 → 9 → 7 px) so dense pages cannot collide. That required
+<code>.channel-label { font-size: inherit }</code> -- its own explicit <code>11px</code> was beating the value set on the
+overlay, which is why 80/120 rows still reported 11 px on the first attempt.</p>
+<p><strong>Measured, real NP1.0 probe on the OneBox and the NP1 sim:</strong></p>
+<table>
+<thead>
+<tr>
+<th>rows</th>
+<th>pitch</th>
+<th>font</th>
+<th>label h</th>
+<th>fits row</th>
+<th>max misalign</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20</td>
+<td>41.6 px</td>
+<td>11 px</td>
+<td>11</td>
+<td>yes</td>
+<td>0.013 px</td>
+</tr>
+<tr>
+<td>40</td>
+<td>20.8 px</td>
+<td>11 px</td>
+<td>11</td>
+<td>yes</td>
+<td>0.013 px</td>
+</tr>
+<tr>
+<td>60</td>
+<td>13.9 px</td>
+<td>11 px</td>
+<td>11</td>
+<td>yes</td>
+<td><strong>0.015 px</strong></td>
+</tr>
+<tr>
+<td>80</td>
+<td>10.4 px</td>
+<td>9 px</td>
+<td>9</td>
+<td>yes</td>
+<td>0.013 px</td>
+</tr>
+<tr>
+<td>120</td>
+<td>6.9 px</td>
+<td>7 px</td>
+<td>7</td>
+<td>yes</td>
+<td>0.016 px</td>
+</tr>
+</tbody>
+</table>
+<p>Was 14.8 px at 60 rows; now 0.015 px.</p>
+<h3 id="383-the-np1-shank-tip-sat-off-centre">38.3 The NP1 shank tip sat off-centre<a class="headerlink" href="#383-the-np1-shank-tip-sat-off-centre" title="Permanent link">#</a></h3>
+<p>Same class. <code>syncTipWidth()</code> sizes the arrow-tip SVG from the shaft's on-screen width via the x-axis
+coordinate calculator, but it only ran on <code>window.resize</code> plus once at build time -- when the calculator
+is not yet valid. The <code>catch</code> swallowed that, so the tip kept its <strong>40 px placeholder</strong>, narrower than the
+shaft and visibly off-centre, until some later resize happened to correct it. (Reconnecting fixed it,
+which is what made the timing nature obvious.) The taller two-row toolbar changed the chart's size, which
+is likely what made the stale placeholder noticeable.</p>
+<p>Now re-synced from <code>rendered</code>, guarded so <code>svgString</code> is only rewritten when the width actually changes.
+Verified: tip width <strong>207 px</strong> matching the shaft, not the 40 px placeholder.</p>
+<h3 id="384-toolbar-a-two-row-grid">38.4 Toolbar: a two-row grid<a class="headerlink" href="#384-toolbar-a-two-row-grid" title="Permanent link">#</a></h3>
+<p>Three faults, all measurable:
+1. <strong>Five control heights</strong> (14 / 26 / 30 / 32 / 33 px) -- controls were only ever centre-aligned, never
+   edge-aligned, so the row had a jagged top and bottom.
+2. <strong>The compact rule never applied.</strong> <code>.toolbar button, .toolbar select { padding:4px 7px; font-size:12px }</code>
+   is overridden -- the same selector is declared twice more further down <code>style.css</code> with
+   <code>padding:6px 12px; font-size:14px</code>, and equal specificity means the last one wins.
+3. <strong><code>.toolbar-spacer</code> was inert</strong> -- <code>display:none</code> in one rule, <code>flex:1 1 auto</code> in another; <code>none</code> won,
+   so the intended left/right split never happened.</p>
+<p>The maintainer picked the "grouped segments" treatment and asked for the view tabs joined and aligned
+under Source, the status hard left on a second row, and a little more vertical padding. That required
+switching the bar from a <strong>wrapping flex row to a CSS grid</strong> -- flex-wrap drops items wherever they fit
+and cannot express "aligned underneath Source". Row 2 is placed into row 1's columns:</p>
+<pre><code>   col 1            col 2                col 3
+ | transport     | view               | source                    |  row 1
+ | status + REC  | module tabs        | Probe Map | Live Data      |  row 2
+</code></pre>
+<p>Verified live: status left <strong>12</strong> = transport left <strong>12</strong>; module tab left <strong>217</strong> = view left <strong>217</strong>;
+view tabs left <strong>680</strong> = source left <strong>680</strong>; tab seams <strong>−1 px</strong> (borders collapsed); one control height
+(30 px); exactly two rows; 101 px tall.</p>
+<p><strong>Ripple Detection moved out of the view switcher.</strong> It is an opt-in module, not a core view, so
+<code>RippleModule.js</code> now appends to a dedicated <code>#module-tabs</code> slot (falling back to <code>#main-tabs</code>, so an
+older <code>index.html</code> still works) and gets a full border radius rather than a segment radius.</p>
+<p>Everything keeps its element ids, so <code>main.js</code>, <code>ImroManager.js</code> and <code>RippleModule.js</code> needed no other
+changes.</p>
+<h3 id="385-open-not-addressed">38.5 Open, not addressed<a class="headerlink" href="#385-open-not-addressed" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Second-client toolbar state.</strong> A browser that connects <em>after</em> a source is already up shows Disconnect
+  greyed: the backend broadcasts source name and play state, but not the toolbar's enabled/disabled state.
+  Pre-existing; only matters for multi-client sessions.</li>
+<li>The in-app Browser pane used for headless checks stops compositing unpredictably, which also stops
+  SciChart rendering (rAF throttled) -- <code>rendered</code> never fires and <code>seriesViewRect</code> stays unreadable.
+  Forcing <code>surface.doDrawingLoop()</code> makes layout available for measurement. Not an application fault.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3011,6 +3154,14 @@ in every run:</p>
 <li><a href="#373-the-other-half-the-chassis-was-not-enumerated-at-all">37.3 The other half: the chassis was not enumerated at all</a></li>
 <li><a href="#374-splash-fixes-found-along-the-way">37.4 Splash fixes found along the way</a></li>
 <li><a href="#375-verified-on-hardware">37.5 Verified on hardware</a></li>
+</ul>
+</li>
+<li><a href="#38-toolbar-relayout-the-read-scichart-geometry-before-layout-bug-class-2026-08-18">38. TOOLBAR RELAYOUT + THE "READ SCICHART GEOMETRY BEFORE LAYOUT" BUG CLASS (2026-08-18)</a><ul>
+<li><a href="#381-the-bug-class-scichart-geometry-is-only-valid-after-layout">38.1 THE BUG CLASS -- SciChart geometry is only valid after layout</a></li>
+<li><a href="#382-channel-labels-did-not-line-up-with-their-traces-worst-at-60-rows">38.2 Channel labels did not line up with their traces (worst at 60+ rows)</a></li>
+<li><a href="#383-the-np1-shank-tip-sat-off-centre">38.3 The NP1 shank tip sat off-centre</a></li>
+<li><a href="#384-toolbar-a-two-row-grid">38.4 Toolbar: a two-row grid</a></li>
+<li><a href="#385-open-not-addressed">38.5 Open, not addressed</a></li>
 </ul>
 </li>
 </ul>

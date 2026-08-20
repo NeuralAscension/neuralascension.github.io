@@ -3375,7 +3375,135 @@ machine (Open Ephys <code>AppData</code>, two SpikeGLX releases, a SpikeGLXTest 
 line-for-line (33 / 961). It no longer streams uncalibrated — the §41.5 caveat is closed.</p>
 <h3 id="428-known-gaps">42.8 Known gaps<a class="headerlink" href="#428-known-gaps" title="Permanent link">#</a></h3>
 <p>Recording state is still optimistic in the GUI (the #18 pattern in the one place #18 did not reach); sources
-have no fault signal equivalent to <code>sigIpErrorOccurred</code>; the watchdog does not cover the source side.</p></article>
+have no fault signal equivalent to <code>sigIpErrorOccurred</code>; the watchdog does not cover the source side.</p>
+<h2 id="43-knowing-the-whole-system-state-and-whether-it-is-still-moving-2026-08-20">43. KNOWING THE WHOLE SYSTEM STATE — AND WHETHER IT IS STILL MOVING  (2026-08-20)<a class="headerlink" href="#43-knowing-the-whole-system-state-and-whether-it-is-still-moving-2026-08-20" title="Permanent link">#</a></h2>
+<p>GitHub issue #16 ("Track global state of system"): <em>the overall state of the server should be known at any
+time (acquisition, processors, record), and maybe a monitor to make sure all processors are cycling.</em> The
+direct continuation of §42 — #11 made failures <strong>reportable</strong>, #16 makes the system <strong>inspectable</strong>.</p>
+<h3 id="431-one-snapshot-answerable-at-any-time">43.1 One snapshot, answerable at any time<a class="headerlink" href="#431-one-snapshot-answerable-at-any-time" title="Permanent link">#</a></h3>
+<p>New <code>getSystemState</code> command returns everything in one object; it is also broadcast whenever anything in it
+changes, and replayed to a late-joining client:</p>
+<pre><code class="language-json">{ &quot;event&quot;:&quot;systemState&quot;, &quot;acquisition&quot;:&quot;acquiring&quot;, &quot;source&quot;:&quot;NPX 2.0 Multishank (OneBox)&quot;,
+  &quot;playing&quot;:true, &quot;recording&quot;:{&quot;active&quot;:false,&quot;name&quot;:&quot;&quot;},
+  &quot;processors&quot;:[ {&quot;name&quot;:&quot;proc.lfp&quot;,&quot;state&quot;:&quot;cycling&quot;,&quot;ready&quot;:true,&quot;cycles&quot;:24235,&quot;thread&quot;:true} ] }
+</code></pre>
+<p><code>MainController::systemState()</code> owns acquisition + processors; <code>WebSocketServer</code> composes recording on top
+because the recorders live there. <strong>Recording is deliberately not copied into MainController</strong> — a second
+copy of a state is a second thing that can be wrong, which is precisely what the removed <code>recordingState</code>
+was (§42.4). <code>systemState()</code> also does <strong>not</strong> take <code>mMutex</code>: <code>handleTextCommand</code> holds it for the whole of
+a connect or a play, and those are exactly the moments somebody most wants to look at the system, so taking
+the same lock would make the monitor block on the thing it monitors. One-step-stale beats blocking.</p>
+<h3 id="432-liveness-started-is-not-working">43.2 Liveness — "started" is not "working"<a class="headerlink" href="#432-liveness-started-is-not-working" title="Permanent link">#</a></h3>
+<p>A processor can report ready and then block forever on a buffer that never fills, and every health signal
+in the system keeps saying it is fine. <code>IProcessor</code> now carries a monotonic <code>cycleCount()</code>, bumped by
+<code>noteCycle()</code> once per work cycle (6 call sites). <code>ProcessorManager</code> polls it every 1 s and calls a
+processor <strong>stalled</strong> after 3 still polls, naming it on the GUI status line and in the snapshot.</p>
+<p>Choices worth not undoing: <strong>polled, not signalled</strong> (acquire loops run at 1 ms — a heartbeat signal per
+cycle would flood the event loop to answer a once-a-second question); <strong>relaxed atomics</strong> (the only question
+is "did this change?"); <strong>counted AFTER the wait</strong> in blocking loops, so a processor parked on a dead buffer
+genuinely stops advancing. Stall detection runs <strong>only while acquiring</strong> — an idle processor is not a broken
+one.</p>
+<p><strong>The placement trap, hit immediately.</strong> My first pass inserted 3 of the 6 <code>noteCycle()</code> calls into
+<code>slIpStopProcessor</code> instead of the per-cycle slot, because the script matched the <code>connect(...)</code> reference
+rather than the definition. The monitor caught it on the first hardware run: <code>proc.npx.display</code> sat at <strong>0
+cycles / stalled</strong> while everything else advanced. The rates are the check — <code>proc.npx.display</code> should tick
+at ~50 Hz (20 ms timer), <code>proc.npx.recorder</code> at ~20 Hz (50 ms). Both now do, exactly.</p>
+<h3 id="433-recording-is-confirmed-too-closes-the-42-gap">43.3 Recording is confirmed too (closes the §42 gap)<a class="headerlink" href="#433-recording-is-confirmed-too-closes-the-42-gap" title="Permanent link">#</a></h3>
+<p><code>RecordProcessor::sigRecordingStateChanged</code> fires from <code>applyRecordingState</code> — where files are actually
+open or actually closed — not from <code>setRecording</code>, which is only the request. The <strong>old <code>stateRecording</code>
+broadcast echoed the request straight back</strong>, so a start whose file open failed still told every client it
+was recording. That echo is gone; the GUI now shows a pending record button and transitions only on
+confirmation, exactly like play in §41.2.</p>
+<p>⚠️ <strong>Event shape:</strong> the GUI reads <code>{value:&lt;bool&gt;, name:&lt;string&gt;}</code>, NOT <code>broadcastStatusEvent</code>'s
+<code>{message:"1"}</code>. My first version used the status shape — the GUI would have read <code>false</code> and a started
+recording would have looked stopped. Caught before testing, by reading the handler.</p>
+<h3 id="434-gui-monitor">43.4 GUI monitor<a class="headerlink" href="#434-gui-monitor" title="Permanent link">#</a></h3>
+<p>A labelled <strong>chip</strong> in the existing status line — dot + the word "System" + the live count
+("6 cycling" / "1 stalled" / "idle") — styled with the toolbar's band tokens so it sits level with the
+status text and the REC indicator. Green = all cycling, amber = started-not-yet-turning, red (whole chip,
+pulsing dot) = stalled, grey = idle. Clicking opens a floating detail panel appended to <code>&lt;body&gt;</code>,
+deliberately <strong>not</strong> in the toolbar grid: two rows of carefully aligned columns are no place for a
+variable-height table. New self-contained <code>webinterface/SystemMonitor.js</code>.</p>
+<p>It shipped as a bare dot first, and the user's verdict was "an if-you-know-you-know type thing" — correct,
+and the reason the label and the inline count exist. A coloured dot alone means nothing to somebody who
+does not already know it is there, and a fault you must hover to discover is a fault you will not discover.</p>
+<h3 id="435-the-build-bug-that-invalidated-a-test">43.5 ⚠️ The build bug that invalidated a test<a class="headerlink" href="#435-the-build-bug-that-invalidated-a-test" title="Permanent link">#</a></h3>
+<p>The webinterface copy was a <strong><code>POST_BUILD</code> step on the <code>SpikesPeak</code> target</strong>, so it only ran when the
+executable <strong>relinked</strong>. A frontend-only edit left the deployed copy stale while the build reported
+success — and the browser served the OLD frontend, so my test of the new record path silently exercised
+the old code and "passed" (the button jumped straight to red, <code>pending</code> undefined). Now an
+always-out-of-date <code>copy_webinterface</code> target; the log line <code>[0/1] Copying webinterface directory</code> confirms
+it runs on a frontend-only build.</p>
+<p><strong>The served root is <code>&lt;exe&gt;/../webinterface</code>, never the source tree.</strong> When a frontend change appears not to
+take: <code>curl -s http://localhost:8234/main.js | grep &lt;new symbol&gt;</code>.</p>
+<p>Related papercut found while chasing it: the HTTP server does <strong>not strip query strings</strong>, so
+<code>index.html?nocache=1</code> 404s (<code>File NOT FOUND: ".../index.html?nocache=16b"</code>). Not fixed — noted.</p>
+<h3 id="436-verified-on-real-hardware">43.6 Verified on real hardware<a class="headerlink" href="#436-verified-on-real-hardware" title="Permanent link">#</a></h3>
+<p>Real NP2.0 multishank on a real OneBox, plus the states hardware cannot produce on demand.</p>
+<table>
+<thead>
+<tr>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>getSystemState</code>, nothing connected</td>
+<td><code>acquisition:"no_source"</code>, <code>processors:[]</code></td>
+</tr>
+<tr>
+<td>connected, not streaming</td>
+<td>4 processors present, all <code>idle</code>, 0 cycles</td>
+</tr>
+<tr>
+<td>streaming</td>
+<td>all 4 <code>cycling</code>; display +100/2 s (50 Hz), recorder +40/2 s (20 Hz), lfp +2241, ripple +26034</td>
+</tr>
+<tr>
+<td>record start/stop</td>
+<td><code>stateRecording</code> 1 → 0, exactly two backend transitions, files written</td>
+</tr>
+<tr>
+<td>record button</td>
+<td>click → <code>pending</code> + disabled, state stays <code>armed</code>; → <code>record-color</code>/<code>recording</code> only on confirmation; stop symmetric</td>
+</tr>
+<tr>
+<td>GUI monitor</td>
+<td>green dot, "acquiring — 4 processor(s)", live cycle counts in the panel</td>
+</tr>
+<tr>
+<td>teardown</td>
+<td>OneBox <code>setSyncAsInput + closeProbe + closeBS + unmapBS</code>, slot 16 released, every time</td>
+</tr>
+</tbody>
+</table>
+<h3 id="437-remaining">43.7 Remaining<a class="headerlink" href="#437-remaining" title="Permanent link">#</a></h3>
+<p>Sources have no liveness counter (a dead source shows only as every downstream processor stalling at once —
+a usable signal that names the symptom, not the cause) and no fault signal equivalent to
+<code>sigIpErrorOccurred</code>. The HTTP query-string 404 above.</p>
+<h2 id="44-a-z-score-of-0-was-unreachable-from-the-ripple-gui-2026-08-20">44. A Z-SCORE OF 0 WAS UNREACHABLE FROM THE RIPPLE GUI  (2026-08-20)<a class="headerlink" href="#44-a-z-score-of-0-was-unreachable-from-the-ripple-gui-2026-08-20" title="Permanent link">#</a></h2>
+<p>Found while demonstrating §43 on the live rig: setting a detection channel's z-score to <strong>0</strong> silently
+snapped the field back to <strong>3.00</strong> and the detector never heard about it. The user spotted it — <em>"the GUI
+didn't update with regards to the display though, I still see it as 3.00"</em>.</p>
+<p><code>webinterface/RippleModule.js</code> line 476:</p>
+<pre><code class="language-js">c.z = parseFloat(e.target.value) || DEFAULTS.z;      // parseFloat(&quot;0&quot;) -&gt; 0, and 0 is FALSY
+</code></pre>
+<p><code>0 || 3.0</code> is <code>3.0</code>. <strong>z = 0 was unreachable through the GUI</strong>, which is unfortunate precisely because it
+is the natural value to reach for when deliberately provoking detections (threshold = μ, i.e. fire on
+anything above the mean). Nothing ever flagged it: the handler discarded a valid setting instead of
+erroring, and the field re-rendered from the reverted value, so the UI looked self-consistent.</p>
+<p>Fixed by testing for a NUMBER rather than for truthiness (<code>Number.isFinite</code>), and the field now echoes back
+what was actually accepted so a rejected entry is visible rather than silent. Negative z is allowed for the
+same reason — a valid, if noisy, probe. The stim-gap parser had the same shape (<code>|| 0</code>, harmless today
+because the default IS 0) and was written the same way so it stays correct if that default ever moves.</p>
+<p><strong>Verified live</strong> on the real NP2.0/OneBox: field holds <code>0.00</code>, the threshold label reads
+<code>μ + 0.00σ = 2.4</code>, and the detector fired <strong>98 detections in 20 s</strong> (stimulation gated OFF throughout —
+<code>disarmed before disabling stimulation</code>, no datagram left the host). The user then set z back to 5 by hand:
+field held <code>5.00</code>, threshold recomputed to <code>μ + 5.00σ = 8.1</code>, confirming the commit path works from a real
+click and not only from synthetic events.</p>
+<p>Kept as its own commit rather than folded into §43: it has nothing to do with system-state tracking, and
+somebody bisecting a ripple-detection problem should not have to find it inside a monitoring change.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3585,6 +3713,17 @@ have no fault signal equivalent to <code>sigIpErrorOccurred</code>; the watchdog
 <li><a href="#428-known-gaps">42.8 Known gaps</a></li>
 </ul>
 </li>
+<li><a href="#43-knowing-the-whole-system-state-and-whether-it-is-still-moving-2026-08-20">43. KNOWING THE WHOLE SYSTEM STATE — AND WHETHER IT IS STILL MOVING (2026-08-20)</a><ul>
+<li><a href="#431-one-snapshot-answerable-at-any-time">43.1 One snapshot, answerable at any time</a></li>
+<li><a href="#432-liveness-started-is-not-working">43.2 Liveness — "started" is not "working"</a></li>
+<li><a href="#433-recording-is-confirmed-too-closes-the-42-gap">43.3 Recording is confirmed too (closes the §42 gap)</a></li>
+<li><a href="#434-gui-monitor">43.4 GUI monitor</a></li>
+<li><a href="#435-the-build-bug-that-invalidated-a-test">43.5 ⚠️ The build bug that invalidated a test</a></li>
+<li><a href="#436-verified-on-real-hardware">43.6 Verified on real hardware</a></li>
+<li><a href="#437-remaining">43.7 Remaining</a></li>
+</ul>
+</li>
+<li><a href="#44-a-z-score-of-0-was-unreachable-from-the-ripple-gui-2026-08-20">44. A Z-SCORE OF 0 WAS UNREACHABLE FROM THE RIPPLE GUI (2026-08-20)</a></li>
 </ul>
 </div>
 </aside>

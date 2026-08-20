@@ -107,7 +107,7 @@ public slots:
 <code>QThread::started → slIpStartProcessor</code> · <code>sigPmStopProcessing → slIpStopProcessor</code> ·
 <code>sigIpStopped → QThread::quit</code> · <code>sigIpStarted → readiness set</code> · <code>sigIpErrorOccurred → GUI status line</code>.</p>
 <hr />
-<h2 id="1-the-two-iron-rules">1. The two iron rules<a class="headerlink" href="#1-the-two-iron-rules" title="Permanent link">#</a></h2>
+<h2 id="1-the-three-iron-rules">1. The three iron rules<a class="headerlink" href="#1-the-three-iron-rules" title="Permanent link">#</a></h2>
 <ol>
 <li><strong>Emit <code>sigIpStarted(name)</code> once you're ready.</strong> On play, <code>MainController</code> starts <strong>all
    processors first</strong> and only starts the <strong>source</strong> after every processor has reported
@@ -127,10 +127,21 @@ public slots:
      the play attempt, and tells the GUI. It used to hang silently with every component claiming
      health. A cycle declared failed stays failed — a straggler that reports afterwards is logged
      and ignored rather than resurrecting the request.
-2. <strong>Do your work on your own thread, and stop cleanly.</strong> Either a <code>QTimer</code> (poll) or a blocking
+2. <strong>Call <code>noteCycle()</code> once per work cycle.</strong> It is a protected <code>IProcessor</code> method: one relaxed
+   atomic increment, cheap enough for a 1 ms path. <code>ProcessorManager</code> polls it every second and
+   reports your sink <strong>stalled</strong> if it has not moved for 3 s while acquiring -- because "reported
+   ready" is a one-off claim and a sink that blocks forever on a buffer that never fills otherwise
+   looks perfectly healthy (issue #16, <code>Fdir.md</code> section 8).</li>
+</ul>
+<p>Put it in the <strong>per-cycle</strong> function -- the timer slot body, or one pass of your blocking loop --
+   and <strong>never</strong> in <code>slIpStartProcessor</code>/<code>slIpStopProcessor</code>; a misplaced call reads as a permanent
+   stall the moment acquisition starts. In a blocking loop put it <strong>after</strong> the
+   <code>waitForAvailable()</code> returns, so parking on a buffer that never fills genuinely stops the count.</p>
+<ol start="3">
+<li><strong>Do your work on your own thread, and stop cleanly.</strong> Either a <code>QTimer</code> (poll) or a blocking
    loop (semaphore) — but <code>slIpStopProcessor</code> must end it and <code>emit sigIpStopped(name)</code> so the
    thread can quit.</li>
-</ul>
+</ol>
 <hr />
 <h2 id="2-consumption-patterns-pick-one">2. Consumption patterns — pick one<a class="headerlink" href="#2-consumption-patterns-pick-one" title="Permanent link">#</a></h2>
 <table>
@@ -275,6 +286,7 @@ way the recorder is wired. Then bind it in JS by a registry-name substring (<cod
 <li>[ ] <code>configure(cfg)</code> binds inputs from the registry by name</li>
 <li>[ ] Consumption: poll (<code>getTotalSamplesAdded</code>) <strong>or</strong> block (<code>addWaitingConsumer</code>/<code>waitForAvailable</code>)</li>
 <li>[ ] <code>slIpStartProcessor</code> sets up work <strong>and emits <code>sigIpStarted(name)</code></strong> (rule #1)</li>
+<li>[ ] the per-cycle function calls <strong><code>noteCycle()</code></strong> (rule #2) -- not the start/stop slots</li>
 <li>[ ] <code>slIpStopProcessor</code> stops + flushes + emits <code>sigIpStopped(name)</code></li>
 <li>[ ] Output wired: <code>sigIpDataReady</code> / <code>IDataInterpreter</code> file / new producer buffer</li>
 <li>[ ] <code>registerProcessor&lt;…&gt;("proc.…")</code> in <code>Utils.cpp</code></li>
@@ -291,7 +303,7 @@ stimulation + derived producer buffers).</p></article>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#0-the-contract-srccoreiprocessorhpp">0. The contract (src/core/IProcessor.hpp)</a></li>
-<li><a href="#1-the-two-iron-rules">1. The two iron rules</a></li>
+<li><a href="#1-the-three-iron-rules">1. The three iron rules</a></li>
 <li><a href="#2-consumption-patterns-pick-one">2. Consumption patterns — pick one</a></li>
 <li><a href="#3-output-pick-what-fits">3. Output — pick what fits</a></li>
 <li><a href="#4-step-by-step">4. Step-by-step</a><ul>

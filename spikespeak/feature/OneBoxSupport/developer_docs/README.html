@@ -45,6 +45,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
@@ -350,6 +351,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="NextTask_OneBoxLatencyMatrix.html"><code>NextTask_OneBoxLatencyMatrix.md</code></a></td>
+<td><strong>Ready to run</strong> — the five remaining closed-loop latency cells for NP2.0 on the OneBox (then NP1.0): exact commands, the OneBox-specific analyser flags, and the stim ARM-vs-GATE fix that a first attempt tripped over.</td>
+</tr>
 <tr>
 <td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
 <td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>

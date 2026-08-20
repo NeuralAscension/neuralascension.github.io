@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0 - SpikesPeak Docs</title>
+<title>Next task — finish the OneBox closed-loop latency matrix - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
@@ -11,7 +11,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
-  <span class="crumb">Developer Docs / NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</span>
+  <span class="crumb">Developer Docs / Next task — finish the OneBox closed-loop latency matrix</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -44,8 +44,8 @@
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a class="active" href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a class="active" href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
@@ -77,78 +77,93 @@
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="next-task-closed-loop-latency-on-the-onebox-np10-and-np20">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 <strong>and</strong> NP2.0<a class="headerlink" href="#next-task-closed-loop-latency-on-the-onebox-np10-and-np20" title="Permanent link">#</a></h1>
-<p><strong>Status:</strong> planned, agreed 2026-08-18. <strong>Blocked on nothing but the rig</strong> — the maintainer streams the
-synthetic ripple signal when back at work (2026-08-19).</p>
-<p><strong>The goal:</strong> closed-loop latency <em>recordings and measurements</em> for the ripple → stim path, with the probe
-on the <strong>OneBox</strong> rather than the PXIe basestation, for <strong>both</strong> NP1.0 and NP2.0.</p>
-<p>This is the OneBox counterpart of the PXIe latency work already in the log (§27–§30). Everything that
-matters there — the definition of latency, the analysis tooling, the ASAP delivery flag — carries over
-unchanged; what is new is the basestation underneath.</p>
-<hr />
-<h2 id="why-this-is-worth-doing">Why this is worth doing<a class="headerlink" href="#why-this-is-worth-doing" title="Permanent link">#</a></h2>
-<p>The closed loop is fully quantified on <strong>PXIe</strong> (§29/§30): sub-millisecond at every quorum level on both
-probes, NP1.0 0.94–0.98 ms and NP2.0 0.55–0.61 ms with ASAP delivery. Nothing equivalent exists for the
-OneBox, and the OneBox is a <em>different transport</em>: USB3/FTDI rather than PCIe/MXI. The open question is
-whether that transport costs latency, and how much.</p>
-<p>That is the whole point of the measurement — do <strong>not</strong> assume it matches PXIe.</p>
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-finish-the-onebox-closed-loop-latency-matrix">Next task — finish the OneBox closed-loop latency matrix<a class="headerlink" href="#next-task-finish-the-onebox-closed-loop-latency-matrix" title="Permanent link">#</a></h1>
+<blockquote>
+<p>Set up and ready to run. Needs: the probe in saline, the synthetic ripple signal <strong>playing</strong>, and the
+Pi stim server reachable. Everything else is prepared.</p>
+</blockquote>
+<h2 id="run-these-five-in-order">Run these five, in order<a class="headerlink" href="#run-these-five-in-order" title="Permanent link">#</a></h2>
+<p>The completed cell is <strong>NP2.0 / OneBox / 1 ch / quorum 1 / DEFAULT delivery</strong> — median 1.087 ms,
+n = 1000 (<code>RecordingTests/2026-08-19_onebox_np2_1000ripples</code>, Status §40). These finish the matrix
+that already exists for the PXIe rig (<code>{1 ch, 2 ch q2, 4 ch q3} × {baseline, ASAP}</code>):</p>
+<pre><code class="language-bash"># 1 -- 1 ch, ASAP  (the A/B partner of the completed cell)
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0 --quorum 1 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_1ch_asap&quot; \
+  --name np2_onebox_1ch_asap
+
+# 2 -- 2 ch, quorum 2, DEFAULT
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
+  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_baseline&quot; \
+  --name np2_onebox_2ch_q2_baseline
+
+# 3 -- 2 ch, quorum 2, ASAP
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_asap&quot; \
+  --name np2_onebox_2ch_q2_asap
+
+# 4 -- 4 ch, quorum 3, DEFAULT
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
+  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_baseline&quot; \
+  --name np2_onebox_4ch_q3_baseline
+
+# 5 -- 4 ch, quorum 3, ASAP
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_asap&quot; \
+  --name np2_onebox_4ch_q3_asap
+</code></pre>
+<p><strong>The backend must already be running</strong> (<code>rebuild.bat</code> is unrelated; use <code>run_spikespeak.bat
+--no-browser</code>). <code>Rig</code> attaches to <code>localhost:1234</code>; it does not launch the backend. The tool
+disconnects the source at the end of each cell but leaves the backend up, so all five can run against
+one backend.</p>
+<p>Then NP1.0 on the OneBox: the same five plus the 1 ch DEFAULT cell, with
+<code>--source "NPX 1.0 (OneBox)"</code> / <code>"NPX 1.0 (OneBox, ASAP)"</code>.</p>
+<h2 id="analysis-per-cell">Analysis, per cell<a class="headerlink" href="#analysis-per-cell" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python ripple_tools/analyze_recording.py --dir &lt;recdir&gt; --name &lt;name&gt; \
+  --stim-band adc --stim-channel 2
+</code></pre>
+<p><code>--stim-band adc --stim-channel 2</code> is <strong>not optional on a OneBox</strong>. Without it the analyser looks for
+a <code>nidaq</code> band, finds none, and silently reports no closed-loop latency at all. Channel 2 is the Pi's
+On/Off line (GPIO17 = header pin 11) into OneBox <strong>IO2</strong>.</p>
+<h2 id="what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters<a class="headerlink" href="#what-was-fixed-before-this-run-and-why-it-matters" title="Permanent link">#</a></h2>
+<p>A first attempt at cell 1 reached <strong>944 detections with ZERO stim fires</strong>, which would have been a
+634 MB recording that looks complete and cannot yield a latency.</p>
+<p>The cause: <strong>the gate and the arm are separate, and both are required.</strong> <code>set_stim_enabled</code> only
+permits datagrams to leave the host; the stimulator must also be <em>armed</em> before a detection triggers
+it. The backend's auto-arm on source selection was deliberately removed (selecting any source — even
+one whose connect then failed — put a datagram on the wire), and nothing replaced it for <strong>scripted</strong>
+runs. The GUI arms via its stim LED; <code>record_ripples.py</code> had no equivalent, so it enabled the gate,
+detected happily, and fired nothing. The log said so plainly and nobody was reading it:</p>
+<pre><code>[RippleDetector] stimulation ENABLED -&gt; &quot;192.168.1.100:8888&quot; (not armed; arm from the GUI stim LED)
+</code></pre>
+<p>Two changes:</p>
 <ul>
-<li>The maintainer streams the <strong>synthetic ripple signal</strong> into the probe (the same playback used for the
-  PXIe runs). Nothing in this task generates the signal.</li>
-<li><strong>Stim server</strong> reachable — the Pi 3B+ at <code>stimserver@192.168.1.100</code>, UDP 8888 (see
-  <code>raspberrypi_pulsegenerator/</code>). It must be ARMED; the detector arms on connect.</li>
-<li><strong>NI-DAQ</strong> for the ground truth capture: latency is measured offline as
-  <strong>ripple threshold-crossing → the stim pulse on ai4</strong>, so the NI-DAQ must record alongside the probe.
-  ⚠️ This is the part that needs thought — see "The open question" below.</li>
-<li>Calibration CSVs for the NP1.0 probe (<code>22175723312</code>) are <strong>missing</strong>; it currently streams
-  UNCALIBRATED. Worth fixing before taking numbers that will be quoted.</li>
+<li><code>Rig.arm_stim()</code> added, and <code>record_ripples.py</code> now arms after enabling the gate, then prints the
+  stim status so the arming is visible at the top of the run.</li>
+<li>The end-of-run summary <strong>warns loudly</strong> if stimulation was requested and nothing fired, because a
+  pulse-less closed-loop recording is otherwise indistinguishable from a good one until analysis.</li>
 </ul>
-<h2 id="the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST<a class="headerlink" href="#the-open-question-to-resolve-first" title="Permanent link">#</a></h2>
-<p>On a PXIe rig the probe and the NI-DAQ share a chassis and a sync line, which is what makes the offline
-<code>threshold-crossing → ai4</code> measurement meaningful. <strong>With the probe on the OneBox, work out how the NI-DAQ
-capture is synchronised to it before recording anything</strong>, because the whole measurement rests on that
-alignment:</p>
+<h2 id="two-operational-notes">Two operational notes<a class="headerlink" href="#two-operational-notes" title="Permanent link">#</a></h2>
 <ul>
-<li>Does the existing NPX↔NI-DAQ sync-pulse alignment still hold when the probe is on USB?</li>
-<li>Or should the <strong>OneBox's own 12-channel ADC</strong> capture the stim pulse instead of the NI-DAQ, making the
-  measurement single-device and removing the cross-device sync entirely? The ADC is verified working
-  (0.000152588 V/count, §35.4) and records to <code>data.npx.adc</code> with a well-formed sidecar.</li>
-</ul>
-<p>The second option is the more attractive one and is probably the right answer — it collapses a two-clock
-problem into one clock. Decide deliberately; do not default to copying the PXIe recipe.</p>
-<p>Remember the sync off-by-one that cost 30+ minutes previously (§24): verify closed-loop timing
-<strong>event-by-event</strong>, never by nearest-neighbour matching on a periodic signal.</p>
-<h2 id="method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)<a class="headerlink" href="#method-mirrors-the-pxie-runs" title="Permanent link">#</a></h2>
-<ol>
-<li>Bring up <code>Npx1OneBox</code> / <code>Npx2OneBox</code>, confirm the detector fires on the synthetic signal.</li>
-<li>Record with the detector's resolved read-out channels plus the stim capture channel.</li>
-<li>Run the existing analysis: <code>ripple_tools/analyze_recording.py</code>, <code>latency_breakdown.py</code>,
-   <code>verify_quorum.py</code>. <code>sync.py</code> defaults to <code>match="auto"</code>.</li>
-<li>Repeat the quorum × delivery matrix if time allows; at minimum ASAP vs baseline on both probes.</li>
-<li>Compare against the PXIe numbers and state plainly whether USB3 costs latency.</li>
-</ol>
-<h2 id="deliverables">Deliverables<a class="headerlink" href="#deliverables" title="Permanent link">#</a></h2>
-<ul>
-<li>Recordings under <code>RecordingTests/&lt;date&gt;_onebox_closed_loop/</code>, raw <code>.bin</code> <strong>not committed</strong> (gitignored);
-  derived figures + metrics in that session's <code>analysis/</code>.</li>
-<li>A latency table for NP1.0 and NP2.0 on the OneBox, directly comparable to the PXIe matrix in §29/§30.</li>
-<li>A new dated section in <code>SpikesPeak_Status.md</code>.</li>
-</ul>
-<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">#</a></h2>
-<p><code>developer_docs/LatencyProfiling.md</code> (the definition, the per-stage <code>rippleLatency</code> instrumentation, and
-the <code>low_latency:</code> / ASAP flag), <code>RippleDetection.md</code>, <code>StimClosedLoop_Status.md</code>, and Status §27–§30 for
-the PXIe results this must be compared against.</p></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxClosedLoopLatency.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<li><strong>Run each cell in the background, or with a long timeout.</strong> A cell takes roughly 10 minutes
+  (~500 ms between detections at 1000 detections). A 10-minute foreground limit killed the first
+  attempt at 944/1000. The hardware was fine — the teardown still ran and the OneBox closed properly
+  — but the run was lost.</li>
+<li><strong>Disk</strong>: each cell is ~600–700 MB, so the five are ~3.5 GB. There was 330 GB free at the time of
+  writing. Recording data stays local; it is never committed.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxLatencyMatrix.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#why-this-is-worth-doing">Why this is worth doing</a></li>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST</a></li>
-<li><a href="#method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)</a></li>
-<li><a href="#deliverables">Deliverables</a></li>
-<li><a href="#reference">Reference</a></li>
+<li><a href="#run-these-five-in-order">Run these five, in order</a></li>
+<li><a href="#analysis-per-cell">Analysis, per cell</a></li>
+<li><a href="#what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters</a></li>
+<li><a href="#two-operational-notes">Two operational notes</a></li>
 </ul>
 </div>
 </aside>

@@ -40,6 +40,7 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -159,6 +160,10 @@ characteristic failure mode on this repo.</p>
 <tr>
 <td><a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a></td>
 <td>Frontend to backend commands: the per-module <code>Q_INVOKABLE</code>/QWebChannel standard, examples, the thread-safety rule, and the recipe to add a command.</td>
+</tr>
+<tr>
+<td><a href="Logging.html"><code>Logging.md</code></a></td>
+<td><strong>Log format and severity (issue #2):</strong> what every line carries (time, level, thread, file:line), why severity belongs in the level and not the message text, and what not to log.</td>
 </tr>
 <tr>
 <td><a href="Fdir.html"><code>Fdir.md</code></a></td>

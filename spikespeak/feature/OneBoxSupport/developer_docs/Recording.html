@@ -40,6 +40,7 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -357,7 +358,21 @@ selections as
 <code>window.recordChannels = { npx:[...], nidaq:[...] }</code>; <code>main.js toggleRecord</code> routes each list to the
 matching recorder by registry name (<code>proc.npx.recorder</code> vs <code>proc.nidaq.recorder</code>). Verified in-browser:
 a probe subset + NI-DAQ <code>[0,3,5]</code> -&gt; AP/LFP recorded the probe channels and the NI-DAQ <code>.bin</code> recorded
-exactly channels <code>[0,3,5]</code>.</p></article>
+exactly channels <code>[0,3,5]</code>.</p>
+<h2 id="a-recording-also-carries-its-own-log">A recording also carries its own log<a class="headerlink" href="#a-recording-also-carries-its-own-log" title="Permanent link">#</a></h2>
+<p>Alongside the <code>.bin</code> files and their <code>.json</code> sidecars, a recording directory now contains
+<code>&lt;name&gt;_&lt;timestamp&gt;.log</code> -- a copy of the backend log for exactly the span of the recording, sharing
+the timestamp of the data files:</p>
+<pre><code>RecordingTests/logdemo/
+    logdemo_20260819_231117.log
+    logdemo_raw_20260819_231117.bin        + .bin.json
+    logdemo_adc_20260819_231117.bin        + .bin.json
+</code></pre>
+<p>It exists because <code>output.log</code> is truncated on every start and so cannot answer "what was this rig
+doing when this file was written?" for data analysed later. It covers the <strong>recording</strong>, not the
+session -- only the source connected while recording, nothing before Record was pressed or after it
+stopped. That scope is deliberate: everything in the file pertains to the data beside it. Full
+rationale and the format of a line: <a href="Logging.html"><code>Logging.md</code></a>.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/Recording.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -370,6 +385,7 @@ exactly channels <code>[0,3,5]</code>.</p></article>
 <li><a href="#5-known-sharp-edges">5. Known sharp edges</a></li>
 <li><a href="#6-status-2026-06-25">6. Status (2026-06-25)</a></li>
 <li><a href="#7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)</a></li>
+<li><a href="#a-recording-also-carries-its-own-log">A recording also carries its own log</a></li>
 </ul>
 </div>
 </aside>

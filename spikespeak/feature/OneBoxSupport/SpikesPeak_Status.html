@@ -40,6 +40,7 @@
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
 <a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -3593,7 +3594,78 @@ so a panel hidden behind the window read as "nothing happened"). A stalled sourc
 <p>An earlier note claimed "sources have no fault signal equivalent to <code>sigIpErrorOccurred</code>". <strong>That was
 wrong.</strong> <code>IDataSourceWorker::sigDswError</code> exists, with throttling via <code>reportStreamError()</code> (fires after 3
 consecutive failures, re-fires at most every 5 s), relayed by each source to <code>sigGuiStatus</code> — arguably
-better designed than the processor equivalent. The genuine gap was liveness, which is what this closes.</p></article>
+better designed than the processor equivalent. The genuine gap was liveness, which is what this closes.</p>
+<h2 id="46-log-formatting-and-severity-consistency-2026-08-20">46. LOG FORMATTING AND SEVERITY CONSISTENCY  (2026-08-20)<a class="headerlink" href="#46-log-formatting-and-severity-consistency-2026-08-20" title="Permanent link">#</a></h2>
+<p>GitHub issue #2 (open since 2025-06-18): <em>"Every time a log message is written, log useful information such
+as the timestamp, class it was called from, etc."</em> Both halves done — the metadata the issue asks for, and
+the severity inconsistency I hit during §42.</p>
+<h3 id="461-what-every-line-now-carries">46.1 What every line now carries<a class="headerlink" href="#461-what-every-line-now-carries" title="Permanent link">#</a></h3>
+<p><code>logMessages()</code> printed <strong>only the message</strong>. It now emits, identically to console and <code>output.log</code>:</p>
+<pre><code>22:44:33.291  DEBUG  [proc.rippledetector]   RippleDetector.cpp:753    [RippleDetector] resolved ...
+time          level  thread                  origin                    message as written
+</code></pre>
+<ul>
+<li><strong>Time-of-day only</strong>; the date + build go once into a file header. This log is read live in a terminal
+  beside the rig, and a repeated date pushes the message off the right of the window for no information.</li>
+<li><strong>Thread</strong> — the most valuable new column in <em>this</em> codebase, where every processor and acquisition loop
+  has its own named <code>QThread</code>. Verified live: <code>main</code>, <code>proc.lfp</code>, <code>proc.npx.display</code>, <code>proc.npx.recorder</code>,
+  <code>proc.rippledetector</code>, <code>NpxWorkerThread</code>, <code>OneBoxAdcThread</code>, <code>KbListenerThread</code>. Previously "which loop
+  said that?" was guesswork from the message prefix.</li>
+<li><strong>Origin</strong> <code>file:line</code> — needs <strong><code>QT_MESSAGELOGCONTEXT</code></strong>, now set in <code>CMakeLists.txt</code>, because Qt strips
+  the context in release builds: without it every line would read "unknown" in the one configuration that
+  actually runs on the rig.</li>
+<li><strong>Padded columns</strong> (thread 22, origin 26) so the message starts at the same column on every line. First
+  attempt used 18 and <code>[proc.rippledetector]</code> (21) overflowed it — visible immediately in the live log.</li>
+<li>The main thread is identified from a <code>gMainThread</code> captured in <code>main()</code>. Comparing against
+  <code>QCoreApplication::instance()-&gt;thread()</code> fails for the earliest lines — type registration runs <strong>before</strong>
+  the application object exists, so every startup line printed a raw handle (<code>thread-0x1c26cc028d0</code>).</li>
+</ul>
+<h3 id="462-severity-was-in-the-text-not-the-level-the-half-that-was-causing-damage">46.2 Severity was in the TEXT, not the level (the half that was causing damage)<a class="headerlink" href="#462-severity-was-in-the-text-not-the-level-the-half-that-was-causing-damage" title="Permanent link">#</a></h3>
+<p><strong>42 lines</strong> wrote faults as <code>qDebug() &lt;&lt; "[MAIN] ERROR: ..."</code> — 32 saying "ERROR", 10 "WARNING" — at DEBUG
+level. Anything filtering or routing by <code>QtMsgType</code> saw chatter where a hardware failure had occurred, and
+<code>ErrorLog</code> (§42) had to match on message TEXT to find faults at all. All 42 promoted to <code>qWarning</code>; the two
+<code>[MAIN] SUCCESS ...</code> milestones promoted to <code>qInfo</code>. Verified live: <code>No Headstage detected on any port!</code> now
+logs at <strong>WARN</strong> with <code>NpInterface.cpp:1513</code> beside it.</p>
+<p>The 11 other <code>SUCCESS</code> hits were <code>!= Neuropixels::SUCCESS</code> comparisons — API enum, not claims — and were
+correctly left alone.</p>
+<p><code>ErrorLog</code> keeps its text matching, now documented as a <strong>safety net rather than the mechanism</strong>: the
+convention is a convention, not a compiler rule, and the next mis-levelled line will be written eventually.</p>
+<h3 id="463-a-recording-carries-its-own-log-users-design-decision">46.3 A recording carries its own log (user's design decision)<a class="headerlink" href="#463-a-recording-carries-its-own-log-users-design-decision" title="Permanent link">#</a></h3>
+<p><code>output.log</code> is opened with <code>"w"</code> and truncated on every start — fine for tailing a live rig, useless as
+provenance for data analysed weeks later. <strong>User's call:</strong> keep that behaviour, and additionally write a
+timestamped copy of the log into the recording directory for the span of the recording.</p>
+<pre><code>RecordingTests/logdemo/
+    logdemo_20260819_231117.log            &lt;- new
+    logdemo_raw_20260819_231117.bin        + .bin.json
+    logdemo_adc_20260819_231117.bin        + .bin.json
+</code></pre>
+<p>New <code>src/core/RecordingLog.{hpp,cpp}</code>, fed the same formatted line as <code>output.log</code> from the message
+handler, opened/closed by <code>RecordProcessor::applyRecordingState</code> so it shares the recording's timestamp.
+Idempotent: a profile with NPX + NI-DAQ recorders calls it twice and the first wins. A failure to open it
+is logged and otherwise ignored — a recording must never fail because its provenance file could not be
+written.</p>
+<p><strong>Explicitly scoped to the recording, not the session</strong> — the user's decision, recorded here so nobody
+"fixes" it later: only the source connected while recording appears, nothing before Record or after Stop.
+The value of the file is that everything in it pertains to the data next to it.</p>
+<p><strong>Verified on hardware:</strong> real NP2.0 on the OneBox, 6 s recording — the log opened with a dated header,
+captured the start of both bands, the confirmed recording state, both file closures, and a footer.</p>
+<h3 id="464-a-stale-stream-bug-the-user-caught-during-the-demo">46.4 A stale-stream bug the user caught during the demo<a class="headerlink" href="#464-a-stale-stream-bug-the-user-caught-during-the-demo" title="Permanent link">#</a></h3>
+<p>The live-view stream picker offered <strong>NIDAQ AI/O on a rig with no NI-DAQ</strong>. <code>DataStore.knownStreams</code> is
+add-only (built from arriving data) and never cleared, so a stream name outlived the source that produced
+it — connect the simulated NP2.0+NI-DAQ profile, then the OneBox, and the NI-DAQ entry stayed selectable,
+where picking it selects a stream that will never receive a sample.</p>
+<p>Cleared on source change via <code>DataStore.reset()</code>. ⚠️ My first attempt hooked <code>handleDeviceReady(false)</code>,
+which <strong>never runs on that path</strong> — the disconnect command is fire-and-forget and the backend sends no
+<code>deviceReady=false</code> (there is a comment in <code>main.js</code> saying exactly that). It now lives in
+<code>updateViewForSource()</code>, the one function every path funnels through: local disconnect, remote source
+change, and local selection.</p>
+<p>Verified across a three-phase run: sim shows <code>RAW Band | NIDAQ AI/O</code> (correct — it has one), disconnect
+resets to <code>Waiting for data...</code>, real OneBox shows <code>OneBox ADC | RAW Band</code>.</p>
+<h3 id="465-doc">46.5 Doc<a class="headerlink" href="#465-doc" title="Permanent link">#</a></h3>
+<p>New <strong><code>developer_docs/Logging.md</code></strong> — the line format and why each column is there, the level table
+(debug/info/warning/critical and when each applies), and what not to do: <strong>never log per sample or per
+acquisition cycle</strong>, because <code>logMessages()</code> <code>fflush</code>es both sinks on every message and at 1 ms cadence that
+is a syscall pair per tick on the hot path (use the throttled <code>reportStreamError()</code> instead).</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3821,6 +3893,14 @@ better designed than the processor equivalent. The genuine gap was liveness, whi
 <li><a href="#454-gui">45.4 GUI</a></li>
 <li><a href="#455-verified-on-real-hardware">45.5 Verified on real hardware</a></li>
 <li><a href="#456-a-correction">45.6 A correction</a></li>
+</ul>
+</li>
+<li><a href="#46-log-formatting-and-severity-consistency-2026-08-20">46. LOG FORMATTING AND SEVERITY CONSISTENCY (2026-08-20)</a><ul>
+<li><a href="#461-what-every-line-now-carries">46.1 What every line now carries</a></li>
+<li><a href="#462-severity-was-in-the-text-not-the-level-the-half-that-was-causing-damage">46.2 Severity was in the TEXT, not the level (the half that was causing damage)</a></li>
+<li><a href="#463-a-recording-carries-its-own-log-users-design-decision">46.3 A recording carries its own log (user's design decision)</a></li>
+<li><a href="#464-a-stale-stream-bug-the-user-caught-during-the-demo">46.4 A stale-stream bug the user caught during the demo</a></li>
+<li><a href="#465-doc">46.5 Doc</a></li>
 </ul>
 </li>
 </ul>

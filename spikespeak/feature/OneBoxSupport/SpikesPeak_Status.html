@@ -3164,7 +3164,107 @@ That agreement is the check to demand before quoting a latency from any closed-l
   detection and records the detector's RESOLVED read-out channels (on NP2, electrode ≠ read-out channel).</li>
 </ul>
 <p>Remaining for the next session: the ASAP cells on both probes, the quorum × delivery matrix, and NP1.0 on
-the OneBox (the probe was being swapped as this was written).</p></article>
+the OneBox (the probe was being swapped as this was written).</p>
+<h2 id="41-merging-the-second-rigs-work-and-making-the-gui-tell-the-truth-2026-08-20">41. MERGING THE SECOND RIG'S WORK, AND MAKING THE GUI TELL THE TRUTH  (2026-08-20)<a class="headerlink" href="#41-merging-the-second-rigs-work-and-making-the-gui-tell-the-truth-2026-08-20" title="Permanent link">#</a></h2>
+<p>Two threads: absorbing the other OneBox rig's five commits without inheriting anything specific to that
+bench, and GitHub issue #18 — <strong>"the GUI should primarily react to a change in the server state, not a
+change in its own form."</strong> Both are the same underlying complaint: a display that asserts something it has
+not confirmed.</p>
+<h3 id="411-the-merge-three-things-that-were-right-there-and-wrong-here">41.1 The merge — three things that were right there and wrong here<a class="headerlink" href="#411-the-merge-three-things-that-were-right-there-and-wrong-here" title="Permanent link">#</a></h3>
+<p>The other rig's changes were correct <strong>on the machine they were written for</strong>. That is exactly what made
+them worth reading carefully rather than fast-forwarding.</p>
+<ol>
+<li><strong>The vendored HDF5 runtime would have shadowed ours.</strong> <code>da2b934</code> vendors an HDF5 <strong>2.x</strong> runtime and
+   copies it next to the exe so a fresh clone runs with no HDF5 installed. Its own comment names the
+   hazard — the DLLs "MUST match the HDF5 that find_package linked against" — but the guard was only
+   <code>EXISTS</code>, which is now <em>always</em> true because the DLLs are git-tracked. <strong>This rig links 1.14.6</strong>
+   (vendored <code>hdf5.dll</code> 5,868,544 bytes vs the installed 4,320,768), and the exe's own directory wins the
+   Windows DLL search — so every build here would have compiled against 1.14.6 and loaded 2.x at runtime.
+   That failure is <strong>silent</strong>: the loader is satisfied and only HDF5 calls misbehave. The copy is now gated
+   on the version actually linked (<code>SP_HDF5_RUNTIME=auto|vendored|system</code> to override); unknown → skip,
+   i.e. fail safe.</li>
+<li><strong>Stimulation became opt-in, which silently breaks closed-loop RECORDING.</strong> Defaulting stim off is the
+   right call — it is what stopped unsolicited datagrams reaching an unrelated device at 192.168.1.100 on
+   the other bench. But the detection path has no armed check, so an un-migrated profile detects normally
+   and simply <strong>never stimulates</strong>: the recording then holds detections with no pulses to pair them
+   against, and nothing reports a problem. <code>rig.py</code> gained <code>set_stim_enabled()</code> and <code>record_ripples.py</code>
+   now sets the gate explicitly to match <code>--no-stim</code>, <strong>both ways round</strong>. Asked from the TOOL rather than
+   added to the configs on purpose — the ASAP and default profiles must differ by <code>low_latency</code> <strong>alone</strong>
+   or their A/B is not quotable.</li>
+<li><strong>The Source dropdown was hand-written HTML</strong> and is now built from <code>configList</code>. Side effect worth
+   knowing: the ASAP profiles now appear in the GUI picker. §40.4 called them script-only; that is no
+   longer true, and the dropdown is keyed on each config's internal <code>name:</code>.</li>
+</ol>
+<h3 id="412-issue-18-ask-then-reflect">41.2 Issue #18 — ask, then reflect<a class="headerlink" href="#412-issue-18-ask-then-reflect" title="Permanent link">#</a></h3>
+<p>The GUI moved its own controls on click and assumed the backend agreed. Pressing Play flipped the button
+to Pause whether or not acquisition ever started, so the most important thing the toolbar communicates —
+<strong>is this rig running?</strong> — was a statement about the last click, not about the rig.</p>
+<p><code>togglePlay()</code> no longer changes any state. It sends <code>setPlaying</code> and marks the request <strong>pending</strong>;
+<code>reflectPlaying()</code>, driven by the backend's <code>statePlaying</code> event, is now the <strong>only</strong> place the button's
+meaning changes. The in-flight gap is drawn as waiting (disabled + slow pulse) — not as a dead control and
+not as the new state, which is the whole failure the issue describes. A request unresolved after 5 s
+clears itself, because a permanently stuck control is worse than an optimistic one.</p>
+<p>The backend held the matching half of the bug: a <strong>refused</strong> play returned quietly, so even a correct
+client had nothing to reflect. <code>setPlaying</code> now always reports the resulting state, and says why when the
+answer is no.</p>
+<p><strong>Refusals are not errors, but a failed connect is.</strong> Pressing Play with no source is routine: status line,
+<strong>no</strong> dialog (the <code>hardware-error</code> kind routes to a modal, so these are emitted as plain <code>error</code>). A
+<strong>failed connect</strong> is the opposite case and used to be the <em>quieter</em> of the two — the GUI saw only
+<code>deviceReady=false</code>, which renders as "Source disconnected", identical to a normal teardown. On the second
+rig a OneBox failed to connect and said nothing at all. It now always raises a dialog.</p>
+<h3 id="413-getting-the-real-reason-out-of-a-dying-object">41.3 Getting the real reason out of a dying object<a class="headerlink" href="#413-getting-the-real-reason-out-of-a-dying-object" title="Permanent link">#</a></h3>
+<p>The specific cause was known and being thrown away. <code>handleConnectRequest</code> calls <code>teardownManagers()</code> on
+failure, <strong>destroying the source object before its deferred <code>sigGuiStatus</code> can be delivered</strong> — and Qt
+discards queued calls to destroyed QObjects. The one message that would help the user was precisely the
+one guaranteed not to arrive.</p>
+<p><strong>A separate thread does not fix this</strong> (it was the first idea, and it is the wrong shape): the message is
+not late, its <strong>sender is gone</strong>. What is needed is a sink that <em>outlives every sender</em>. <code>logMessages()</code> —
+the global Qt message handler — already sees every message from every thread, including objects destroyed
+moments later. New <strong><code>src/core/ErrorLog.{hpp,cpp}</code></strong> is a mutex-guarded bounded tail fed from there;
+<code>WebSocketServer</code> takes a <code>mark()</code> before a connect attempt and asks for <code>since(mark)</code> if it fails, so only
+<strong>that attempt's</strong> lines can ever be shown.</p>
+<p>Two non-obvious choices, both learned by looking at the output:</p>
+<ul>
+<li><strong>Filtering on <code>QtMsgType</code> would capture NONE of the messages this exists for.</strong> This codebase puts
+  severity in the <em>text</em>: the hardware failures are plain <code>qDebug()</code> lines reading <code>[MAIN] ERROR: ...</code>, and
+  the neuropixels module alone has <strong>178 <code>qDebug</code> against 31 <code>qWarning</code></strong>. Matching the convention that
+  exists beat rewriting 178 call sites to acquire a tidier one. Explicit markers rank above
+  merely-suspicious wording ("failed", "could not") so a real diagnosis is never crowded out.</li>
+<li><strong>Ordering is chronological, not newest-first.</strong> A hardware failure cascades <em>forwards</em>: the first line
+  is the cause, the rest are consequence. On a probe-less basestation the log reads "No Headstage detected
+  on any port!" and only <em>then</em> "ERROR closing probe. Code: 44" — the teardown, not the fault. Newest-first
+  led with that noise.</li>
+</ul>
+<h3 id="414-verified-live-no-probe-attached">41.4 Verified live (no probe attached)<a class="headerlink" href="#414-verified-live-no-probe-attached" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Play</td>
+<td><code>false</code> → pending (dimmed, disabled) → server <code>statePlaying=true</code> → <code>play-streaming</code>. State never moves ahead of the backend.</td>
+</tr>
+<tr>
+<td>Refused play (no source)</td>
+<td>stays Play, <code>modalShown: false</code>, status "Could not start acquisition. Is a source connected and the hardware ready?"</td>
+</tr>
+<tr>
+<td>Failed connect (PXIe profile, no headstage)</td>
+<td>dialog leads with <strong><code>[MAIN] ERROR: No Headstage detected on any port!</code></strong>, then the teardown lines, then the log pointer</td>
+</tr>
+</tbody>
+</table>
+<p>The card needed <code>white-space: pre-line</code> or the message collapsed into one unreadable run; the status line
+takes the same text flattened, being a single row.</p>
+<p><strong>Issue #18 closed</strong> (<code>4e3b9ac</code>), board → Done.</p>
+<h3 id="415-next">41.5 Next<a class="headerlink" href="#415-next" title="Permanent link">#</a></h3>
+<p>ASAP + multichannel closed-loop latency on the OneBox for <strong>both</strong> NP1.0 and NP2.0 — the §40.4 plan,
+unchanged. NP1.0 probe <code>22175723312</code> still has <strong>no calibration CSVs</strong> and streams UNCALIBRATED; fix before
+quoting numbers from it.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3353,6 +3453,14 @@ the OneBox (the probe was being swapped as this was written).</p></article>
 <li><a href="#402-the-measurement-is-structurally-simpler-on-a-onebox-the-s394-question-answered">40.2 The measurement is structurally simpler on a OneBox — the S39.4 question, answered</a></li>
 <li><a href="#403-two-silent-traps-this-path-exposed-both-fixed">40.3 Two SILENT traps this path exposed (both fixed)</a></li>
 <li><a href="#404-ready-for-tomorrow-asap-multichannel">40.4 Ready for tomorrow: ASAP + multichannel</a></li>
+</ul>
+</li>
+<li><a href="#41-merging-the-second-rigs-work-and-making-the-gui-tell-the-truth-2026-08-20">41. MERGING THE SECOND RIG'S WORK, AND MAKING THE GUI TELL THE TRUTH (2026-08-20)</a><ul>
+<li><a href="#411-the-merge-three-things-that-were-right-there-and-wrong-here">41.1 The merge — three things that were right there and wrong here</a></li>
+<li><a href="#412-issue-18-ask-then-reflect">41.2 Issue #18 — ask, then reflect</a></li>
+<li><a href="#413-getting-the-real-reason-out-of-a-dying-object">41.3 Getting the real reason out of a dying object</a></li>
+<li><a href="#414-verified-live-no-probe-attached">41.4 Verified live (no probe attached)</a></li>
+<li><a href="#415-next">41.5 Next</a></li>
 </ul>
 </li>
 </ul>

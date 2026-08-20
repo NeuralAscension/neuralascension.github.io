@@ -462,6 +462,11 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
 <li><strong>Rebuild the book after editing</strong> (<code>python scripts/build_docs.py</code>) so <code>docs_site/</code> matches the markdown.</li>
 </ul>
 <h2 id="operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo — gotchas that cost agents time (read first)<a class="headerlink" href="#operating-this-repo-gotchas-that-cost-agents-time-read-first" title="Permanent link">#</a></h2>
+<p><strong>Rebuilding:</strong> <code>rebuild.bat</code> in the repo root. Double-click it (the window stays open so you can read
+the result) or run it from a terminal. It finds Visual Studio via <code>vswhere</code> and the <code>build-*Release</code>
+tree itself, and <strong>exits with the build's real status</strong> so a script can branch on it -- pass
+<code>--no-pause</code> (or set <code>SP_NO_PAUSE=1</code>) for automation. <code>--target &lt;name&gt;</code> builds one target;
+<code>--clean</code> re-runs the CMake configure first.</p>
 <ul>
 <li><strong>Frontend edits are served from the BUILD tree.</strong> The backend serves
   <code>build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/webinterface/</code>, not the source <code>webinterface/</code>. After

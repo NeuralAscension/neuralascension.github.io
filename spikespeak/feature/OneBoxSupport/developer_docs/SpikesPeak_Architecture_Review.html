@@ -35,6 +35,7 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
@@ -281,6 +282,22 @@ the backend writes lands on the <strong>machine running SpikesPeak</strong>. Nat
 report <code>sigIpStarted</code> before the producer (<code>startAcq</code>) ever commits</strong> — a consumer is always
 registered before the producer notifies it. A new sink <strong>must</strong> emit <code>sigIpStarted(name)</code> when
 ready, or play never proceeds (the manager waits for every processor, <code>ProcessorManager.cpp:132-142</code>).</p>
+<p><strong>Start ordering is now bounded and confirmed (issue #11, 2026-08-20).</strong> Three changes to the same
+mechanism, because "waits for every processor" used to mean <em>waits forever</em>:</p>
+<ul>
+<li><strong>Readiness is keyed on the sender object, not the reported name.</strong> Processors emit hardcoded
+  labels (<code>"display"</code>, <code>"recorder"</code>, <code>"ripple"</code>) unrelated to their registry key, and every
+  <code>RecordProcessor</code> emits <code>"recorder"</code> -- so a dual-recorder profile reports one name for two
+  processors.</li>
+<li><strong>An 8 s watchdog</strong> (<code>ProcessorManager::kStartupTimeoutMs</code>) names whoever never checked in, stops
+  the pipeline and reports it, instead of hanging silently. A cycle declared failed stays failed.</li>
+<li><strong>Acquisition state is announced only when confirmed.</strong> <code>handlePlayRequest</code> returning <code>true</code> means
+  the request was accepted, not that anything is running;
+  <code>MainController::sigMcAcquisitionStateChanged</code> is the single source of truth for clients.</li>
+</ul>
+<p>Every processor's <code>sigIpErrorOccurred</code> is also relayed generically to the GUI, tagged with its
+registry key. Full detail, including why a separate error thread is the wrong shape for this:
+<a href="Fdir.html"><code>Fdir.md</code></a>.</p>
 <p><strong>Thread affinity.</strong> Source and processor <em>objects</em> live in the main thread (created under
 <code>MainController</code>); processors are then <code>moveToThread</code>'d to their own <code>QThread</code>
 (<code>ProcessorManager.cpp:70-104</code>); a HW source additionally moves its <em>worker</em> to <code>NpxWorkerThread</code>.

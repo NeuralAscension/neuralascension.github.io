@@ -35,6 +35,7 @@
 <a class="active" href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
@@ -104,19 +105,32 @@ public slots:
 <p><code>ProcessorManager</code> (<code>ProcessorManager.cpp:70-104</code>) gives <strong>every</strong> processor its own <code>QThread</code>,
 <code>moveToThread</code>s it, and wires:
 <code>QThread::started → slIpStartProcessor</code> · <code>sigPmStopProcessing → slIpStopProcessor</code> ·
-<code>sigIpStopped → QThread::quit</code> · <code>sigIpStarted → ready counter</code>.</p>
+<code>sigIpStopped → QThread::quit</code> · <code>sigIpStarted → readiness set</code> · <code>sigIpErrorOccurred → GUI status line</code>.</p>
 <hr />
 <h2 id="1-the-two-iron-rules">1. The two iron rules<a class="headerlink" href="#1-the-two-iron-rules" title="Permanent link">#</a></h2>
 <ol>
 <li><strong>Emit <code>sigIpStarted(name)</code> once you're ready.</strong> On play, <code>MainController</code> starts <strong>all
    processors first</strong> and only starts the <strong>source</strong> after every processor has reported
-   <code>sigIpStarted</code> (<code>ProcessorManager.cpp:132-142</code>, <code>MainController.cpp:124-145</code>). If you never
-   emit it, <strong>the source never starts</strong> and nothing streams. This ordering guarantees you're a
-   registered consumer <em>before</em> the producer commits a single sample.</li>
-<li><strong>Do your work on your own thread, and stop cleanly.</strong> Either a <code>QTimer</code> (poll) or a blocking
+   <code>sigIpStarted</code>. If you never emit it, <strong>the source never starts</strong> and nothing streams. This
+   ordering guarantees you're a registered consumer <em>before</em> the producer commits a single sample.</li>
+</ol>
+<p>Two things about <code>name</code> that are easy to get wrong:</p>
+<ul>
+<li><strong>It is a label, not an identity.</strong> Readiness is tracked by the registry key, resolved from
+     the SENDER object, not from the string you pass. Existing sinks pass short hardcoded labels
+     (<code>"display"</code>, <code>"recorder"</code>, <code>"ripple"</code>) and <strong>every</strong> <code>RecordProcessor</code> instance passes
+     <code>"recorder"</code> — so a profile with an NPX <em>and</em> an NI-DAQ recorder emits the same name twice.
+     Anything that keyed readiness off the string would count two processors as one and wait
+     forever. Pass something sensible, but nothing depends on it being unique.</li>
+<li><strong>Not emitting it is now diagnosed, not merely fatal.</strong> A startup watchdog
+     (<code>ProcessorManager::kStartupTimeoutMs</code>, 8 s) reports which processors never checked in, aborts
+     the play attempt, and tells the GUI. It used to hang silently with every component claiming
+     health. A cycle declared failed stays failed — a straggler that reports afterwards is logged
+     and ignored rather than resurrecting the request.
+2. <strong>Do your work on your own thread, and stop cleanly.</strong> Either a <code>QTimer</code> (poll) or a blocking
    loop (semaphore) — but <code>slIpStopProcessor</code> must end it and <code>emit sigIpStopped(name)</code> so the
    thread can quit.</li>
-</ol>
+</ul>
 <hr />
 <h2 id="2-consumption-patterns-pick-one">2. Consumption patterns — pick one<a class="headerlink" href="#2-consumption-patterns-pick-one" title="Permanent link">#</a></h2>
 <table>
@@ -237,9 +251,19 @@ void MySink::setRecording(bool enable) {
 <p>Consequences of the marshal:
 - The invokable is <code>void</code> (the real work happens later, off-thread) — <strong>don't</strong> return a result from a
   sink invokable; a main-thread source can, a worker-thread sink can't.
-- Report the outcome <strong>asynchronously</strong> via <code>emit sigIpErrorOccurred(msg)</code> (or your own signal).
-  <code>WebSocketServer</code> relays it to the browser toolbar as a <code>recordingStatus</code> event — mirror that wiring
-  for your sink (<code>ModuleCommunication.md</code> §4–§6).</p>
+- Report the outcome <strong>asynchronously</strong> via <code>emit sigIpErrorOccurred(msg)</code>.</p>
+<p><strong>You no longer wire this up yourself.</strong> <code>ProcessorManager</code> connects <code>sigIpErrorOccurred</code> for
+  every processor it builds, tags it with your registry key, and relays it out to the GUI status
+  line as <code>"&lt;proc.your.name&gt;: &lt;msg&gt;"</code>. Nothing to opt into, and new sinks are covered by
+  construction.</p>
+<p>This is worth stating plainly because the signal existed for a long time while <strong>nothing
+  listened to it</strong> — the only subscriber anywhere was <code>WebSocketServer</code>, wired to the recorder <em>by
+  name</em>. A recorder fault reached the user; the identical fault in <code>proc.lfp</code> or the ripple
+  detector went nowhere. If you find yourself adding a bespoke error signal and hand-wiring it in
+  <code>WebSocketServer</code>, you are rebuilding the thing that failed. Use <code>sigIpErrorOccurred</code>.</p>
+<p>A sink that also needs a UI <em>consequence</em> (not just a report) still adds its own channel — the
+  recorder does, to make the GUI revert its optimistic "recording" state. Keep the two separate:
+  the relay reports, your channel acts.</p>
 <p><strong>Registration is NOT automatic for sinks.</strong> A source is auto-registered by the generic <code>registerObject</code>
 loop; a sink is not. Add an explicit <code>mWebChannel-&gt;registerObject("proc.mymod.thing", proc)</code> in
 <code>WebSocketServer::onSourceSelection</code> (and a matching <code>deregisterObject</code> in the <code>Disconnect</code> handler), the

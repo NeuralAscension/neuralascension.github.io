@@ -35,6 +35,7 @@
 <a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
@@ -3264,7 +3265,117 @@ takes the same text flattened, being a single row.</p>
 <h3 id="415-next">41.5 Next<a class="headerlink" href="#415-next" title="Permanent link">#</a></h3>
 <p>ASAP + multichannel closed-loop latency on the OneBox for <strong>both</strong> NP1.0 and NP2.0 — the §40.4 plan,
 unchanged. NP1.0 probe <code>22175723312</code> still has <strong>no calibration CSVs</strong> and streams UNCALIBRATED; fix before
-quoting numbers from it.</p></article>
+quoting numbers from it.</p>
+<h2 id="42-fdir-making-failures-reach-the-user-and-keeping-the-pipeline-in-a-state-we-designed-2026-08-20">42. FDIR — MAKING FAILURES REACH THE USER, AND KEEPING THE PIPELINE IN A STATE WE DESIGNED  (2026-08-20)<a class="headerlink" href="#42-fdir-making-failures-reach-the-user-and-keeping-the-pipeline-in-a-state-we-designed-2026-08-20" title="Permanent link">#</a></h2>
+<p>GitHub issue #11 ("FDIR"): <em>handle errors from processors and relay that to the GUI; determine how not to
+end up in an invalid or unexpected state.</em> It is the sibling of §41.2's issue #18, and the first thing the
+investigation turned up is why: <strong>the backend had the same bug #18 fixed in the browser, one layer down.</strong></p>
+<h3 id="421-the-rule-announce-confirmed-state-never-requested-state">42.1 The rule — announce CONFIRMED state, never REQUESTED state<a class="headerlink" href="#421-the-rule-announce-confirmed-state-never-requested-state" title="Permanent link">#</a></h3>
+<p><code>handlePlayRequest()</code> returns <code>true</code> once the processor threads have been <em>asked</em> to start. Nothing is
+acquiring at that point. <code>WebSocketServer::setPlaying</code> treated that <code>true</code> as "we are streaming" and
+broadcast <code>statePlaying=1</code>. If a source then failed, <code>slMcOnSourcesStarted(false)</code> stopped everything
+again — correctly — and <strong>told nobody</strong>, so every client went on showing a running rig that had just been
+shut down underneath it.</p>
+<p><code>MainController::sigMcAcquisitionStateChanged(bool, reason)</code> is now the <strong>only</strong> thing that may change what
+clients are told about acquisition, emitted when the controller <em>knows</em>. Verified ordering in the log:</p>
+<pre><code>[WebSocketServer] play accepted -- awaiting acquisition confirmation     &lt;- announces nothing
+[ProcessorManager] Processors ready: 1..3 of 3
+[ProcessorManager] All processors started
+[MainController]  All sources have started
+[WebSocketServer] acquisition confirmed: true                            &lt;- broadcasts statePlaying
+</code></pre>
+<h3 id="422-processor-faults-now-reach-the-user-generically">42.2 Processor faults now reach the user — generically<a class="headerlink" href="#422-processor-faults-now-reach-the-user-generically" title="Permanent link">#</a></h3>
+<p><code>IProcessor::sigIpErrorOccurred</code> has existed from the beginning and <strong>nothing listened to it</strong> except
+<code>WebSocketServer</code>, wired to the recorder <em>by name</em>. A recorder failing to open a file reached the user; the
+identical fault in <code>proc.lfp</code>, <code>proc.rippledetector</code> or a display processor reached nobody.
+<code>ProcessorManager</code> now connects it for every processor it builds, tags it with the <strong>registry key</strong>, and
+relays it out as <code>"proc.npx.recorder: &lt;message&gt;"</code>. New sinks are covered by construction.</p>
+<p>Report and consequence are kept apart: the relay <em>reports</em> (status line); the recorder keeps its own
+<code>recordingStatus</code> channel to make the GUI <em>revert</em> its optimistic "recording" state. The frontend no longer
+prints the recorder text twice, and "no recorder bound for this source" moved to <code>guiStatus</code> — it is a
+refused control, not a processor fault.</p>
+<h3 id="423-three-silent-hangs-in-the-readiness-mechanism">42.3 Three silent hangs in the readiness mechanism<a class="headerlink" href="#423-three-silent-hangs-in-the-readiness-mechanism" title="Permanent link">#</a></h3>
+<p>Readiness was an <code>int</code> compared with <code>==</code>:</p>
+<ol>
+<li><strong>Identity came from the reported name.</strong> Processors emit hardcoded labels unrelated to their registry
+   key, and <strong>every <code>RecordProcessor</code> emits <code>"recorder"</code></strong> — so <code>SimNpx2NiDaq</code>, <code>Npx1PxiNiDaq</code> and friends
+   report one name for two processors. I hit this while fixing it: my first version used a <code>QSet</code> of
+   reported names, which would have counted 6 processors as 5 and hung <strong>every dual-recorder profile</strong>. The
+   old counter survived only by accident, counting signals rather than identities. Now resolved via
+   <code>nameForSender()</code>. Verified on the real case — two recorders, both reporting <code>"recorder"</code>, tracked as
+   <code>proc.npx.recorder</code> and <code>proc.nidaq.recorder</code>.</li>
+<li><strong>A duplicate <code>sigIpStarted</code> wedged it permanently.</strong> <code>++</code> past the total and <code>==</code> never matches again:
+   acquisition hangs with every component reporting itself healthy. Now a set tested with <code>&gt;=</code> and a latch.</li>
+<li><strong>A processor that never reported produced an unbounded wait.</strong> Now an 8 s watchdog
+   (<code>kStartupTimeoutMs</code>) names the culprits, stops the pipeline, and reports:
+   <code>"Acquisition stopped: Processor startup timed out after 8000 ms. Never reported ready: ..."</code>.</li>
+</ol>
+<p><strong>A declared failure is final for that cycle.</strong> Testing the watchdog with a deliberately absurd 1 ms
+timeout exposed a race worth keeping: the watchdog reported failure, the stragglers then finished, and the
+manager announced the <strong>same</strong> request started a moment later — one play request producing both outcomes,
+with the GUI showing each in turn. <code>mStartupFailed</code> latches it; late arrivals are logged and ignored.</p>
+<h3 id="424-other-invalid-state-fixes">42.4 Other invalid-state fixes<a class="headerlink" href="#424-other-invalid-state-fixes" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>handlePlayRequest</code> used non-unique connections.</strong> They are torn down in <code>handlePauseRequest</code>, which
+  only runs on a <em>successful</em> pause — so a play that failed to start left them, and the next play added a
+  second identical connection, starting the sources <strong>twice</strong> from one request. Now <code>Qt::UniqueConnection</code>.</li>
+<li><strong><code>ProgramState::recordingState</code> was a field that always lied.</strong> Assigned once in the constructor and
+  never again by anything; recording is owned by <code>WebSocketServer</code>/<code>RecordProcessor</code>, so it read
+  <code>eNotRecording</code> for the life of the program <em>including while recording</em>. Removed — a state variable that
+  is always wrong is worse than none, because it invites exactly the validity check #11 asks for and then
+  answers it incorrectly. <code>acqState</code> gained an in-class initialiser.</li>
+<li><strong><code>setupProcessors</code> left a half-built graph on failure.</strong> Now rolls back what it built.</li>
+<li><strong>An error dialog outlived its condition.</strong> The "Hardware not detected" modal sat there after the rig was
+  fixed and reconnected — and on a second client could describe a failure that browser never triggered. A
+  <code>deviceReady=true</code> now dismisses it. (Spotted by the user, on a second GUI.)</li>
+<li><strong>Re-entrancy:</strong> the FDIR signals fire while <code>handleTextCommand</code> holds a non-recursive <code>QMutex</code>, so
+  subscribers are <code>Qt::QueuedConnection</code>.</li>
+</ul>
+<h3 id="425-verified-live-hardware-free-simulated-sources">42.5 Verified live (hardware-free, simulated sources)<a class="headerlink" href="#425-verified-live-hardware-free-simulated-sources" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Play, confirmed path</td>
+<td><code>pending</code> → processors ready → sources started → <code>statePlaying=1</code>. State never precedes the backend.</td>
+</tr>
+<tr>
+<td>Dual-recorder profile (<code>SimNpx2NiDaq</code>)</td>
+<td>6 processors, two reporting <code>"recorder"</code>; all tracked distinctly, <code>acquisition confirmed: true</code></td>
+</tr>
+<tr>
+<td>Watchdog fires (1 ms experiment)</td>
+<td>names <code>proc.npx.display, proc.npx.recorder, proc.rippledetector</code>; button returns to Play, enabled, <strong>no modal</strong>, status explains</td>
+</tr>
+<tr>
+<td>Failed cycle stays failed</td>
+<td>3 late "reported ready AFTER the startup was declared failed -- ignoring"; no second confirmation</td>
+</tr>
+<tr>
+<td>Production timeout (8 s)</td>
+<td>normal path clean, watchdog never fires</td>
+</tr>
+</tbody>
+</table>
+<h3 id="426-docs">42.6 Docs<a class="headerlink" href="#426-docs" title="Permanent link">#</a></h3>
+<p>New <strong><code>developer_docs/Fdir.md</code></strong> (the contract, the traps, and why a separate error <em>thread</em> is the wrong
+shape — the message is not late, its sender is gone). <code>AddingASinkModule.md</code> rule #1 rewritten: the name in
+<code>sigIpStarted</code> is a <strong>label, not an identity</strong>, and error reporting is no longer something a sink author
+wires up. <code>SpikesPeak_Architecture_Review.md</code> §5 gained the bounded/confirmed start ordering.
+<code>developer_docs/README.md</code> indexed; book regenerated (50 pages).</p>
+<h3 id="427-also-this-session">42.7 Also this session<a class="headerlink" href="#427-also-this-session" title="Permanent link">#</a></h3>
+<p><strong>NP1.0 probe <code>22175723312</code> calibration found and installed.</strong> Four byte-identical copies existed on this
+machine (Open Ephys <code>AppData</code>, two SpikeGLX releases, a SpikeGLXTest tree); now in
+<code>CalibrationInfo/22175723312/</code>. Serial header matches, and both files match a known-good NP1.0 probe
+line-for-line (33 / 961). It no longer streams uncalibrated — the §41.5 caveat is closed.</p>
+<h3 id="428-known-gaps">42.8 Known gaps<a class="headerlink" href="#428-known-gaps" title="Permanent link">#</a></h3>
+<p>Recording state is still optimistic in the GUI (the #18 pattern in the one place #18 did not reach); sources
+have no fault signal equivalent to <code>sigIpErrorOccurred</code>; the watchdog does not cover the source side.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3461,6 +3572,17 @@ quoting numbers from it.</p></article>
 <li><a href="#413-getting-the-real-reason-out-of-a-dying-object">41.3 Getting the real reason out of a dying object</a></li>
 <li><a href="#414-verified-live-no-probe-attached">41.4 Verified live (no probe attached)</a></li>
 <li><a href="#415-next">41.5 Next</a></li>
+</ul>
+</li>
+<li><a href="#42-fdir-making-failures-reach-the-user-and-keeping-the-pipeline-in-a-state-we-designed-2026-08-20">42. FDIR — MAKING FAILURES REACH THE USER, AND KEEPING THE PIPELINE IN A STATE WE DESIGNED (2026-08-20)</a><ul>
+<li><a href="#421-the-rule-announce-confirmed-state-never-requested-state">42.1 The rule — announce CONFIRMED state, never REQUESTED state</a></li>
+<li><a href="#422-processor-faults-now-reach-the-user-generically">42.2 Processor faults now reach the user — generically</a></li>
+<li><a href="#423-three-silent-hangs-in-the-readiness-mechanism">42.3 Three silent hangs in the readiness mechanism</a></li>
+<li><a href="#424-other-invalid-state-fixes">42.4 Other invalid-state fixes</a></li>
+<li><a href="#425-verified-live-hardware-free-simulated-sources">42.5 Verified live (hardware-free, simulated sources)</a></li>
+<li><a href="#426-docs">42.6 Docs</a></li>
+<li><a href="#427-also-this-session">42.7 Also this session</a></li>
+<li><a href="#428-known-gaps">42.8 Known gaps</a></li>
 </ul>
 </li>
 </ul>

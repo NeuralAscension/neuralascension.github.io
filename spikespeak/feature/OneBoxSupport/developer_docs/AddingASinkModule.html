@@ -110,12 +110,40 @@ public slots:
 <hr />
 <h2 id="1-the-three-iron-rules">1. The three iron rules<a class="headerlink" href="#1-the-three-iron-rules" title="Permanent link">#</a></h2>
 <ol>
-<li><strong>Emit <code>sigIpStarted(name)</code> once you're ready.</strong> On play, <code>MainController</code> starts <strong>all
-   processors first</strong> and only starts the <strong>source</strong> after every processor has reported
-   <code>sigIpStarted</code>. If you never emit it, <strong>the source never starts</strong> and nothing streams. This
-   ordering guarantees you're a registered consumer <em>before</em> the producer commits a single sample.</li>
+<li><strong>Report started when you have actually RUN, not when you have scheduled yourself</strong> (issue #13).</li>
 </ol>
-<p>Two things about <code>name</code> that are easy to get wrong:</p>
+<p>Which of the two forms you use depends on how your sink is driven, and the distinction is not
+   stylistic -- getting it wrong either understates readiness or deadlocks the pipeline:</p>
+<table>
+<thead>
+<tr>
+<th>your sink is</th>
+<th>do this</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>timer-driven</strong></td>
+<td>call <code>armStarted("name")</code> in <code>slIpStartProcessor</code>; <code>noteCycle()</code> emits on the first tick</td>
+<td>the start slot only <em>schedules</em> work. Reporting there lets the sources begin committing samples before you have run a single pass</td>
+</tr>
+<tr>
+<td><strong>a blocking loop</strong></td>
+<td><code>emit sigIpStarted("name")</code> directly, immediately before entering the loop</td>
+<td>see the warning below</td>
+</tr>
+</tbody>
+</table>
+<p>⚠️ <strong>A blocking-loop sink must NOT defer its report.</strong> Its first cycle cannot complete until samples
+   arrive; samples arrive only once the sources start; and <code>MainController</code> starts the sources only
+   after every processor has reported ready. Deferring deadlocks the pipeline -- and it surfaces as a
+   <em>startup watchdog timeout</em>, which points at the wrong thing entirely. <code>LFPProcessor</code> and
+   <code>RippleDetector</code> emit directly for exactly this reason, and that is correct: they are ready, in the
+   only sense available to them.</p>
+<p>Either way, if you never report it, <strong>the source never starts</strong> and nothing streams. This ordering
+   is what guarantees you are a registered consumer <em>before</em> the producer commits a sample.</p>
+<p>Two things about the <code>name</code> you pass are easy to get wrong:</p>
 <ul>
 <li><strong>It is a label, not an identity.</strong> Readiness is tracked by the registry key, resolved from
      the SENDER object, not from the string you pass. Existing sinks pass short hardcoded labels

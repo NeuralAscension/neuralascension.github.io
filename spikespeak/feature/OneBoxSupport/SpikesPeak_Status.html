@@ -3665,7 +3665,66 @@ resets to <code>Waiting for data...</code>, real OneBox shows <code>OneBox ADC |
 <p>New <strong><code>developer_docs/Logging.md</code></strong> — the line format and why each column is there, the level table
 (debug/info/warning/critical and when each applies), and what not to do: <strong>never log per sample or per
 acquisition cycle</strong>, because <code>logMessages()</code> <code>fflush</code>es both sinks on every message and at 1 ms cadence that
-is a syscall pair per tick on the hot path (use the throttled <code>reportStreamError()</code> instead).</p></article>
+is a syscall pair per tick on the hot path (use the throttled <code>reportStreamError()</code> instead).</p>
+<h2 id="47-processors-report-started-when-they-have-run-not-when-they-have-scheduled-2026-08-20">47. PROCESSORS REPORT STARTED WHEN THEY HAVE RUN, NOT WHEN THEY HAVE SCHEDULED  (2026-08-20)<a class="headerlink" href="#47-processors-report-started-when-they-have-run-not-when-they-have-scheduled-2026-08-20" title="Permanent link">#</a></h2>
+<p>GitHub issue #13, open since 2025-06-18: <em>"Every processor is triggered to run through a slot. Some
+processors use this slot to start a timer that triggers a different slot. When that slot is run for the
+first time, it should emit the started signal, not the slot that started the timer."</em></p>
+<p>Fourth in the same family as §41–§46: a component announcing a state it has not reached.</p>
+<h3 id="471-why-it-matters-concretely">47.1 Why it matters, concretely<a class="headerlink" href="#471-why-it-matters-concretely" title="Permanent link">#</a></h3>
+<p><code>MainController</code> starts the SOURCES only once every processor has reported <code>sigIpStarted</code>. A timer-driven
+processor emitted it from <code>slIpStartProcessor</code> — the slot that merely <strong>starts the QTimer</strong> — so the
+producer could begin committing samples while a consumer had not yet run a single pass. The ordering
+guarantee the design intends ("a consumer is always registered before the producer commits") was weaker
+than it looked.</p>
+<h3 id="472-the-fix-and-the-trap-that-shapes-it">47.2 The fix, and the trap that shapes it<a class="headerlink" href="#472-the-fix-and-the-trap-that-shapes-it" title="Permanent link">#</a></h3>
+<p><code>IProcessor::armStarted(name)</code> records the label instead of emitting; <code>noteCycle()</code> — already called once
+per work cycle for the §45 liveness counter — emits <code>sigIpStarted</code> on its <strong>first</strong> call after arming. Four
+timer-driven processors switched: <code>proc.npx.display</code>, <code>proc.nidaq.display</code>, <code>proc.npx.recorder</code>,
+<code>proc.audio</code>.</p>
+<p>⚠️ <strong><code>LFPProcessor</code> and <code>RippleDetector</code> were deliberately NOT changed, and must not be.</strong> They emit
+directly and then <strong>block</strong> on <code>waitForAvailable</code>. Their first cycle cannot complete until samples arrive;
+samples arrive only once the sources start; the sources start only after every processor reports ready.
+Deferring their report <strong>deadlocks the pipeline</strong> — and it would surface as a <em>startup watchdog timeout</em>
+(§42.3), pointing at the wrong thing entirely. Caught by reading the loops before writing the change, not
+by hitting it.</p>
+<p>The uniform-looking fix is the wrong one here. The rule is per-drive-mode, and <code>AddingASinkModule.md</code>
+rule #1 is now a table making that explicit.</p>
+<h3 id="473-verified-the-timings-prove-the-mechanism">47.3 Verified — the timings prove the mechanism<a class="headerlink" href="#473-verified-the-timings-prove-the-mechanism" title="Permanent link">#</a></h3>
+<p>Simulated NP2.0 + NI-DAQ (6 processors, both classes) and the real NP2.0 on the OneBox. Threads all start
+within ~5 ms of each other, then:</p>
+<table>
+<thead>
+<tr>
+<th>processor</th>
+<th>reports ready</th>
+<th>matches</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proc.lfp</code>, <code>proc.rippledetector</code></td>
+<td><strong>+1 ms</strong></td>
+<td>immediate — blocking pair, unchanged</td>
+</tr>
+<tr>
+<td><code>proc.npx.display</code>, <code>proc.nidaq.display</code></td>
+<td><strong>+19–21 ms</strong></td>
+<td>their 20 ms display timer</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder</code>, <code>proc.nidaq.recorder</code></td>
+<td><strong>+50–51 ms</strong></td>
+<td>their 50 ms record timer</td>
+</tr>
+</tbody>
+</table>
+<p>Each processor's delay equals its own configured timer period — which is the independent evidence that the
+signal now comes from the tick rather than from the slot that scheduled it. "All processors started" →
+"Starting all sources" follows only after. Real hardware showed the same (display +25 ms, recorder +57 ms).</p>
+<p><strong>Restart re-arming verified</strong> (the failure that would have hung the rig): three consecutive play/pause
+cycles each produced a complete readiness set with identical timings — <code>armStarted</code> re-arms on every start,
+because <code>slIpStartProcessor</code> runs again each time the thread is restarted.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3901,6 +3960,12 @@ is a syscall pair per tick on the hot path (use the throttled <code>reportStream
 <li><a href="#463-a-recording-carries-its-own-log-users-design-decision">46.3 A recording carries its own log (user's design decision)</a></li>
 <li><a href="#464-a-stale-stream-bug-the-user-caught-during-the-demo">46.4 A stale-stream bug the user caught during the demo</a></li>
 <li><a href="#465-doc">46.5 Doc</a></li>
+</ul>
+</li>
+<li><a href="#47-processors-report-started-when-they-have-run-not-when-they-have-scheduled-2026-08-20">47. PROCESSORS REPORT STARTED WHEN THEY HAVE RUN, NOT WHEN THEY HAVE SCHEDULED (2026-08-20)</a><ul>
+<li><a href="#471-why-it-matters-concretely">47.1 Why it matters, concretely</a></li>
+<li><a href="#472-the-fix-and-the-trap-that-shapes-it">47.2 The fix, and the trap that shapes it</a></li>
+<li><a href="#473-verified-the-timings-prove-the-mechanism">47.3 Verified — the timings prove the mechanism</a></li>
 </ul>
 </li>
 </ul>

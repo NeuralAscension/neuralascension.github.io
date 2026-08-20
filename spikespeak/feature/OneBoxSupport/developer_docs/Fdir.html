@@ -297,6 +297,11 @@ of a connect or a play, and those are precisely the moments somebody most wants 
 system; taking the same lock would make the monitor block on the thing it is monitoring. Every field
 is a plain value written on that thread or an atomic counter, so a snapshot taken mid-transition can
 be one step stale -- the right trade for never blocking.</p>
+<p><img alt="The system-state panel during a live run: the chip in the status line reads &quot;System 4 cycling&quot;, and the
+panel lists the source with its two workers and every processor with its cycle counts" src="images/system_state_panel.png" /></p>
+<p><em>Real NP2.0 on a OneBox, streaming. <code>source.npx.onebox x2</code> is the probe loop plus the ADC loop; </em><em>This run</em><em>
+restarts on each Play while </em><em>Total</em><em> accumulates since connect; <code>259.5K</code> is the compacted form, with the
+exact figure on the cell's tooltip.</em></p>
 <h3 id="82-liveness-started-is-not-working">8.2 Liveness: "started" is not "working"<a class="headerlink" href="#82-liveness-started-is-not-working" title="Permanent link">#</a></h3>
 <p>A processor can report ready and then block forever on a buffer that never fills, and every health
 signal in the system keeps saying it is fine. <code>IProcessor</code> therefore carries a monotonic

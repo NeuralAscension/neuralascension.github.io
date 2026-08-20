@@ -338,7 +338,45 @@ sits on the chip for the same reason -- the common questions ("is it running? ar
 turning?") are answered without opening anything. A stall turns the whole chip red and names itself
 there, not only in the tooltip: a fault you have to hover to discover is a fault you will not
 discover.</p>
-<h3 id="85-the-frontend-must-actually-be-deployed">8.5 The frontend must actually be deployed<a class="headerlink" href="#85-the-frontend-must-actually-be-deployed" title="Permanent link">#</a></h3>
+<h3 id="85-sources-are-monitored-too-and-a-dead-source-silences-its-victims">8.5 Sources are monitored too, and a dead source silences its victims<a class="headerlink" href="#85-sources-are-monitored-too-and-a-dead-source-silences-its-victims" title="Permanent link">#</a></h3>
+<p><code>IDataSourceWorker</code> carries the same <code>noteCycle()</code> / <code>cycleCount()</code> as <code>IProcessor</code>, and
+<code>SourceManager</code> polls it on the same 1 s / 3-tick rule. Two differences from the processor side, both
+forced by how sources actually work:</p>
+<ul>
+<li><strong>Workers are per-run objects.</strong> They are created in <code>startAcq</code> and destroyed on stop, so a
+  worker's counter restarts at zero every run and cannot itself carry a lifetime figure.
+  <code>SourceManager</code> banks each source's count into <code>mLifetime</code> <strong>before</strong> <code>stopAcq</code> destroys the
+  workers -- afterwards it is unrecoverable -- and reports <code>bank + current</code>. Do it in the wrong order
+  and the Total column silently resets to the current run on every pause.</li>
+<li><strong>A source may run several loops.</strong> NI-DAQ builds one worker per device, and a OneBox runs the
+  probe <em>and</em> its 12-channel ADC. Hence <code>IDataSource::acquisitionWorkers()</code> returns a <strong>list</strong>, and an
+  override must <strong>extend the base list, not replace it</strong> -- <code>OneBoxSource</code> returning only its ADC hid
+  <code>NeuropixelsSource</code>'s probe worker, so a probe that stopped while the ADC kept ticking would have
+  raised nothing. The panel prints <code>xN</code> beside a source with more than one worker precisely so an
+  unmonitored loop is visible rather than assumed.</li>
+</ul>
+<p>Workers cannot be discovered generically -- <code>moveToThread</code> forbids a parent, so <code>findChild</code> finds
+nothing -- which is why the accessor exists at all. Its default is an empty list, so a source that
+never overrides it is simply unmonitored rather than permanently "stalled".</p>
+<p><strong>One dead source stalls everything downstream of it.</strong> Reporting each blocked processor as its own
+fault buries the single thing that actually broke, so while any source is stalled
+<code>MainController::slMcOnProcessorStalled</code> suppresses the processor alerts and
+<code>processorStates(blockedBySource)</code> reports those processors as <strong>blocked</strong> rather than stalled. The
+snapshot still lists them, so nothing is hidden -- only the alert is.</p>
+<h3 id="86-cycle-counts-monotonic-underneath-per-run-on-screen">8.6 Cycle counts: monotonic underneath, per-run on screen<a class="headerlink" href="#86-cycle-counts-monotonic-underneath-per-run-on-screen" title="Permanent link">#</a></h3>
+<p>The counters are <strong>never reset</strong>. There is one writer (the worker/processor thread) and one reader
+(the monitor); a reset would make the manager a second writer, and a poll in flight could observe a
+<em>decrease</em>, which the delta logic reads as "no movement" -- a spurious stall at exactly the moment
+acquisition starts. The managers take a baseline at start instead, and the per-run figure is derived
+by subtraction (guarded, so an unsigned wrap can never print an astronomical number).</p>
+<p>That is also why both figures exist: a monotonic counter can always be turned into a per-run number
+by the reader, but a reset counter cannot be turned back into a lifetime total. The panel shows
+<strong>This run</strong> (restarts on each Play) and <strong>Total</strong> (since connect), compacted above 100k -- <code>2.1M</code> --
+with the exact figure on the cell tooltip, because at a 1 ms cadence these reach millions within an
+hour and would otherwise set the column width.</p>
+<p><code>resetStreamErrors()</code> nearby is not a counter-example: the worker resets its <em>own</em> counter on its own
+thread, so there is no cross-thread write.</p>
+<h3 id="87-the-frontend-must-actually-be-deployed">8.7 The frontend must actually be deployed<a class="headerlink" href="#87-the-frontend-must-actually-be-deployed" title="Permanent link">#</a></h3>
 <p>Unrelated to the state model, but it invalidated a test and will invalidate yours. The webinterface
 copy used to be a <code>POST_BUILD</code> step on the <code>SpikesPeak</code> target, so it only ran when the executable
 <strong>relinked</strong>. Editing only <code>.js</code>/<code>.css</code> left the deployed copy stale while the build reported
@@ -348,14 +386,18 @@ exercised the old code and passed. It is now an always-out-of-date <code>copy_we
 to take: <code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&gt;</code>.</p>
 <h2 id="9-known-gaps">9. Known gaps<a class="headerlink" href="#9-known-gaps" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Sources have no liveness counter.</strong> Only processors carry <code>noteCycle()</code>. A source worker that
-  stops producing is currently visible only indirectly, as every downstream processor stalling at
-  once -- which is a usable signal, but it names the symptom rather than the cause.</li>
-<li><strong>Sources have no equivalent of <code>sigIpErrorOccurred</code>.</strong> <code>IDataSource</code> has <code>sigGuiStatus</code>, which is
-  a <em>display</em> channel rather than a fault channel, and the connect path proves it is unreliable
-  during teardown (section 5). <code>ErrorLog</code> covers the gap; a real source fault signal would be better.</li>
-<li><strong>The watchdog does not cover the source side.</strong> A source that never starts is caught only by
-  <code>slMcOnSourcesStarted(false)</code>, which depends on <code>SourceManager</code> reporting at all.</li>
+<li><strong>Sources have a fault channel, and it is a good one</strong> -- <code>IDataSourceWorker::sigDswError</code>, with
+  throttling via <code>reportStreamError()</code> (fires after 3 consecutive failures, re-fires at most every
+  5 s), relayed by each source to <code>sigGuiStatus</code>. An earlier version of this document claimed sources
+  had none; that was wrong. What they lacked was liveness, which section 8.5 adds.</li>
+<li><strong>The startup watchdog does not cover the source side.</strong> A source that never <em>starts</em> is caught only
+  by <code>slMcOnSourcesStarted(false)</code>, which depends on <code>SourceManager</code> reporting at all. Liveness
+  catches a source that starts and then stops -- a different failure.</li>
+<li><strong>The blocked-vs-stalled rule is coarse.</strong> It asks "is ANY source stalled?", not "is the source THIS
+  processor reads from stalled?" -- the graph is bound by buffer name and is not walked. With one
+  probe per profile the answer is the same; with two independent sources it could mark a genuinely
+  faulty processor as merely blocked.</li>
+<li><strong>The HTTP server does not strip query strings</strong>, so <code>index.html?x=1</code> 404s.</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/Fdir.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -373,7 +415,9 @@ to take: <code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&
 <li><a href="#82-liveness-started-is-not-working">8.2 Liveness: "started" is not "working"</a></li>
 <li><a href="#83-recording-is-confirmed-too">8.3 Recording is confirmed too</a></li>
 <li><a href="#84-the-indicator-is-labelled-not-a-bare-dot">8.4 The indicator is labelled, not a bare dot</a></li>
-<li><a href="#85-the-frontend-must-actually-be-deployed">8.5 The frontend must actually be deployed</a></li>
+<li><a href="#85-sources-are-monitored-too-and-a-dead-source-silences-its-victims">8.5 Sources are monitored too, and a dead source silences its victims</a></li>
+<li><a href="#86-cycle-counts-monotonic-underneath-per-run-on-screen">8.6 Cycle counts: monotonic underneath, per-run on screen</a></li>
+<li><a href="#87-the-frontend-must-actually-be-deployed">8.7 The frontend must actually be deployed</a></li>
 </ul>
 </li>
 <li><a href="#9-known-gaps">9. Known gaps</a></li>

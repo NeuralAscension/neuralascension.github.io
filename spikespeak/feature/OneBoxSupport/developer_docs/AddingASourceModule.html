@@ -260,7 +260,28 @@ public:
 </ul>
 <p><strong>Reference implementations:</strong> <code>SimulatedDataSource</code> (simplest, Pattern B) ·
 <code>NeuropixelsSource</code> (full hardware, Pattern A, worker thread, <code>Q_INVOKABLE</code>) ·
-<code>SynthRippleSource</code> (synthetic streaming).</p></article>
+<code>SynthRippleSource</code> (synthetic streaming).</p>
+<h2 id="liveness-issue-16">Liveness (issue #16)<a class="headerlink" href="#liveness-issue-16" title="Permanent link">#</a></h2>
+<p>Your worker inherits <code>noteCycle()</code> from <code>IDataSourceWorker</code>. <strong>Call it once per completed acquisition
+cycle</strong>, in the loop body -- never in <code>slStartAcquiringData</code>/<code>slStopAcquiringData</code>, where it reads as a
+permanent stall the moment acquisition begins. <code>SourceManager</code> polls the counter every second and
+reports the source <strong>stalled</strong> after 3 s of no movement, which is the only thing that distinguishes
+"connected and running" from "connected and silently producing nothing".</p>
+<p>Then override the accessor so the manager can find it:</p>
+<pre><code class="language-cpp">QList&lt;SpikesPeak::IDataSourceWorker*&gt; acquisitionWorkers() const override {
+    return mWorker ? QList&lt;SpikesPeak::IDataSourceWorker*&gt;{ mWorker }
+                   : QList&lt;SpikesPeak::IDataSourceWorker*&gt;{};
+}
+</code></pre>
+<p>Two rules:</p>
+<ul>
+<li><strong>If you derive from another source, EXTEND its list, do not replace it.</strong> <code>OneBoxSource</code> returning
+  only its ADC worker hid the probe worker it inherits, so a dead probe would have raised nothing.</li>
+<li><strong>Return empty while stopped.</strong> The workers genuinely do not exist between runs, and "no worker"
+  must read as "nothing to check" rather than as a fault.</li>
+</ul>
+<p>Not overriding it at all is safe -- the source is simply unmonitored -- but then a silent stall on
+that source is invisible. Full contract: <code>Fdir.md</code> section 8.5.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AddingASourceModule.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -279,6 +300,7 @@ public:
 </li>
 <li><a href="#8-per-source-web-commands-the-camera-example">8. Per-source web commands (the camera example)</a></li>
 <li><a href="#checklist">Checklist</a></li>
+<li><a href="#liveness-issue-16">Liveness (issue #16)</a></li>
 </ul>
 </div>
 </aside>

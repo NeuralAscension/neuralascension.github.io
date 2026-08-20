@@ -3503,7 +3503,97 @@ because the default IS 0) and was written the same way so it stays correct if th
 field held <code>5.00</code>, threshold recomputed to <code>μ + 5.00σ = 8.1</code>, confirming the commit path works from a real
 click and not only from synthetic events.</p>
 <p>Kept as its own commit rather than folded into §43: it has nothing to do with system-state tracking, and
-somebody bisecting a ripple-detection problem should not have to find it inside a monitoring change.</p></article>
+somebody bisecting a ripple-detection problem should not have to find it inside a monitoring change.</p>
+<h2 id="45-source-liveness-and-why-the-counters-are-never-reset-2026-08-20">45. SOURCE LIVENESS — AND WHY THE COUNTERS ARE NEVER RESET  (2026-08-20)<a class="headerlink" href="#45-source-liveness-and-why-the-counters-are-never-reset-2026-08-20" title="Permanent link">#</a></h2>
+<p>The gap §43 left open. Sources now carry the same heartbeat as processors, and a dead source names itself
+instead of showing up as five stalled processors.</p>
+<h3 id="451-the-reset-question-decided">45.1 The reset question, decided<a class="headerlink" href="#451-the-reset-question-decided" title="Permanent link">#</a></h3>
+<p><strong>The counters are never reset.</strong> One writer (the worker/processor thread), one reader (the monitor). A
+reset would make the manager a <strong>second writer</strong>, and a poll in flight could observe a <em>decrease</em> — which
+the delta logic reads as "no movement", i.e. a spurious stall at exactly the moment acquisition starts.
+The managers take a <strong>baseline at start</strong> and derive the per-run figure by subtraction (guarded against
+unsigned wrap).</p>
+<p>That asymmetry is the whole argument: a monotonic counter can always be turned into a per-run number by the
+reader; a reset counter can never be turned back into a lifetime total. So both figures are available for
+free. <code>resetStreamErrors()</code> nearby is not a counter-example — the worker resets its <em>own</em> counter on its
+own thread.</p>
+<p>The user chose to show <strong>both columns</strong> (This run / Total), with the caveat that the numbers get large — so
+they are compacted above 100k (<code>2.1M</code>) with the exact figure on the cell tooltip, and the column is
+width-fixed with tabular numerals so it cannot jitter.</p>
+<h3 id="452-two-things-sources-do-that-processors-do-not">45.2 Two things sources do that processors do not<a class="headerlink" href="#452-two-things-sources-do-that-processors-do-not" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Their workers are per-run objects</strong> — created in <code>startAcq</code>, destroyed on stop — so a worker's counter
+   restarts at zero every run and cannot carry a lifetime figure. <code>SourceManager</code> banks each source's count
+   into <code>mLifetime</code> <strong>before</strong> <code>stopAcq</code> destroys the workers (afterwards it is unrecoverable) and reports
+   <code>bank + current</code>. Caught in testing: without it the Total column silently equalled This-run and read 0/0
+   while paused.</li>
+<li><strong>A source may run several loops.</strong> NI-DAQ builds one worker per device; a OneBox runs the probe <strong>and</strong>
+   its 12-ch ADC. Hence <code>acquisitionWorkers()</code> returns a LIST. ⚠️ <strong>An override must EXTEND the base list,
+   not replace it</strong> — <code>OneBoxSource</code> first returned only its ADC, which <strong>hid</strong> <code>NeuropixelsSource</code>'s probe
+   worker: a probe that stopped while the ADC kept ticking would have raised nothing, i.e. exactly the
+   failure this feature exists to catch. The panel now prints <code>×N</code> beside a multi-worker source so an
+   unmonitored loop is visible rather than assumed.</li>
+</ol>
+<p>Workers cannot be found generically — <code>moveToThread</code> forbids a parent, so <code>findChild</code> returns nothing —
+which is why the accessor exists. Default is an empty list: a source that never overrides it is unmonitored
+rather than falsely "stalled".</p>
+<h3 id="453-a-dead-source-silences-its-victims-users-decision">45.3 A dead source silences its victims (user's decision)<a class="headerlink" href="#453-a-dead-source-silences-its-victims-users-decision" title="Permanent link">#</a></h3>
+<p>One dead source stalls every processor downstream. Reporting each as its own fault buries the cause, so
+while any source is stalled <code>MainController::slMcOnProcessorStalled</code> <strong>suppresses the processor alerts</strong>
+and <code>processorStates(blockedBySource)</code> reports them as <strong>blocked</strong>. The snapshot still lists them — nothing
+is hidden, only the alert is — and the panel shows a banner saying the processors are blocked, not faulty.</p>
+<p>Coarse by design: the rule asks "is ANY source stalled?", not "is the source THIS processor reads from
+stalled?" (the graph is bound by buffer name and is not walked). With one probe per profile the answer is
+identical; noted in <code>Fdir.md</code> §9 for the two-source case.</p>
+<h3 id="454-gui">45.4 GUI<a class="headerlink" href="#454-gui" title="Permanent link">#</a></h3>
+<p>Chip <strong>highlights while the panel is open</strong> (user request — previously it looked identical open or closed,
+so a panel hidden behind the window read as "nothing happened"). A stalled source makes the chip say
+<code>source stalled</code> and turns the whole chip red, since it outranks any processor state.</p>
+<h3 id="455-verified-on-real-hardware">45.5 Verified on real hardware<a class="headerlink" href="#455-verified-on-real-hardware" title="Permanent link">#</a></h3>
+<p>Real NP2.0 on a real OneBox:</p>
+<table>
+<thead>
+<tr>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sources in the snapshot</td>
+<td><code>source.npx.onebox ×2</code> — probe + ADC, <code>producing</code></td>
+</tr>
+<tr>
+<td>both columns, one run</td>
+<td>this-run == total (nothing banked yet)</td>
+</tr>
+<tr>
+<td>pause → resume</td>
+<td>source 69,944 this run / <strong>85,930 total</strong>; <code>proc.lfp</code> 36,886 / 45,525 — the two columns diverge exactly as intended</td>
+</tr>
+<tr>
+<td>paused</td>
+<td>every row <code>idle</code>, counts frozen (not a stall — liveness only runs while acquiring)</td>
+</tr>
+<tr>
+<td>compaction</td>
+<td><code>145.5K</code> in the cell, exact figure on hover</td>
+</tr>
+<tr>
+<td>chip while open</td>
+<td><code>sys-health good open</code></td>
+</tr>
+<tr>
+<td>teardown</td>
+<td><code>setSyncAsInput + closeProbe + closeBS + unmapBS</code>, slot 16 released</td>
+</tr>
+</tbody>
+</table>
+<h3 id="456-a-correction">45.6 A correction<a class="headerlink" href="#456-a-correction" title="Permanent link">#</a></h3>
+<p>An earlier note claimed "sources have no fault signal equivalent to <code>sigIpErrorOccurred</code>". <strong>That was
+wrong.</strong> <code>IDataSourceWorker::sigDswError</code> exists, with throttling via <code>reportStreamError()</code> (fires after 3
+consecutive failures, re-fires at most every 5 s), relayed by each source to <code>sigGuiStatus</code> — arguably
+better designed than the processor equivalent. The genuine gap was liveness, which is what this closes.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3724,6 +3814,15 @@ somebody bisecting a ripple-detection problem should not have to find it inside 
 </ul>
 </li>
 <li><a href="#44-a-z-score-of-0-was-unreachable-from-the-ripple-gui-2026-08-20">44. A Z-SCORE OF 0 WAS UNREACHABLE FROM THE RIPPLE GUI (2026-08-20)</a></li>
+<li><a href="#45-source-liveness-and-why-the-counters-are-never-reset-2026-08-20">45. SOURCE LIVENESS — AND WHY THE COUNTERS ARE NEVER RESET (2026-08-20)</a><ul>
+<li><a href="#451-the-reset-question-decided">45.1 The reset question, decided</a></li>
+<li><a href="#452-two-things-sources-do-that-processors-do-not">45.2 Two things sources do that processors do not</a></li>
+<li><a href="#453-a-dead-source-silences-its-victims-users-decision">45.3 A dead source silences its victims (user's decision)</a></li>
+<li><a href="#454-gui">45.4 GUI</a></li>
+<li><a href="#455-verified-on-real-hardware">45.5 Verified on real hardware</a></li>
+<li><a href="#456-a-correction">45.6 A correction</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

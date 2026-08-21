@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next session — stand SpikesPeak up on a second Windows machine (OneBox only) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a class="active" href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="next-session-stand-spikespeak-up-on-a-second-windows-machine-onebox-only">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)<a class="headerlink" href="#next-session-stand-spikespeak-up-on-a-second-windows-machine-onebox-only" title="Permanent link">#</a></h1>
+<p><strong>You are on a different machine from the one this code was developed on.</strong> Everything here has been
+built, run and tested on exactly one Windows box. Your job is to find out what of that survives the
+move, fix what does not, and report honestly on the rest.</p>
+<p>Tracking issue: <strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a></strong>. You are
+<strong>configuration 5</strong> of the five listed there: <em>Windows + OneBox, no PXIe</em>.</p>
+<p>Read <a href="README.html"><code>README.md</code></a> (the doc map) and the repo-root <a href="../CLAUDE.html"><code>CLAUDE.md</code></a> before you
+start. This file is the brief; those two are the standing rules.</p>
+<hr />
+<h2 id="0-the-one-rule-that-costs-hardware">0. The one rule that costs hardware<a class="headerlink" href="#0-the-one-rule-that-costs-hardware" title="Permanent link">#</a></h2>
+<p><strong>Never force-kill the backend while the OneBox is connected.</strong> The FT601 USB handle is released only
+on a clean exit; a kill costs a physical power-cycle of the box. Shut down with the WebSocket <code>quit</code>
+command or the GUI's Disconnect.</p>
+<p>Since 2026-08-21 every teardown vendor call is bounded, so a wedged basestation no longer hangs
+shutdown — the app exits cleanly in ~9 s and tells you to power-cycle. That makes the rule cheaper to
+follow, not optional.</p>
+<p>Two more, from painful experience:</p>
+<ul>
+<li><strong>Always launch with <code>--no-browser</code></strong> for automated work: <code>run_spikespeak.bat --no-browser</code>.
+  Without it <code>main.cpp</code> calls <code>QDesktopServices::openUrl</code> and opens a window in your <em>default</em>
+  browser, on top of whatever browser you drove yourself. That is how a test run ends up with two
+  GUIs on screen.</li>
+<li><strong>Never blanket-kill Chrome.</strong> Kill only the isolated debug-port profile you launched. A
+  <code>Get-Process chrome | Stop-Process</code> closes the operator's real windows.</li>
+</ul>
+<hr />
+<h2 id="1-what-you-are-trying-to-achieve">1. What you are trying to achieve<a class="headerlink" href="#1-what-you-are-trying-to-achieve" title="Permanent link">#</a></h2>
+<p>In priority order:</p>
+<ol>
+<li><strong>Build from a clean clone</strong> with no path edits, or document exactly which edits were needed.</li>
+<li><strong>Both suites green</strong> — see §2. This is the definition of done for a build; a compile that
+   produced a binary is not a green build.</li>
+<li><strong>Validate the OneBox path on THIS rig</strong> — connect, stream, record, reconnect, clean teardown.
+   That has only ever been proven on one box and one probe; a second independent rig is real
+   evidence, not a formality.</li>
+<li><strong>Fix or file every machine-specific assumption you hit</strong>, against #52.</li>
+</ol>
+<p>You are <strong>not</strong> expected to fix <a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a> — see
+§5.</p>
+<hr />
+<h2 id="2-the-definition-of-green">2. THE DEFINITION OF GREEN<a class="headerlink" href="#2-the-definition-of-green" title="Permanent link">#</a></h2>
+<p>Both suites. Every time.</p>
+<pre><code class="language-bash">cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+</code></pre>
+<p>Runs the <strong>C++ suite automatically</strong> and prints a per-suite ✅/❌ banner. 15 suites, 316 cases, ~1.6 s.
+A failing suite does <strong>not</strong> stop the build (you usually still want the binary to debug with), which
+makes red easy to walk past. Do not.</p>
+<pre><code class="language-bash">python scripts/run_gui_tests.py
+</code></pre>
+<p>Runs the <strong>GUI suite</strong> — 6 tests driving a real Chrome over CDP against a real backend on a simulated
+source. ~10 min. It is <strong>not</strong> part of the compile, so you have to run it yourself, and you must run
+it whenever you touch <code>webinterface/</code>.</p>
+<p><code>-DSPIKESPEAK_TESTS_FATAL=ON</code> makes C++ red fatal; <code>--fatal</code> does the same for the GUI runner.</p>
+<p>Full detail, and how to add a test: <strong><a href="Testing.html"><code>Testing.md</code></a></strong>. What the GUI tests cover and what
+they deliberately do not: <strong><a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a></strong>.</p>
+<hr />
+<h2 id="3-prerequisites-and-where-they-are-currently-hardcoded">3. Prerequisites, and where they are currently hardcoded<a class="headerlink" href="#3-prerequisites-and-where-they-are-currently-hardcoded" title="Permanent link">#</a></h2>
+<p>These are the known machine-specific assumptions. Expect to hit most of them. Each one you fix should
+be a small, well-commented commit; each one you cannot fix should be a note on #52.</p>
+<table>
+<thead>
+<tr>
+<th>what</th>
+<th>where it is assumed</th>
+<th>note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qt 6.7.3 MSVC2019 64-bit at <code>C:\Qt\6.7.3\msvc2019_64</code></td>
+<td>build tree cache, <code>CMAKE_PREFIX_PATH</code></td>
+<td><code>tests/CMakeLists.txt</code> resolves the Qt <strong>bin</strong> dir from the imported target, which IS portable — that part should just work</td>
+</tr>
+<tr>
+<td>Ninja at <code>C:\Qt\Tools\Ninja\ninja.exe</code></td>
+<td>build tree cache</td>
+<td>not on <code>PATH</code> by default</td>
+</tr>
+<tr>
+<td>MSVC 2019 Community <code>vcvars64.bat</code></td>
+<td>every documented build command</td>
+<td>a 2022-only box needs a different path</td>
+</tr>
+<tr>
+<td>Build dir named <code>build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release</code></td>
+<td><code>CLAUDE.md</code>, <code>Testing.md</code>, every command</td>
+<td>encodes the Qt version in the path; if you use a different name, say so in your report</td>
+</tr>
+<tr>
+<td>HDF5 1.14.6 SDK</td>
+<td><code>find_package(HDF5)</code></td>
+<td>configure warns it will not shadow a different major version next to the exe</td>
+</tr>
+<tr>
+<td>Neuropixels + NI-DAQ SDK runtime DLLs</td>
+<td><code>run_spikespeak.bat</code> PATH assembly</td>
+<td>headers are vendored under <code>external/</code>; the DLLs come from the machine. Running the exe directly without this exits <code>0xC0000135</code></td>
+</tr>
+<tr>
+<td><strong>Chrome at <code>C:\Program Files\Google\Chrome\Application\chrome.exe</code></strong></td>
+<td><code>tests/gui/_harness.py</code></td>
+<td><strong>hardcoded.</strong> If Chrome is elsewhere, or you only have Edge/Brave, the GUI suite cannot run at all. Making this discovered rather than hardcoded is the single highest-value portability fix</td>
+</tr>
+<tr>
+<td>A <strong>portrait monitor</strong> exists</td>
+<td><code>tests/gui/layout_matrix.py</code> runs the vertical half full screen on it</td>
+<td>the harness degrades with a printed warning and uses the default window, but then the vertical cells measure a window nobody uses. If you have no portrait display, say so — do not let it quietly pass</td>
+</tr>
+<tr>
+<td>Python: <code>requests</code>, <code>websocket-client</code></td>
+<td><code>python/tools/cdp.py</code>, <code>python/spikespeak_cli.py</code></td>
+<td>not pinned anywhere; <code>matplotlib</code> too for the analysis tools</td>
+</tr>
+</tbody>
+</table>
+<h3 id="configure-and-build-the-recipe-that-works-on-the-original-box">Configure and build (the recipe that works on the original box)<a class="headerlink" href="#configure-and-build-the-recipe-that-works-on-the-original-box" title="Permanent link">#</a></h3>
+<pre><code class="language-bash">cmake -S . -B build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/Ninja/ninja.exe -DCMAKE_PREFIX_PATH=C:/Qt/6.7.3/msvc2019_64
+</code></pre>
+<p>Run it from a shell that has already sourced <code>vcvars64.bat</code>, or the compiler is not found.</p>
+<hr />
+<h2 id="4-order-of-work">4. Order of work<a class="headerlink" href="#4-order-of-work" title="Permanent link">#</a></h2>
+<p><strong>Do the no-hardware half first.</strong> It needs nothing plugged in and will surface most of the
+hardcoded-path problems, and you do not want to be debugging a build while a probe is connected.</p>
+<ol>
+<li><strong>Clean clone → configure → build.</strong> Record every deviation.</li>
+<li><strong>C++ suite green.</strong> It is Qt Test with no platform-specific code, so it is the most likely to
+   pass unchanged. If it does not, that is a genuinely interesting finding.</li>
+<li><strong>GUI suite green on the simulated source.</strong> Expect the Chrome path to bite first. Start the
+   backend yourself once (<code>run_spikespeak.bat --no-browser</code>) and confirm the GUI loads at
+   <code>http://localhost:8234</code> before blaming the harness.</li>
+<li><strong>Then the OneBox.</strong> §6.</li>
+</ol>
+<hr />
+<h2 id="5-two-tests-you-must-not-fix">5. Two tests you must NOT "fix"<a class="headerlink" href="#5-two-tests-you-must-not-fix" title="Permanent link">#</a></h2>
+<p><strong><code>tests/gui/stream_options.py</code> is expected to be RED.</strong> It catches
+<a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a> — switching source after acquisition
+has run fails while <code>stateSource</code> reports success. That is a real, pre-existing backend defect and
+the test is doing its job.</p>
+<p>It <strong>passes when run standalone</strong> (<code>python tests/gui/stream_options.py</code>), because each source gets its
+own <code>Gui</code>, and a <code>Gui</code> that started its own backend also quits it — so the second source lands on a
+fresh backend. Under the runner the backend is shared and has already streamed, which is the
+operator's real situation. <strong>Do not make the test restart the backend between sources</strong>; that hides
+the bug rather than fixing it.</p>
+<p>So on this machine, a "green" GUI run means <strong>5 of 6, with <code>stream_options</code> red for that reason</strong>. If
+it is red for any <em>other</em> reason, that is a new finding — report it.</p>
+<p><strong>Prove any test you add can fail.</strong> Inject a regression, watch it go red, revert. An always-green
+test is worse than none, because it buys false confidence. <code>toolbar_layout</code> was validated this way:
+hiding <code>#tb-peek-source</code> while folded made it report <code>UNREACHABLE</code> at all seven folded widths.</p>
+<hr />
+<h2 id="6-the-onebox-on-your-rig">6. The OneBox, on your rig<a class="headerlink" href="#6-the-onebox-on-your-rig" title="Permanent link">#</a></h2>
+<p>Configs are selected by their internal <code>name:</code> field, not the filename. The relevant ones:</p>
+<table>
+<thead>
+<tr>
+<th>source name</th>
+<th>what it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Simulated NPX 1.0 (OneBox)</code></td>
+<td>sim; needs no hardware</td>
+</tr>
+<tr>
+<td><code>NPX 1.0 (OneBox)</code></td>
+<td>real NP1.0 on the OneBox</td>
+</tr>
+<tr>
+<td><code>NPX 2.0 Multishank (OneBox)</code></td>
+<td>real NP2.0 on the OneBox</td>
+</tr>
+<tr>
+<td><code>NPX 1.0 (OneBox, ASAP)</code></td>
+<td>as above with <code>low_latency</code> delivery</td>
+</tr>
+</tbody>
+</table>
+<p><strong>You have no PXIe.</strong> Any profile naming PXIe will not connect here, and that is expected — not a
+bug to chase. If it connects <em>anyway</em>, that IS a bug and is worth a report.</p>
+<p>What to verify, in order:</p>
+<ol>
+<li><strong>Connect</strong> → expect <code>Found Neuropixels 1.0 Probe</code> (or 2.0).</li>
+<li><strong>Stream</strong> → count <strong>binary frames at the WebSocket</strong>, not pixels on screen. A healthy sim or real
+   source delivers ~1650 frames / ~67 MB in 12 s. Zero frames with the GUI showing "Waiting for
+   data…" is the 2026-08-20 failure mode; see <code>Testing.md</code> §4.</li>
+<li><strong>Record</strong>, then confirm the <code>.bin</code> + <code>.bin.json</code> sidecars appear and the sidecar's band, rate and
+   channel list are sane.</li>
+<li><strong>Reconnect</strong> — disconnect and connect again in the same session.</li>
+<li><strong>Clean teardown</strong> — <code>quit</code> over the WebSocket. Expect <code>Released virtual slot 16</code> and
+   <code>connection closed (setSyncAsInput + closeProbe + closeBS + unmapBS)</code> with <strong>no</strong>
+   <code>did not return within 3000 ms</code> warnings. Those warnings mean the box stopped responding and needs
+   a power-cycle; they are the guard working, not a code failure.</li>
+</ol>
+<p>A useful sanity script for steps 1–2 lives in <code>Testing.md</code> §4; <code>ripple_tools/rig.py</code> gives you
+<code>select</code> / <code>play</code> / <code>pause</code> / <code>quit</code> from Python.</p>
+<h3 id="sim-first-always">Sim first, always<a class="headerlink" href="#sim-first-always" title="Permanent link">#</a></h3>
+<p>If something looks broken, run the <strong>simulated</strong> source first. Every sim source drives the same
+display processor, the same ring buffers, the same WebSocket and the same GUI as real hardware.</p>
+<ul>
+<li>Sim streams, hardware does not → it is the rig, not the code. You have just saved yourself hours.</li>
+<li>Neither streams → it is the code, and you have a reproducer that needs no hardware.</li>
+</ul>
+<hr />
+<h2 id="7-what-is-genuinely-new-since-the-last-machine-saw-this-code">7. What is genuinely new since the last machine saw this code<a class="headerlink" href="#7-what-is-genuinely-new-since-the-last-machine-saw-this-code" title="Permanent link">#</a></h2>
+<p>Commit <code>d9620fd</code>, on <code>feature/OneBoxSupport</code>. Worth understanding before you debug anything, because
+it changes what the counters mean:</p>
+<ul>
+<li><strong>Source liveness now counts committed samples, not timer ticks.</strong> <code>SourceManager</code>'s stall watchdog
+  fires within 3 s when a source stops delivering. Previously it could never fire, and a completely
+  dead probe reported a healthy rig for three and a half minutes.</li>
+<li><strong>Every teardown vendor call is bounded</strong> (<code>src/core/BoundedCall.hpp</code>,
+  <code>src/modules/neuropixels/NpBounded.hpp</code>). On timeout the call is <em>abandoned</em>, the rest of the
+  sequence is skipped, and shutdown completes. Read <code>BoundedCall.hpp</code> — it deliberately leaks a
+  blocked thread rather than let a driver wedge the app, and the reasoning is written there.</li>
+<li><strong><code>output.log</code> rotates</strong> (<code>output.1.log</code> … <code>output.5.log</code>). Copy it before restarting anyway.</li>
+<li><strong>A test suite exists at all</strong>, for the first time.</li>
+</ul>
+<hr />
+<h2 id="8-reporting-back">8. Reporting back<a class="headerlink" href="#8-reporting-back" title="Permanent link">#</a></h2>
+<p>Put findings on <strong>#52</strong>, not in a new document. For each item: what you expected, what happened, and
+the smallest command that reproduces it.</p>
+<p><code>SpikesPeak_Status.md</code> is <strong>the</strong> canonical dated log — add a section there for the session, not a new
+<code>*_Status.md</code> file. Do not commit anything under <code>RecordingTests/</code>; referenced analysis figures stay,
+recording data never does. Keep scratch files out of the repo entirely.</p>
+<p>Do not <code>git add</code>, commit or push unless the operator asks.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextSession_SecondMachine_OneBox.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#0-the-one-rule-that-costs-hardware">0. The one rule that costs hardware</a></li>
+<li><a href="#1-what-you-are-trying-to-achieve">1. What you are trying to achieve</a></li>
+<li><a href="#2-the-definition-of-green">2. THE DEFINITION OF GREEN</a></li>
+<li><a href="#3-prerequisites-and-where-they-are-currently-hardcoded">3. Prerequisites, and where they are currently hardcoded</a><ul>
+<li><a href="#configure-and-build-the-recipe-that-works-on-the-original-box">Configure and build (the recipe that works on the original box)</a></li>
+</ul>
+</li>
+<li><a href="#4-order-of-work">4. Order of work</a></li>
+<li><a href="#5-two-tests-you-must-not-fix">5. Two tests you must NOT "fix"</a></li>
+<li><a href="#6-the-onebox-on-your-rig">6. The OneBox, on your rig</a><ul>
+<li><a href="#sim-first-always">Sim first, always</a></li>
+</ul>
+</li>
+<li><a href="#7-what-is-genuinely-new-since-the-last-machine-saw-this-code">7. What is genuinely new since the last machine saw this code</a></li>
+<li><a href="#8-reporting-back">8. Reporting back</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

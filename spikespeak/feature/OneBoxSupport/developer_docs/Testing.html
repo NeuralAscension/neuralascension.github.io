@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing, and how to tell software faults from hardware faults - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <span class="crumb">Developer Docs / Testing, and how to tell software faults from hardware faults</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a class="active" href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="testing-and-how-to-tell-software-faults-from-hardware-faults">Testing, and how to tell software faults from hardware faults<a class="headerlink" href="#testing-and-how-to-tell-software-faults-from-hardware-faults" title="Permanent link">#</a></h1>
+<p>This document covers two things that turned out to be the same thing: the unit test suite, and the
+method for working out whether a failure is in our code or in the rig.</p>
+<h2 id="why-this-exists">Why this exists<a class="headerlink" href="#why-this-exists" title="Permanent link">#</a></h2>
+<p>On <strong>2026-08-20</strong> a Neuropixels 1.0 probe on a OneBox stopped delivering data. Everything the
+software showed said the rig was healthy:</p>
+<pre><code>source.npx.onebox   producing 63,536
+proc.npx.display    cycling  1,595
+proc.npx.recorder   cycling    638
+proc.rippledetector cycling 17,293
+acquisition confirmed: true
+</code></pre>
+<p>Not one sample had been read. The operator watched that panel for three and a half minutes. Then
+<code>Pause</code> did nothing, <code>Disconnect</code> did nothing, the WebSocket stopped answering, and the process had
+to be force-killed — which on a OneBox leaves the FT601 USB handle claimed and forces a physical
+power-cycle of the hardware.</p>
+<p>Three separate defects, each of which made the next one harder to see:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Defect</th>
+<th>Consequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>noteCycle()</code> counted <strong>poll-timer ticks</strong>, not data</td>
+<td>A dead probe was indistinguishable from a live one, and <code>SourceManager</code>'s stall watchdog was structurally incapable of firing</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>np_readElectrodeData</code> returning <code>SUCCESS</code> with <strong>0 superframes</strong> matched neither the data branch nor the error branch</td>
+<td>The failure was silent by construction — no log line, ever</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>np_arm()</code> was called <strong>bare on the main thread</strong> with no timeout</td>
+<td>One blocked vendor call killed the Qt event loop, and with it every shutdown path</td>
+</tr>
+</tbody>
+</table>
+<p>None of these were hardware problems. The hardware problem was real, but the software's job was to
+<em>say so</em>, and instead it reported health. <strong>The software must not break because the hardware did.</strong></p>
+<hr />
+<h2 id="1-running-the-tests">1. Running the tests<a class="headerlink" href="#1-running-the-tests" title="Permanent link">#</a></h2>
+<p>The suite runs <strong>on every build</strong> and prints a pass/fail banner. You do not have to ask for it:</p>
+<pre><code class="language-bash">cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+</code></pre>
+<pre><code>──────────────────────────────────────────────────────────────────────────
+ SpikesPeak unit tests
+──────────────────────────────────────────────────────────────────────────
+  ✅ PASS  test_boundedcall      0.78s
+──────────────────────────────────────────────────────────────────────────
+  ✅ ALL 1 SUITES PASSED
+──────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p>and when something breaks:</p>
+<pre><code>  ✅ PASS  test_boundedcall      0.78s
+  ❌ FAIL  test_redlight_probe   failed
+──────────────────────────────────────────────────────────────────────────
+  ❌ 1 OF 2 SUITES FAILED
+
+     2/2 Test #2: test_redlight_probe ..............***Failed    0.04 sec
+
+     rerun one suite: ctest --test-dir &lt;build&gt; -C Release -R &lt;name&gt; --output-on-failure
+</code></pre>
+<p><strong>A failing suite does not stop the build.</strong> That is deliberate — when something breaks you usually
+still want the binary so you can run it and debug. The build goes red on screen and still produces
+<code>SpikesPeak.exe</code>. For CI, configure with <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> and red stops the build.</p>
+<p>Other entry points:</p>
+<pre><code class="language-bash">ctest --test-dir build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release -C Release --output-on-failure
+</code></pre>
+<pre><code class="language-bash">ctest --test-dir build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release -C Release -R test_boundedcall --output-on-failure
+</code></pre>
+<p>Run one suite's binary directly for the most detail — Qt Test takes <code>-v2</code> for per-assertion output,
+and a bare function name to run a single case:</p>
+<pre><code class="language-bash">build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/tests/test_boundedcall.exe -v2
+</code></pre>
+<blockquote>
+<p>The test binaries need Qt on <code>PATH</code> when run this way (<code>C:\Qt\6.7.3\msvc2019_64\bin</code>), and their
+stdout does not always survive being piped through Git Bash. When you need the output as data,
+ask Qt Test for a file instead — this always works:
+<code>test_boundedcall.exe -o result.txt,txt</code></p>
+</blockquote>
+<h3 id="the-suites">The suites<a class="headerlink" href="#the-suites" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th style="text-align: right;">Cases</th>
+<th>What it protects</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_boundedcall</code></td>
+<td style="text-align: right;">13</td>
+<td>A blocked vendor call must not block the caller — the 2026-08-20 wedge</td>
+</tr>
+<tr>
+<td><code>test_circularbuffer</code></td>
+<td style="text-align: right;">27</td>
+<td>The core data path: wraparound, per-consumer semaphores, exact round trips</td>
+</tr>
+<tr>
+<td><code>test_datasourceworker</code></td>
+<td style="text-align: right;">18</td>
+<td><strong>Liveness means data, not ticks</strong>; throttled fault escalation</td>
+</tr>
+<tr>
+<td><code>test_processor</code></td>
+<td style="text-align: right;">22</td>
+<td>Processor liveness, deferred start reporting, <code>sender()</code> identity (#18)</td>
+</tr>
+<tr>
+<td><code>test_registry</code></td>
+<td style="text-align: right;">28</td>
+<td>The four registries that wire the application together</td>
+</tr>
+<tr>
+<td><code>test_objectfactory</code></td>
+<td style="text-align: right;">16</td>
+<td>Config strings → objects; a silent miss is a profile that does nothing</td>
+</tr>
+<tr>
+<td><code>test_datainterpreter</code></td>
+<td style="text-align: right;">24</td>
+<td>Raw buffer → per-band views; interleaving/stride arithmetic</td>
+</tr>
+<tr>
+<td><code>test_channelmap</code></td>
+<td style="text-align: right;">29</td>
+<td>Channel → electrode, and that a reconfigure fully supersedes the old map</td>
+</tr>
+<tr>
+<td><code>test_npxgeometry</code></td>
+<td style="text-align: right;">22</td>
+<td>NP2.0 channel↔electrode mapping, checked against imec's manual</td>
+</tr>
+<tr>
+<td><code>test_filter</code></td>
+<td style="text-align: right;">18</td>
+<td>Ripple-path filter numerics: impulse, passband, stopband, reset</td>
+</tr>
+<tr>
+<td><code>test_avx2filter</code></td>
+<td style="text-align: right;">15</td>
+<td><strong>AVX2 output equals the scalar filter</strong>, including non-multiple-of-8 tails</td>
+</tr>
+<tr>
+<td><code>test_errorlog</code></td>
+<td style="text-align: right;">21</td>
+<td>Which log lines become operator-facing faults, and the noise denylist</td>
+</tr>
+<tr>
+<td><code>test_recordinglog</code></td>
+<td style="text-align: right;">19</td>
+<td>The per-recording provenance log beside the <code>.bin</code> files</td>
+</tr>
+<tr>
+<td><code>test_cow</code></td>
+<td style="text-align: right;">22</td>
+<td>Copy-on-write detach semantics and allocator alignment (AVX2 needs it)</td>
+</tr>
+<tr>
+<td><code>test_coretypes</code></td>
+<td style="text-align: right;">22</td>
+<td>Shared constants, enums and the <code>IData</code> contract</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td style="text-align: right;"><strong>316</strong></td>
+<td>~1.6 s wall clock</td>
+</tr>
+</tbody>
+</table>
+<p><strong>One suite is written but not built:</strong> <code>tests/test_utils.cpp</code> (31 cases). <code>src/core/Utils.cpp</code> is the
+application's composition root — it holds <code>registerBuiltInTypes()</code>, which constructs every source,
+processor and interpreter — so linking it into a test drags in the whole application (13 unresolved
+externals). The helpers it covers are mostly inline in <code>Utils.hpp</code>, but <code>getFileContents()</code> is not,
+so the file cannot be split without touching production code. The fix is architectural and worth
+doing deliberately: <strong>extract the non-<code>main</code> sources into a <code>SpikesPeakCore</code> static library</strong> that
+both <code>SpikesPeak.exe</code> and the tests link. That one change unlocks unit-testing every processor and
+source in the codebase, and it is the single highest-leverage next step for this suite.</p>
+<p>A machine-readable result is written to <code>&lt;build&gt;/test_status.json</code> on every run:</p>
+<pre><code class="language-json">{ &quot;generated&quot;: &quot;...&quot;, &quot;total&quot;: 1, &quot;passed&quot;: 1, &quot;failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
+</code></pre>
+<h2 id="2-adding-a-test">2. Adding a test<a class="headerlink" href="#2-adding-a-test" title="Permanent link">#</a></h2>
+<ol>
+<li>Create <code>tests/test_&lt;thing&gt;.cpp</code>.</li>
+<li>Add one line to <code>tests/CMakeLists.txt</code>:
+   <code>cmake
+   spikespeak_test(test_&lt;thing&gt; SOURCES test_&lt;thing&gt;.cpp)</code>
+   For a component that is not header-only, add its production <code>.cpp</code> to the same <code>SOURCES</code>.</li>
+<li>Rebuild. It is registered, run, and reported automatically.</li>
+</ol>
+<p>The file shape is fixed by Qt Test:</p>
+<pre><code class="language-cpp">#include &lt;QtTest&gt;
+#include &quot;TheHeader.hpp&quot;
+
+class TestThing : public QObject
+{
+    Q_OBJECT
+private slots:
+    void behaviour_statedAsAClaim() { QCOMPARE(actual, expected); }
+};
+
+QTEST_GUILESS_MAIN(TestThing)
+#include &quot;test_thing.moc&quot;          // MUST match the filename exactly
+</code></pre>
+<p>Things that will otherwise cost you a confusing half hour. Every one of these cost a build cycle
+while this suite was being written:</p>
+<ul>
+<li>The trailing <code>.moc</code> include must match the filename exactly, lowercase.</li>
+<li>Test methods must be under <code>private slots:</code> and return <code>void</code>, or they are silently not run.</li>
+<li>Use <code>QTEST_GUILESS_MAIN</code>, never <code>QTEST_MAIN</code> — the latter needs a GUI.</li>
+<li><strong>Testing a <code>QObject</code> whose <code>Q_OBJECT</code> lives in a header with no matching <code>.cpp</code>? Put the header in
+  <code>SOURCES</code>.</strong> Otherwise AUTOMOC never processes it and the target fails to link with undefined
+  <code>metaObject</code> / <code>qt_metacall</code> / signal symbols. Listing a <code>.hpp</code> in <code>SOURCES</code> looks wrong but is
+  exactly how you ask AUTOMOC to process a header. This bit <code>test_processor</code>, <code>test_datasourceworker</code>
+  and <code>test_registry</code> — and note the last one needed the headers of the types it <em>stores</em>
+  (<code>IProcessor.hpp</code>, <code>IDataSource.hpp</code>), not its own.</li>
+<li><strong>Any include chain that reaches <code>ryml.hpp</code> needs <code>LIBS ryml</code>.</strong> <code>Utils.hpp</code>, <code>IProcessor.hpp</code> and
+  <code>Npx.hpp</code> all pull it in for config parsing, so even a test that never touches YAML needs it.</li>
+<li><strong><code>QVERIFY2</code> and <code>QCOMPARE</code> are macros, so a comma inside template arguments breaks the parse.</strong>
+  <code>QVERIFY2(dynamic_cast&lt;Foo&lt;double, int&gt;*&gt;(p) != nullptr, "…")</code> fails with C2059. Hoist the cast into
+  a named local first.</li>
+<li><strong>Watch for the most vexing parse.</strong> <code>std::vector&lt;Filter&gt; bank(std::size_t(groups));</code> declares a
+  <em>function</em>, and the range-for over it then fails with "no matching <code>begin</code>/<code>end</code>". Use braces or
+  <code>static_cast</code>.</li>
+</ul>
+<p><strong>Framework choice.</strong> Qt Test, not GoogleTest or Catch2, because Qt6 is already a hard dependency:
+the suite adds no third-party code, no <code>FetchContent</code>, and builds offline on the rig machine.</p>
+<p><strong>Why tests get the Qt bin directory on <code>PATH</code>.</strong> A bare test executable launched by CTest does not
+inherit a developer shell's Qt path and dies instantly with <code>0xC0000135</code> (<code>STATUS_DLL_NOT_FOUND</code>),
+which CTest reports as <code>***Exception</code> and which reads like a broken test rather than a missing DLL.
+<code>tests/CMakeLists.txt</code> resolves the Qt runtime directory once and puts it on every test's
+environment. This is the same trap that makes the application itself require <code>run_spikespeak.bat</code>.</p>
+<hr />
+<h2 id="3-gui-tests-the-frontend-is-a-unit-too">3. GUI tests — the frontend is a unit too<a class="headerlink" href="#3-gui-tests-the-frontend-is-a-unit-too" title="Permanent link">#</a></h2>
+<p>The C++ suite cannot reach any of the frontend, and the frontend is where most of what an operator
+notices actually lives: a control that folds itself out of existence, a toolbar that grows a third
+row, a column that renders nothing, a stream that loses its label.</p>
+<pre><code class="language-bash">python scripts/run_gui_tests.py
+</code></pre>
+<pre><code>──────────────────────────────────────────────────────────────────────────
+ SpikesPeak GUI tests
+──────────────────────────────────────────────────────────────────────────
+  ✅ PASS  live_view                     71.4s
+  ✅ PASS  toolbar_layout                54.4s
+──────────────────────────────────────────────────────────────────────────
+  ✅ ALL 2 GUI TESTS PASSED
+──────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p>Same green/red convention as the C++ light, and a machine-readable <code>gui_test_status.json</code>.
+<code>--only &lt;name&gt;</code> runs one, <code>--fatal</code> makes red a non-zero exit (CI).</p>
+<p><strong>Why these are not part of every compile.</strong> They need a browser, a backend and ~30–70 s each, which
+is the wrong tax on an edit-compile loop. Run them when you touch <code>webinterface/</code>, and before a
+release. The runner starts ONE backend (with <code>--no-browser</code>) and shares it; each test drives its own
+isolated Chrome on the debug port and closes it again.</p>
+<p><strong>Why they are not unit tests in the jsdom sense.</strong> <code>fitToolbar()</code> decides whether to fold by
+<em>measuring real layout</em> — it compares row 1's natural width against the wrapper's available width.
+A DOM shim has no layout engine: every width would measure 0 and every assertion would pass
+vacuously. Only a real browser can catch these, so that is what they drive.</p>
+<h3 id="toolbar_layout-15-viewport-widths-1920-820"><code>toolbar_layout</code> — 15 viewport widths, 1920 → 820<a class="headerlink" href="#toolbar_layout-15-viewport-widths-1920-820" title="Permanent link">#</a></h3>
+<p>Asserts three operator-facing invariants at every width:</p>
+<ol>
+<li><strong>Never more than two rows.</strong> Stated as a requirement: <em>"I don't ever want to go past 2 rows."</em></li>
+<li><strong>No control is ever lost.</strong> A control may be hidden, but only if its group has a visible peek
+   chip to reveal it. Folding is allowed; losing a control is not.</li>
+<li><strong>No horizontal overflow of visible content.</strong></li>
+</ol>
+<p>That third one has a trap worth knowing: folded groups are <code>position:absolute; visibility:hidden</code>,
+so they are still <em>laid out</em> and still contribute to <code>scrollWidth</code> and to element bounding boxes. A
+naive overflow check reports them as clipped controls. It did exactly that on 2026-08-21 and a
+phantom "three controls are unreachable at 820px" bug was one step from being written up. The test
+excludes anything inside a folded group, which is why it is correct and the ad-hoc check was not.</p>
+<p>What the sweep documents today:</p>
+<table>
+<thead>
+<tr>
+<th>widths</th>
+<th>tier</th>
+<th>folded</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1300–1920</td>
+<td><code>full</code></td>
+<td>nothing</td>
+</tr>
+<tr>
+<td>820–1280</td>
+<td><code>tb-compact-2</code></td>
+<td><code>view</code> + <code>source</code>, both behind chips</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>.tb-compact</code> never engages.</strong> The fold goes straight from <code>full</code> to <code>tb-compact-2</code> between 1300
+and 1280, so the intermediate tier — which folds only <code>view</code> — is dead in practice. That is not a
+failure (every invariant holds), but it means a whole CSS tier is carrying no weight and could be
+removed, or the thresholds separated so it does.</p>
+<h3 id="live_view-traces-labels-strips-pinning"><code>live_view</code> — traces, labels, strips, pinning<a class="headerlink" href="#live_view-traces-labels-strips-pinning" title="Permanent link">#</a></h3>
+<p>Covers: traces render at 1/2/3 columns (a sized canvas and a non-zero renderable-series count per
+column); the ADC column is labelled with the <strong>SDR</strong> connector name and its traces are <code>IOn</code>; no
+column is left saying <em>"Waiting for data…"</em> after play; control strips collapse past two columns
+while the <strong>depth readout stays visible</strong>; a pin holds the strip open <strong>and survives a column
+rebuild</strong>; the vertical layout toggles and still renders; and <code>dataStore.knownStreams</code> is non-empty
+— the exact reading that was <code>[]</code> during the 2026-08-20 dead-probe session.</p>
+<h3 id="adding-a-gui-test">Adding a GUI test<a class="headerlink" href="#adding-a-gui-test" title="Permanent link">#</a></h3>
+<p>Drop a file in <code>tests/gui/</code> (underscore-prefixed files are ignored, which is how <code>_harness.py</code> stays
+out of the run). The harness gives you a backend, an isolated Chrome and a streaming sim source:</p>
+<pre><code class="language-python">from _harness import Gui, Checks
+
+def main():
+    ck = Checks()                      # collects ALL failures, not just the first
+    with Gui() as g:
+        g.live_view(); g.columns(3); g.width(1100)
+        st = g.probe(&quot;(() =&gt; JSON.stringify({...}))()&quot;)
+        ck.that(st[&quot;something&quot;], &quot;why this matters when it fails&quot;)
+    return ck.report(&quot;my test&quot;)
+</code></pre>
+<p><strong>Resizing over CDP does not fire <code>resize</code>.</strong> <code>Emulation.setDeviceMetricsOverride</code> changes
+<code>window.innerWidth</code> and re-runs media queries, but the page gets no <code>resize</code> event, so
+<code>window.onresize</code> handlers and <code>ResizeObserver</code>s never run and the layout settles stable-but-wrong.
+Use <code>Gui.width()</code>, which dispatches the event for you. Do not diagnose the resulting symptom as a
+layout bug — it presents exactly like one.</p>
+<p><strong>Prove a new GUI test can fail.</strong> An always-green test is worthless. Inject a regression, watch it
+go red, then revert. <code>toolbar_layout</code> was validated this way — hiding <code>#tb-peek-source</code> while the
+group is folded made it report <code>UNREACHABLE: ['tb-group tb-source']</code> at all seven folded widths.</p>
+<hr />
+<h2 id="4-debugging-is-it-us-or-is-it-the-rig">4. Debugging: is it us or is it the rig?<a class="headerlink" href="#4-debugging-is-it-us-or-is-it-the-rig" title="Permanent link">#</a></h2>
+<p>This is the part that actually saved time on 2026-08-20. Work top-down; each step is cheap and
+eliminates a large class of causes.</p>
+<h3 id="step-1-run-the-simulated-source-this-is-the-single-highest-value-test">Step 1 — Run the simulated source. This is the single highest-value test.<a class="headerlink" href="#step-1-run-the-simulated-source-this-is-the-single-highest-value-test" title="Permanent link">#</a></h3>
+<pre><code class="language-bash">python &lt;scratch&gt;/probe_onebox.py &quot;Simulated NPX 1.0 (OneBox)&quot;
+</code></pre>
+<p>The sim sources exercise <strong>the same</strong> display processor, the same <code>CircularBuffer</code>s, the same
+WebSocket path and the same GUI as real hardware. So:</p>
+<ul>
+<li><strong>Sim streams, hardware does not</strong> → the software data path is fine. It is the rig.</li>
+<li><strong>Neither streams</strong> → it is us, and you now have a reproducer that needs no hardware.</li>
+</ul>
+<p>On the night in question this took ninety seconds and turned "the GUI is broken" into "the OneBox is
+wedged": sim delivered 1654 binary frames / 67 MB in 12 s on the identical build.</p>
+<h3 id="step-2-count-frames-at-the-socket-not-pixels-on-the-screen">Step 2 — Count frames at the socket, not pixels on the screen<a class="headerlink" href="#step-2-count-frames-at-the-socket-not-pixels-on-the-screen" title="Permanent link">#</a></h3>
+<p>"No traces" has many causes; "no bytes" has few. From the browser console:</p>
+<pre><code class="language-js">const sock = window.app.network.socket;
+let n = 0, bytes = 0;
+const tap = e =&gt; { if (e.data instanceof ArrayBuffer) { n++; bytes += e.data.byteLength; } };
+sock.addEventListener('message', tap);
+setTimeout(() =&gt; { sock.removeEventListener('message', tap);
+                   console.log({frames: n, bytes, streams: [...window.app.dataStore.knownStreams]}); }, 4000);
+</code></pre>
+<p><code>knownStreams</code> is populated <strong>only</strong> from incoming binary frames, so an empty <code>knownStreams</code> is
+always a <em>consequence</em> of no data, never a cause. <code>WebSocketServer::broadcastData</code> sends to every
+client unconditionally — there is no subscription the browser could have failed to make.</p>
+<blockquote>
+<p>Measure the viewport before trusting any browser geometry. An unlaid-out or hidden pane reports
+<code>innerWidth: 0</code> and every derived measurement is garbage. Check
+<code>{innerWidth, document.visibilityState}</code> first — a whole evening was once spent chasing layout
+"bugs" that were an artifact of a hidden pane.</p>
+</blockquote>
+<h3 id="step-3-ask-what-the-counters-actually-count">Step 3 — Ask what the counters actually count<a class="headerlink" href="#step-3-ask-what-the-counters-actually-count" title="Permanent link">#</a></h3>
+<p>The System-state panel is the first thing you look at and it is the easiest thing to misread.
+Arithmetic settles it. On the failing run: <code>1,595 display cycles × 20 ms = 31.90 s</code>,
+<code>638 recorder cycles × 50 ms = 31.90 s</code>, <code>63,536 source cycles ÷ 31.90 s = 1,991/s</code> = exactly two
+1 ms workers. Every number sat at its exact nominal timer rate — which is precisely the reading you
+get when <em>nothing arrives</em>.</p>
+<p>Since the fix, <strong>source</strong> liveness counts committed samples, so <code>producing</code> means data. <strong>Processor</strong>
+liveness still counts loop iterations, which is correct for a processor: it is answering "is this
+thread still turning", not "did it have work".</p>
+<h3 id="step-4-read-what-the-hardware-is-actually-being-told">Step 4 — Read what the hardware is actually being told<a class="headerlink" href="#step-4-read-what-the-hardware-is-actually-being-told" title="Permanent link">#</a></h3>
+<p><code>output.log</code> is rewritten on every launch — <strong>copy it before restarting</strong> or the evidence is gone.
+Compare a failing run's connect/play sequence against a known-good one, and against the vendor
+sequence in <a href="OpenEphys-OneBox-Reference.html"><code>OpenEphys-OneBox-Reference.md</code></a> §G.</p>
+<p>Signals that now exist and are worth trusting:</p>
+<table>
+<thead>
+<tr>
+<th>Symptom in the log/GUI</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;source&gt; has not produced data in 3 s. Acquisition is running but nothing is arriving</code></td>
+<td>The source is alive but the hardware is delivering nothing. Not a display bug.</td>
+</tr>
+<tr>
+<td><code>np_&lt;call&gt; did not return within 3000 ms. Abandoning it</code></td>
+<td>A vendor call is wedged. The basestation needs a power-cycle; shutdown will still complete.</td>
+</tr>
+<tr>
+<td><code>Skipping np_&lt;call&gt; -- the basestation has already stopped responding</code></td>
+<td>An earlier call in the same teardown already timed out; the rest are skipped deliberately.</td>
+</tr>
+<tr>
+<td><code>connection abandoned: ... some teardown steps did not run</code></td>
+<td>The close was partial. Power-cycle before reconnecting.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-5-if-the-rig-is-wedged">Step 5 — If the rig is wedged<a class="headerlink" href="#step-5-if-the-rig-is-wedged" title="Permanent link">#</a></h3>
+<p>A basestation that will not answer <code>np_arm</code> will not answer anything. Symptoms: no data on any
+stream (probe <em>and</em> ADC together — one dead acquisition trigger silences both, since
+<code>SM_Output_AcquisitionTrigger</code> is documented as the neural <strong>or</strong> ADC trigger on a OneBox), and
+vendor calls timing out on teardown.</p>
+<p>The application will now always shut down cleanly. The hardware still needs a power-cycle: pull
+USB-C / 12 V, or press the back-panel <strong>RESET</strong>. Confirm the box is at least enumerating first:</p>
+<pre><code class="language-bash">powershell -NoProfile -Command &quot;Get-PnpDevice -PresentOnly | Where-Object { $_.InstanceId -match 'VID_0403' }&quot;
+</code></pre>
+<p><code>Status: OK</code> means the USB bridge is fine and the FPGA is the problem. A Windows <strong>error 110</strong>
+(<code>ERROR_OPEN_FAILED</code>) from any application means the device cannot be opened — usually a handle not
+released by a force-killed process, or a wedged box.</p>
+<hr />
+<h2 id="5-what-is-worth-a-test-here">5. What is worth a test here<a class="headerlink" href="#5-what-is-worth-a-test-here" title="Permanent link">#</a></h2>
+<p>Prefer components that are pure, on the data path, or encode a rule that has bitten us:</p>
+<ul>
+<li><strong>Anything that guards a past defect.</strong> <code>test_boundedcall</code> is the model: it reduces the wedge to
+  "a callee that never returns must not block the caller" and fails loudly if that regresses.</li>
+<li><strong>The data path.</strong> <code>CircularBuffer</code> wraparound and multi-consumer behaviour — a bug here silently
+  corrupts recordings.</li>
+<li><strong>Pure arithmetic with a published ground truth.</strong> The NP2.0 channel↔electrode mapping is checked
+  against imec's manual; an error there would survive into analysis.</li>
+<li><strong>Anything that decides what the operator is told.</strong> <code>ErrorLog</code>'s severity rules and its
+  framework-noise denylist: too loose and a benign Qt warning becomes "Hardware not detected"; too
+  aggressive and a real fault is swallowed.</li>
+</ul>
+<p>What is <em>not</em> worth it: anything requiring a probe, and anything whose only assertion is that a
+setter set something.</p>
+<h2 id="6-see-also">6. See also<a class="headerlink" href="#6-see-also" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="GuiTesting.html"><code>GuiTesting.md</code></a> — driving and screenshotting the GUI headlessly (CDP)</li>
+<li><a href="RecordingTest.html"><code>RecordingTest.md</code></a> — the end-to-end recording runbook</li>
+<li><a href="FilterDebugging.html"><code>FilterDebugging.md</code></a> — filter <code>.bin</code> dumps and offline validation</li>
+<li><a href="OpenEphys-OneBox-Reference.html"><code>OpenEphys-OneBox-Reference.md</code></a> — the vendor call sequences</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/Testing.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#why-this-exists">Why this exists</a></li>
+<li><a href="#1-running-the-tests">1. Running the tests</a><ul>
+<li><a href="#the-suites">The suites</a></li>
+</ul>
+</li>
+<li><a href="#2-adding-a-test">2. Adding a test</a></li>
+<li><a href="#3-gui-tests-the-frontend-is-a-unit-too">3. GUI tests — the frontend is a unit too</a><ul>
+<li><a href="#toolbar_layout-15-viewport-widths-1920-820">toolbar_layout — 15 viewport widths, 1920 → 820</a></li>
+<li><a href="#live_view-traces-labels-strips-pinning">live_view — traces, labels, strips, pinning</a></li>
+<li><a href="#adding-a-gui-test">Adding a GUI test</a></li>
+</ul>
+</li>
+<li><a href="#4-debugging-is-it-us-or-is-it-the-rig">4. Debugging: is it us or is it the rig?</a><ul>
+<li><a href="#step-1-run-the-simulated-source-this-is-the-single-highest-value-test">Step 1 — Run the simulated source. This is the single highest-value test.</a></li>
+<li><a href="#step-2-count-frames-at-the-socket-not-pixels-on-the-screen">Step 2 — Count frames at the socket, not pixels on the screen</a></li>
+<li><a href="#step-3-ask-what-the-counters-actually-count">Step 3 — Ask what the counters actually count</a></li>
+<li><a href="#step-4-read-what-the-hardware-is-actually-being-told">Step 4 — Read what the hardware is actually being told</a></li>
+<li><a href="#step-5-if-the-rig-is-wedged">Step 5 — If the rig is wedged</a></li>
+</ul>
+</li>
+<li><a href="#5-what-is-worth-a-test-here">5. What is worth a test here</a></li>
+<li><a href="#6-see-also">6. See also</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

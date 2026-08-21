@@ -20,6 +20,7 @@
 <h3>Overview</h3>
 <a href="../README.html">SpikesPeak</a>
 <a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
 <h3>User Guide</h3>
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
@@ -37,6 +38,7 @@
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -60,6 +62,7 @@
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -90,6 +93,18 @@ with ASAP delivery. See the <strong>Hardware Results</strong> page
 milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
 </blockquote>
 <h2 id="start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)<a class="headerlink" href="#start-here-the-path-for-a-new-agent-30-min-in-this-order" title="Permanent link">#</a></h2>
+<blockquote>
+<h3 id="before-you-call-anything-green">Before you call anything green<a class="headerlink" href="#before-you-call-anything-green" title="Permanent link">#</a></h3>
+<p><strong>Both</strong> suites must pass. A compile that produced a binary is not a green build.
+<code>bash
+cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release   # C++ suite runs automatically
+python scripts/run_gui_tests.py                                # GUI suite — you must run it</code>
+The C++ suite runs on every build and prints ✅/❌ per suite. The GUI suite is <strong>not</strong> part of the
+compile (it needs a browser and a backend), so it is on you to run it — always after touching
+<code>webinterface/</code>. A failing C++ suite does not stop the build, which makes red easy to walk past.
+Don't. See <a href="Testing.html"><code>Testing.md</code></a> and <a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a>, and note the
+repo root <a href="../CLAUDE.html"><code>CLAUDE.md</code></a> carries the same checklist.</p>
+</blockquote>
 <ol>
 <li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one
    pass: hosting model, threading, data plane, module command model. Nothing else makes sense first.</li>
@@ -313,6 +328,14 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="Testing.html"><code>Testing.md</code></a></td>
+<td><strong>The test suites and the green/red lights</strong> — C++ (316 cases, Qt Test + CTest, runs on every build) <strong>and GUI</strong> (<code>python scripts/run_gui_tests.py</code>, real-browser layout/render invariants), how to add a test, and the top-down method for telling a SOFTWARE fault from a HARDWARE one — sim-vs-rig, counting frames at the socket, and what the liveness counters actually count.</td>
+</tr>
+<tr>
+<td><a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a></td>
+<td><strong>What the GUI tests actually cover</strong> — the 16-cell layout matrix (columns × ripple dock × orientation) with screenshots, every stream option's expected units/labels/depth, the GUI→backend parameter round trip, and an explicit list of what is NOT covered yet.</td>
+</tr>
 <tr>
 <td><a href="GuiTesting.html"><code>GuiTesting.md</code></a></td>
 <td>Drive + screenshot the browser GUI headlessly (CDP harness), UI element ids, teardown discipline, the 9/9 smoke test.</td>
@@ -838,6 +861,7 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)</a><ul>
+<li><a href="#before-you-call-anything-green">Before you call anything green</a></li>
 <li><a href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)</a></li>
 </ul>
 </li>

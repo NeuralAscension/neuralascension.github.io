@@ -20,6 +20,7 @@
 <h3>Overview</h3>
 <a href="README.html">SpikesPeak</a>
 <a class="active" href="SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="CLAUDE.html">SpikesPeak — instructions for agents</a>
 <h3>User Guide</h3>
 <a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="user_docs/README.html">SpikesPeak — User Guide</a>
@@ -37,6 +38,7 @@
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
 <a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -60,6 +62,7 @@
 <a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 <a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -84,7 +87,7 @@
 is going. Began as the Neuropixels 1.0 / IMRO status record (this branch's original purpose)
 and now also tracks cross-cutting architecture work (module communication) and the planned
 overhauls. Renamed from SpikesPeak_IMRO_Status.txt on 2026-06-25 as scope grew past IMRO.</p>
-<p><strong>STATUS DATE: 2026-08-18</strong> -- <strong>Neuropixels OneBox is a working acquisition source.</strong> A real NP2.0
+<p><strong>STATUS DATE: 2026-08-21</strong> -- <strong>Neuropixels OneBox is a working acquisition source.</strong> A real NP2.0
 multishank probe on a real OneBox connects, streams, records, pauses/plays, disconnects and RECONNECTS
 cleanly, with its 12-channel ADC streaming alongside as its own live column in real volts. Tip
 referencing is now a GUI toggle for NP1.0 and NP2.0. NP1.0-on-OneBox is the next hardware test.</p>
@@ -263,6 +266,56 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S40</strong></td>
 <td><strong>2026-08-19</strong></td>
 <td><strong>First closed-loop latency on the OneBox: NP2.0, n=1000, median 1.087 ms (DEFAULT delivery), 0 unmatched — and the stim captured on the OneBox's OWN ADC, which removes the NI-DAQ sync fit entirely. Two silent traps fixed; ASAP + multichannel configs ready</strong></td>
+</tr>
+<tr>
+<td><strong>S41</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>Merging the second rig's work, and making the GUI tell the truth</strong></td>
+</tr>
+<tr>
+<td><strong>S42</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>FDIR — making failures reach the user, and keeping the pipeline in a state we designed</strong></td>
+</tr>
+<tr>
+<td><strong>S43</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>Knowing the whole system state — and whether it is still moving</strong></td>
+</tr>
+<tr>
+<td><strong>S44</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>A z-score of 0 was unreachable from the ripple GUI</strong></td>
+</tr>
+<tr>
+<td><strong>S45</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>Source liveness — and why the counters are never reset</strong></td>
+</tr>
+<tr>
+<td><strong>S46</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>Log formatting and severity consistency</strong></td>
+</tr>
+<tr>
+<td><strong>S47</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>Processors report started when they have RUN, not when they have scheduled</strong></td>
+</tr>
+<tr>
+<td><strong>S48</strong></td>
+<td><strong>2026-08-20</strong></td>
+<td><strong>OneBox closed-loop latency matrix COMPLETE — both probes, 11 cells x 1000 detections, 11,000 detections / 11,000 confirmed fires / 0 unmatched. ASAP halves the loop on both (NP1.0 1.44→0.92 ms, NP2.0 1.08→0.55 ms) and quorum costs nothing. </strong>The OneBox matches or beats PXIe in all twelve cells.<strong> <code>plot_latency_compare.py</code> taught the same-clock stim path (it could not open a OneBox recording at all). GUI: toolbar no longer clips its controls (415 px measured), ripple z-score columns two-per-row, ADC labelled <code>OneBox ADC (SDR)</code> with channels <code>IO0..IO11</code> matching the NPOB_SDR_02 breakout BNCs</strong></td>
+</tr>
+<tr>
+<td><strong>S49</strong></td>
+<td><strong>2026-08-21</strong></td>
+<td><strong>A dead probe must not look healthy, and must not cost a power-cycle.</strong> An NP1.0 on the OneBox stopped delivering data and the software reported a fully healthy rig for 3.5 min, then could not be shut down. Three defects: liveness counted <strong>timer ticks not data</strong> (so <code>SourceManager</code>'s stall watchdog could never fire); <code>SUCCESS</code> with 0 superframes matched neither the data nor the error branch (silent by construction); and <code>np_arm()</code> ran <strong>bare on the main thread</strong>, killing the Qt event loop and every shutdown path. All three fixed and <strong>verified on the failing hardware</strong> — the stall now reaches the GUI in 3 s and the app exits cleanly in 9 s where it used to hang forever. <code>output.log</code> now rotates.</td>
+</tr>
+<tr>
+<td><strong>S50</strong></td>
+<td><strong>2026-08-21</strong></td>
+<td><strong>A unit test suite, and a green/red light on every build.</strong> Found and fixed three latent <code>Avx2Filter</code> defects on its first run (see §50.5). The repo had NO test infrastructure; there are now <strong>15 suites / 315 cases</strong> (Qt Test + CTest, ~1.6 s) that run on every build and print an unmissable pass/fail banner — red names the suite, shows the failure and the rerun command. Non-fatal by default, <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> for CI. Verified from a clean tree. Blocked on broader coverage: <code>Utils.cpp</code> is the composition root — extracting a <code>SpikesPeakCore</code> static lib is the next high-leverage step.</td>
 </tr>
 </tbody>
 </table>
@@ -3725,7 +3778,225 @@ signal now comes from the tick rather than from the slot that scheduled it. "All
 "Starting all sources" follows only after. Real hardware showed the same (display +25 ms, recorder +57 ms).</p>
 <p><strong>Restart re-arming verified</strong> (the failure that would have hung the rig): three consecutive play/pause
 cycles each produced a complete readiness set with identical timings — <code>armStarted</code> re-arms on every start,
-because <code>slIpStartProcessor</code> runs again each time the thread is restarted.</p></article>
+because <code>slIpStartProcessor</code> runs again each time the thread is restarted.</p>
+<h2 id="48-onebox-closed-loop-latency-matrix-complete-both-probes-2026-08-20">48. ONEBOX CLOSED-LOOP LATENCY MATRIX — COMPLETE, BOTH PROBES  (2026-08-20)<a class="headerlink" href="#48-onebox-closed-loop-latency-matrix-complete-both-probes-2026-08-20" title="Permanent link">#</a></h2>
+<p>Eleven cells on the OneBox, 1000 detections each, plus the existing PXIe rows: <strong>11,000 detections,
+11,000 confirmed stim fires, 0 unmatched.</strong> Full tables, methods and figures live in
+<a href="RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>; this section records
+only what the matrix settled.</p>
+<h3 id="481-what-it-settled">48.1 What it settled<a class="headerlink" href="#481-what-it-settled" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>default delivery</th>
+<th><strong>ASAP</strong> (<code>low_latency</code>)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP1.0 on the OneBox</td>
+<td>1.44 ms</td>
+<td><strong>0.919 – 0.922 ms</strong></td>
+</tr>
+<tr>
+<td>NP2.0 on the OneBox</td>
+<td>1.060 – 1.087 ms</td>
+<td><strong>0.542 – 0.559 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>The OneBox matches or beats PXIe in every one of the twelve cells.</strong> The USB3 basestation is not a
+  latency compromise; nothing in the closed loop argues for the PXIe chassis on timing grounds.</li>
+<li><strong>ASAP roughly halves the loop on both probes</strong>, reproducing on a second transport the effect first
+  measured on PXIe. The two profiles differ by the <code>low_latency</code> flag alone, which is what makes the
+  A/B quotable.</li>
+<li><strong>Quorum costs nothing measurable.</strong> 1-, 2- and 4-channel cells with quorum 1/2/3 sit inside each
+  other's spread, so coincidence detection is free at these channel counts.</li>
+</ul>
+<h3 id="482-tooling-that-had-to-change-to-get-here">48.2 Tooling that had to change to get here<a class="headerlink" href="#482-tooling-that-had-to-change-to-get-here" title="Permanent link">#</a></h3>
+<p><code>ripple_tools/plot_latency_compare.py</code> could not open a OneBox recording at all — it assumed the stim
+monitor was an NI-DAQ band and died with <code>Band 'nidaq' not in this recording</code>. It now takes
+<code>--stim-band</code> / <code>--stim-channel</code> and reuses <code>A.stim_events_same_clock()</code>, so the OneBox ADC (where the
+stim monitor is IO2 and the 1 Hz sync is IO9) is a first-class source for the same-clock comparison.</p>
+<h3 id="483-terminology-corrected-in-code-and-gui">48.3 Terminology, corrected in code and GUI<a class="headerlink" href="#483-terminology-corrected-in-code-and-gui" title="Permanent link">#</a></h3>
+<p>The front-panel connectors are <strong>SDR</strong>, <strong>ADC</strong> and <strong>DAC</strong>, and the back panel carries <strong>SMA 1</strong>. The
+12-channel stream SpikesPeak reads arrives over the <strong>SDR</strong> connector via the imec <strong>NPOB_SDR_02</strong>
+breakout, whose BNCs are <strong>IO0–IO11</strong>. The live view now says <code>OneBox ADC (SDR)</code> and labels its traces
+<code>IO0…IO11</code> so the GUI matches what is physically on the bench.</p>
+<h2 id="49-a-dead-probe-must-not-look-healthy-and-must-not-cost-a-power-cycle-2026-08-2021">49. A DEAD PROBE MUST NOT LOOK HEALTHY, AND MUST NOT COST A POWER-CYCLE  (2026-08-20/21)<a class="headerlink" href="#49-a-dead-probe-must-not-look-healthy-and-must-not-cost-a-power-cycle-2026-08-2021" title="Permanent link">#</a></h2>
+<p>An NP1.0 on the OneBox stopped delivering data. The hardware fault was real and is not ours. What
+<em>is</em> ours is that the software reported a healthy rig for three and a half minutes, and then could
+not be shut down.</p>
+<p>This section is the fifth in the §41–§47 family — a component announcing a state it has not
+reached — but with the sharpest consequence so far: the operator had to force-kill the backend,
+which on a OneBox leaves the FT601 handle claimed and forces a physical power-cycle.</p>
+<h3 id="491-what-the-operator-saw-and-why-every-part-of-it-was-wrong">49.1 What the operator saw, and why every part of it was wrong<a class="headerlink" href="#491-what-the-operator-saw-and-why-every-part-of-it-was-wrong" title="Permanent link">#</a></h3>
+<pre><code>source.npx.onebox   producing 63,536        proc.npx.display    cycling  1,595
+proc.npx.recorder   cycling    638          proc.rippledetector cycling 17,293
+acquisition confirmed: true                 GUI: &quot;Waiting for data…&quot;   Time: 0.00s
+</code></pre>
+<p>Not one sample had been read. The arithmetic gives it away once you look: 1,595 display cycles ×
+20 ms = 31.90 s; 638 recorder cycles × 50 ms = 31.90 s; 63,536 ÷ 31.90 s = 1,991/s = exactly two
+1 ms workers. <strong>Every counter sat at its exact nominal timer rate — which is precisely the reading
+you get when nothing arrives.</strong></p>
+<p>Three defects, each hiding the next:</p>
+<ol>
+<li><strong><code>noteCycle()</code> counted poll-timer ticks, not data.</strong> <code>SourceManager</code>'s stall watchdog looks for
+   <code>cycleCount()</code> standing still, and a free-running timer never stands still — so the watchdog, its
+   3 s threshold and its excellent message were all correct and structurally unable to fire.</li>
+<li><strong><code>SUCCESS</code> with zero superframes matched neither branch.</strong> <code>np_readElectrodeData</code> returning
+   "fine, nothing" is not the data path and not the error path, so the loop swallowed it silently,
+   forever. The OneBox ADC read had the identical hole.</li>
+<li><strong><code>np_arm()</code> ran bare on the main thread with no timeout.</strong> It never returned. That killed the Qt
+   event loop, and with it Pause, Disconnect, the WebSocket, and the console <code>quit</code>.</li>
+</ol>
+<h3 id="492-the-fixes">49.2 The fixes<a class="headerlink" href="#492-the-fixes" title="Permanent link">#</a></h3>
+<p><strong>Liveness now means data.</strong> <code>noteCycle()</code> moved to <em>after</em> a committed write in <code>Npx1Probe</code>,
+<code>Npx2MSProbe</code> and <code>OneBoxAdcWorker</code>. No new watchdog was written — the existing FDIR machinery was
+already right and simply had to be given a number that means what it says. Verified on the failing
+hardware:</p>
+<pre><code>guiStatus: source.npx.onebox has not produced data in 3 s. Acquisition is running
+           but nothing is arriving -- check the hardware connection
+</code></pre>
+<p><strong>Vendor calls are bounded.</strong> New <code>src/core/BoundedCall.hpp</code> (<code>runBounded</code> / <code>runBoundedCode</code>) runs a
+callable on a detached thread and gives up after a timeout. On timeout the call is <strong>abandoned, not
+cancelled</strong> — there is no safe way to kill a thread inside a driver, so it is left blocked and leaks.
+That is the correct trade: a leaked thread costs a stack and dies with the process moments later; an
+unresponsive main thread costs the operator their shutdown and a power-cycle. Callers must capture by
+value only — an abandoned call that touches <code>this</code> turns a hang into a use-after-free.</p>
+<p><code>src/modules/neuropixels/NpBounded.hpp</code> wraps that for the teardown paths as <code>npStep</code>, with an
+<code>alive</code> latch: once one call fails to return the rest are <strong>skipped</strong>, because a basestation that has
+stopped answering will not answer the next one either, and paying four timeouts turns a 3 s pause
+into a 12 s freeze. Applied to <code>np_arm</code> on stop and to the whole of both <code>closeDataSource()</code> paths.</p>
+<p>Verified on the wedged hardware — <strong>the application now exits cleanly in 9 s where it previously hung
+forever</strong>:</p>
+<pre><code>[MAIN] Arming PXI slot 16 to flush hardware buffer before close...
+[Npx] ERROR: np_closeProbe did not return within 3000 ms. Abandoning it and continuing teardown
+[Npx] Skipping np_closeBS  -- the basestation has already stopped responding.
+[Npx] Skipping np_unmapBS  -- the basestation has already stopped responding.
+</code></pre>
+<p><strong>Teardown logs stopped lying.</strong> The close summary and "Released virtual slot 16" used to print
+unconditionally, including for steps that had just been skipped. A teardown that reports work it did
+not do is worse than one that reports nothing: the next person reads it and rules out the slot
+mapping as the reason their reconnect fails.</p>
+<p><strong><code>output.log</code> rotates</strong> (<code>output.1.log</code> … <code>output.5.log</code>). It used to be truncated on every start,
+and during this very investigation two restarts destroyed the log of the fault being investigated.</p>
+<h3 id="493-what-was-not-changed-deliberately">49.3 What was NOT changed, deliberately<a class="headerlink" href="#493-what-was-not-changed-deliberately" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>np_arm</code> stays on the OneBox stop path.</strong> It is inconsistent with <code>closeDataSource()</code>, which
+  documents <code>np_arm</code> as a PXIe-oriented step deliberately dropped — but the vendor reference has
+  OpenEphys using <code>arm(slot)</code> precisely <em>to stop</em> acquisition, and removing it risks leaving the FPGA
+  streaming into nothing. Bounding it is the right fix; removing it is not.</li>
+<li><strong>The play path still does not arm before triggering.</strong> <code>np_arm</code> has three call sites and none is
+  on the play path: the arm is issued once at connect and inherited by every later play, with an
+  unbounded gap in between (~2 s in scripted runs, 61 s in the failing GUI session). The vendor
+  sequence is <code>switchmatrix_set → arm → setSWTrigger</code>; we do the third alone, and SpikesPeak never
+  <em>sets</em> <code>SM_Output_AcquisitionTrigger</code>, only reads it. This is a genuine latent defect and a
+  plausible contributor, <strong>but it could not be tested</strong> — a basestation that will not answer <code>np_arm</code>
+  on teardown will not answer it on play either. Do not apply it blind; test it after a power-cycle.</li>
+<li><strong>Sim sources still count ticks.</strong> Consistency would argue for changing them, but they pace to
+  wall-clock with an early return when no samples are due, so the change risks false "stalled"
+  warnings for no real gain — sim does not wedge the way hardware does.</li>
+</ul>
+<h3 id="494-the-hardware-separately">49.4 The hardware, separately<a class="headerlink" href="#494-the-hardware-separately" title="Permanent link">#</a></h3>
+<p>The OneBox itself needs a <strong>power-cycle</strong>: <code>np_arm(16)</code> not returning means it will not answer even a
+reset request. The FT601 bridge still enumerates (<code>VID_0403&amp;PID_601F</code>, <code>Status: OK</code>), so the USB
+stack is fine and the FPGA is not. OpenEphys reporting <strong>error 110</strong> is the Windows
+<code>ERROR_OPEN_FAILED</code>, not a Neuropixels code — <code>NP_ErrorCode</code> stops at 58.</p>
+<p>Worth recording as a signature: <strong>the probe and the 12-channel ADC died together.</strong>
+<code>SM_Output_AcquisitionTrigger</code> is documented as the neural <strong>or ADC</strong> acquisition trigger on a
+OneBox, so one dead trigger silences both streams at once.</p>
+<p>The last known-good run was 17:35–17:40 (<code>RecordingTests/wp_loopback</code>, <code>wp_square</code>) — a GUI run, not
+a scripted one, which rules out the scripted-vs-GUI axis entirely. The WavePlayer experiments in that
+window remain the most plausible thing to have left the box in this state (<code>waveplayer_arm</code> routes
+DAC0 onto the SMA, which <code>setSyncAsInput()</code> configures as an input), but that is <strong>unproven</strong> and
+FPGA state does not survive a power-cycle, so it may not be reproducible.</p>
+<h2 id="50-a-unit-test-suite-and-a-greenred-light-on-every-build-2026-08-21">50. A UNIT TEST SUITE, AND A GREEN/RED LIGHT ON EVERY BUILD  (2026-08-21)<a class="headerlink" href="#50-a-unit-test-suite-and-a-greenred-light-on-every-build-2026-08-21" title="Permanent link">#</a></h2>
+<p>Until now this repo had <strong>no test infrastructure at all</strong>: no <code>enable_testing()</code>, no framework, and a
+single orphaned <code>TestFilter.cpp</code> sitting in the repo root. Every check was a hardware run.</p>
+<p>There are now <strong>15 suites / 315 cases</strong>, running in ~1.6 s, and the build <strong>states its result out
+loud every single time</strong>. Full detail: <a href="developer_docs/Testing.html"><code>developer_docs/Testing.md</code></a>.</p>
+<h3 id="501-the-light">50.1 The light<a class="headerlink" href="#501-the-light" title="Permanent link">#</a></h3>
+<pre><code>──────────────────────────────────────────────────────────────────────────
+ SpikesPeak unit tests
+──────────────────────────────────────────────────────────────────────────
+  ✅ PASS  test_boundedcall        0.75s
+  ✅ PASS  test_circularbuffer     0.35s
+  …
+──────────────────────────────────────────────────────────────────────────
+  ✅ ALL 15 SUITES PASSED
+──────────────────────────────────────────────────────────────────────────
+</code></pre>
+<p>Red names the failing suite, reproduces its failure output inline, and prints the one-line command to
+rerun just that suite. <strong>A failing suite does not stop the build</strong> — you usually still want the binary
+in order to debug — but <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> makes red fatal, which is the CI setting. Both
+paths were verified by deliberately breaking a test and checking the exit codes. A machine-readable
+<code>test_status.json</code> is written next to the binaries for any other surface that wants the same state.</p>
+<p>The reporter is also written so it can never itself break a build: it degrades to ASCII on a console
+that cannot encode <code>✅</code>, and any exception inside it is caught and reported rather than propagated.
+(The first version did break a build, on a cp1252 pipe.)</p>
+<h3 id="502-framework-and-why">50.2 Framework, and why<a class="headerlink" href="#502-framework-and-why" title="Permanent link">#</a></h3>
+<p><strong>Qt Test.</strong> Qt6 is already a hard dependency, so the suite adds no third-party code, no
+<code>FetchContent</code>, and builds offline on the rig machine — which matters for a box that also has to run
+hardware. Each suite is a standalone executable registered with CTest.</p>
+<p>Two Windows-specific traps are handled once, in <code>tests/CMakeLists.txt</code>, so nobody meets them again: a
+bare test exe does not inherit a developer shell's Qt <code>PATH</code> and dies <code>0xC0000135</code> (which CTest
+reports as a mysterious <code>***Exception</code>); and <code>qt_standard_project_setup()</code> makes executables WIN32,
+which silently swallows all test output including the QCOMPARE diff that says <em>why</em> a test failed.</p>
+<h3 id="503-what-is-covered-and-why-those-things">50.3 What is covered, and why those things<a class="headerlink" href="#503-what-is-covered-and-why-those-things" title="Permanent link">#</a></h3>
+<p>Weighted toward what would be expensive or invisible to get wrong: the core <code>CircularBuffer</code> (27),
+the channel↔electrode maps that label every recording (29 + 22), the four registries that wire the
+application together (28), the filter numerics on the closed-loop path (18) — plus a suite asserting
+that <strong>the AVX2 filter's output equals the scalar one</strong>, including at lengths that are not a multiple
+of eight, because a divergence there would only ever show up as two datasets that quietly disagree.</p>
+<p><code>test_boundedcall</code> and <code>test_datasourceworker</code> exist specifically to pin the two defects from §49:
+<em>a blocked callee must not block the caller</em>, and <em><code>cycleCount()</code> must mean "data arrived", not "the
+loop ran"</em>.</p>
+<h3 id="504-the-one-thing-blocking-broader-coverage">50.4 The one thing blocking broader coverage<a class="headerlink" href="#504-the-one-thing-blocking-broader-coverage" title="Permanent link">#</a></h3>
+<p><code>src/core/Utils.cpp</code> is the composition root — <code>registerBuiltInTypes()</code> constructs every source,
+processor and interpreter — so linking it into a test drags in the entire application (13 unresolved
+externals). <code>tests/test_utils.cpp</code> is written (31 cases) and commented out in <code>tests/CMakeLists.txt</code>
+with the reasoning.</p>
+<p><strong>The fix, and the highest-leverage next step for testing this codebase: extract the non-<code>main</code>
+sources into a <code>SpikesPeakCore</code> static library that both <code>SpikesPeak.exe</code> and the tests link.</strong> That
+single change makes <code>RippleDetector</code>, <code>DisplayProcessor</code>, <code>RecordProcessor</code>, <code>SourceManager</code> and
+<code>WebSocketServer</code> unit-testable — i.e. all the logic that currently can only be checked by running a
+probe. It was deliberately NOT done tonight: it touches the build for every target, and the priority
+was not to jeopardise the morning's hardware verification.</p>
+<p>Verified from a <strong>clean tree</strong> as well as incrementally: a fresh <code>cmake -S . -B &lt;new&gt;</code> configure plus
+full build succeeds and runs the suite green.</p>
+<h3 id="505-the-suite-found-three-real-defects-on-its-first-run">50.5 The suite found three real defects on its first run<a class="headerlink" href="#505-the-suite-found-three-real-defects-on-its-first-run" title="Permanent link">#</a></h3>
+<p>All three are in <code>Avx2Filter</code> / its only caller, and all three are <strong>latent, not active</strong> — worth
+stating precisely, because "we found bugs in the filter on the closed-loop path" would otherwise
+read far more alarmingly than the facts justify. <code>LFPProcessor</code> is the <em>only</em> user of <code>Avx2Filter</code>,
+and it configures freshly-constructed filters exactly once, which is the single case all three bugs
+happen not to reach. (<code>RippleDetector</code> and <code>AudioProcessor</code> use the <strong>scalar</strong> <code>Filter</code>, which never
+had any of these problems.) Every one of them is now fixed, and guarded by a test.</p>
+<p><strong>1. The coefficient setters appended instead of replacing.</strong>
+<code>Avx2Filter::setDefault{LFP,RippleBand,Envelope}Coefs()</code> <code>push_back()</code>ed onto <code>mBCoefs</code>/<code>mACoefs</code>
+without clearing, then set <code>mNum*Coefs</code> to the <em>new</em> preset's tap count. Apply LFP (3 taps) then
+ripple (26 taps) to one object and the filter that actually ran was three LFP taps followed by the
+first 23 ripple taps — <strong>neither filter, silently</strong>. The scalar <code>Filter</code> assigns, so the two
+implementations disagreed across a reconfiguration. Re-applying the <em>same</em> preset was only
+accidentally harmless: the duplicates sat past the <code>mNum*Coefs</code> bound, but both vectors grew without
+limit every time.</p>
+<p><strong>2. <code>addSample()</code> wrote through a null pointer on an unconfigured filter.</strong>
+With no coefficients set, <code>mX</code> is empty and the aligned 32-byte store went straight through
+<code>mX.data()</code>. The scalar <code>Filter</code> has always guarded this (<code>isInitialized()</code> → <code>0.0f</code>); the vector
+one now emits silence, which is the honest answer. This case previously could not even be <em>tested</em> —
+the attempt would have taken the whole suite down.</p>
+<p><strong>3. <code>LFPProcessor::setup()</code> appended 48 more filters every time it ran.</strong>
+No <code>clear()</code> before the population loop. Measured on the rig: <code>setup()</code> runs once per session on the
+paths exercised, and three connect/disconnect cycles produced three start/stop pairs and <strong>no</strong>
+second setup — so this one never fired in practice. Fixed defensively.</p>
+<p>Verified after the fix: <code>test_avx2filter</code> 15/15 with <strong>0 skipped</strong> (the AVX2 path genuinely runs on
+this machine, it does not silently skip), a sim NP2.0 source drives <code>LFPProcessor</code> start→run→stop
+with <strong>0 warnings</strong>, and three connect/disconnect cycles deliver an identical 286 frames each.</p>
+<p>The test that pinned defect 1 was originally written to assert the <em>broken</em> behaviour so the suite
+would stay green. That is the wrong default — a test asserting a bug cements it — so it was inverted
+to assert equivalence with a freshly configured filter, and it now passes against the fix.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -3967,6 +4238,27 @@ because <code>slIpStartProcessor</code> runs again each time the thread is resta
 <li><a href="#471-why-it-matters-concretely">47.1 Why it matters, concretely</a></li>
 <li><a href="#472-the-fix-and-the-trap-that-shapes-it">47.2 The fix, and the trap that shapes it</a></li>
 <li><a href="#473-verified-the-timings-prove-the-mechanism">47.3 Verified — the timings prove the mechanism</a></li>
+</ul>
+</li>
+<li><a href="#48-onebox-closed-loop-latency-matrix-complete-both-probes-2026-08-20">48. ONEBOX CLOSED-LOOP LATENCY MATRIX — COMPLETE, BOTH PROBES (2026-08-20)</a><ul>
+<li><a href="#481-what-it-settled">48.1 What it settled</a></li>
+<li><a href="#482-tooling-that-had-to-change-to-get-here">48.2 Tooling that had to change to get here</a></li>
+<li><a href="#483-terminology-corrected-in-code-and-gui">48.3 Terminology, corrected in code and GUI</a></li>
+</ul>
+</li>
+<li><a href="#49-a-dead-probe-must-not-look-healthy-and-must-not-cost-a-power-cycle-2026-08-2021">49. A DEAD PROBE MUST NOT LOOK HEALTHY, AND MUST NOT COST A POWER-CYCLE (2026-08-20/21)</a><ul>
+<li><a href="#491-what-the-operator-saw-and-why-every-part-of-it-was-wrong">49.1 What the operator saw, and why every part of it was wrong</a></li>
+<li><a href="#492-the-fixes">49.2 The fixes</a></li>
+<li><a href="#493-what-was-not-changed-deliberately">49.3 What was NOT changed, deliberately</a></li>
+<li><a href="#494-the-hardware-separately">49.4 The hardware, separately</a></li>
+</ul>
+</li>
+<li><a href="#50-a-unit-test-suite-and-a-greenred-light-on-every-build-2026-08-21">50. A UNIT TEST SUITE, AND A GREEN/RED LIGHT ON EVERY BUILD (2026-08-21)</a><ul>
+<li><a href="#501-the-light">50.1 The light</a></li>
+<li><a href="#502-framework-and-why">50.2 Framework, and why</a></li>
+<li><a href="#503-what-is-covered-and-why-those-things">50.3 What is covered, and why those things</a></li>
+<li><a href="#504-the-one-thing-blocking-broader-coverage">50.4 The one thing blocking broader coverage</a></li>
+<li><a href="#505-the-suite-found-three-real-defects-on-its-first-run">50.5 The suite found three real defects on its first run</a></li>
 </ul>
 </li>
 </ul>

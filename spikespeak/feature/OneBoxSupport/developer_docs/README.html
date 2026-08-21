@@ -623,8 +623,8 @@ machine, don't assume. <code>CMakeLists.txt</code> is the authority for the requ
 </tr>
 <tr>
 <td>HDF5</td>
-<td><strong>1.14.6</strong> (<code>C:/Program Files/HDF_Group/HDF5/1.14.6</code>) — components <strong>CXX, HL</strong></td>
-<td><code>CMakeLists.txt</code> <code>find_package(HDF5 … CXX HL)</code>; path in <code>CMakeCache.txt</code> <code>HDF5_DIR</code></td>
+<td><strong>2.x</strong> — verified on <strong>2.2.0</strong> (<code>C:/Program Files/HDF_Group/HDF5/2.2.0</code>), components <strong>CXX, HL</strong>. The runtime shipped in <code>external/hdf5/extlibs</code> is the 2.x set, so a 2.x SDK is what the vendored DLLs match; configure says so (<code>HDF5 runtime: vendored (linked HDF5 2.2.0 matches the vendored 2.x set)</code>). The original box used 1.14.6.</td>
+<td><code>CMakeLists.txt</code> <code>find_package(HDF5 … CXX HL)</code>; path in <code>CMakeCache.txt</code> <code>HDF5_DIR</code>. <strong>Not found automatically</strong> — put it on <code>CMAKE_PREFIX_PATH</code> alongside Qt</td>
 </tr>
 <tr>
 <td>PortAudio</td>

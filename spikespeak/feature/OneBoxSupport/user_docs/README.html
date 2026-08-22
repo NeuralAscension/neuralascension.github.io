@@ -6,11 +6,12 @@
 <title>SpikesPeak — User Guide - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">User Guide / SpikesPeak — User Guide</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -140,7 +142,10 @@ ripple module.)</p>
    <strong>Parameter-estimation time = 3 s</strong> (quick test), then press <strong>▶ Start</strong>.</p>
 <p><img alt="Channels added" src="images/ripple/np1_channels.png" />
 6. <strong>Watch it fire.</strong> After ~9 s the columns arm and detections start — the cowsay prints <code>Ripple detected!</code>
-   and the red <strong>STIM LED</strong> blinks on each detection.</p>
+   The red <strong>STIM LED</strong> does <strong>not</strong> light on detection alone -- it lights only when the
+   stimulation server acknowledges a real pulse. Stimulation is also opt-in: the dock's
+   <code>enable stimulation</code> gate defaults OFF and the server must be armed, so a detection transmits
+   nothing until you do both.</p>
 <p><img alt="Detecting" src="images/ripple/np1_detecting.png" /></p>
 <hr />
 <h2 id="launching-spikespeak">Launching SpikesPeak<a class="headerlink" href="#launching-spikespeak" title="Permanent link">#</a></h2>
@@ -285,7 +290,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Neuropixels OneBox</strong></td>
-<td>🚧 <strong>In progress — not yet implemented.</strong> Selecting the <em>OneBox</em> profile raises a hardware-error; no acquisition source is registered for <code>source.npx.onebox</code> yet.</td>
+<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output is implemented but not yet validated (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a>).</td>
 </tr>
 </tbody>
 </table></article>

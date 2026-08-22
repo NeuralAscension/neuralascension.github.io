@@ -6,11 +6,12 @@
 <title>SpikesPeak — GUI Guide (with screenshots) - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">User Guide / SpikesPeak — GUI Guide (with screenshots)</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -148,8 +150,18 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
 <p><img alt="Streaming = white ⏸ inside a green pulsing ring" src="images/play_button_streaming.png" /></p>
 <p><img alt="NP1 live view" src="images/np1_liveview.png" /></p>
 <ul>
-<li>Two columns; each has dropdowns for <strong>Band</strong> (AP / LFP / RAW / NI-DAQ), <strong>Shank</strong> (for multishank), and
-  <strong>L+R / Left / Right</strong>, plus a <strong>Scale</strong> (µV per trace). Drag the slider to scroll depth.</li>
+<li>Each column has dropdowns for <strong>Band</strong>, <strong>Shank</strong> (multishank probes), <strong>L+R / Left / Right</strong>, a
+  scale input, and a per-column <strong>channel count</strong> (<code>Ch:Auto / 20 / 40 / 60 / 80 / 120</code>). Drag the
+  slider to scroll depth.</li>
+<li>The band names are exactly what the picker shows: <code>AP Band</code>, <code>LFP Band</code>, <code>RAW Band</code>,
+  <code>OneBox ADC (SDR)</code> on a OneBox source, and <code>NIDAQ AI/O</code> / <code>NIDAQ DI/O</code> on an NI-DAQ one. There is
+  no control captioned <em>Scale</em> -- the unit beside the input names it, and it follows the band: <code>µV</code>
+  for a probe band, <code>V/row</code> for the OneBox ADC, <code>×</code> for NI-DAQ.</li>
+<li><strong>Past two columns the control strip folds</strong> to a <code>▾ controls</code> chip, to give the traces the width.
+  Hover it to peek, click it or press <code>Ctrl+Shift+&lt;n&gt;</code> to pin it open. The depth readout
+  (<code>e19 ↕ e0</code>, or <code>IO11 ↕ IO0</code> for the ADC) stays visible either way. In <strong>vertical</strong> layout the
+  strips never fold -- a stacked row is full-width, so folding would reclaim space that was never
+  scarce.</li>
 <li><strong>Layout — <code>Horizontal ⬌</code> / <code>Vertical ⬍</code></strong> (toolbar toggle, beside <strong>Columns/Rows</strong>): <em>Horizontal</em> tiles
   the strips side-by-side as <strong>columns</strong> (20 channels each) — best on a landscape monitor. <em>Vertical</em> stacks
   them as full-width <strong>rows</strong> (40 channels each) — ideal for a <strong>portrait / rotated monitor</strong> and laminar
@@ -184,10 +196,15 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
 </ol>
 <p><img alt="Armed" src="images/record_armed.png" /></p>
 <ol start="2">
-<li>Press <strong>● Record again to START</strong>. The <strong>Record button turns solid red</strong> and a flashing <strong>● REC → name</strong>
-   badge appears; files write live to <code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>. (While streaming the
-   Play button is a <strong>white ⏸ in a green ring</strong>; it returns to a <strong>green ▶</strong> when paused.):</li>
+<li>Press <strong>● Record again to START</strong>. The <strong>Record button turns solid red</strong>, a <strong>● REC → name</strong>
+   badge appears, and files write live to <code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>.</li>
 </ol>
+<p>On the badge: the red dot blinks, the text does not — a filename that strobes is a filename you
+   cannot read. A long name is truncated in the MIDDLE, keeping the start and the last ten
+   characters, so <code>..._baseline</code> and <code>..._asap</code> stay distinguishable. The full path is in the
+   badge's tooltip.</p>
+<p>(While streaming the Play button is a <strong>white ⏸ in a green ring</strong>; it returns to a <strong>green ▶</strong>
+   when paused.):</p>
 <p><img alt="Recording — Play = white ⏸ in a green ring (streaming), Record = solid red (recording)" src="images/record_buttons.png" /></p>
 <ol start="3">
 <li>Press <strong>● Record again to STOP</strong> (files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the

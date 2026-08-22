@@ -6,11 +6,12 @@
 <title>Hardware Results — closed-loop ripple → stimulation - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Hardware Results / Hardware Results — closed-loop ripple → stimulation</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -137,18 +139,41 @@ data delivery the loop runs at <strong>0.55–0.61 ms on Neuropixels 2.0</strong
 <td>998 – 1000</td>
 </tr>
 <tr>
-<td><strong>NP2.0 on the OneBox — default delivery</strong></td>
-<td><strong>1.087 ms</strong></td>
-<td>0.902 – 1.271</td>
-<td>1.53 ms</td>
+<td><strong>NP2.0 on the OneBox — ASAP delivery</strong></td>
+<td><strong>0.542 – 0.559 ms</strong></td>
+<td>0.492 – 0.597</td>
+<td>0.68 – 0.69 ms</td>
+<td>999 – 1000</td>
+</tr>
+<tr>
+<td><strong>NP1.0 on the OneBox — ASAP delivery</strong></td>
+<td><strong>0.919 – 0.922 ms</strong></td>
+<td>0.888 – 0.985</td>
+<td>1.03 ms</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0 on the OneBox — default delivery</td>
+<td>1.060 – 1.087 ms</td>
+<td>0.847 – 1.322</td>
+<td>1.53 – 1.55 ms</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP1.0 on the OneBox — default delivery</td>
+<td>1.439 – 1.480 ms</td>
+<td>1.196 – 1.684</td>
+<td>1.91 – 1.95 ms</td>
 <td>1000</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p>The OneBox row is measured on a <strong>different transport</strong> (USB3/FTDI) and with a <strong>different stim
+<p>The OneBox rows are measured on a <strong>different transport</strong> (USB3/FTDI) and with a <strong>different stim
 capture</strong> (the OneBox's own ADC, not the NI-DAQ) — see <a href="#onebox--usb3-transport-same-clock-capture">OneBox</a>
-below. Compare it against the PXIe <strong>default</strong> row, not the ASAP rows: it has not been run with ASAP yet.</p>
+below. As of 2026-08-20 the OneBox has the <strong>full 3 x 2 matrix on both probes</strong>, so it is directly
+comparable to the PXIe rows above. <strong>The OneBox matches or beats PXIe in every one of the twelve
+cells</strong> — never slower, on either probe, in either delivery mode.</p>
 </blockquote>
 <p>All tests: <strong>0 unmatched</strong> — every stimulus pairs with a preceding detection. Both probes measured across
 the full quorum × delivery matrix at 1000 detections per cell.</p>
@@ -803,48 +828,327 @@ Offline pipeline, exact-detector reproduction and the sync fit:
 <p>The results above are all PXIe. This section is the <strong>OneBox</strong> equivalent: the same probe and the same
 synthetic ripple, but the basestation is a Neuropixels <strong>OneBox</strong> on USB3/FTDI instead of a PXIe module,
 and the stimulus is captured on the <strong>OneBox's own 12-channel ADC</strong> instead of the NI-DAQ.</p>
-<p><strong>Measured (2026-08-19, real NP2.0 in saline, live Pi 3B+ / AM 2300, n = 1000):</strong></p>
+<h3 id="the-full-matrix-2026-08-20-real-probes-in-saline-live-pi-3b-am-2300">The full matrix (2026-08-20, real probes in saline, live Pi 3B+ / AM 2300)<a class="headerlink" href="#the-full-matrix-2026-08-20-real-probes-in-saline-live-pi-3b-am-2300" title="Permanent link">#</a></h3>
+<p><strong>11 cells x 1000 detections = 11,000 detections, 11,000 confirmed stim fires, 0 unmatched.</strong> Every
+cell is a separate recording with its own baseline training; the 1 ch / default NP2.0 cell is the
+2026-08-19 run (S40) and the rest were recorded on 2026-08-20.</p>
 <table>
 <thead>
 <tr>
-<th></th>
-<th>value</th>
+<th>probe</th>
+<th>channels</th>
+<th>quorum</th>
+<th>delivery</th>
+<th>median</th>
+<th>mean ± sd</th>
+<th>p5 – p95</th>
+<th>min / max</th>
+<th>n</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>median</td>
-<td><strong>1.087 ms</strong></td>
+<td>NP1.0</td>
+<td>1</td>
+<td>1</td>
+<td>default</td>
+<td>1.439 ms</td>
+<td>1.444 ± 0.297</td>
+<td>1.002 – 1.917</td>
+<td>0.853 / 3.059</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>mean ± sd</td>
-<td>1.087 ± 0.290 ms</td>
+<td>NP1.0</td>
+<td>1</td>
+<td>1</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.922 ms</strong></td>
+<td>0.938 ± 0.101</td>
+<td>0.852 – 1.033</td>
+<td>0.775 / 2.924</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>p5 – p95</td>
-<td>0.653 – 1.533 ms</td>
+<td>NP1.0</td>
+<td>2</td>
+<td>2</td>
+<td>default</td>
+<td>1.480 ms</td>
+<td>1.484 ± 0.299</td>
+<td>1.021 – 1.948</td>
+<td>0.886 / 2.485</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>min / max</td>
-<td>0.420 / 2.377 ms</td>
+<td>NP1.0</td>
+<td>2</td>
+<td>2</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.919 ms</strong></td>
+<td>0.934 ± 0.098</td>
+<td>0.860 – 1.028</td>
+<td>0.810 / 3.479</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>n / unmatched</td>
-<td>1000 / <strong>0</strong></td>
+<td>NP1.0</td>
+<td>4</td>
+<td>3</td>
+<td>default</td>
+<td>1.451 ms</td>
+<td>1.444 ± 0.302</td>
+<td>0.990 – 1.910</td>
+<td>0.900 / 2.738</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>delivery</td>
-<td><strong>default</strong> (<code>low_latency</code> unset → <code>acquisition poll interval 1 ms</code>)</td>
+<td>NP1.0</td>
+<td>4</td>
+<td>3</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.922 ms</strong></td>
+<td>0.937 ± 0.061</td>
+<td>0.859 – 1.034</td>
+<td>0.819 / 1.580</td>
+<td>1000</td>
 </tr>
 <tr>
-<td>detection</td>
-<td>1 channel (e0 → ch0), quorum 1, z 2.5, lockout 0.2 s, online threshold 180.8</td>
+<td>NP2.0</td>
+<td>1</td>
+<td>1</td>
+<td>default</td>
+<td>1.087 ms</td>
+<td>1.087 ± 0.290</td>
+<td>0.653 – 1.533</td>
+<td>0.420 / 2.377</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>1</td>
+<td>1</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.559 ms</strong></td>
+<td>0.563 ± 0.084</td>
+<td>0.446 – 0.690</td>
+<td>0.354 / 1.785</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>2</td>
+<td>2</td>
+<td>default</td>
+<td>1.060 ms</td>
+<td>1.073 ± 0.305</td>
+<td>0.600 – 1.539</td>
+<td>0.502 / 2.355</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>2</td>
+<td>2</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.555 ms</strong></td>
+<td>0.558 ± 0.075</td>
+<td>0.433 – 0.681</td>
+<td>0.375 / 0.875</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>4</td>
+<td>3</td>
+<td>default</td>
+<td>1.076 ms</td>
+<td>1.087 ± 0.297</td>
+<td>0.622 – 1.547</td>
+<td>0.483 / 2.586</td>
+<td>1000</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>4</td>
+<td>3</td>
+<td><strong>ASAP</strong></td>
+<td><strong>0.542 ms</strong></td>
+<td>0.548 ± 0.073</td>
+<td>0.442 – 0.675</td>
+<td>0.379 / 0.807</td>
+<td>999</td>
 </tr>
 </tbody>
 </table>
-<p><strong>This is the DEFAULT-delivery number.</strong> ASAP has not been measured on the OneBox. The comparable PXIe
-figure is 1.124 – 1.351 ms, so the OneBox is not slower on this evidence — but do not read that as a
-transport comparison until the ASAP cell exists on both.</p>
+<p>Detection in every cell: z 2.5, lockout 0.2 s, coincidence 0.05 s, electrodes 0..N-1. Online
+thresholds held to +/-2 % across the whole NP1.0 run (125.42 / 125.08 / 120.16 / 122.88), i.e. across
+four independent baseline trainings and ~50 minutes — so the delivery-mode differences below are not
+threshold drift between recordings.</p>
+<h3 id="what-the-matrix-says">What the matrix says<a class="headerlink" href="#what-the-matrix-says" title="Permanent link">#</a></h3>
+<p><strong>1. ASAP roughly halves the loop, and the amount is the same at every quorum.</strong></p>
+<table>
+<thead>
+<tr>
+<th>probe</th>
+<th>default</th>
+<th>ASAP</th>
+<th>saving</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP1.0</td>
+<td>1.439 – 1.480 ms</td>
+<td><strong>0.919 – 0.922 ms</strong></td>
+<td>-0.52 to -0.56 ms</td>
+</tr>
+<tr>
+<td>NP2.0</td>
+<td>1.060 – 1.087 ms</td>
+<td><strong>0.542 – 0.559 ms</strong></td>
+<td>-0.52 to -0.53 ms</td>
+</tr>
+</tbody>
+</table>
+<p>NP1.0 ASAP is 0.919 / 0.922 / 0.922 ms at 1, 2 and 4 channels — flat to 3 microseconds.</p>
+<p><strong>2. Detection width is free.</strong> Latency does not move with channel count or quorum on either probe
+(NP1.0 ASAP varies by 3 us across 1 -&gt; 4 channels; NP2.0 ASAP by 17 us). Quorum decides WHICH
+threshold crossing fires the stimulus, not how long the stimulus takes to arrive. Run 4 channels at
+quorum 3 for false-positive rejection and pay nothing for it.</p>
+<p><strong>3. The two probes remove the delay in different places.</strong> From the per-stage counters
+(<code>plot_latency_compare.py</code>, means):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>batching, default</th>
+<th>batching, ASAP</th>
+<th>median change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP1.0 (1 ch)</td>
+<td>644 us</td>
+<td><strong>0 us</strong></td>
+<td>-517 us</td>
+</tr>
+<tr>
+<td>NP2.0 (4 ch)</td>
+<td>118 us</td>
+<td>28 us</td>
+<td>-534 us</td>
+</tr>
+</tbody>
+</table>
+<p>On NP1.0 the backlog counter accounts for essentially the whole saving. On NP2.0 it moves only 90 us
+while the median moves 534 us — because NP2's dominant poll latency is <strong>upstream of the detector</strong>,
+invisible to an input-side counter but removed by faster polling all the same. This reproduces, on a
+different transport, the correction recorded in
+<a href="../developer_docs/LatencyProfiling.html"><code>LatencyProfiling.md</code></a>.</p>
+<h3 id="onebox-vs-pxie-cell-for-cell">OneBox vs PXIe, cell for cell<a class="headerlink" href="#onebox-vs-pxie-cell-for-cell" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>configuration</th>
+<th>NP1.0 PXIe</th>
+<th><strong>NP1.0 OneBox</strong></th>
+<th>NP2.0 PXIe</th>
+<th><strong>NP2.0 OneBox</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ch, default</td>
+<td>1.483</td>
+<td><strong>1.439</strong></td>
+<td>1.351</td>
+<td><strong>1.087</strong></td>
+</tr>
+<tr>
+<td>2 ch q2, default</td>
+<td>1.489</td>
+<td><strong>1.480</strong></td>
+<td>1.186</td>
+<td><strong>1.060</strong></td>
+</tr>
+<tr>
+<td>4 ch q3, default</td>
+<td>1.484</td>
+<td><strong>1.451</strong></td>
+<td>1.124</td>
+<td><strong>1.076</strong></td>
+</tr>
+<tr>
+<td>1 ch, <strong>ASAP</strong></td>
+<td>0.977</td>
+<td><strong>0.922</strong></td>
+<td>0.600</td>
+<td><strong>0.559</strong></td>
+</tr>
+<tr>
+<td>2 ch q2, <strong>ASAP</strong></td>
+<td>0.942</td>
+<td><strong>0.919</strong></td>
+<td>0.608</td>
+<td><strong>0.555</strong></td>
+</tr>
+<tr>
+<td>4 ch q3, <strong>ASAP</strong></td>
+<td>0.963</td>
+<td><strong>0.922</strong></td>
+<td>0.546</td>
+<td><strong>0.542</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The OneBox is not a compromise.</strong> It matches or beats the PXIe in all twelve cells — by ~25-55 us on
+NP1.0 and by up to 264 us on NP2.0 — and there is no cell where the USB3 basestation is slower.</p>
+<p>Two caveats on reading that table, both in the OneBox's favour rather than against it:</p>
+<ul>
+<li>The OneBox figures carry <strong>no sync fit</strong> (below), so they do not include the PXIe measurement's
+  clock-alignment error term.</li>
+<li>The PXIe NP2.0 <em>default</em> column trends downward with channel count (1.351 -&gt; 1.186 -&gt; 1.124), which
+  should not happen if quorum does not affect delay. The OneBox NP2.0 default column is flat
+  (1.087 / 1.060 / 1.076). The PXIe trend is more likely an artefact of the sync fit than a real effect.</li>
+</ul>
+<h3 id="figures">Figures<a class="headerlink" href="#figures" title="Permanent link">#</a></h3>
+<p>Four-panel delivery-mode comparison, rendered by the same tool and palettes as the PXIe figures
+above (<code>ripple_tools/plot_latency_compare.py</code>, light and dark pair per figure):</p>
+<p><strong>NP1.0 on the OneBox</strong> — one pair per quorum level, matching the PXIe set above:</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np1_1ch.png" alt="NP1.0 on OneBox, single channel: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np1_1ch_dark.png" alt="NP1.0 on OneBox, single channel: default versus ASAP delivery">
+</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np1_2ch.png" alt="NP1.0 on OneBox, two-channel quorum: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np1_2ch_dark.png" alt="NP1.0 on OneBox, two-channel quorum: default versus ASAP delivery">
+</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np1_4ch.png" alt="NP1.0 on OneBox, four-channel 3-of-4 quorum: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np1_4ch_dark.png" alt="NP1.0 on OneBox, four-channel 3-of-4 quorum: default versus ASAP delivery">
+</p>
+
+<p><strong>NP2.0 Multishank on the OneBox</strong> — the same three. (The default arm of the 1 ch pair is the
+2026-08-19 run recorded for S40; the other five cells are from 2026-08-20.)</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np2_1ch.png" alt="NP2.0 on OneBox, single channel: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np2_1ch_dark.png" alt="NP2.0 on OneBox, single channel: default versus ASAP delivery">
+</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np2_2ch.png" alt="NP2.0 on OneBox, two-channel quorum: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np2_2ch_dark.png" alt="NP2.0 on OneBox, two-channel quorum: default versus ASAP delivery">
+</p>
+<p class="figpair">
+  <img class="fig-light" src="latency/asap_comparison_onebox_np2_4ch.png" alt="NP2.0 on OneBox, four-channel 3-of-4 quorum: default versus ASAP delivery">
+  <img class="fig-dark" src="latency/asap_comparison_onebox_np2_4ch_dark.png" alt="NP2.0 on OneBox, four-channel 3-of-4 quorum: default versus ASAP delivery">
+</p>
+
+<p>Note the tool could not open a OneBox recording until this run: it went straight to the NI-DAQ sync
+path and died with <code>Band 'nidaq' not in this recording</code>. It now takes the same <code>--stim-band adc
+--stim-channel 2</code> flags as <code>analyze_recording.py</code> and reuses that module's <code>stim_events_same_clock()</code>,
+so a figure and the numbers in this report can never disagree about what counts as a pulse edge.</p>
 <h3 id="why-this-measurement-is-structurally-simpler-than-the-pxie-one">Why this measurement is structurally simpler than the PXIe one<a class="headerlink" href="#why-this-measurement-is-structurally-simpler-than-the-pxie-one" title="Permanent link">#</a></h3>
 <p>On a PXIe rig the stim pulse lands on the <strong>NI-DAQ</strong>: a second device with its own clock. The pulse edge
 and the probe's detection instant only become comparable after a <strong>sync fit</strong> against a shared TTL train —
@@ -938,6 +1242,10 @@ the check to demand of any closed-loop recording before quoting a latency from i
 <li><a href="#corrections-applied">Corrections applied</a></li>
 <li><a href="#how-to-reproduce">How to reproduce</a></li>
 <li><a href="#onebox-usb3-transport-same-clock-capture">OneBox — USB3 transport, same-clock capture</a><ul>
+<li><a href="#the-full-matrix-2026-08-20-real-probes-in-saline-live-pi-3b-am-2300">The full matrix (2026-08-20, real probes in saline, live Pi 3B+ / AM 2300)</a></li>
+<li><a href="#what-the-matrix-says">What the matrix says</a></li>
+<li><a href="#onebox-vs-pxie-cell-for-cell">OneBox vs PXIe, cell for cell</a></li>
+<li><a href="#figures">Figures</a></li>
 <li><a href="#why-this-measurement-is-structurally-simpler-than-the-pxie-one">Why this measurement is structurally simpler than the PXIe one</a></li>
 <li><a href="#reading-the-stim-line">Reading the stim line</a></li>
 <li><a href="#reproducing">Reproducing</a></li>

@@ -6,11 +6,12 @@
 <title>FDIR — fault detection, reporting, and staying in a valid state - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Developer Docs / FDIR — fault detection, reporting, and staying in a valid state</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -340,7 +342,7 @@ transitions only on confirmation, closing the gap this document used to list.</p
 <p>Watch the event shape: the GUI reads <code>{value: &lt;bool&gt;, name: &lt;string&gt;}</code>, <strong>not</strong> <code>broadcastStatusEvent</code>'s
 <code>{message: "1"}</code>. A status-shaped event is read as <code>false</code> and a started recording looks stopped.</p>
 <h3 id="84-the-indicator-is-labelled-not-a-bare-dot">8.4 The indicator is labelled, not a bare dot<a class="headerlink" href="#84-the-indicator-is-labelled-not-a-bare-dot" title="Permanent link">#</a></h3>
-<p>The status line carries a chip -- a coloured dot, the word <strong>System</strong>, and the current count
+<p>The System chip sits in the toolbar's FIRST row, beside the clock (SystemMonitor appends it to <code>.tb-transport</code>, falling back to the status line only if that is absent). It carries a chip -- a coloured dot, the word <strong>System</strong>, and the current count
 ("6 cycling", "1 stalled", "idle") -- styled with the toolbar's own band tokens so it sits level with
 the status text and the REC indicator. Clicking it opens the detail panel.</p>
 <p>It was a bare dot first, and that was wrong: an unlabelled coloured dot only means something to

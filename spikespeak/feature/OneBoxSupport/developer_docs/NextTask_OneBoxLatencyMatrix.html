@@ -6,11 +6,12 @@
 <title>Next task — finish the OneBox closed-loop latency matrix - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Developer Docs / Next task — finish the OneBox closed-loop latency matrix</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a class="active" href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -127,9 +129,23 @@ one backend.</p>
 <p>Then NP1.0 on the OneBox: the same five plus the 1 ch DEFAULT cell, with
 <code>--source "NPX 1.0 (OneBox)"</code> / <code>"NPX 1.0 (OneBox, ASAP)"</code>.</p>
 <h2 id="analysis-per-cell">Analysis, per cell<a class="headerlink" href="#analysis-per-cell" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python ripple_tools/analyze_recording.py --dir &lt;recdir&gt; --name &lt;name&gt; \
-  --stim-band adc --stim-channel 2
+<pre><code class="language-bash">python ripple_tools/analyze_recording.py &lt;dir&gt;/&lt;name&gt; --name &lt;name&gt; \
+  --stim-band adc --stim-channel 2 \
+  --ws &lt;dir&gt;/&lt;name&gt;_ws.jsonl --ripple-sidecar &lt;dir&gt;/&lt;name&gt;_ripple.json \
+  --figs &lt;dir&gt;/analysis
 </code></pre>
+<p>Two things this line gets right that an earlier version of it did not, both of which cost a full
+re-run to discover:</p>
+<ul>
+<li><strong><code>recdir</code> is POSITIONAL. There is no <code>--dir</code>.</strong> The earlier form failed instantly with
+  <code>unrecognized arguments: --dir</code> on every cell.</li>
+<li><strong>It is the INNER directory.</strong> <code>record_ripples.py --dir D --name N</code> writes the <code>.bin</code> and
+  <code>.bin.json</code> into <code>D/N/</code>, and leaves <code>N_ws.jsonl</code> and <code>N_ripple.json</code> in <code>D/</code> beside it. Passing <code>D</code>
+  gives <code>No SpikesPeak recordings (*.bin.json) found</code>.</li>
+</ul>
+<p>And do not pipe the command into <code>tail</code>: a shell pipeline exits with the status of its LAST member, so
+a failing analysis reports success. That is how five cells were "analysed" without producing a single
+number.</p>
 <p><code>--stim-band adc --stim-channel 2</code> is <strong>not optional on a OneBox</strong>. Without it the analyser looks for
 a <code>nidaq</code> band, finds none, and silently reports no closed-loop latency at all. Channel 2 is the Pi's
 On/Off line (GPIO17 = header pin 11) into OneBox <strong>IO2</strong>.</p>

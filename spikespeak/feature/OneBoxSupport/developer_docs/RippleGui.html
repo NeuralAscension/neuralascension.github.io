@@ -6,11 +6,12 @@
 <title>Ripple-detection GUI — design, WS contract, and integration plan - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Developer Docs / Ripple-detection GUI — design, WS contract, and integration plan</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -299,7 +301,22 @@ build tree's <code>webinterface/</code> (the backend serves that copy) and hard-
 an intuitive "connect / disconnect from the Pi" control, so you don't have to tear the source down to stop
 stimulation.</p>
 <ul>
-<li><strong>Armed by default.</strong> The <code>RippleDetector</code> constructor auto-arms; <code>WebSocketServer::onSourceSelection</code>
+<li><strong>NOT armed by default — arming is an explicit user action.</strong> This is the single most expensive
+  misconception in this document's history: an earlier version claimed the detector auto-armed, and a
+  1000-detection OneBox run reached <strong>944 detections with ZERO stim fires</strong> because the operator
+  believed it. <code>RippleDetector.cpp:188</code> says so in as many words — <em>"NOT armed here either way:
+  arming stays an explicit user action (the GUI stim LED)"</em> — and <code>WebSocketServer.cpp:249</code> records
+  why the auto-arm was removed: selecting any source, even one whose connect then failed, put a
+  datagram on the wire.</li>
+</ul>
+<p><strong>The gate and the arm are two different things and BOTH are required.</strong>
+  <code>setStimEnabled</code> only permits datagrams to leave the host; the stimulator must ALSO be armed before
+  a detection can trigger it. Scripted runs must call <code>Rig.arm_stim()</code> — <code>record_ripples.py</code> does, and
+  prints the resulting stim status at the top of the run so the arming is visible. The backend logs
+  the failure mode plainly when it happens:
+  <code>[RippleDetector] stimulation ENABLED -&gt; "192.168.1.100:8888" (not armed; arm from the GUI stim LED)</code></p>
+<ul>
+<li><em>(historical, no longer true)</em> <code>WebSocketServer::onSourceSelection</code>
   then broadcasts the armed status so the pill shows <strong>green "armed"</strong> immediately on select (even before
   Play).</li>
 <li><strong>Click while armed</strong> → <code>disarmStim</code> → the Pi disarms and the pill goes grey. Detection keeps running, but

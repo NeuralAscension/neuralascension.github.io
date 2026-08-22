@@ -6,11 +6,12 @@
 <title>SpikesPeak — Ripple Detection Module (User Guide) - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">User Guide / SpikesPeak — Ripple Detection Module (User Guide)</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -107,7 +109,7 @@ in <strong>● RIPPLE</strong> together, so the cowsay reports <strong><code>2/3
 <hr />
 <h2 id="1-open-the-module-and-pick-a-source">1. Open the module and pick a source<a class="headerlink" href="#1-open-the-module-and-pick-a-source" title="Permanent link">#</a></h2>
 <ol>
-<li>In the top toolbar, click <strong>◉ Ripple Detection</strong>. The dock slides in on the right and the main view <strong>shrinks
+<li>In the toolbar's <strong>second row</strong> — beside <code>Probe Map | Live Data</code>, and the <code>▣ OneBox</code> / <code>▤ NI-DAQ</code> device tabs when those sources are connected — click <strong>◉ Ripple Detection</strong>. The dock slides in on the right and the main view <strong>shrinks
    to fit</strong> (no overlap, even columns). Drag the dock's <strong>left grip</strong> to resize it.</li>
 <li>Pick a <strong>source</strong> that produces an LFP band the detector can read (via the <strong>Source</strong> dropdown →
    <strong>Simulated Data…</strong>, or a real-probe profile). The best sources for learning the module:</li>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In progress — documentation refresh (screenshots + prose) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / In progress — documentation refresh (screenshots + prose)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a class="active" href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="in-progress-documentation-refresh-screenshots-prose">In progress — documentation refresh (screenshots + prose)<a class="headerlink" href="#in-progress-documentation-refresh-screenshots-prose" title="Permanent link">#</a></h1>
+<p><strong>State: partly done. This file is the handoff; it is accurate as of 2026-08-21.</strong></p>
+<p>The GUI changed substantially on 2026-08-20/21 (two-row toolbar, collapsible column strips,
+<code>OneBox ADC (SDR)</code> / <code>IO0..IO11</code> labelling, vertical one-line control strips, minimum widths). Most
+documentation screenshots and a good deal of prose still described the GUI that existed before that.</p>
+<p>An 8-document audit produced a per-image specification — the claim each image supports, the exact GUI
+state needed to reproduce it, and the surrounding prose that is now factually wrong. This file records
+what has been actioned and what has not.</p>
+<hr />
+<h2 id="1-screenshots">1. Screenshots<a class="headerlink" href="#1-screenshots" title="Permanent link">#</a></h2>
+<p>Recaptured on the <strong>real NP1.0 probe on the OneBox, streaming</strong>, horizontal on the landscape display
+and vertical full-screen on the portrait display:</p>
+<table>
+<thead>
+<tr>
+<th>image</th>
+<th>shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_docs/images/np1_liveview.png</code></td>
+<td>3 columns: <strong>AP Band + LFP Band + OneBox ADC (SDR)</strong>, strips pinned so the band names are visible</td>
+</tr>
+<tr>
+<td><code>user_docs/images/vertical_liveview.png</code></td>
+<td>same three bands, vertical, portrait 1080×2560 full screen</td>
+</tr>
+<tr>
+<td><code>user_docs/images/np1_probemap.png</code></td>
+<td>Probe Map, Edit Map mode</td>
+</tr>
+<tr>
+<td><code>user_docs/images/record_selection.png</code></td>
+<td>Select Recording Channels mode</td>
+</tr>
+<tr>
+<td><code>user_docs/images/play_button_green.png</code></td>
+<td>paused: green ▶ (cropped to the transport group)</td>
+</tr>
+<tr>
+<td><code>user_docs/images/play_button_streaming.png</code></td>
+<td>streaming: white ⏸ + green ring</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/np1_idle.png</code></td>
+<td>ripple dock, paused, no channels</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/np1_channels.png</code></td>
+<td>two electrodes added as per-channel chips</td>
+</tr>
+<tr>
+<td><code>developer_docs/images/ripple_detection_module.png</code></td>
+<td>whole ripple module in one frame</td>
+</tr>
+<tr>
+<td><code>developer_docs/images/stim_pulse_preview.png</code></td>
+<td>stim pulse preview (phase/gap/freq/train)</td>
+</tr>
+<tr>
+<td><code>developer_docs/images/system_state_panel.png</code></td>
+<td>System-state panel on a real streaming rig</td>
+</tr>
+<tr>
+<td><code>developer_docs/images/quickstart_sim_streaming.png</code></td>
+<td>quick-start end state, three bands</td>
+</tr>
+</tbody>
+</table>
+<h3 id="not-recaptured-and-why">NOT recaptured, and why<a class="headerlink" href="#not-recaptured-and-why" title="Permanent link">#</a></h3>
+<p><strong>Need a real ripple signal.</strong> The probe signals were floating, so there was nothing to detect. A
+"detecting" screenshot with nothing detecting is worse than a stale one — it documents behaviour that
+is not happening.</p>
+<ul>
+<li><code>user_docs/images/ripple/np1_training.png</code> — per-channel training progress</li>
+<li><code>user_docs/images/ripple/np1_livez.png</code> — editing a z-score while running</li>
+<li><code>user_docs/images/ripple/np1_detecting.png</code> — live detection (referenced by TWO docs)</li>
+<li><code>user_docs/images/ripple/np2_detecting.png</code> — NP2 quorum detection</li>
+</ul>
+<p><strong>Need the NP2.0 probe</strong> (the OneBox had NP1.0):</p>
+<ul>
+<li><code>user_docs/images/np2_liveview.png</code>, <code>user_docs/images/np2_editor.png</code>, and <code>np2_detecting.png</code></li>
+</ul>
+<p><strong>Need something else entirely:</strong></p>
+<ul>
+<li><code>user_docs/images/ripple/playfile_probemap.png</code>, <code>playfile_detecting.png</code> — an HDF5 play file</li>
+<li><code>developer_docs/images/nidaq_dio_syncpulse.png</code> — the NI-DAQ DI/O stream</li>
+<li><code>user_docs/images/record_armed.png</code>, <code>record_buttons.png</code> — the recording flow (armed / recording);
+  capturable any time, simply not done yet</li>
+</ul>
+<h3 id="deliberately-left-alone-these-are-not-stale">Deliberately left alone — these are NOT stale<a class="headerlink" href="#deliberately-left-alone-these-are-not-stale" title="Permanent link">#</a></h3>
+<p>They are measurements and plots, not GUI screenshots. Do not "refresh" them:</p>
+<p><code>developer_docs/images/threading_per_channel_cost.png</code>, <code>threading_sweep_time.png</code>,
+<code>user_docs/images/recording_channels.png</code>, <code>recording_sync.png</code>.</p>
+<h3 id="how-to-recapture">How to recapture<a class="headerlink" href="#how-to-recapture" title="Permanent link">#</a></h3>
+<p><code>tests/gui/_harness.py</code> drives it. Set the source with the env var, and use the right display:</p>
+<pre><code class="language-python">os.environ[&quot;SPIKESPEAK_GUI_SOURCE&quot;] = &quot;NPX 1.0 (OneBox)&quot;   # or a Simulated … name
+with Gui(monitor=&quot;landscape&quot;) as g:   # &quot;portrait&quot; for vertical shots
+    g.live_view(settle=10); g.columns(3)
+</code></pre>
+<p>Traps that will otherwise waste a pass:</p>
+<ul>
+<li><strong>The <code>Probe Map | Live Data</code> tabs only appear when the source config's <code>name:</code> contains "NPX".</strong>
+  <code>SimNpx1.yaml</code> is named "Simulated Data", so it shows no tab bar at all. Use an NPX-named source.</li>
+<li><strong>Play/Record have an in-flight PENDING state</strong> (dimmed, pulsing, disabled). Wait for it to settle
+  or the button screenshot captures the wrong meaning.</li>
+<li><strong>Past 2 columns the strips auto-collapse</strong>, so a shot meant to show which band each column holds
+  must pin them (<code>document.querySelectorAll('.cc-pin').forEach(b =&gt; b.click())</code>).</li>
+</ul>
+<hr />
+<h2 id="2-prose">2. Prose<a class="headerlink" href="#2-prose" title="Permanent link">#</a></h2>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>doc</th>
+<th>what was wrong</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_docs/README.md</code></td>
+<td>claimed the red STIM LED blinks on each detection. It lights only on a stim-server <strong>ACK</strong>, and stimulation is opt-in (gate defaults OFF, server must be armed)</td>
+</tr>
+<tr>
+<td><code>user_docs/RippleDetection.md</code></td>
+<td>"In the top toolbar, click ◉ Ripple Detection" — the tab is in the toolbar's <strong>second row</strong>, beside <code>Probe Map \| Live Data</code> and the device tabs</td>
+</tr>
+<tr>
+<td><code>user_docs/SimulatedData.md</code></td>
+<td>"Click one to connect it — no hardware needed" — three picker entries <strong>do</strong> need a real NI-DAQ</td>
+</tr>
+<tr>
+<td><code>user_docs/GUI-Guide.md</code></td>
+<td>band names (<code>AP / LFP / RAW / NI-DAQ</code> → the six actually shown), the non-existent <strong>Scale</strong> control, the missing per-column channel count, and the collapsible strip behaviour</td>
+</tr>
+<tr>
+<td><code>user_docs/GUI-Guide.md</code></td>
+<td>the REC badge does not flash as a whole — only the dot blinks; names are middle-truncated</td>
+</tr>
+<tr>
+<td><code>developer_docs/Fdir.md</code></td>
+<td>the System chip is in the toolbar's <strong>first row</strong> beside the clock, not in the status line</td>
+</tr>
+</tbody>
+</table>
+<h3 id="still-to-fix">Still to fix<a class="headerlink" href="#still-to-fix" title="Permanent link">#</a></h3>
+<ul>
+<li><code>developer_docs/RippleGui.md</code> — describes hand-syncing <code>RippleModule.js</code> into the build tree. The
+  webinterface deploy is now an <strong>always-run CMake target</strong>; that step is obsolete.</li>
+<li><code>developer_docs/RippleDetection.md</code> — "the GUI is identical for a real probe" is now true only of
+  the live-view panes; a real source adds its own device panel tab (<code>▣ OneBox</code>, <code>▤ NI-DAQ</code>).</li>
+<li><code>developer_docs/NiDaq.md</code> — refers to the toolbar control as <code>Columns:</code>; it ships as <code>Cols</code> and
+  lives inside the <code>.tb-view</code> group that folds behind a <code>▾ view</code> chip on a narrow bar.</li>
+<li><code>user_docs/RippleDetection.md</code> §4 — the "Detection &amp; stimulation" section predates the master
+  <code>enable stimulation</code> gate, the arm/disarm stim-server toggle, <code>⚡ Test Fire</code>, and the stim pulse
+  fields.</li>
+<li><code>user_docs/GUI-Guide.md</code> — the layout toggle is described as always visible beside Columns/Rows; it
+  folds behind the <code>▾ view</code> chip on a narrow bar (which is exactly the portrait case).</li>
+<li><strong><code>user_docs/GUI-Guide.md</code> never mentions the OneBox at all.</strong> Its own gap, and the largest one.</li>
+<li><code>user_docs/GUI-Guide.md</code> §1 — the source list and the sim-picker variant list are both out of date
+  (the picker is built from every config with a <code>sim_variant:</code> key — roughly fourteen now).</li>
+</ul>
+<h3 id="one-thing-not-to-fix">One thing NOT to "fix"<a class="headerlink" href="#one-thing-not-to-fix" title="Permanent link">#</a></h3>
+<p><code>GUI-Guide.md</code> §4 says the NI-DAQ record buttons are <strong>0-indexed</strong>. That sentence is <strong>correct</strong>
+(<code>ImroManager.js</code> renders <code>b.textContent = ch</code>). The committed <em>image</em> contradicts it by showing 1–8.
+The recapture fixes the image. Leave the sentence alone.</p>
+<hr />
+<h2 id="3-the-audit-itself">3. The audit itself<a class="headerlink" href="#3-the-audit-itself" title="Permanent link">#</a></h2>
+<p>The full per-image specification (claim, required GUI state, hardware needed, stale prose) is
+reproducible by re-running the audit workflow; the raw result was written to the session scratchpad
+as <code>shots.json</code> (36 unique screenshots across 8 docs). If it is gone, the audit is cheap to re-run —
+it is a pure reading task over <code>user_docs/*.md</code> and <code>developer_docs/*.md</code>.</p>
+<p>Regenerate the docs book with <code>python scripts/build_docs.py</code> after any change here.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_DocsRefresh.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-screenshots">1. Screenshots</a><ul>
+<li><a href="#not-recaptured-and-why">NOT recaptured, and why</a></li>
+<li><a href="#deliberately-left-alone-these-are-not-stale">Deliberately left alone — these are NOT stale</a></li>
+<li><a href="#how-to-recapture">How to recapture</a></li>
+</ul>
+</li>
+<li><a href="#2-prose">2. Prose</a><ul>
+<li><a href="#fixed">Fixed</a></li>
+<li><a href="#still-to-fix">Still to fix</a></li>
+<li><a href="#one-thing-not-to-fix">One thing NOT to "fix"</a></li>
+</ul>
+</li>
+<li><a href="#3-the-audit-itself">3. The audit itself</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

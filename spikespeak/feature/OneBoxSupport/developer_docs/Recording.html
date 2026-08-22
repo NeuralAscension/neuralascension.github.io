@@ -6,11 +6,12 @@
 <title>SpikesPeak — Recording (Task 2 runbook) - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Developer Docs / SpikesPeak — Recording (Task 2 runbook)</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -220,9 +222,11 @@ probes, the value the demux actually stores. <strong>Use N = 384</strong> in any
 </blockquote>
 <ul>
 <li>With a YAML <strong><code>channels: [...]</code></strong> filter, only those channel indices are written (each <code>int16</code>), still
-  preceded by <code>timestamp + sync</code>. With <strong>no</strong> filter, the whole <code>N</code>-wide block is written.</li>
-<li><strong>No file header / metadata</strong> — sample rate, channel count, and probe come only from the config. A
-  reader must know <code>N</code> and the band's rate (AP ≈ 30 kHz, LFP ≈ 2.5 kHz) out-of-band.</li>
+  preceded by <code>timestamp + sync</code>. With <strong>no</strong> filter, the whole <code>N</code>-wide block is written.
+<em>(Superseded.)</em> Each <code>.bin</code> DOES carry a self-describing <code>&lt;file&gt;.bin.json</code> sidecar -- band,
+record layout, sample rate, units and the electrode/channel list -- written by
+<code>RecordProcessor.cpp</code>. <code>python/spikespeak_postprocess</code> and every <code>ripple_tools</code> analyser rely
+on it; a reader does NOT need to know N and the rate out-of-band.</li>
 </ul>
 <hr />
 <h2 id="3-wiring-np10">3. Wiring (NP1.0)<a class="headerlink" href="#3-wiring-np10" title="Permanent link">#</a></h2>
@@ -292,6 +296,12 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 <td><strong>FIXED</strong> — sync now <code>packetInfo-&gt;Status &gt;&gt; 6</code> for all probes (matches OpenEphys). Record is <code>[ts][sync][int16×384]</code> = 774 B.</td>
 </tr>
 <tr>
+<td><strong>HIGH (analysis)</strong></td>
+<td>recording sidecar (all bands)</td>
+<td>The sidecar's <code>num_channels</code> describes the <strong>payload</strong>, not the frame. An NPX frame is <code>[uint32 ts][uint16 sync][int16 x N]</code> = <code>N + 3</code> int16; NI-DAQ is <code>[float64 ts][float64 x N]</code>. A reader that took <code>num_channels</code> as the stride mis-de-interleaved the whole file, and because <code>gcd</code> of the wrong and right strides is rarely 1 the columns came out <em>sample-wise distinct but statistically identical</em> — which is what made the OneBox ADC look like failing hardware in <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>. The layout was documented in a comment above <code>writeMetadataSidecar()</code> and nowhere a reader could see it.</td>
+<td><strong>FIXED</strong> — the sidecar now carries a <code>frame</code> block (<code>bytes</code>, <code>header_bytes</code>, <code>header[]</code>, <code>payload_dtype</code>, <code>payload_channels</code>, <code>layout</code>). Verified: a 15 s NP2.0 recording reports <code>frame.bytes: 12</code>, and <code>filesize / 12 / 30000 = 15.00 s</code> exactly. <strong>Recordings made before this still need the stride computed by hand</strong> as <code>num_channels + 3</code> int16 (NPX).</td>
+</tr>
+<tr>
 <td>MEDIUM</td>
 <td>RecordProcessor.cpp (start loop)</td>
 <td>Output dir was the <strong>CWD only</strong> — not configurable, and a missing subdir failed silently.</td>
@@ -354,7 +364,7 @@ correctly excluded) → Set → Record → both <code>ap</code> and <code>lfp</c
 (sidecar + <code>spikespeak_postprocess</code> confirm); Record-all → 383; toggle back to Edit Map restores the editor.</p>
 <p><strong>NI-DAQ record-channel selection (BUILT 2026-07-06).</strong> With a NI-DAQ recorder present, the "Select
 Recording Channels" mode also shows a <strong>NI-DAQ channel grid</strong> below the probe (<code>#nidaq-record-section</code>):
-a button per channel (green = will record) + <strong>All / None</strong>. Buttons are labelled <strong>1-indexed</strong> to match
+a button per channel (green = will record) + <strong>All / None</strong>. Buttons are labelled <strong>0-indexed</strong> to match
 the live view's NI-DAQ channel labels (<code>ChartColumn.js ${ch+1}</code>); the stored/committed index stays 0-based
 (what the recorder filters on), so displayed "1,4,6" records read-out channels <code>[0,3,5]</code>. The channel count
 is discovered from the live NI-DAQ display stream, so the grid <strong>auto-appears the moment you press ▶ Play</strong>

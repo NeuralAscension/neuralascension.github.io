@@ -6,11 +6,12 @@
 <title>Home - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/style.css">
+<script src="assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Overview / Home</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -81,7 +83,7 @@
 <a href="developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
-  <main class="content"><article class="markdown-body"><div class="cover"><img class="cover-logo" src="assets/logo.svg" alt="Neural Ascension logo"><h1>SpikesPeak &mdash; Documentation</h1><p class="lead">Real-time Neuropixels acquisition, live display, recording, and closed-loop sharp-wave-ripple detection to stimulation. Generated from the repo Markdown files &mdash; edit them and re-run <code>scripts/build_docs.py</code>.</p><div class="cardgrid"><div class="card"><h3>Overview</h3><a href="README.html">SpikesPeak</a>
+  <main class="content"><article class="markdown-body"><div class="cover"><span class="sp-logo sp-logo--cover"></span><h1 class="cover-title">Documentation</h1><p class="lead">Real-time Neuropixels acquisition, live display, recording, and closed-loop sharp-wave-ripple detection to stimulation. Generated from the repo Markdown files &mdash; edit them and re-run <code>scripts/build_docs.py</code>.</p><div class="cardgrid"><div class="card"><h3>Overview</h3><a href="README.html">SpikesPeak</a>
 <a href="SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
 <a href="CLAUDE.html">SpikesPeak — instructions for agents</a></div>
 <div class="card"><h3>User Guide</h3><a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
@@ -108,6 +110,7 @@
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>

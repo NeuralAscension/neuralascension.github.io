@@ -6,11 +6,12 @@
 <title>SpikesPeak — Running Status Log - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/style.css">
+<script src="assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="index.html"><img class="brand-logo" src="assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Overview / SpikesPeak — Running Status Log</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -322,6 +324,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S51</strong></td>
 <td><strong>2026-08-21</strong></td>
 <td><strong>Second workstation — OneBox, no PXIe: what survived the move.</strong> First independent bring-up off the machine this was written on (#52, config 5). <strong>The app would not launch at all</strong>: <code>NIDAQMX.lib</code> made <code>nicaiu.dll</code> a LOAD-TIME import, so on a box with no NI-DAQmx the loader killed the process before <code>main()</code> — modal dialog, nothing in <code>output.log</code>. Now delay-loaded and <strong>detected at runtime</strong> (<code>NiDaqRuntime.*</code>), so one binary runs on both rigs. Chrome path in <code>_harness.py</code> made discovered; the original box's <code>C:\Users\BIOEl\...</code> path removed from 4 scripts; HDF5 is <strong>2.2.0</strong> not 1.14.6 and needs <code>CMAKE_PREFIX_PATH</code>; VS2022 builds the <code>msvc2019_64</code> Qt kit fine. <strong>C++ 15/15 suites, 316 cases; GUI 5/6 with <code>stream_options</code> red for #51 — confirmed by a standalone PASS.</strong> OneBox NP2.0 validated end to end: connect, 60 s at 66 f/s, record with sane sidecars, reconnect, six clean teardowns, zero bounded-call timeouts; PXIe profile correctly refuses. <strong>Open:</strong> the real ADC opens (device round-trip) but reports only to the log, and its values cannot be validated without a known BNC signal.</td>
+</tr>
+<tr>
+<td><strong>S52</strong></td>
+<td><strong>2026-08-21</strong></td>
+<td><strong>Configuration 4 (Windows + PXIe, no OneBox) on the original rig, and four issues worked to conclusion.</strong> PXIe NP2.0 verified end to end (connect 8.5 s, ~580 frames/12 s, record, three clean disconnect/reconnect cycles, zero warnings). Found a reproducible <strong>access violation</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/54">#54</a>): two failed OneBox connects poison the next PXIe acquisition. Fixed a <strong>hardcoded audio device</strong> that made both NI-DAQ PXIe profiles unusable off the original box (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/55">#55</a>). Made recording sidecars <strong>describe the frame</strong>, closing the de-interleaving trap behind <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>'s "anomalous" ADC statistics. <strong>Retracted <a href="https://github.com/NeuralAscension/SpikesPeak/issues/56">#56</a> as my own test error</strong> — PXIe reconnect works.</td>
 </tr>
 </tbody>
 </table>
@@ -4114,7 +4121,100 @@ confirm amplitude, frequency and channel mapping.</p>
 signal. No portrait monitor, so the <strong>vertical half of the layout matrix measures a window nobody
 uses</strong> — and running the GUI suite here silently <em>overwrote</em> the committed vertical doc screenshot
 with a landscape capture (reverted). This OneBox carries the NP2.0 probe, so <strong>NP1.0-on-OneBox
-remains untested</strong>.</p></article>
+remains untested</strong>.</p>
+<hr />
+<h2 id="52-configuration-4-on-the-original-rig-and-four-issues-worked-to-conclusion-2026-08-21">52. CONFIGURATION 4 ON THE ORIGINAL RIG — AND FOUR ISSUES WORKED TO CONCLUSION  (2026-08-21)<a class="headerlink" href="#52-configuration-4-on-the-original-rig-and-four-issues-worked-to-conclusion-2026-08-21" title="Permanent link">#</a></h2>
+<p>Hardware: NP2.0 multishank on <strong>PXIe slot 3</strong>, NI-DAQ present, <strong>no OneBox attached</strong>, probe floating
+(no saline, no signal), Raspberry Pi stim server reachable. This is configuration <strong>4</strong> of the five in
+<a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a>; the second workstation had validated
+configuration 5 earlier the same day.</p>
+<h3 id="521-what-passed">52.1 What passed<a class="headerlink" href="#521-what-passed" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OneBox profiles refuse with no OneBox</td>
+<td><code>deviceReady:false</code> + <code>guiStatus hardware-error</code> — confirmed state, not requested</td>
+</tr>
+<tr>
+<td>PXIe connect</td>
+<td>8.5 s, repeatable</td>
+</tr>
+<tr>
+<td>PXIe streaming</td>
+<td>484–582 binary frames / ~35.8 MB per 10–12 s</td>
+</tr>
+<tr>
+<td>PXIe record + sidecar</td>
+<td>7.20 MB / 20 s; <code>band=raw nch=3 rate=30000 ch=[1,192,196]</code></td>
+</tr>
+<tr>
+<td>PXIe disconnect → reconnect, in session</td>
+<td>three cycles, 388/387/387 frames, stable connect times</td>
+</tr>
+<tr>
+<td>Teardown</td>
+<td><code>Neuropixels connection closed</code>, <strong>zero</strong> bounded-call timeouts, <strong>zero</strong> warnings</td>
+</tr>
+</tbody>
+</table>
+<h3 id="522-54-two-failed-onebox-connects-kill-the-next-pxie-acquisition-open">52.2 #54 — two failed OneBox connects kill the next PXIe acquisition (OPEN)<a class="headerlink" href="#522-54-two-failed-onebox-connects-kill-the-next-pxie-acquisition-open" title="Permanent link">#</a></h3>
+<p>A genuine <strong><code>0xC0000005</code></strong>, confirmed by running <code>SpikesPeak.exe</code> directly; the launcher goes through
+<code>scripts/spikespeak.py</code>, which was swallowing the exit code and making it look like a clean shutdown.
+The log's last line is the main thread's <code>acquisition confirmed: true</code> — the worker dies on its first
+read, with no teardown, which on this hardware is the exact state the safety rules exist to avoid.</p>
+<p>The trigger is the <strong>count</strong> of failed OneBox setups — two — and is independent of probe type and of a
+20 s gap between them. Zero or one attempt always streams.</p>
+<p>Five candidate causes were each implemented, built and re-tested, and <strong>each left the crash
+unchanged</strong>: <code>np_closeBS</code> on a PXI slot we never opened; the OneBox teardown firing at an unopened
+slot; <code>np_checkFtdiDriver</code> per attempt; the whole <code>releaseForeignBasestations</code> body; and timing. After
+all of it a failed attempt reduces to <code>np_scanBS</code> + <code>np_getDeviceList</code> and still poisons the next
+acquisition — which points into the vendor driver, past where this codebase can see. Best remaining
+hypothesis: repeated <code>np_scanBS()</code> with no intervening <code>np_openBS</code> (the PXIe path always opens and
+closes between scans, and survives).</p>
+<p>The elimination work still produced real hardening, kept in <code>8d93c68</code>: <strong>never close hardware this
+process did not open.</strong> Three places were calling vendor close/teardown routines against resources
+never acquired, with <code>SUCCESS</code> and "not open" codes making that look free.</p>
+<h3 id="523-55-a-hardcoded-audio-device-blocked-acquisition-entirely-fixed">52.3 #55 — a hardcoded audio device blocked acquisition entirely (FIXED)<a class="headerlink" href="#523-55-a-hardcoded-audio-device-blocked-acquisition-entirely-fixed" title="Permanent link">#</a></h3>
+<p><code>NpxPxiNiDaq.yaml</code> and <code>Npx2PxiNiDaqAsap.yaml</code> pinned <code>device_name: "Speakers (2"</code> — a truncated
+endpoint name from the original box. Nothing matched here, <code>AudioProcessor::configure()</code> returned
+false, <code>ProcessorManager</code> discarded six correctly-built processors, and the source never connected. A
+missing <strong>speaker</strong> stopped <strong>neural acquisition</strong>.</p>
+<p>It was required in two places — <code>validateConfig()</code> demanded the keys, and <code>AudioWorker::configure()</code>
+failed hard when the named device was missing — so both had to change. The device is now discovered
+(PortAudio default) with an explicit name as an optional override, and <strong>no audio failure is fatal</strong>:
+the <code>-1</code> sentinel disables spike audio and acquisition proceeds. <code>slAwStartAudioStream()</code> already
+degraded this way; <code>configure()</code> was the outlier. Verified: the profile that timed out now connects in
+8.5 s with <code>Audio output device: LG HDR WFHD (NVIDIA High Defini via MME (system default)</code> — audio
+working, not skipped.</p>
+<h3 id="524-53-sidecars-now-describe-the-frame-trap-fixed-verification-still-open">52.4 #53 — sidecars now describe the frame (trap FIXED, verification still open)<a class="headerlink" href="#524-53-sidecars-now-describe-the-frame-trap-fixed-verification-still-open" title="Permanent link">#</a></h3>
+<p><code>num_channels</code> counts the <strong>payload</strong>. An NPX frame is <code>[uint32 ts][uint16 sync][int16 x N]</code> = <code>N + 3</code>
+int16. A reader taking <code>num_channels</code> as the stride mis-de-interleaves everything — and because
+<code>gcd(12,15) = 3</code>, the columns come out <em>sample-wise distinct but statistically identical</em>, which
+passes the obvious duplicate-channel check. The timestamp low word read as analog gives a full-rail
+swing and ~35,000 distinct codes; the high word ~47; sync ~2. Those were exactly the three "anomalous"
+groups in #53.</p>
+<p>The layout was already documented — in the comment above <code>writeMetadataSidecar()</code> — just nowhere a
+reader could see it. It now ships in every sidecar as a <code>frame</code> block. Verified on a 15 s NP2.0
+recording: <code>frame.bytes: 12</code>, file size divides evenly, <code>filesize/12/30000 = 15.00 s</code>. The old reading
+claims 30.00 s for the same file.</p>
+<p><strong>Older recordings are unchanged</strong> and still need the stride worked out by hand.</p>
+<h3 id="525-56-filed-then-retracted-as-a-test-error">52.5 #56 — filed, then retracted as a test error<a class="headerlink" href="#525-56-filed-then-retracted-as-a-test-error" title="Permanent link">#</a></h3>
+<p>Reported as "PXIe disconnect never completes". It was not. The command is <strong><code>"Disconnect"</code></strong> (capital
+D) and requires a <code>value</code>; the test sent <code>{"command":"disconnect"}</code>, which matched no branch and was
+silently dropped. Every symptom followed: nothing ran, no events were emitted, and the later
+<code>selectSource</code> was correctly refused because the source was still connected. Retested with the real
+command — three clean cycles.</p>
+<p>Two lessons worth keeping. First, the <code>Arming PXI slot 3…</code> line read as a stalled disconnect actually
+came from the <strong>pause</strong> a moment earlier; the meaningful signal was the <em>absence</em> of any disconnect
+log line, not the presence of that one. Second, #54 was checked against controls before filing and
+held; #56 was not, and did not. The check that would have caught it — does the backend acknowledge
+this command at all — costs one grep.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -4386,6 +4486,14 @@ remains untested</strong>.</p></article>
 <li><a href="#514-results">51.4 Results</a></li>
 <li><a href="#515-the-onebox-adc-opens-and-its-values-are-still-unverified">51.5 The OneBox ADC opens, and its values are still unverified</a></li>
 <li><a href="#516-not-reproducible-on-this-configuration">51.6 Not reproducible on this configuration</a></li>
+</ul>
+</li>
+<li><a href="#52-configuration-4-on-the-original-rig-and-four-issues-worked-to-conclusion-2026-08-21">52. CONFIGURATION 4 ON THE ORIGINAL RIG — AND FOUR ISSUES WORKED TO CONCLUSION (2026-08-21)</a><ul>
+<li><a href="#521-what-passed">52.1 What passed</a></li>
+<li><a href="#522-54-two-failed-onebox-connects-kill-the-next-pxie-acquisition-open">52.2 #54 — two failed OneBox connects kill the next PXIe acquisition (OPEN)</a></li>
+<li><a href="#523-55-a-hardcoded-audio-device-blocked-acquisition-entirely-fixed">52.3 #55 — a hardcoded audio device blocked acquisition entirely (FIXED)</a></li>
+<li><a href="#524-53-sidecars-now-describe-the-frame-trap-fixed-verification-still-open">52.4 #53 — sidecars now describe the frame (trap FIXED, verification still open)</a></li>
+<li><a href="#525-56-filed-then-retracted-as-a-test-error">52.5 #56 — filed, then retracted as a test error</a></li>
 </ul>
 </li>
 </ul>

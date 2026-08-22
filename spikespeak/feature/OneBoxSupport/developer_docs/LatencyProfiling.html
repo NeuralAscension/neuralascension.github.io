@@ -6,11 +6,12 @@
 <title>Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><img class="brand-logo" src="../assets/logo.svg" alt=""> SpikesPeak &mdash; Docs</a>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
   <span class="crumb">Developer Docs / Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
@@ -47,6 +48,7 @@
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
@@ -144,6 +146,51 @@ exposes: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html#onebox--usb3-transp
 </tr>
 </tbody>
 </table>
+<p><strong>The same matrix on the OneBox</strong> (USB3/FTDI basestation, stim captured on the box's own ADC so there
+is no sync fit at all), 2026-08-20, 1000 detections per cell, 0 unmatched:</p>
+<table>
+<thead>
+<tr>
+<th>configuration</th>
+<th>NP1.0 default</th>
+<th>NP1.0 <strong>ASAP</strong></th>
+<th>NP2.0 default</th>
+<th>NP2.0 <strong>ASAP</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 ch</td>
+<td>1.439 ms</td>
+<td><strong>0.922 ms</strong></td>
+<td>1.087 ms</td>
+<td><strong>0.559 ms</strong></td>
+</tr>
+<tr>
+<td>2 ch, quorum 2</td>
+<td>1.480 ms</td>
+<td><strong>0.919 ms</strong></td>
+<td>1.060 ms</td>
+<td><strong>0.555 ms</strong></td>
+</tr>
+<tr>
+<td>4 ch, quorum 3-of-4</td>
+<td>1.451 ms</td>
+<td><strong>0.922 ms</strong></td>
+<td>1.076 ms</td>
+<td><strong>0.542 ms</strong></td>
+</tr>
+<tr>
+<td>ASAP saving</td>
+<td>—</td>
+<td>−517…−561 µs</td>
+<td>—</td>
+<td>−518…−534 µs</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The OneBox matches or beats the PXIe in all twelve cells.</strong> Full tables, per-stage breakdown and
+figures: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
 <p>All cells n≈1000, <strong>0 unmatched</strong>. Latency is <strong>flat across quorum size</strong> on both probes — within 6 µs
 (NP1 default) / 35 µs (NP1 ASAP) / 62 µs (NP2 ASAP): quorum decides which crossing fires, not the
 delivery delay. ASAP is sub-millisecond at every quorum on both probes.
@@ -638,10 +685,58 @@ python ripple_tools/latency_breakdown.py --source &quot;Latency Bench NP1 (ASAP 
 # the DEFINITIVE closed-loop latency, from a recording with NI-DAQ
 python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl --figs &lt;recdir&gt;/analysis
 
+# the OneBox delivery-mode A/B figure (same renderer/palette as the PXIe figures)
+python ripple_tools/plot_latency_compare.py \
+  --a &lt;dir&gt;/&lt;baseline_name&gt; --a-ws &lt;dir&gt;/&lt;baseline_name&gt;_ws.jsonl --a-label &quot;default delivery&quot; \
+  --b &lt;dir&gt;/&lt;asap_name&gt;     --b-ws &lt;dir&gt;/&lt;asap_name&gt;_ws.jsonl     --b-label &quot;ASAP delivery&quot; \
+  --stim-band adc --stim-channel 2 --out cmp.png --theme light
+
 # ...the same, on a OneBox rig where the stim is captured on the OneBox ADC (no sync fit)
 python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl     --stim-band adc --stim-channel 2 --figs &lt;recdir&gt;/analysis
 </code></pre>
 <h2 id="gotchas-that-cost-real-time">Gotchas that cost real time<a class="headerlink" href="#gotchas-that-cost-real-time" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>The OneBox ADC cannot measure stim pulse width. Do not try.</strong> At 30.3 kHz it samples every
+  <strong>33 µs</strong>, so a ~130 µs biphasic pulse spans about four samples. Measured across 67 consecutive
+  pulses of an <em>identical</em> commanded pulse (phase 60 µs / gap 10 µs / phase 60 µs), the
+  threshold-crossing width came out as 1, 2 or 4 samples purely according to where the pulse happened
+  to fall relative to the sample clock:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>measured width</th>
+<th>pulses</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 sample (33 µs)</td>
+<td>19</td>
+</tr>
+<tr>
+<td>2 samples (66 µs)</td>
+<td>17</td>
+</tr>
+<tr>
+<td>4 samples (132 µs)</td>
+<td>31</td>
+</tr>
+</tbody>
+</table>
+<p>Taking the most-populated bin yields "132 µs", which <em>looks</em> like a confirmation of 60+10+60 and is
+  not one — it cannot distinguish 130 µs from 100 or 165 µs. This exact mistake was made on
+  2026-08-21 and put a wrong caption on a figure.</p>
+<p>What the ADC capture <strong>is</strong> good for: pulse <strong>occurrence, count and timing</strong> — one artifact per
+  confirmed fire, located to within a sample. What it is <strong>not</strong> good for: anything about pulse shape
+  or width. Ground truth for width is an <strong>oscilloscope</strong>; on this rig the scope width matches what
+  the Pi is commanded to emit to the microsecond, so quote the Pi's parameters, never a number
+  derived from the ADC.</p>
+<p>Note also that <strong><code>IO9</code> carries the AM 2300 train gate, not the pulse</strong> — it sits high for the whole
+  <code>train ms</code> window regardless of frequency, so counting gate edges undercounts fires whenever one
+  lands inside an already-open gate. The stimulus artifact itself is on <strong><code>IO2</code></strong> (which is why the
+  <code>analyze_recording.py</code> invocations above pass <code>--stim-band adc --stim-channel 2</code>).</p>
+<p>Figure: <code>RecordingTests/2026-08-21_onebox_np2_saline_stim/analysis/stim_pulse_capture.png</code>.</p>
 <ul>
 <li><strong>The backend auto-quits ~2 s after the last WebSocket client disconnects.</strong> Launch the backend and the
   collector as one uninterrupted sequence, or the second run finds a dead server and blocks in <code>Rig()</code>

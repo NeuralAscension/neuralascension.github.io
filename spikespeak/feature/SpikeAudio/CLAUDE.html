@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — instructions for agents - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Overview / SpikesPeak — instructions for agents</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="index.html">Home</a>
+<h3>Overview</h3>
+<a href="README.html">SpikesPeak</a>
+<a href="SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a class="active" href="CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="benchmarks/README.html">Benchmarks</a>
+<a href="benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-instructions-for-agents">SpikesPeak — instructions for agents<a class="headerlink" href="#spikespeak-instructions-for-agents" title="Permanent link">#</a></h1>
+<p>Qt/C++ acquisition backend + an <strong>external browser</strong> GUI (HTTP :8234, WebSocket :1234), Neuropixels
+1.0/2.0 over PXIe or OneBox, online ripple detection, closed-loop stimulation.</p>
+<p>Read <a href="developer_docs/README.html"><code>developer_docs/README.md</code></a> first — it is the map. This file is only
+the rules that are easy to get wrong and expensive when you do.</p>
+<hr />
+<h2 id="the-definition-of-green">THE DEFINITION OF GREEN<a class="headerlink" href="#the-definition-of-green" title="Permanent link">#</a></h2>
+<p><strong>Do not report a build as working, passing, or green until BOTH suites pass.</strong> A compile that
+produced a binary is not a green build.</p>
+<pre><code class="language-bash">cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+</code></pre>
+<p>Runs the <strong>C++ suite automatically</strong> and prints a per-suite ✅/❌ banner. ~1.6 s, 316 cases.</p>
+<pre><code class="language-bash">python scripts/run_gui_tests.py
+</code></pre>
+<p>Runs the <strong>GUI suite</strong>. ~5 min. It is NOT part of the compile (it needs a browser and a backend), so
+<strong>you have to run it yourself</strong> — and you must run it whenever you touch <code>webinterface/</code>, the
+toolbar, the live view, the ripple dock, or anything an operator clicks.</p>
+<p>A failing C++ suite does not stop the build by default (you usually still want the binary to debug
+with). That means <strong>a red suite is easy to walk past. Do not.</strong> <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> makes
+red fatal; <code>--fatal</code> does the same for the GUI runner.</p>
+<p>Full detail, including how to add a test and how to debug a failure:
+<strong><a href="developer_docs/Testing.html"><code>developer_docs/Testing.md</code></a></strong>.</p>
+<h3 id="before-you-hand-back">Before you hand back<a class="headerlink" href="#before-you-hand-back" title="Permanent link">#</a></h3>
+<ul>
+<li>[ ] <code>cmake --build …</code> → <strong>ALL N SUITES PASSED</strong></li>
+<li>[ ] <code>python scripts/run_gui_tests.py</code> → <strong>ALL N GUI TESTS PASSED</strong></li>
+<li>[ ] If you added a test, you <strong>proved it can fail</strong> — inject a regression, watch it go red, revert.
+      An always-green test is worthless and worse than none, because it buys false confidence.</li>
+<li>[ ] Nothing left running: no <code>SpikesPeak.exe</code>, no stray browser, ports 1234/8234 free.</li>
+</ul>
+<hr />
+<h2 id="running-the-app">Running the app<a class="headerlink" href="#running-the-app" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">run_spikespeak.bat --no-browser
+</code></pre>
+<p><strong>Always pass <code>--no-browser</code> for automated work.</strong> Without it <code>main.cpp</code> calls
+<code>QDesktopServices::openUrl</code> and opens a window in the operator's <em>default</em> browser — on top of
+whatever browser you drove yourself. That is how a test run ends up with two GUIs on screen.</p>
+<p>The launcher exists because the app needs Qt + Neuropixels + HDF5 on <code>PATH</code>; running the exe directly
+exits <code>0xC0000135</code>. The backend <strong>auto-quits ~2 s after the last WebSocket client disconnects</strong>.</p>
+<h2 id="hardware-safety-read-before-touching-a-rig">Hardware safety — read before touching a rig<a class="headerlink" href="#hardware-safety-read-before-touching-a-rig" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Never force-kill the backend while a real probe or OneBox is connected.</strong> The FT601 USB handle is
+  released only on a clean exit; a kill costs a physical power-cycle. Shut down via the WebSocket
+  <code>quit</code> command or the GUI's Disconnect. Since 2026-08-21 every teardown vendor call is bounded, so
+  a wedged basestation no longer hangs shutdown — but the rule stands.</li>
+<li><strong>Do not leave a rig streaming</strong> while you do unrelated work (code, plots, docs). Pause and
+  disconnect as soon as you move on. Long idle streams have stalled the NI-DAQ.</li>
+<li><strong>Do not leave the rig or a browser running for the operator to look at.</strong> Shut everything down and
+  report with saved screenshots.</li>
+<li>Killing browsers: kill <strong>only</strong> the isolated debug-port profile you launched. A blanket
+  <code>Get-Process chrome | Stop-Process</code> closes the operator's real windows.</li>
+</ul>
+<h2 id="sim-first-always">Sim first, always<a class="headerlink" href="#sim-first-always" title="Permanent link">#</a></h2>
+<p>Every simulated source drives the same display processor, the same ring buffers, the same WebSocket
+and the same GUI as real hardware. So when something looks broken:</p>
+<ol>
+<li>Run the <strong>simulated</strong> source. If sim streams and hardware does not, it is the rig, not the code —
+   and you have just saved yourself hours.</li>
+<li>Count <strong>binary frames at the socket</strong>, not pixels on screen.</li>
+<li>Ask what the counters actually count. (Source liveness means <em>data committed</em>; processor liveness
+   means <em>the loop turned</em>. They are different on purpose.)</li>
+</ol>
+<p>This is written up properly in <code>developer_docs/Testing.md</code> §4, with the 2026-08-20 incident that
+produced it: a dead probe reported a completely healthy rig for three and a half minutes.</p>
+<h2 id="repo-conventions">Repo conventions<a class="headerlink" href="#repo-conventions" title="Permanent link">#</a></h2>
+<ul>
+<li><code>SpikesPeak_Status.md</code> is <strong>the</strong> canonical dated log. Not a todo file, not per-effort status files.</li>
+<li>Finished briefs go to <code>developer_docs/archive/</code>.</li>
+<li><strong>Never</strong> commit recording-test data. Referenced analysis figures stay; the <code>.bin</code>s never do.</li>
+<li><strong>No scratch files in the repo.</strong> Logs, captures and working files go to the session scratchpad.</li>
+<li>Regenerate the docs book with <code>python scripts/build_docs.py</code>.</li>
+<li>A config's identity is its internal <code>name:</code> field, not its filename.</li>
+<li>Do not <code>git add</code>, commit or push unless the operator asks.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>CLAUDE.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-definition-of-green">THE DEFINITION OF GREEN</a><ul>
+<li><a href="#before-you-hand-back">Before you hand back</a></li>
+</ul>
+</li>
+<li><a href="#running-the-app">Running the app</a></li>
+<li><a href="#hardware-safety-read-before-touching-a-rig">Hardware safety — read before touching a rig</a></li>
+<li><a href="#sim-first-always">Sim first, always</a></li>
+<li><a href="#repo-conventions">Repo conventions</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

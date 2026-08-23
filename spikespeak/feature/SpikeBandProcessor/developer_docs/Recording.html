@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Recording (Task 2 runbook) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / SpikesPeak — Recording (Task 2 runbook)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a class="active" href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-recording-task-2-runbook">SpikesPeak — Recording (Task 2 runbook)<a class="headerlink" href="#spikespeak-recording-task-2-runbook" title="Permanent link">#</a></h1>
+<p>How disk recording works, how to verify it for NP1.0, and the known sharp edges. Goal of Task 2:
+<strong>confirm NP1.0 recording produces correct files</strong>, then fix anything that's wrong.</p>
+<blockquote>
+<p>Recording is a <strong>sink/processor</strong> — see [<code>AddingASinkModule.md</code>] for the sink lifecycle, and
+[<code>SpikesPeak_Architecture_Review.md</code>] for the data plane.</p>
+</blockquote>
+<hr />
+<h2 id="0-how-to-record-usage">0. How to record (usage)<a class="headerlink" href="#0-how-to-record-usage" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Pick a source &amp; Play.</strong> Select a profile (e.g. <strong>NPX 1.0 with NI-DAQ</strong>) and press <strong>▶</strong> so data is
+   streaming. Record is enabled only while playing (it records the live buffer).</li>
+<li><strong>Press ● Record → set the location.</strong> The prompt asks for a <strong>recording name</strong> (animal/id) and an
+   <strong>output directory</strong> on the SpikesPeak machine — use <strong>Browse…</strong> (a native folder dialog) or type a
+   path. Confirming (<strong>Set Location</strong>) only <strong>arms</strong> the recorder — the Record button shows a muted-red
+   <em>ready</em> ring; it does <strong>not</strong> start writing yet. (This two-step flow means picking a folder never
+   starts a recording by surprise.)</li>
+<li><strong>Press ● Record again to START.</strong> The button turns <strong>solid red</strong> and a flashing <strong>● REC → name</strong> badge
+   appears. Files are written <strong>live</strong> to a <strong>folder named after the recording</strong> —
+   <code>&lt;directory&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>, e.g. <code>mouse42/mouse42_ap_…bin</code>, <code>…_lfp_…bin</code>,
+   <code>…_nidaq_…bin</code>. One start records every configured stream (NPX AP + LFP + NI-DAQ) into that one folder.</li>
+<li><strong>Which channels?</strong> Set by each recording's <code>channels:</code> in the YAML — <strong>electrode numbers</strong> as shown on
+   screen (for the default Bank 0 map these equal the read-out channels). Only those are written; the
+   sample configs record electrodes <code>[1,2,3]</code> (NPX) and NI-DAQ <code>[0..7]</code>. <em>(A GUI record-channel picker is
+   coming — §7.)</em></li>
+<li><strong>Press ● Record again to stop.</strong> Files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the
+   stream. You can arm + start a new recording (fresh folder + timestamp) without pausing.</li>
+</ol>
+<blockquote>
+<p><strong>Headless / scripted:</strong> the same flow runs with <strong>no clicking</strong> via <code>python/spikespeak_cli.py</code>
+(<code>select → waitready → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → pause → disconnect → quit</code>),
+which drives the backend over the WebSocket; an open browser mirrors it live. See
+<a href="ControlCLI.html">ControlCLI.md</a>. To visualise a finished recording,
+<code>python examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
+<strong><code>channels.png</code></strong> (the recorded electrodes in µV) into the recording folder.</p>
+</blockquote>
+<p>Verify a file with <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels &lt;N&gt; --rate 30000</code>
+(<code>--channels</code> = the count in <code>channels:</code>; <code>--rate 2500</code> for LFP). NI-DAQ files use a different layout
+(<code>[double ts][double × N]</code>), so the NPX verifier doesn't apply to them.</p>
+<p><strong>Metadata + postprocessing.</strong> Each <code>.bin</code> is written with a self-describing <strong><code>&lt;file&gt;.bin.json</code>
+sidecar</strong> (band, record layout, sample rate, units, and the electrode/channel list). The
+<strong><code>python/spikespeak_postprocess</code></strong> package reads those and returns a band for the electrode numbers you
+want, as NumPy or xarray:</p>
+<pre><code class="language-python">from spikespeak_postprocess import Recording
+rec = Recording(r&quot;C:/Data/mouse42&quot;)
+rec.bands()                                     # ['ap','lfp','nidaq']
+sig = rec.load(channels=[1, 2], band=&quot;ap&quot;)      # electrodes 1 &amp; 2 -&gt; Signal (.data/.time/.fs)
+uv  = sig.to_microvolts()
+da  = rec.load(channels=2, band=&quot;lfp&quot;, output=&quot;xarray&quot;)
+daq = rec.load(band=&quot;nidaq&quot;)                    # all NI-DAQ channels
+
+# NI-DAQ ↔ NPX clock sync (shared TTL pulse on the NPX sync field + a NI-DAQ channel):
+model = rec.synchronize(reference_band=&quot;ap&quot;, nidaq_sync_channel=0)   # drift_ppm / residual_ms
+daq_synced = rec.load(band=&quot;nidaq&quot;, sync=True)  # timestamps on the Neuropixels clock
+</code></pre>
+<p>See <code>python/README.md</code> and <code>python/examples/{plot_channel,synchronize_nidaq}.py</code>.</p>
+<blockquote>
+<p><strong>Sync robustness (fixed 2026-07-17).</strong> <code>synchronize()</code> now defaults to <code>match="auto"</code>. The NPX and NI-DAQ
+can capture a <strong>different number</strong> of sync pulses (one side stops a beat early); the old <code>match="end"</code> then
+paired the periodic 1 Hz train <strong>off by one</strong> and silently shifted the whole NI-DAQ→NPX map by a full sync
+period — invisible in the residual, because a shifted pairing fits a line just as well. <code>"auto"</code> estimates
+the true sub-period offset and nearest-edge-pairs, so a missing pulse at either end is safe. If you ever see
+ai4 events landing a whole sync-period off, check the pulse counts. Details:
+<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>.</p>
+</blockquote>
+<hr />
+<h2 id="1-end-to-end-path">1. End-to-end path<a class="headerlink" href="#1-end-to-end-path" title="Permanent link">#</a></h2>
+<p>Recording now rides the <strong>per-module QWebChannel <code>Q_INVOKABLE</code></strong> standard (Option A), the same way the
+IMRO panel talks to the NPX source — <strong>not</strong> the old <code>0x1001</code> binary command. Full pattern:
+<a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a>.</p>
+<pre><code>[Record ▮] webinterface/main.js toggleRecord()
+   └─ window.activeRecorders.forEach(r =&gt; r.setRecording(bool))   // QWebChannel RPC, no command id
+        └─ QWebChannel → RecordProcessor::setRecording(bool)      src/modules/recording/RecordProcessor.cpp
+             └─ QMetaObject::invokeMethod(this, …, QueuedConnection)   // marshal to the recorder's thread
+                  └─ RecordProcessor::applyRecordingState(bool)   // opens/closes the output files
+</code></pre>
+<p><code>window.activeRecorders</code> is bound on the <code>deviceReady</code> event after <code>WebSocketServer::onSourceSelection</code>
+registers <strong>every</strong> recorder to the QWebChannel. A profile can have more than one — e.g.
+<code>config/NpxPxiNiDaq.yaml</code> has <code>proc.npx.recorder</code> <strong>and</strong> <code>proc.nidaq.recorder</code> — and the single Record
+button fans out to all of them (per-recorder/per-channel config lives in each recorder's <code>recordings:</code>
+YAML; see §2–§3). A failed open is reported back via the <code>recordingStatus</code> event → toolbar (see §5).</p>
+<blockquote>
+<p><strong>Migrated 2026-06-25.</strong> Recording used to go over binary command id <code>0x1001</code> →
+<code>CommandDispatcher</code> → <code>slHandleRecordingControlCommand</code>. That path is gone; the <code>Q_INVOKABLE</code> is the
+single route, consistent with the NPX module.</p>
+</blockquote>
+<p><strong>UI gating:</strong> the Record button is enabled only <strong>while playing</strong> (<code>main.js</code>: <code>recBtn.disabled =
+!isPlaying</code>). So the workflow is <strong>Play first, then Record</strong> — the recorder reads the live buffer, so
+no data flows to disk unless streaming is active. The Record button turns <strong>solid red while recording</strong>; the Play button is a <strong>green ▶ when paused</strong>
+and a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (see GuiTesting.md §6).</p>
+<hr />
+<h2 id="2-what-gets-written-and-where">2. What gets written, and where<a class="headerlink" href="#2-what-gets-written-and-where" title="Permanent link">#</a></h2>
+<p><strong>The Record button prompts (2026-06-26).</strong> Clicking Record opens a GUI modal
+(<code>AppController.showRecordDialog</code>) for a <strong>recording name</strong> (animal/id) and an <strong>output directory</strong> on
+the SpikesPeak machine — pick it with the <strong>Browse…</strong> button (a native backend folder dialog; see below)
+or type/paste a path; both remembered in <code>localStorage</code>. On Start, <strong>every</strong> bound recorder gets that
+directory + name: <code>setRecording(true, dir, name)</code>. Stop = <code>setRecording(false, "", "")</code>, no prompt.</p>
+<blockquote>
+<p><strong>Why a backend picker (not the browser's, like Save .imro)?</strong> Recording is written by the <em>backend</em>
+continuously at full rate, so it needs a real path on that machine — the browser's picker can't supply
+one. Save .imro is the opposite (a tiny text file the <em>browser</em> writes client-side). Full convention +
+the deferred-safe dialog details: <code>SpikesPeak_Architecture_Review.md</code> §7.5. The <strong>Browse…</strong> button sends
+a <code>pickDirectory</code> command → <code>WebSocketServer</code> opens <code>QFileDialog::getExistingDirectory</code> (deferred,
+<code>DontUseNativeDialog</code>) → returns the path via a <code>directoryPicked</code> event. The dialog opens on the
+SpikesPeak machine.</p>
+</blockquote>
+<p><code>RecordProcessor::applyRecordingState(bool enable, QString outputDir, QString namePrefix)</code> (runs on the
+recorder's own thread):
+- <strong>Start</strong>: the prompt <code>outputDir</code> <strong>overrides</strong> the YAML <code>output_directory</code> (created with one
+  <code>QDir().mkpath</code>); if neither is set, the working directory is used. The dir is then nested into a per-session
+  <code>&lt;namePrefix&gt;/</code> subfolder (same <code>mkpath</code>) so a session's files group together. For each configured recording it
+  opens <code>QFile("&lt;dir&gt;/&lt;namePrefix&gt;/&lt;namePrefix&gt;_&lt;output_filename&gt;_&lt;yyyyMMdd_hhmmss&gt;.bin")</code> in <code>WriteOnly</code> — e.g.
+  <code>mouse42_ap_20260626_143012.bin</code>, <code>…_lfp_…</code>, <code>…_nidaq_…</code>. One timestamp is shared across the set so the
+  AP + LFP + NI-DAQ files get the <strong>same</strong> suffix. Open failure ⇒ <code>qWarning</code> + a <code>recordingStatus</code> error
+  event (§5) + <strong>skip</strong> that recording.
+- <strong>Stop</strong>: closes + frees every recording's file (guarded against a never-opened file).</p>
+<p><strong>Channel restriction.</strong> Each recording's <code>channels:</code> list (read-out indices) restricts what is written —
+<strong>only</strong> those channels are recorded (the interpreter filter). The NP1 configs split AP + LFP into
+separate files and give each its own <code>channels:</code>; the sample configs ship <code>channels: [0..7]</code> as an
+edit-me placeholder. <strong>Remove</strong> <code>channels:</code> to record all <code>N</code>.</p>
+<p><strong>File format</strong> — written by <code>NpxDataInterpreter::serializeAvailableData</code> (Npx.cpp), repeating
+per sample, <strong>native little-endian</strong> (x86; no byteswap):</p>
+<pre><code>┌─ per timebin ─────────────────────────────────────────────┐
+│ uint32 timestamp │ uint16 sync │ int16 × N (channel data)  │
+└───────────────────────────────────────────────────────────┘
+   N = mRawData-&gt;sampleDimensions() = 384 for BOTH NP1 and NP2 (kMaxChannels).
+   Record stride = 4 + 2 + 2·384 = 774 bytes. There is NO 385th sync channel.
+   sync source: packetInfo-&gt;Status &gt;&gt; 6 for NP1 AND NP2 (AUX_IO&lt;0:13&gt;, matches OpenEphys).
+</code></pre>
+<blockquote>
+<p><strong>CORRECTED 2026-06-25.</strong> An earlier revision of this doc claimed <code>N = 385</code> with the sync in
+"channel index 384". That was wrong: the AP/LFP <code>CircularBuffer</code>s are allocated <code>kMaxChannels</code>
+(<strong>384</strong>) wide, so there is no 385th channel — reading <code>channelData[384]</code> was an <em>out-of-bounds</em>
+read of garbage, and it was taken on every probe (<code>sampleDimensions()</code> is always 384, so the NP2
+<code>else</code> branch was dead). Fixed in <code>Npx.cpp</code>: sync now comes from <code>packetInfo-&gt;Status &gt;&gt; 6</code> for all
+probes, the value the demux actually stores. <strong>Use N = 384</strong> in any reader.</p>
+</blockquote>
+<ul>
+<li>With a YAML <strong><code>channels: [...]</code></strong> filter, only those channel indices are written (each <code>int16</code>), still
+  preceded by <code>timestamp + sync</code>. With <strong>no</strong> filter, the whole <code>N</code>-wide block is written.
+<em>(Superseded.)</em> Each <code>.bin</code> DOES carry a self-describing <code>&lt;file&gt;.bin.json</code> sidecar -- band,
+record layout, sample rate, units and the electrode/channel list -- written by
+<code>RecordProcessor.cpp</code>. <code>python/spikespeak_postprocess</code> and every <code>ripple_tools</code> analyser rely
+on it; a reader does NOT need to know N and the rate out-of-band.</li>
+</ul>
+<hr />
+<h2 id="3-wiring-np10">3. Wiring (NP1.0)<a class="headerlink" href="#3-wiring-np10" title="Permanent link">#</a></h2>
+<p><code>config/Npx1Pxi.yaml</code> → <code>proc.npx.recorder</code> records <strong>two</strong> streams (AP + LFP), each restricted to a
+<code>channels:</code> list:</p>
+<pre><code class="language-yaml">processors:
+  - name: &quot;proc.npx.recorder&quot;
+    recordings:
+      - data_name: &quot;data.npx.ap&quot;
+        data_interpreter_name: &quot;interp.npx.ap&quot;
+        output_filename: &quot;ap&quot;
+        channels: [0, 1, 2, 3, 4, 5, 6, 7]   # ONLY these read-out channels; edit to your selection
+      - data_name: &quot;data.npx.lfp&quot;
+        data_interpreter_name: &quot;interp.npx.lfp&quot;
+        output_filename: &quot;lfp&quot;
+        channels: [0, 1, 2, 3, 4, 5, 6, 7]
+</code></pre>
+<p>So one Record toggle (after the name/dir prompt, name <code>mouse42</code>) creates <strong><code>mouse42_ap_&lt;ts&gt;.bin</code></strong> and
+<strong><code>mouse42_lfp_&lt;ts&gt;.bin</code></strong> in the chosen directory (+ <strong><code>mouse42_nidaq_&lt;ts&gt;.bin</code></strong> when the profile also
+has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>proc.nidaq.recorder</code> both map to the <strong>same</strong>
+<code>RecordProcessor</code> class (registered in <code>Utils.cpp</code>); only the configured interpreters/streams differ.</p>
+<hr />
+<h2 id="4-task-2-test-checklist-np10">4. Task 2 test checklist (NP1.0)<a class="headerlink" href="#4-task-2-test-checklist-np10" title="Permanent link">#</a></h2>
+<ol>
+<li>Play → Record (enter a name + directory in the prompt) ~5 s → Stop. Confirm <code>&lt;name&gt;_ap_&lt;ts&gt;.bin</code> +
+   <code>&lt;name&gt;_lfp_&lt;ts&gt;.bin</code> (+ <code>&lt;name&gt;_nidaq_&lt;ts&gt;.bin</code> if NI-DAQ) appear in the directory you chose.</li>
+<li><strong><code>N</code> = the number of channels in the recording's <code>channels:</code> list</strong> (the sample config records 8 →
+   per-record stride = <code>4 + 2 + 2·N</code> = 22 bytes for N=8; with no <code>channels:</code> it's all 384 → 774 bytes).
+   A whole file should be an exact multiple of that stride.</li>
+<li>Read the first records in Python and verify monotonic timestamps and plausible int16 ranges, e.g.:
+   <code>python
+   import numpy as np
+   N = 8   # = len(channels) for this recording (8 in the sample config; 384 if unrestricted)
+   rec = np.dtype([('ts','&lt;u4'),('sync','&lt;u2'),('ch','&lt;i2',N)])
+   d = np.fromfile('&lt;name&gt;_ap_&lt;ts&gt;.bin', dtype=rec)
+   print(d['ts'][:5], d['ch'][:3, :8])   # timestamps should step ~ uniformly; data ~ ADC counts</code>
+   Or just run the bundled verifier: <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels 8 --rate 30000</code>
+   (and <code>--rate 2500</code> for the LFP file). Pass <code>--channels</code> matching the <code>channels:</code> count. It checks the
+   stride, monotonic timestamps, sample-rate plausibility, and int16 ranges. (NI-DAQ files use a different
+   <code>[double ts][double × N]</code> layout — the NPX verifier doesn't apply.)</li>
+<li>Confirm the recorded channel <strong>order matches the applied IMRO</strong> (recording is channel-ordered, like
+   the stream — apply a known map and check a distinctive channel).</li>
+<li>Toggle Record on/off several times → each cycle should produce a fresh timestamped pair.</li>
+</ol>
+<hr />
+<h2 id="5-known-sharp-edges">5. Known sharp edges<a class="headerlink" href="#5-known-sharp-edges" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Severity</th>
+<th>Where</th>
+<th>Issue</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>HIGH (crash)</strong></td>
+<td>RecordProcessor.cpp (stop loop)</td>
+<td>Stop called <code>outputFile-&gt;close()</code> with <strong>no null check</strong>. If a start open <strong>failed</strong> (read-only dir / disk full → <code>continue</code>), or stop arrived without a successful start, <code>outputFile</code> was <code>nullptr</code> ⇒ crash.</td>
+<td><strong>FIXED</strong> — stop loop now <code>continue</code>s when <code>outputFile == nullptr</code>.</td>
+</tr>
+<tr>
+<td><strong>HIGH (data)</strong></td>
+<td>Npx.cpp (sync read)</td>
+<td>sync read <code>channelData[384]</code> from a <strong>384-wide</strong> row — an out-of-bounds read of garbage, always taken (<code>sampleDimensions()</code> is always 384, so the NP2 branch was dead). Corrupted the sync field and seeded the bogus "N=385" format.</td>
+<td><strong>FIXED</strong> — sync now <code>packetInfo-&gt;Status &gt;&gt; 6</code> for all probes (matches OpenEphys). Record is <code>[ts][sync][int16×384]</code> = 774 B.</td>
+</tr>
+<tr>
+<td><strong>HIGH (analysis)</strong></td>
+<td>recording sidecar (all bands)</td>
+<td>The sidecar's <code>num_channels</code> describes the <strong>payload</strong>, not the frame. An NPX frame is <code>[uint32 ts][uint16 sync][int16 x N]</code> = <code>N + 3</code> int16; NI-DAQ is <code>[float64 ts][float64 x N]</code>. A reader that took <code>num_channels</code> as the stride mis-de-interleaved the whole file, and because <code>gcd</code> of the wrong and right strides is rarely 1 the columns came out <em>sample-wise distinct but statistically identical</em> — which is what made the OneBox ADC look like failing hardware in <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>. The layout was documented in a comment above <code>writeMetadataSidecar()</code> and nowhere a reader could see it.</td>
+<td><strong>FIXED</strong> — the sidecar now carries a <code>frame</code> block (<code>bytes</code>, <code>header_bytes</code>, <code>header[]</code>, <code>payload_dtype</code>, <code>payload_channels</code>, <code>layout</code>). Verified: a 15 s NP2.0 recording reports <code>frame.bytes: 12</code>, and <code>filesize / 12 / 30000 = 15.00 s</code> exactly. <strong>Recordings made before this still need the stride computed by hand</strong> as <code>num_channels + 3</code> int16 (NPX).</td>
+</tr>
+<tr>
+<td>MEDIUM</td>
+<td>RecordProcessor.cpp (start loop)</td>
+<td>Output dir was the <strong>CWD only</strong> — not configurable, and a missing subdir failed silently.</td>
+<td><strong>FIXED</strong> — optional <code>output_directory:</code> YAML key on the recorder processor; created on start via <code>QDir().mkpath</code>. Absent ⇒ CWD (legacy).</td>
+</tr>
+<tr>
+<td>MEDIUM</td>
+<td>RecordProcessor.cpp (start loop)</td>
+<td>File-open failure was <strong>silent to the user</strong> (only <code>qWarning</code>).</td>
+<td><strong>FIXED</strong> — emits <code>sigIpErrorOccurred</code>; <code>WebSocketServer</code> relays it as a <code>recordingStatus</code> event → toolbar status (<code>window.guiStatus</code>, red).</td>
+</tr>
+<tr>
+<td>LOW</td>
+<td>Npx.cpp</td>
+<td>Endianness is native (fine on x86, undocumented). No metadata header — consider a sidecar <code>.meta</code> (rate, N, probe, IMRO).</td>
+<td>Open (low priority).</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-status-2026-06-25">6. Status (2026-06-25)<a class="headerlink" href="#6-status-2026-06-25" title="Permanent link">#</a></h2>
+<ul>
+<li>Recording path implemented + wired for NP1.0 (AP + LFP). <strong>Code fixes above applied and the C++ +
+  webinterface rebuilt clean</strong> (CMake/Ninja/MSVC2019, exit 0). The on-disk format is now correct and
+  documented (774-byte records, real sync). <code>verify_npx_recording.py</code> added at the repo root.</li>
+<li><strong>Done on hardware.</strong> NP1.0 recording is since verified on the real probe + NI-DAQ — the §4 checklist
+  passed during the 2026-07-07 hardware bring-up (Status §16), and recording rode along in the ripple
+  closed-loop hardware tests (both AP/LFP bands written and loaded back via <code>spikespeak_postprocess</code>;
+  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</li>
+</ul>
+<hr />
+<h2 id="7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)<a class="headerlink" href="#7-gui-record-channel-selection-built-2026-07-06" title="Permanent link">#</a></h2>
+<p>Pick recording channels <strong>visually</strong> instead of editing YAML. The probe viewer has a <strong>mode radio</strong> —
+<strong>Edit Map</strong> (the IMRO editor) vs <strong>Select Recording Channels</strong> — so you can set record channels at any
+time, <em>including before you Play</em> (it doesn't touch hardware). The full IMRO editor returns when you
+switch the radio back. (This decoupled radio approach was chosen over auto-flipping on Record, so it
+works independent of streaming state.)</p>
+<p><strong>Probe recording-selection mode</strong> (reuses the ImroManager SciChart scatter + its click / drag-box
+selection; <code>webinterface/ImroManager.js</code> <code>renderRecordSelection</code> + the <code>probeMode === 'record'</code> branch):
+- Shows <strong>only the electrodes in the applied probe map</strong> (<code>appliedImroData</code>) — the channels actually
+  streaming; non-applied electrodes are not drawn. A note in the panel states this.
+- <strong>Colour legend</strong> (dark-mode, colourblind-safe by luminance): <strong>green = will record</strong>, <strong>blue =
+  applied, not recording</strong>, <strong>amber = reference (ch 191, excluded)</strong>.
+- <strong>Default = record all</strong>: on entering the mode every applied, non-reference channel is selected.
+- <strong>Custom select</strong>: click an electrode toggles it; <strong>click-drag</strong> a vertical box <strong>adds</strong> the applied
+  electrodes in that row band (the reserved reference ch 191 is always skipped).
+- <strong>Unselect all</strong> clears; <strong>Record all</strong> re-selects every applied channel; <strong>Set recording channels</strong>
+  commits the current selection.
+- On commit the browser stores the read-out channel list in <code>window.recordChannels</code> (electrode →
+  read-out channel is <code>electrode % 384</code>, taken from the applied map). <code>main.js toggleRecord</code> passes it to
+  every recorder as the 4th arg of <code>setRecording(true, dir, name, channels)</code>. Empty/none ⇒ the YAML
+  default (headless/CLI parity).</p>
+<p><strong>Backend</strong> (<code>RecordProcessor</code>, §Part 3 rules): <code>setRecording</code> gained a <code>channels</code> (QVariantList) arg.
+When non-empty on start it's validated (<code>0..kMaxChannels</code>, unique) and becomes the session's
+<code>activeRecordIndices</code>, overriding the YAML <code>channels:</code> for that session <strong>only</strong> (the configured default
+is untouched and restores next session). It drives both <code>serializeAvailableData</code> and the <code>.bin.json</code>
+sidecar, so a GUI selection is recorded and self-described faithfully. <strong>No on-disk format change.</strong></p>
+<p><strong>Verified</strong> (Linux/sim, in-browser via CDP): drag-selected 27 channels <code>[176..190,192..203]</code> (191
+correctly excluded) → Set → Record → both <code>ap</code> and <code>lfp</code> <code>.bin</code> contained <strong>exactly</strong> those 27 channels
+(sidecar + <code>spikespeak_postprocess</code> confirm); Record-all → 383; toggle back to Edit Map restores the editor.</p>
+<p><strong>NI-DAQ record-channel selection (BUILT 2026-07-06).</strong> With a NI-DAQ recorder present, the "Select
+Recording Channels" mode also shows a <strong>NI-DAQ channel grid</strong> below the probe (<code>#nidaq-record-section</code>):
+a button per channel (green = will record) + <strong>All / None</strong>. Buttons are labelled <strong>0-indexed</strong> to match
+the live view's NI-DAQ channel labels (<code>ChartColumn.js ${ch+1}</code>); the stored/committed index stays 0-based
+(what the recorder filters on), so displayed "1,4,6" records read-out channels <code>[0,3,5]</code>. The channel count
+is discovered from the live NI-DAQ display stream, so the grid <strong>auto-appears the moment you press ▶ Play</strong>
+(before that it shows a hint; <code>handleNewStream</code> → <code>window.refreshNidaqRecordSection</code>). <strong>Set recording channels</strong> commits BOTH
+selections as
+<code>window.recordChannels = { npx:[...], nidaq:[...] }</code>; <code>main.js toggleRecord</code> routes each list to the
+matching recorder by registry name (<code>proc.npx.recorder</code> vs <code>proc.nidaq.recorder</code>). Verified in-browser:
+a probe subset + NI-DAQ <code>[0,3,5]</code> -&gt; AP/LFP recorded the probe channels and the NI-DAQ <code>.bin</code> recorded
+exactly channels <code>[0,3,5]</code>.</p>
+<h2 id="a-recording-also-carries-its-own-log">A recording also carries its own log<a class="headerlink" href="#a-recording-also-carries-its-own-log" title="Permanent link">#</a></h2>
+<p>Alongside the <code>.bin</code> files and their <code>.json</code> sidecars, a recording directory now contains
+<code>&lt;name&gt;_&lt;timestamp&gt;.log</code> -- a copy of the backend log for exactly the span of the recording, sharing
+the timestamp of the data files:</p>
+<pre><code>RecordingTests/logdemo/
+    logdemo_20260819_231117.log
+    logdemo_raw_20260819_231117.bin        + .bin.json
+    logdemo_adc_20260819_231117.bin        + .bin.json
+</code></pre>
+<p>It exists because <code>output.log</code> is truncated on every start and so cannot answer "what was this rig
+doing when this file was written?" for data analysed later. It covers the <strong>recording</strong>, not the
+session -- only the source connected while recording, nothing before Record was pressed or after it
+stopped. That scope is deliberate: everything in the file pertains to the data beside it. Full
+rationale and the format of a line: <a href="Logging.html"><code>Logging.md</code></a>.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/Recording.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#0-how-to-record-usage">0. How to record (usage)</a></li>
+<li><a href="#1-end-to-end-path">1. End-to-end path</a></li>
+<li><a href="#2-what-gets-written-and-where">2. What gets written, and where</a></li>
+<li><a href="#3-wiring-np10">3. Wiring (NP1.0)</a></li>
+<li><a href="#4-task-2-test-checklist-np10">4. Task 2 test checklist (NP1.0)</a></li>
+<li><a href="#5-known-sharp-edges">5. Known sharp edges</a></li>
+<li><a href="#6-status-2026-06-25">6. Status (2026-06-25)</a></li>
+<li><a href="#7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)</a></li>
+<li><a href="#a-recording-also-carries-its-own-log">A recording also carries its own log</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

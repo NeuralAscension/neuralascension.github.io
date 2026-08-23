@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Adding Neuropixels OneBox support (implementation plan) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a class="active" href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-adding-neuropixels-onebox-support-implementation-plan">SpikesPeak — Adding Neuropixels <strong>OneBox</strong> support (implementation plan)<a class="headerlink" href="#spikespeak-adding-neuropixels-onebox-support-implementation-plan" title="Permanent link">#</a></h1>
+<p><strong>Status:</strong> planning brief (branch <code>feature/OneBoxSupport</code>, started 2026-08-18). No SpikesPeak code changed
+yet. This doc is the crash-safe source of truth for the task.
+<strong>Reference:</strong> OpenEphys <code>neuropixels-pxi</code> (local copy <code>Source-OpenEphys-Neuropixels-PXI/</code>; upstream
+<code>github.com/open-ephys-plugins/neuropixels-pxi</code>). Every IMEC API call below was verified against the
+<strong>vendored</strong> header <code>external/neuropixels/api/include/v4/NeuropixAPI.h</code> (the <code>.lib</code>/<code>.dll</code> we actually link,
+<code>NeuropixAPI_x64_4_1_3</code>).</p>
+<blockquote>
+<p><strong>TL;DR</strong> — The OneBox is just <em>another basestation</em> to the IMEC API. It is enumerated by the same
+<code>scanBS()</code>, and once it is mapped to a virtual slot and opened, <strong>reading a probe through a OneBox is
+byte-for-byte identical to PXI</strong> (<code>readPackets</code>/<code>readElectrodeData</code>). So OneBox support = (1) a different
+<em>open</em> step (USB platform + <code>mapBS</code> + FTDI driver check), plus (2) OneBox's two extra I/O paths that PXI
+doesn't have: a <strong>12-channel ADC</strong> (analog <strong>in</strong>) and a <strong>DAC/WavePlayer</strong> (analog <strong>out</strong> — a native,
+hardware-timed closed-loop stim output). The probe-streaming workers and the whole IMRO/channel-map
+pipeline are <strong>reused unchanged</strong>.</p>
+</blockquote>
+<hr />
+<h2 id="0-what-the-user-needs-to-do-once-ftdi-driver">0. What the user needs to do once (FTDI driver)<a class="headerlink" href="#0-what-the-user-needs-to-do-once-ftdi-driver" title="Permanent link">#</a></h2>
+<p>The OneBox is a USB-3 device built on an <strong>FTDI FT601</strong> bridge. The IMEC API refuses to talk to it unless the
+correct <strong>FTDI D3XX</strong> driver is installed, and it is picky about the version.</p>
+<ul>
+<li><strong>Install this exact driver:</strong> <code>FTD3XXDriver_WHQLCertified_1.3.0.10_Installer.zip</code>
+  Official FTDI direct link: <a href="https://ftdichip.com/wp-content/uploads/2024/06/FTD3XXDriver_WHQLCertified_1.3.0.10_Installer.zip">https://ftdichip.com/wp-content/uploads/2024/06/FTD3XXDriver_WHQLCertified_1.3.0.10_Installer.zip</a>
+  (landing page: <a href="https://ftdichip.com/drivers/d3xx-drivers/">https://ftdichip.com/drivers/d3xx-drivers/</a>). Run the setup executable inside the zip.</li>
+<li><strong>Do NOT install 1.4.0.x</strong> — the newest D3XX driver is <em>incompatible</em> with the OneBox and the device will
+  not be recognized. If 1.4.0.x is already present it must be removed first (Device Manager → uninstall the
+  device, then install 1.3.0.10).</li>
+<li><strong>Verify:</strong> after install + plugging in a powered OneBox, Device Manager shows <strong>"FT601 USB 3.0 Bridge
+  Device"</strong> under <em>Universal Serial Bus controllers</em>.</li>
+<li>The API can self-report the required version at runtime — <code>checkFtdiDriver()</code> returns <code>required</code>,
+  <code>current</code>, <code>is_driver_present</code>, <code>is_version_ok</code> (only works while a OneBox is powered on — an FTDI library
+  limitation). SpikesPeak will call this on OneBox selection and show a clear GUI status if the driver is
+  missing/mismatched (see Phase 1). The reference plugin hardcodes the required version as <strong>1.3.0.10</strong>,
+  matching the driver above.</li>
+</ul>
+<blockquote>
+<p>Driver installation is a manual, elevated action — <strong>the user installs it</strong>; SpikesPeak never installs a
+driver. Our code only <em>detects and reports</em>.</p>
+</blockquote>
+<hr />
+<h2 id="1-current-state-in-spikespeak">1. Current state in SpikesPeak<a class="headerlink" href="#1-current-state-in-spikespeak" title="Permanent link">#</a></h2>
+<ul>
+<li>Real Neuropixels today = <strong>one</strong> class <code>NeuropixelsSource</code> (registry name <code>source.npx.pxi</code>) in
+  <code>src/modules/neuropixels/NpInterface.{hpp,cpp}</code> (~2k lines), gated <code>#ifdef NPX_HW_ENABLED</code> (Windows only;
+  Linux compiles the API stubs and uses sim sources). Registered in <code>src/core/Utils.cpp</code>
+  <code>registerBuiltInTypes()</code>.</li>
+<li><code>NpInterface.hpp</code> already anticipates this task:
+  <code>cpp
+  // Going to need another constructor for the OneBox
+  // probably a layer of abstraction before the NeuropixelsSource
+  // object is created with knowledge of onebox constructor or pxie constructor ...</code></li>
+<li><strong><code>source.npx.onebox</code> is a phantom.</strong> <code>config/OneBoxTest.yaml</code> references it but nothing registers it, so
+  <code>WebSocketServer::onSourceSelection</code> (~line 123) hits the <em>"OneBox is not supported in this build yet"</em>
+  <code>hardware-error</code> dialog. That stub is what we replace.</li>
+<li>The source contract is <code>IDataSource</code> (<code>src/core/IDataSource.hpp</code>): <code>initDataSource / closeDataSource /
+  startAcq / stopAcq</code>, producing into a registered <code>CircularBuffer</code> via <code>addProducer</code>/<code>commitWrite</code>, with a
+  worker (<code>IDataSourceWorker</code>) on its own <code>QThread</code>. See <code>developer_docs/AddingASourceModule.md</code>.</li>
+<li>Existing probe-streaming workers (both in <code>NpInterface.cpp</code>, both <strong>slot/port/dock-based</strong>, so they are
+  already platform-agnostic): <code>Npx1Probe</code> (<code>np_readElectrodeData</code> → <code>data.npx.ap</code> + <code>data.npx.lfp</code>) and
+  <code>Npx2MSProbe</code> (<code>np_readPackets</code> → <code>data.npx.raw</code>).</li>
+</ul>
+<hr />
+<h2 id="2-how-the-onebox-differs-from-pxi-verified-against-the-vendored-v4-api">2. How the OneBox differs from PXI — verified against the vendored v4 API<a class="headerlink" href="#2-how-the-onebox-differs-from-pxi-verified-against-the-vendored-v4-api" title="Permanent link">#</a></h2>
+<h3 id="21-enumeration-open-the-one-genuinely-different-step">2.1 Enumeration &amp; open (the ONE genuinely-different step)<a class="headerlink" href="#21-enumeration-open-the-one-genuinely-different-step" title="Permanent link">#</a></h3>
+<p>Both platforms come out of the same scan. The differentiator is a struct field:</p>
+<pre><code class="language-c">typedef enum { NPPlatform_None=0, NPPlatform_PXI=0x1, NPPlatform_USB=0x2, NPPlatform_ALL=0x3 } NPPlatformID_t;
+struct basestationID { NPPlatformID_t platformid; /* ...serial... */ };   // v4 line 36–48
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Step</th>
+<th>PXI (today, <code>initBasestation</code>)</th>
+<th>OneBox (new <code>openBasestation</code> override)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>scan</td>
+<td><code>np_scanBS()</code></td>
+<td><code>np_scanBS()</code> (same call scans USB <strong>and</strong> PXIe)</td>
+</tr>
+<tr>
+<td>list</td>
+<td><code>np_getDeviceList(list, 16)</code></td>
+<td>same</td>
+</tr>
+<tr>
+<td>pick</td>
+<td><code>np_tryGetSlotID()</code> → first PXI slot</td>
+<td>iterate list, keep entry with <code>platformid == NPPlatform_USB</code>; read its serial via <code>np_getDeviceInfo(slot, &amp;info)</code></td>
+</tr>
+<tr>
+<td><strong>map</strong></td>
+<td><em>(PXI already has a physical slot)</em></td>
+<td><strong><code>np_mapBS(serial_number, virtualSlot)</code></strong> — OneBox has no chassis slot, so you assign it one. Reference convention: first virtual slot = <strong>16</strong>. <code>np_unmapBS(slot)</code> on close.</td>
+</tr>
+<tr>
+<td>open</td>
+<td><code>np_openBS(slot)</code></td>
+<td><code>np_openBS(virtualSlot)</code> (identical once mapped)</td>
+</tr>
+<tr>
+<td>driver</td>
+<td>—</td>
+<td><strong><code>np_checkFtdiDriver(&amp;required,&amp;current,&amp;present,&amp;ok)</code></strong> first; if <code>!ok</code> emit a <code>hardware-error</code> guiStatus naming the required version and stop.</td>
+</tr>
+</tbody>
+</table>
+<p>Everything after open — <code>np_openPort</code> / <code>np_detectHeadStage</code> (ports 1–4), <code>np_getProbeHardwareID</code> →
+<code>ProbeType</code>, buffer sizing, IMRO — is <strong>the same code</strong>.</p>
+<h3 id="22-probe-streaming-identical-reuse-as-is">2.2 Probe streaming — identical, reuse as-is<a class="headerlink" href="#22-probe-streaming-identical-reuse-as-is" title="Permanent link">#</a></h3>
+<p>Verified: OneBox exposes the probe through the same <code>np_readPackets</code> / <code>np_readElectrodeData</code> on its
+(virtual) slot. <strong><code>Npx1Probe</code> and <code>Npx2MSProbe</code> are reused unchanged.</strong> No new probe worker.</p>
+<h3 id="23-onebox-adc-analog-input-the-new-data-stream">2.3 OneBox ADC — analog input (the new data stream)<a class="headerlink" href="#23-onebox-adc-analog-input-the-new-data-stream" title="Permanent link">#</a></h3>
+<p>OneBox-only. 12 analog input channels (<code>NUM_ADCS = 12</code> in the reference), fixed sample rate ≈ <strong>30300.5 Hz</strong>,
+<code>int16</code> samples.</p>
+<blockquote>
+<p><strong>Rig note (2026-08-18):</strong> the user's OneBox has the <strong>BNC breakout board attached via the SDR connector</strong>,
+so all 12 ADC channels are available (per OpenEphys: <strong>ADC 0</strong> is the standalone "ADC" <strong>SMA</strong> connector;
+<strong>ADC 1–11</strong> require the breakout via the <strong>SDR</strong> connector). The user wants this ADC streamed "similar to
+the NI-DAQ with the PXIe system" — i.e. a live stream <strong>alongside</strong> NI-DAQ (NI-DAQ stays for PXIe rigs; it
+is not wired to the OneBox). This is the Phase-2 deliverable.</p>
+</blockquote>
+<p>Verified API:</p>
+<ul>
+<li><code>np_ADC_readPackets(slot, PacketInfo* pck, int16_t* data, channel_count, packet_count, &amp;packets_read)</code> —
+  <strong>streams into the same <code>CircularBuffer&lt;int16, Neuropixels::PacketInfo&gt;</code> type the probe uses</strong> (same aux
+  struct → free reuse of the interpreter/display/recorder). Poll status with <code>np_ADC_getPacketFifoStatus</code>.</li>
+<li><code>np_ADC_setVoltageRange(slot, ADCrange_t)</code> — <code>ADC_RANGE_2_5V | ADC_RANGE_5V | ADC_RANGE_10V</code>.</li>
+<li><code>np_ADC_getStreamConversionFactor(slot, &amp;lsb_to_voltage, &amp;bit_depth)</code> — authoritative counts→volts scale
+  (use this instead of hardcoding <code>bitVolts</code>).</li>
+<li><code>np_ADC_enableProbe(slot, enable)</code> — enable the ADC data path.</li>
+<li>Comparators (per channel, used as "digital in" / hardware trigger source):
+  <code>np_ADC_setComparatorThreshold(slot, ch, v_low, v_high)</code>, <code>np_ADC_readComparator(s)</code>.</li>
+</ul>
+<p><code>OneBoxADC</code> in the reference derives from <code>DataSource</code>, <strong>not</strong> <code>Probe</code> — i.e. it is a sibling stream, not a
+probe. In SpikesPeak it becomes a second producer on a new buffer <code>data.npx.adc</code>.</p>
+<h3 id="24-onebox-dac-waveplayer-analog-output-native-closed-loop-stim">2.4 OneBox DAC + WavePlayer — analog output (native closed-loop stim)<a class="headerlink" href="#24-onebox-dac-waveplayer-analog-output-native-closed-loop-stim" title="Permanent link">#</a></h3>
+<p>OneBox-only. This is the strategically important part for this lab. Verified API:</p>
+<ul>
+<li><strong>WavePlayer</strong> (arbitrary waveform out on SMA/DAC0): <code>np_waveplayer_writeBuffer(slot, int16_t* data, len)</code>,
+  <code>np_waveplayer_setSampleFrequency(slot, Hz)</code>, <code>np_waveplayer_arm(slot, single_shot)</code>,
+  <code>np_waveplayer_stop(slot)</code>. Arm routes DAC0→SMA and waits for a trigger.</li>
+<li><strong>DAC</strong> (static/level out, 12 channels): <code>np_DAC_setVoltage(slot, ch, V)</code>, <code>np_DAC_setVoltages(slot, mask,
+  V[])</code>, <code>np_DAC_enableOutput(slot, ch, on)</code>, <code>np_DAC_setDigitalLevels(slot, ch, vHi, vLo)</code>,
+  <code>np_DAC_setProbeSniffer(slot, dacCh, port, dock, channel, source)</code> (mirror a live probe electrode to a DAC
+  — analog monitor scope-out).</li>
+<li><strong>Trigger routing</strong> (switch matrix, already used by the PXI code for sync): <code>np_switchmatrix_set/get/clear</code>,
+  <code>np_switchmatrix_setOutputTriggerEdge</code>, endpoints incl. <code>SM_Output_SMA</code> (OneBox back-panel SMA),
+  <code>SM_Output_WavePlayerTrigger</code>, <code>SM_Output_DAC0..11</code>, <code>SM_Input_ADC0..15</code> (comparator outputs),
+  <code>SM_Input_SWTrigger1/2</code>. Software trigger: <code>np_setSWTrigger(slot)</code> / <code>np_setSWTriggerEx(slot, flags)</code>
+  (default WavePlayer SW trigger = <code>SM_Input_SWTrigger2</code>).</li>
+</ul>
+<p><strong>Two closed-loop modes this unlocks</strong> (both are follow-on phases, not the first milestone):
+1. <em>Software-triggered</em> — our ripple detector fires → <code>waveplayer_arm</code> + <code>setSWTriggerEx</code> → OneBox emits the
+   pre-loaded biphasic waveform. Drops the UDP→Pi→AM2300 network hop from the current path (~2–3.5 ms).
+2. <em>Fully hardware</em> — route an ADC <strong>comparator threshold</strong> → WavePlayer trigger in the switch matrix. Sub-ms,
+   zero software in the loop, but only a raw amplitude threshold (no real ripple detector). Useful as a
+   backstop / calibration mode.
+   This complements — does not replace — the validated ripple→UDP→Pi/AM2300 stim path
+   (<code>developer_docs/StimClosedLoop*</code>, <code>[[stim-closed-loop-validated]]</code>).</p>
+<h3 id="25-v3-vs-v4-api-skew-checked">2.5 v3 vs v4 API skew — checked<a class="headerlink" href="#25-v3-vs-v4-api-skew-checked" title="Permanent link">#</a></h3>
+<p>Per-symbol presence in the vendored headers is identical for the OneBox surface (<code>mapBS</code>, <code>ADC_readPackets</code>,
+<code>NPPlatform_USB</code>, <code>checkFtdiDriver</code>, <code>ADC_getStreamConversionFactor</code> all present in both); v4 only <em>adds</em>
+(e.g. <code>DAC_setVoltages</code>). <strong>No regression — building against our v4 lib is safe.</strong></p>
+<hr />
+<h2 id="3-design-keep-it-simple-one-new-file-pair-reuse-everything-else">3. Design — keep it simple (one new file pair, reuse everything else)<a class="headerlink" href="#3-design-keep-it-simple-one-new-file-pair-reuse-everything-else" title="Permanent link">#</a></h2>
+<p><strong>Guiding constraint (user):</strong> don't over-engineer; OneBox and PXI can share, but <code>NpInterface.cpp</code> is already
+~2k lines and must not balloon. OneBox's genuinely-new code (USB open + ADC worker + DAC/WavePlayer) is
+~350–400 lines, which would push <code>NpInterface</code> past ~2.4k. So <strong>that new code gets its own file pair</strong>; the
+shared 95% is reused by a thin inheritance seam that barely touches <code>NpInterface</code>.</p>
+<h3 id="31-the-seam-minimal-change-to-npinterface">3.1 The seam (minimal change to <code>NpInterface</code>)<a class="headerlink" href="#31-the-seam-minimal-change-to-npinterface" title="Permanent link">#</a></h3>
+<ol>
+<li>In <code>NeuropixelsSource</code>, split the platform-specific enumeration out of <code>initBasestation()</code> into a
+   <strong><code>virtual bool openBasestation()</code></strong> (its default body = today's PXI scan/open — <strong>PXI behavior unchanged</strong>).
+   Make the members OneBox needs (<code>mSlot/mPort/mDock</code>, <code>discoverProbeHardware()</code>, the IMRO methods, the
+   worker-thread spin-up in <code>startAcq</code>, <code>publishChannelMap</code>) <strong><code>protected</code></strong> instead of <code>private</code>.
+   Net effect on <code>NpInterface</code>: one method split + visibility change. No size growth to speak of.</li>
+<li>If OneBox needs different sync/switch-matrix defaults (it does — SMA is on the back panel, plus ADC/DAC
+   endpoints), also make <code>setSyncAsPassive()</code> (or a small <code>configureSwitchMatrix()</code>) <code>virtual</code>.</li>
+</ol>
+<h3 id="32-new-file-srcmodulesneuropixelsoneboxsourcehppcpp">3.2 New file: <code>src/modules/neuropixels/OneBoxSource.{hpp,cpp}</code><a class="headerlink" href="#32-new-file-srcmodulesneuropixelsoneboxsourcehppcpp" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">class OneBoxSource : public NeuropixelsSource {   // IS-A Neuropixels source; specializes open + adds ADC/DAC
+    Q_OBJECT
+protected:
+    bool openBasestation() override;      // USB scan + getDeviceInfo(platformid==USB) + checkFtdiDriver + mapBS(16) + openBS
+public:
+    bool initDataSource(ryml::ConstNodeRef cfg) override;  // base init (probe) THEN set up ADC producer
+    bool startAcq() override;             // base startAcq (probe worker) THEN start ADC worker
+    bool stopAcq() override;  bool closeDataSource() override;  // stop/close ADC + unmapBS, then base
+
+    // Phase-2 stim (Q_INVOKABLE over QWebChannel, like the IMRO hooks):
+    Q_INVOKABLE bool loadWaveform(const QString&amp; jsonSamplesOrPath);
+    Q_INVOKABLE bool armWaveplayer(bool singleShot);
+    Q_INVOKABLE bool fireWaveplayer();     // setSWTriggerEx
+    Q_INVOKABLE bool setDacVoltage(int ch, double v);
+private:
+    OneBoxAdcWorker* mAdcWorker;  QThread* mAdcThread;
+    SP::CircularBuffer&lt;int16, Neuropixels::PacketInfo&gt;* mAdcData;
+};
+
+// ADC streaming worker — mirrors Npx2MSProbe, but np_ADC_readPackets on the slot (no port/dock).
+class OneBoxAdcWorker : public SP::IDataSourceWorker { /* QTimer poll → np_ADC_readPackets → commitWrite */ };
+</code></pre>
+<p>Registered in <code>Utils.cpp</code> under <code>#ifdef NPX_HW_ENABLED</code>:
+<code>SP::registerDataSource&lt;SP::Npx::OneBoxSource&gt;("source.npx.onebox", /*seed slot*/16, 1, 1, nullptr);</code>
+plus <code>SP::registerData&lt;SP::CircularBuffer&lt;int16, Neuropixels::PacketInfo&gt;&gt;("data.npx.adc");</code> and a matching
+<code>interp.npx.adc</code>.</p>
+<blockquote>
+<p><strong>Why inherit <code>NeuropixelsSource</code> rather than rename to a neutral base?</strong> Least churn, and it literally
+implements the maintainer's header comment. If you later prefer symmetry, the drop-in refactor is: rename
+<code>NeuropixelsSource → NpxProbeSource</code> (base), add a trivial <code>PxiSource</code> subclass for the default open, and
+<code>OneBoxSource</code> stays as-is. Deferred — not needed to ship OneBox.</p>
+</blockquote>
+<h3 id="33-simulated-onebox-sibling-standing-rule-ship-a-sim-with-every-hardware-source">3.3 Simulated OneBox sibling (standing rule: ship a sim with every hardware source)<a class="headerlink" href="#33-simulated-onebox-sibling-standing-rule-ship-a-sim-with-every-hardware-source" title="Permanent link">#</a></h3>
+<p>Cross-platform (no vendor lib → always compiled, like <code>NiDaqSimSource</code>). Reuse an existing probe sim for the
+neural stream and add a small <strong>simulated ADC</strong> producer (12 ch of sine/noise) into <code>data.npx.adc</code>, so the
+entire OneBox module — display, recording, and the ADC path — is testable on Linux with no hardware.
+Options: a <code>SimOneBoxSource</code> class, or compose the existing <code>SimulatedData2Source</code> + a tiny <code>SimOneBoxAdc</code>
+in one profile. (Neural-stream sim shape is hardware-specific per the SimDataLinux ruling; the ADC sim is
+new, so it gets its own small class.)</p>
+<h3 id="34-data-streams-summary">3.4 Data streams summary<a class="headerlink" href="#34-data-streams-summary" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Buffer</th>
+<th>Type</th>
+<th>Producer</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data.npx.raw</code> / <code>.ap</code> / <code>.lfp</code></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td>reused probe worker</td>
+<td>same as PXI</td>
+</tr>
+<tr>
+<td><code>data.npx.adc</code> <em>(new)</em></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td><code>OneBoxAdcWorker</code></td>
+<td>12 ch, ~30.3 kHz; scale via <code>ADC_getStreamConversionFactor</code></td>
+</tr>
+</tbody>
+</table>
+<p>The ADC channel map is trivial (N analog channels, no electrode geometry) — a thin <code>IChannelMap</code> or reuse
+the generic one; display/recorder need no changes because the buffer type matches.</p>
+<hr />
+<h2 id="4-phased-plan">4. Phased plan<a class="headerlink" href="#4-phased-plan" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Phase 0 — seam (small, no behavior change).</strong> Extract <code>openBasestation()</code> virtual + <code>protected</code> members in
+  <code>NpInterface</code>. Rebuild Windows; confirm PXI still streams (regression, not a rewrite).</li>
+<li><strong>Phase 1 — OneBox probe acquisition (the milestone).</strong> New <code>OneBoxSource.{hpp,cpp}</code>: USB open + FTDI check</li>
+<li><code>mapBS</code>; reuse probe workers + IMRO. Register <code>source.npx.onebox</code>; update <code>config/OneBoxTest.yaml</code> to a
+  <em>real</em> profile; add the "Neuropixels OneBox" <code>&lt;option&gt;</code> in <code>webinterface/index.html</code> and remove the
+  "not supported" branch in <code>WebSocketServer::onSourceSelection</code>. **Deliverable: a probe on a OneBox streams</li>
+<li>records + runs ripple detection exactly like PXI.**</li>
+<li><strong>Phase 2 — ADC stream (NEXT; user attaching the SDR breakout 2026-08-18).</strong> <code>OneBoxAdcWorker</code> (mirrors
+  <code>Npx2MSProbe</code>, calls <code>np_ADC_readPackets</code> on the slot) → new buffer <code>data.npx.adc</code>
+  (<code>CircularBuffer&lt;int16, Neuropixels::PacketInfo&gt;</code>, <strong>12 ch</strong>, ~30.3 kHz) + <code>interp.npx.adc</code>
+  (reuse <code>NpxDataInterpreter</code>). Wire into <code>OneBoxSource</code>: <code>initDataSource</code> override (base probe setup THEN
+  add ADC producer + <code>np_ADC_enableProbe(slot,true)</code> + <code>np_ADC_setVoltageRange</code>), <code>startAcq</code>/<code>stopAcq</code>
+  overrides (base probe worker THEN ADC worker on its own QThread). <strong>Display approach (decided):</strong> reuse the
+  NPX <code>DisplayProcessor</code> as a SECOND input (band id <code>adc</code>), but first make its per-stream <code>numChannels</code>
+  configurable — today <code>DisplayProcessor.cpp</code> hardcodes <code>state.numChannels = 384</code> (the wire header already
+  sends a per-stream count, so the browser handles variable widths — NI-DAQ relies on this). Read the count
+  from the config input (e.g. <code>num_channels: 12</code>) or the bound buffer's dimensions. Add
+  <code>adc: 'OneBox ADC'</code> to <code>ChartColumn.streamLabel</code> (webinterface/ChartColumn.js) so the band dropdown shows
+  it. Config: add a 2nd <code>outputs:</code> entry + a 2nd <code>proc.npx.display</code> input + a <code>proc.npx.recorder</code> entry for
+  <code>data.npx.adc</code> in <code>Npx2OneBox.yaml</code>/<code>Npx1OneBox.yaml</code>. This gives a NI-DAQ-style separate, labeled,
+  recordable stream while reusing the int16/PacketInfo probe pipeline. (Alt considered + rejected: a
+  dedicated <code>OneBoxAdcDisplayProcessor</code> like <code>NiDaqDisplayProcessor</code> — more code, and NiDaq's is
+  double/NiDaqPacketInfo so not directly reusable for the int16 ADC.) Lets the OneBox capture sync pulse in,
+  stim monitor, behavior signals — ALONGSIDE (not replacing) NI-DAQ, which stays for PXIe rigs.</li>
+<li><strong>Phase 3 — simulated OneBox sibling.</strong> So Phases 1–2 are validatable on Linux with no hardware; wire into
+  the sim picker.</li>
+<li><strong>Phase 4 — WavePlayer/DAC stim (closed loop).</strong> Load a biphasic waveform, software-trigger it from the
+  ripple detector as an alternative low-latency stim output; optional ADC-comparator hardware-trigger mode.
+  Validate latency A/B vs the UDP→Pi/AM2300 path.</li>
+<li><strong>Phase 5 — OneBox GUI panel.</strong> ADC range + per-channel enable/comparator, DAC/WavePlayer setup — mirror
+  the reference <code>OneBoxInterface</code>. Only after the streams are proven.</li>
+</ul>
+<p><strong>Ordering rule:</strong> prove each phase in <strong>sim</strong> before hardware; then bring up hardware <strong>saline first</strong>, then
+in vivo (matches this repo's standing test discipline, <code>[[hardware-connected-testing]]</code>).</p>
+<hr />
+<h2 id="5-file-by-file-change-list">5. File-by-file change list<a class="headerlink" href="#5-file-by-file-change-list" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+<th>Phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/modules/neuropixels/NpInterface.hpp</code></td>
+<td><code>virtual openBasestation()</code>; <code>private → protected</code> for reused members; maybe <code>virtual</code> sync setup</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>src/modules/neuropixels/NpInterface.cpp</code></td>
+<td>move PXI scan/open into <code>openBasestation()</code> default body</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>src/modules/neuropixels/OneBoxSource.{hpp,cpp}</code></td>
+<td><strong>NEW</strong> — <code>OneBoxSource</code> + <code>OneBoxAdcWorker</code> (+ DAC/WavePlayer)</td>
+<td>1–2, 4</td>
+</tr>
+<tr>
+<td><code>src/modules/neuropixels/CMakeLists.txt</code></td>
+<td>add <code>OneBoxSource.*</code> under the <code>NPX_HW_ENABLED</code> block</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>src/core/Utils.cpp</code></td>
+<td>register <code>source.npx.onebox</code>, <code>data.npx.adc</code>, <code>interp.npx.adc</code>; register sim sibling</td>
+<td>1–3</td>
+</tr>
+<tr>
+<td><code>src/core/WebSocketServer.cpp</code></td>
+<td>delete the "OneBox not supported" branch; OneBox now resolves like any source</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>config/OneBoxTest.yaml</code></td>
+<td>turn the phantom into a real profile (probe <code>raw</code>/<code>ap</code>+<code>lfp</code> + <code>adc</code> outputs)</td>
+<td>1–2</td>
+</tr>
+<tr>
+<td><code>config/SimOneBox*.yaml</code></td>
+<td><strong>NEW</strong> sim profile(s)</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>webinterface/index.html</code></td>
+<td>add "Neuropixels OneBox" source <code>&lt;option&gt;</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>webinterface/*</code> (later)</td>
+<td>OneBox ADC/DAC/WavePlayer panel</td>
+<td>5</td>
+</tr>
+<tr>
+<td>Sim classes (<code>SimOneBox*</code>)</td>
+<td><strong>NEW</strong>, cross-platform</td>
+<td>3</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-build-platform-notes">6. Build / platform notes<a class="headerlink" href="#6-build-platform-notes" title="Permanent link">#</a></h2>
+<ul>
+<li>Real OneBox source is Windows-only, same <code>#ifdef NPX_HW_ENABLED</code> gate as PXI (the vendored lib/dll is
+  <code>_x64</code> Windows). The <strong>sim</strong> sibling and the <code>data.npx.adc</code> buffer/interpreter are lib-free → compiled on
+  all platforms (Linux stubs unaffected — they don't need the OneBox symbols because the real source isn't
+  built there).</li>
+<li>Calibration: probes on a OneBox still use the per-serial ADC + gain CSVs already handled by the repo's
+  <code>CalibrationInfo/</code> mechanism (<code>SpikesPeak_Status.md</code> §9.1). The OneBox's <em>own</em> ADC is scaled by
+  <code>ADC_getStreamConversionFactor</code>, no CSV.</li>
+<li>Safety: OneBox is real hardware — obey <code>[[graceful-hardware-shutdown]]</code> / <code>[[stop-streaming-when-idle]]</code>
+  (never force-kill while a probe/OneBox streams; disarm the WavePlayer on graceful quit).</li>
+</ul>
+<hr />
+<h2 id="7-open-questions-for-the-team">7. Open questions for the team<a class="headerlink" href="#7-open-questions-for-the-team" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>ADC as sync source?</strong> Once the OneBox ADC streams, it could capture the sync pulse + stim monitor
+   directly, potentially replacing the NI-DAQ in the closed-loop sync analysis. Keep NI-DAQ, or migrate to
+   OneBox ADC for OneBox rigs?</li>
+<li><strong>WavePlayer vs Pi/AM2300 for stim.</strong> Do we want the OneBox WavePlayer as the primary low-latency stim
+   output (Phase 4), or keep it as a second option beside the validated UDP path? (Affects how much Phase-4
+   GUI/latency work to prioritize.)</li>
+<li><strong>Virtual slot number.</strong> Reference uses 16 for the first OneBox. Fine to hardcode 16 (single OneBox), or
+   scan for a free virtual slot to be multi-OneBox-ready later?</li>
+<li><strong>Rename the base now or later?</strong> Ship OneBox as a subclass of <code>NeuropixelsSource</code> (least churn) and defer
+   the <code>NpxProbeSource</code>/<code>PxiSource</code> rename, or do the symmetric rename up front?</li>
+<li><strong>Multi-basestation.</strong> PXI code today stops at the first basestation. A rig could have a PXIe <em>and</em> a
+   OneBox. Out of scope for v1 (one source at a time), but the <code>sources:</code> list already composes — worth a note.</li>
+</ol>
+<hr />
+<h2 id="8-references">8. References<a class="headerlink" href="#8-references" title="Permanent link">#</a></h2>
+<ul>
+<li>Vendored API: <code>external/neuropixels/api/include/v4/NeuropixAPI.h</code> (OneBox surface verified here).</li>
+<li>Reference impl: <code>Source-OpenEphys-Neuropixels-PXI/Basestations/OneBox.{h,cpp}</code>, <code>OneBoxThread.h</code>,
+  <code>Probes/OneBoxADC.{h,cpp}</code>, <code>Probes/OneBoxDAC.{h,cpp}</code>, <code>UI/OneBoxInterface.{h,cpp}</code>,
+  <code>NeuropixThread.cpp</code> (FTDI check + slot mapping). That tree is gitignored — clone it from
+  <a href="https://github.com/open-ephys-plugins/neuropixels-pxi">https://github.com/open-ephys-plugins/neuropixels-pxi</a> to follow these references.</li>
+<li>OpenEphys OneBox user docs (FTDI install): <a href="https://open-ephys.github.io/gui-docs/User-Manual/Plugins/OneBox">https://open-ephys.github.io/gui-docs/User-Manual/Plugins/OneBox</a>.</li>
+<li>SpikesPeak: <code>developer_docs/AddingASourceModule.md</code>, <code>NextTask_SourceArchitecture.md</code> (OneBox listed as a
+  phantom / Option-D device), <code>Neuropixels2.0.md</code>, <code>StimClosedLoop_Status.md</code>.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxSupport.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#0-what-the-user-needs-to-do-once-ftdi-driver">0. What the user needs to do once (FTDI driver)</a></li>
+<li><a href="#1-current-state-in-spikespeak">1. Current state in SpikesPeak</a></li>
+<li><a href="#2-how-the-onebox-differs-from-pxi-verified-against-the-vendored-v4-api">2. How the OneBox differs from PXI — verified against the vendored v4 API</a><ul>
+<li><a href="#21-enumeration-open-the-one-genuinely-different-step">2.1 Enumeration &amp; open (the ONE genuinely-different step)</a></li>
+<li><a href="#22-probe-streaming-identical-reuse-as-is">2.2 Probe streaming — identical, reuse as-is</a></li>
+<li><a href="#23-onebox-adc-analog-input-the-new-data-stream">2.3 OneBox ADC — analog input (the new data stream)</a></li>
+<li><a href="#24-onebox-dac-waveplayer-analog-output-native-closed-loop-stim">2.4 OneBox DAC + WavePlayer — analog output (native closed-loop stim)</a></li>
+<li><a href="#25-v3-vs-v4-api-skew-checked">2.5 v3 vs v4 API skew — checked</a></li>
+</ul>
+</li>
+<li><a href="#3-design-keep-it-simple-one-new-file-pair-reuse-everything-else">3. Design — keep it simple (one new file pair, reuse everything else)</a><ul>
+<li><a href="#31-the-seam-minimal-change-to-npinterface">3.1 The seam (minimal change to NpInterface)</a></li>
+<li><a href="#32-new-file-srcmodulesneuropixelsoneboxsourcehppcpp">3.2 New file: src/modules/neuropixels/OneBoxSource.{hpp,cpp}</a></li>
+<li><a href="#33-simulated-onebox-sibling-standing-rule-ship-a-sim-with-every-hardware-source">3.3 Simulated OneBox sibling (standing rule: ship a sim with every hardware source)</a></li>
+<li><a href="#34-data-streams-summary">3.4 Data streams summary</a></li>
+</ul>
+</li>
+<li><a href="#4-phased-plan">4. Phased plan</a></li>
+<li><a href="#5-file-by-file-change-list">5. File-by-file change list</a></li>
+<li><a href="#6-build-platform-notes">6. Build / platform notes</a></li>
+<li><a href="#7-open-questions-for-the-team">7. Open questions for the team</a></li>
+<li><a href="#8-references">8. References</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archive — retired task briefs and superseded status snapshots - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Archive (historical) / Archive — retired task briefs and superseded status snapshots</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../../README.html">SpikesPeak</a>
+<a href="../../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="../BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../README.html">SpikesPeak — Developer Docs</a>
+<a href="../SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="../RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../Logging.html">Logging — format, severity, and what to write</a>
+<a href="../ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="../NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="../NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../../benchmarks/README.html">Benchmarks</a>
+<a href="../../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a class="active" href="README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="archive-retired-task-briefs-and-superseded-status-snapshots">Archive — retired task briefs and superseded status snapshots<a class="headerlink" href="#archive-retired-task-briefs-and-superseded-status-snapshots" title="Permanent link">#</a></h1>
+<p>Documents here are <strong>historical</strong>. They were accurate when written and are kept so a collaborator (or a new
+agent) can reconstruct <em>why</em> a decision was made — but they are <strong>not maintained</strong> and may contradict the
+current code. For anything current, read <code>../README.md</code> and the live topic docs.</p>
+<p><strong>These files appear in the generated docs book under its own trailing "Archive (historical)" section</strong>, so
+you can read the history in the HTML site without it competing with the live docs in the nav. Archiving a
+file therefore <em>demotes</em> it rather than hiding it.</p>
+<h2 id="how-to-catch-up-recommended-order-for-a-returning-collaborator">How to catch up (recommended order for a returning collaborator)<a class="headerlink" href="#how-to-catch-up-recommended-order-for-a-returning-collaborator" title="Permanent link">#</a></h2>
+<ol>
+<li><strong><code>../../SpikesPeak_Status.md</code> → "Session index"</strong> — the dated, topic-tagged log of everything that
+   happened, newest last. This is the single source of truth for <em>what happened when</em>. Start here.</li>
+<li><strong><code>../README.md</code></strong> — the current doc map + the START HERE agent path.</li>
+<li><strong>This folder</strong> — only if you need the detail behind a specific retired item. Each entry below says what
+   superseded it, so you can usually skip straight to the live doc.</li>
+<li><strong><code>git log --follow developer_docs/archive/&lt;file&gt;</code></strong> — the change history of an archived file survives
+   the move (it was <code>git mv</code>'d), so you can see when each claim was added.</li>
+</ol>
+<p>To see what changed in the docs between two points in time:</p>
+<pre><code class="language-bash">git log --oneline --since=&quot;2026-07-09&quot; -- developer_docs/ SpikesPeak_Status.md
+git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say now vs then
+</code></pre>
+<h2 id="what-is-in-here">What is in here<a class="headerlink" href="#what-is-in-here" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Was</th>
+<th>Retired</th>
+<th>Superseded by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>StimClosedLoop_Status.md</code></td>
+<td>The authoritative session record for the ripple→stim closed loop (ESP32 → Pi 3B+ → AM 2300), its build/fire-path verification, and the 2026-07-09/07-15 hardware results.</td>
+<td>2026-07-20</td>
+<td>Status/results → <code>SpikesPeak_Status.md</code> §21–§25. Living reference → <code>RippleDetection.md</code>, <code>RippleGui.md</code>, <code>RippleClosedLoopAnalysis.md</code>, <code>../../RecordingTests/NP{1,2}_RIPPLE_TESTS.md</code>. Pi setup → <code>raspberrypi_pulsegenerator/README.md</code>.</td>
+</tr>
+<tr>
+<td><code>NextTask_NP1RippleRegression.md</code></td>
+<td>The task brief for the NP1.0 closed-loop regression after the NP2-focused commit.</td>
+<td>2026-07-20</td>
+<td>The regression <strong>passed</strong>; that report was later folded into <a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a> (commit 74adeeb) + <code>SpikesPeak_Status.md</code> §25.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="archiving-policy">Archiving policy<a class="headerlink" href="#archiving-policy" title="Permanent link">#</a></h2>
+<ul>
+<li><code>NextTask_*.md</code> is a <strong>transient brief</strong>. When the task lands, <code>git mv</code> it here in the same commit, fold
+  anything durable into the topic doc, and add a row above.</li>
+<li><strong>Status snapshots</strong> (<code>*_Status.md</code> scoped to one effort) get archived once their content is merged into
+  <code>SpikesPeak_Status.md</code>. The one exception is the top-level <code>SpikesPeak_Status.md</code> itself, which is the
+  permanent running log.</li>
+<li><strong>Never archive a living reference doc</strong> (e.g. <code>Neuropixels2.0.md</code>, <code>SimDataLinux.md</code>, <code>NiDaq.md</code>) just
+  because it is old — those are subsystem references, not snapshots.</li>
+<li>Always add the row above, with what superseded it. An archive without that column is just a junk drawer.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/archive/README.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#how-to-catch-up-recommended-order-for-a-returning-collaborator">How to catch up (recommended order for a returning collaborator)</a></li>
+<li><a href="#what-is-in-here">What is in here</a></li>
+<li><a href="#archiving-policy">Archiving policy</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

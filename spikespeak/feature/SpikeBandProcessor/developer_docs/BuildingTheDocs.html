@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Documentation Book (HTML) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / The Documentation Book (HTML)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a class="active" href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="the-documentation-book-html">The Documentation Book (HTML)<a class="headerlink" href="#the-documentation-book-html" title="Permanent link">#</a></h1>
+<p>The Markdown files in this repository are the <strong>single source of truth</strong> for the docs. A small
+generator, <strong><code>scripts/build_docs.py</code></strong>, compiles them into a browsable, self-contained HTML "book"
+under <strong><code>docs_site/</code></strong> — with a dark/light theme, a left nav, a per-page table of contents, the
+Neural Ascension logo, and fully offline browsing. This page explains how to <strong>add, edit, and
+regenerate</strong> the docs, for both future agents and developers.</p>
+<h2 id="tldr">TL;DR<a class="headerlink" href="#tldr" title="Permanent link">#</a></h2>
+<pre><code># edit or add any .md file (see &quot;Adding a document&quot;), then regenerate:
+python scripts/build_docs.py            # only dependency: pip install markdown
+# open the result:
+docs_site/index.html
+</code></pre>
+<blockquote>
+<p>The <strong>one</strong> dependency is the <code>markdown</code> package (<code>pip install markdown</code>). Any Python 3 works —
+<code>python scripts/build_docs.py</code> on Windows, <code>python3</code> on Linux. A conda <code>sp</code> env is optional; if you
+have it, <code>conda run -n sp python scripts/build_docs.py</code> works too, but it is <strong>not</strong> required.</p>
+</blockquote>
+<p>Never hand-edit anything in <code>docs_site/</code> — it is <strong>generated</strong> (and git-ignored). Edit the <code>.md</code>
+sources (and <code>scripts/docs_style.css</code> for styling) and re-run the generator.</p>
+<h2 id="where-everything-lives">Where everything lives<a class="headerlink" href="#where-everything-lives" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>File / directory</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/build_docs.py</code></td>
+<td>the generator (discovery, HTML render, nav, link/image handling)</td>
+</tr>
+<tr>
+<td><code>scripts/docs_style.css</code></td>
+<td>the theme — plain CSS with light/dark variables (edit freely)</td>
+</tr>
+<tr>
+<td><code>docs_site/</code></td>
+<td><strong>generated</strong> output (git-ignored; open <code>docs_site/index.html</code>)</td>
+</tr>
+<tr>
+<td><code>images/architecture.txt</code>, <code>images/plantuml_export.txt</code></td>
+<td>PlantUML diagram sources</td>
+</tr>
+<tr>
+<td><code>images/architecture_overview.md</code></td>
+<td>narrative + the diagram SVG placeholders</td>
+</tr>
+<tr>
+<td><code>webinterface/logo.svg</code></td>
+<td>the Neural Ascension logo (topbar + watermark; copied into the book)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
+<p>The generator needs Python with the <strong><code>markdown</code></strong> package. The repo's <strong><code>sp</code> conda env</strong> already
+has it, so the canonical command is:</p>
+<pre><code>conda run -n sp python scripts/build_docs.py
+</code></pre>
+<p>Otherwise install it with <code>pip install markdown</code> (no other dependencies, and no network is needed to
+view the generated output).</p>
+<h2 id="adding-a-document">Adding a document<a class="headerlink" href="#adding-a-document" title="Permanent link">#</a></h2>
+<ol>
+<li>Create a <code>.md</code> file in one of the <strong>included directories</strong>: the repo root, <code>user_docs/</code>,
+   <code>developer_docs/</code>, <code>images/</code>, or <code>python/</code>.</li>
+<li>Re-run the generator. The page appears <strong>automatically</strong> in the left nav (grouped by directory)
+   and on the cover page.</li>
+<li>The <strong>page title</strong> shown in the nav is the file's first <code># H1</code> (it falls back to the filename).</li>
+<li>To control <strong>ordering</strong> within a section, add the filename to the <code>PRIORITY</code> dict in
+   <code>build_docs.py</code> (lower number sorts earlier; unlisted files sort alphabetically after).</li>
+</ol>
+<h2 id="included-vs-excluded-content">Included vs excluded content<a class="headerlink" href="#included-vs-excluded-content" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Included</strong> (top-level <code>.md</code> only, per directory) &mdash; the <code>INCLUDE_DIRS</code> list:
+  <code>["", "user_docs", "developer_docs", "images", "python"]</code> (<code>""</code> is the repo root).</li>
+<li><strong>Excluded</strong>: third-party trees (<code>ext/</code>, <code>Source-OpenEphys*</code>, <code>bin/</code>), <code>build-*</code>, <code>node_modules</code>,
+  <code>docs_site/</code> itself, and the Open-Ephys <code>nidaq-plugin/</code> reference.</li>
+<li>To add a <strong>new section/directory</strong>: append it to <code>INCLUDE_DIRS</code> <strong>and</strong> add a
+  <code>("&lt;dir&gt;", "&lt;Section Title&gt;")</code> entry to the <code>SECTIONS</code> list (which also sets the nav order).</li>
+</ul>
+<h2 id="cross-linking-between-documents">Cross-linking between documents<a class="headerlink" href="#cross-linking-between-documents" title="Permanent link">#</a></h2>
+<p>Use ordinary Markdown links to the <code>.md</code> file — the generator rewrites <code>.md</code> &rarr; <code>.html</code> and keeps
+relative paths (the output <strong>mirrors the repo layout</strong>):</p>
+<pre><code>See [Ripple detection](../developer_docs/RippleDetection.html) for the algorithm.
+</code></pre>
+<p>External <code>http(s)://</code> links and in-page <code>#anchors</code> are left untouched. Note: the <code>[`some/path.md`]</code>
+style (square brackets around inline code, with <strong>no</strong> <code>(url)</code>) is <strong>not</strong> a link — it renders as
+literal code, on purpose.</p>
+<h2 id="images">Images<a class="headerlink" href="#images" title="Permanent link">#</a></h2>
+<ul>
+<li>Put image files under <code>images/</code>, <code>user_docs/images/</code>, or <code>developer_docs/images/</code> (these trees are
+  copied into the book, preserving their structure).</li>
+<li>Reference them <strong>relatively</strong> from the doc, e.g. <code>![A caption](images/ripple/np2_detecting.png)</code>.</li>
+<li>Supported extensions: <code>png, svg, jpg, jpeg, gif, webp, ico</code>.</li>
+</ul>
+<h2 id="architecture-diagrams-plantuml">Architecture diagrams (PlantUML)<a class="headerlink" href="#architecture-diagrams-plantuml" title="Permanent link">#</a></h2>
+<ul>
+<li>Sources: <strong><code>images/architecture.txt</code></strong> (high-level data/command flow) and
+  <strong><code>images/plantuml_export.txt</code></strong> (detailed class diagram). Edit these text files to update the
+  architecture as the code evolves.</li>
+<li>Render them to SVG — paste into <a href="https://www.planttext.com/">planttext.com</a>, or run
+  <code>plantuml -tsvg images/architecture.txt images/plantuml_export.txt</code> — and drop the resulting
+  <code>architecture.svg</code> + <code>plantuml_export.svg</code> into <code>images/</code>.</li>
+<li><code>images/architecture_overview.md</code> already contains the <code>![...](architecture.svg)</code> <strong>placeholders</strong>;
+  once the SVGs exist and you re-run the generator, they render on the Architecture page (and copy into
+  the book, since <code>.svg</code> is a supported image type).</li>
+</ul>
+<h2 id="theme-and-styling-dark-light">Theme and styling (dark / light)<a class="headerlink" href="#theme-and-styling-dark-light" title="Permanent link">#</a></h2>
+<ul>
+<li>The book has a <strong>theme toggle</strong> (&#9790; / &#9728;, top-right). It persists per-browser
+  (<code>localStorage</code>) and respects the OS <code>prefers-color-scheme</code> on first load, applied before paint (no
+  flash of the wrong theme).</li>
+<li>All styling is in <strong><code>scripts/docs_style.css</code></strong> — plain CSS. The palette is CSS variables at the top:</li>
+<li><code>:root { ... }</code> = the <strong>light</strong> theme; <code>html[data-theme="dark"] { ... }</code> = the <strong>dark</strong> theme.</li>
+<li>Rebrand by editing <code>--brand</code> (and the related color variables) in <strong>both</strong> blocks.</li>
+<li>To change the <strong>default</strong> theme, edit the <code>data-theme="light"</code> value in <code>build_docs.py</code>'s <code>PAGE</code>
+  template (<code>&lt;html lang="en" data-theme="light"&gt;</code>).</li>
+</ul>
+<h2 id="the-logo-watermark">The logo watermark<a class="headerlink" href="#the-logo-watermark" title="Permanent link">#</a></h2>
+<ul>
+<li>Source: <strong><code>webinterface/logo.svg</code></strong> — the same logo used as the main-UI background. <code>build_docs.py</code>
+  copies it to <code>docs_site/assets/logo.svg</code> on every build, so updating the UI logo updates the docs too.</li>
+<li>It appears in three places: the <strong>topbar</strong> (small icon), the <strong>cover</strong> (hero), and a <strong>very faint
+  fixed background watermark</strong> on every page.</li>
+<li>Adjust the watermark faintness via the <code>body::before { ... opacity: ... }</code> rules in <code>docs_style.css</code>
+  (there is a separate light-mode override). The logo is white, so light mode inverts it
+  (<code>filter: invert(1)</code>).</li>
+</ul>
+<h2 id="how-the-generator-works-for-agents-modifying-it">How the generator works (for agents modifying it)<a class="headerlink" href="#how-the-generator-works-for-agents-modifying-it" title="Permanent link">#</a></h2>
+<ul>
+<li><code>discover()</code> collects the <code>.md</code> files. Each is rendered with <strong>python-markdown</strong> (extensions:
+  <code>extra, toc, sane_lists, admonition, meta</code>) into an HTML body plus a per-page table of contents.</li>
+<li>Each page is wrapped in the <strong><code>PAGE</code></strong> HTML template — placeholders <code>%%TITLE%%</code>, <code>%%SECTION%%</code>,
+  <code>%%NAV%%</code>, <code>%%BODY%%</code>, <code>%%TOC%%</code>, <code>%%LOGO%%</code>, <code>%%CSS%%</code>, <code>%%HOME%%</code>, <code>developer_docs/BuildingTheDocs.md</code> — filled by <code>render()</code>.
+  The stylesheet (<code>STYLE</code>) is read from <code>scripts/docs_style.css</code>.</li>
+<li>The output <strong>mirrors the repo layout</strong> under <code>docs_site/</code>, so cross-doc links and relative images
+  resolve offline (open the <code>.html</code> files directly, no server required).</li>
+<li>Every run is a <strong>clean rebuild</strong>: the script deletes <code>docs_site/</code> and regenerates it from scratch.</li>
+</ul>
+<h2 id="do-dont">Do / Don't<a class="headerlink" href="#do-dont" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>DO</strong> edit the <code>.md</code> sources; <strong>DON'T</strong> edit anything in <code>docs_site/</code> (it is regenerated and git-ignored).</li>
+<li><strong>DO</strong> re-run the generator after any change to a <code>.md</code> file, <code>docs_style.css</code>, the logo, or the diagrams.</li>
+<li><strong>DON'T</strong> add third-party or vendored docs (e.g. <code>ext/</code>, <code>nidaq-plugin/</code>) to <code>INCLUDE_DIRS</code>.</li>
+</ul>
+<h2 id="regenerate-preview">Regenerate / preview<a class="headerlink" href="#regenerate-preview" title="Permanent link">#</a></h2>
+<pre><code>conda run -n sp python scripts/build_docs.py        # regenerate docs_site/
+</code></pre>
+<p>Then open <code>docs_site/index.html</code> directly, or serve the folder for a nicer experience:</p>
+<pre><code>python -m http.server -d docs_site 8000             # then browse http://localhost:8000
+</code></pre></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/BuildingTheDocs.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#tldr">TL;DR</a></li>
+<li><a href="#where-everything-lives">Where everything lives</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#adding-a-document">Adding a document</a></li>
+<li><a href="#included-vs-excluded-content">Included vs excluded content</a></li>
+<li><a href="#cross-linking-between-documents">Cross-linking between documents</a></li>
+<li><a href="#images">Images</a></li>
+<li><a href="#architecture-diagrams-plantuml">Architecture diagrams (PlantUML)</a></li>
+<li><a href="#theme-and-styling-dark-light">Theme and styling (dark / light)</a></li>
+<li><a href="#the-logo-watermark">The logo watermark</a></li>
+<li><a href="#how-the-generator-works-for-agents-modifying-it">How the generator works (for agents modifying it)</a></li>
+<li><a href="#do-dont">Do / Don't</a></li>
+<li><a href="#regenerate-preview">Regenerate / preview</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

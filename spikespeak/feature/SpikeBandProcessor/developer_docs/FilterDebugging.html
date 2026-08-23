@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Filter debugging — the .bin dumps, the kill switches, and how to validate the filters - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a class="active" href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="filter-debugging-the-bin-dumps-the-kill-switches-and-how-to-validate-the-filters">Filter debugging — the <code>.bin</code> dumps, the kill switches, and how to validate the filters<a class="headerlink" href="#filter-debugging-the-bin-dumps-the-kill-switches-and-how-to-validate-the-filters" title="Permanent link">#</a></h1>
+<p>The ripple pipeline runs two filter stages that are easy to get wrong and hard to eyeball live. Both can
+dump their intermediate signals to <code>.bin</code> files so they can be checked offline. <strong>Both dumps ship OFF</strong>;
+this page is how to turn them on, validate the filters, and turn them back off.</p>
+<h2 id="the-two-kill-switches">The two kill switches<a class="headerlink" href="#the-two-kill-switches" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>File</th>
+<th>Default</th>
+<th>Gates</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code></td>
+<td><code>src/modules/swr/RippleDetector.cpp</code> (top)</td>
+<td><strong>false</strong></td>
+<td><code>lfp-data.bin</code>, <code>ripple-band-data.bin</code>, <code>envelope-data.bin</code>, <code>ripple-detection-time.bin</code></td>
+</tr>
+<tr>
+<td><code>DEBUGGING_LFP_FILTERS</code></td>
+<td><code>src/modules/lfp/LFPProcessor.cpp</code> (top)</td>
+<td><strong>false</strong></td>
+<td><code>lfp-filter-data.bin</code></td>
+</tr>
+</tbody>
+</table>
+<p>They are <code>static constexpr bool</code>, so when false <strong>the file creation, every per-sample write, and the close
+all compile out</strong> — no branch, no cost on the detection hot path, and nothing appears in the working
+directory. The ripple flag is ANDed with the pre-existing runtime config key <code>debug_files:</code> (see
+<code>config/*.yaml</code>), so you need <strong>both</strong> to get dumps: <code>DEBUGGING_RIPPLE_DETECTION_FILTERS = true</code> <em>and</em>
+<code>debug_files: true</code>.</p>
+<blockquote>
+<p><strong>Why they are off.</strong> These write one record per sample per channel into the process working directory —
+~1 MB per channel per 30 s for the ripple dumps, ~350 KB/s for the LFP dump — landing as untracked
+<code>.bin</code> files in the repo root, from a write on the real-time detection path. They are a development aid,
+never something to leave on for a recording session.</p>
+</blockquote>
+<h2 id="dump-formats">Dump formats<a class="headerlink" href="#dump-formats" title="Permanent link">#</a></h2>
+<p>All little-endian <code>float32</code>, written per sample, and <strong>N-way interleaved when N detection channels are
+active</strong> (in <code>mDetectionChannels</code> order — the same timestamp repeats once per channel):</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Record</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lfp-data.bin</code></td>
+<td><code>(ts, lfp)</code></td>
+<td>detector INPUT (NP1: native int16 LFP cast to float; NP2: derived float LFP)</td>
+</tr>
+<tr>
+<td><code>ripple-band-data.bin</code></td>
+<td><code>(ts, ripple)</code></td>
+<td>after the 26-tap 150–250 Hz FIR</td>
+</tr>
+<tr>
+<td><code>envelope-data.bin</code></td>
+<td><code>(ts, envelope)</code></td>
+<td>after <code>abs()</code> + the 10-tap envelope FIR</td>
+</tr>
+<tr>
+<td><code>ripple-detection-time.bin</code></td>
+<td><code>(ts)</code></td>
+<td>one record per quorum detection</td>
+</tr>
+<tr>
+<td><code>lfp-filter-data.bin</code></td>
+<td><code>(ts, raw_in, lfp_out)</code></td>
+<td>the LFP module's Bessel low-pass, for <code>DEBUGGING_LFP_FILTERS_CHANNEL</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>ts</code> is the LFP-clock timestamp in seconds (hardware timestamp ÷ sampling rate).</p>
+<h2 id="validating-the-filters">Validating the filters<a class="headerlink" href="#validating-the-filters" title="Permanent link">#</a></h2>
+<p><code>ripple_tools/validate_filters.py</code> re-runs the <strong>same two FIRs offline</strong> over <code>lfp-data.bin</code> and compares
+against the backend's own <code>ripple-band-data.bin</code> / <code>envelope-data.bin</code>, sample for sample. The offline
+coefficients in <code>ripple_tools/plot_demo.py</code> (<code>B_RIPPLE</code>, <code>B_ENV</code>) are transcribed from
+<code>src/core/Common.hpp</code> (<code>RippleBandFilterCoefficients2_5kHz</code>, <code>EnvelopeFilter2_5kHz</code>) — they are verified
+identical.</p>
+<pre><code class="language-bash"># with the flags on and a short session recorded:
+python ripple_tools/validate_filters.py --dir .
+</code></pre>
+<p>It prints three comparisons per channel and passes when the relative error is &lt; 1e-4:</p>
+<ul>
+<li><strong>ripple band (26-tap FIR)</strong> — offline FIR over the dumped LFP vs the backend's ripple band</li>
+<li><strong>envelope (10-tap FIR)</strong> — the full offline chain vs the backend's envelope</li>
+<li><strong>envelope from backend rb</strong> — offline envelope filter fed the backend's OWN ripple band; this isolates
+  <em>which</em> stage is wrong when the envelope disagrees but the ripple band matches</li>
+</ul>
+<h3 id="result-validated-2026-07-20-pass">Result — validated 2026-07-20 (PASS)<a class="headerlink" href="#result-validated-2026-07-20-pass" title="Permanent link">#</a></h3>
+<p>Two channels, 66,725 samples each, from a simulated NP1.0 session:</p>
+<table>
+<thead>
+<tr>
+<th>comparison</th>
+<th>max abs err</th>
+<th>relative</th>
+<th>correlation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ripple band (26-tap FIR)</td>
+<td>2.2e-05</td>
+<td>2.0e-07</td>
+<td>1.000000000</td>
+</tr>
+<tr>
+<td>envelope (10-tap FIR)</td>
+<td>1.4e-05</td>
+<td>1.8e-07</td>
+<td>1.000000000</td>
+</tr>
+<tr>
+<td>envelope from backend rb</td>
+<td>1.1e-05</td>
+<td>1.5e-07</td>
+<td>1.000000000</td>
+</tr>
+</tbody>
+</table>
+<p>Relative error ~2×10⁻⁷ is exactly <code>float32</code> rounding on a signal of RMS ~108 — i.e. the backend's filters
+are <strong>bit-level correct</strong> implementations of the reference. Both filter stages are causal, zero-initial-state
+Direct-Form FIRs applied sample by sample, which is exactly <code>np.convolve(x, b)[:len(x)]</code> — that equivalence
+is what makes the offline reconstruction in <code>analyze_recording.py</code> trustworthy.</p>
+<p>This also independently corroborates the recording-side result: on the NP1.0 hardware tests the offline
+envelope crossings paired <strong>1:1 with the ai4 stim pulses</strong> (99/99, max deviation 4.6 ms), which could not
+happen if the online filters diverged from the offline ones. See
+<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> and <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>.</p>
+<h2 id="housekeeping">Housekeeping<a class="headerlink" href="#housekeeping" title="Permanent link">#</a></h2>
+<p>The dumps are written to the <strong>process working directory</strong>, which for <code>python run_spikespeak.py</code> is the
+repo root. They are untracked build litter, not data:</p>
+<pre><code class="language-bash">rm -f lfp-data.bin ripple-band-data.bin envelope-data.bin ripple-detection-time.bin lfp-filter-data.bin
+</code></pre>
+<p>Delete them after any debugging session. If you find them in a fresh checkout, someone shipped a flag
+flipped to <code>true</code> — check both files listed at the top of this page.</p>
+<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="RippleDetection.html"><code>RippleDetection.md</code></a> — the detector itself (per-probe input, decimation, baseline)</li>
+<li><a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> — the offline analysis pipeline + sync</li>
+<li><a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a> — why writes on this path cost real time</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/FilterDebugging.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-two-kill-switches">The two kill switches</a></li>
+<li><a href="#dump-formats">Dump formats</a></li>
+<li><a href="#validating-the-filters">Validating the filters</a><ul>
+<li><a href="#result-validated-2026-07-20-pass">Result — validated 2026-07-20 (PASS)</a></li>
+</ul>
+</li>
+<li><a href="#housekeeping">Housekeeping</a></li>
+<li><a href="#related">Related</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

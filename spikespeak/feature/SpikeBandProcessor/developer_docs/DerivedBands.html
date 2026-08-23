@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Derived bands — LFP and spike, from one raw stream - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Derived bands — LFP and spike, from one raw stream</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a class="active" href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="derived-bands-lfp-and-spike-from-one-raw-stream">Derived bands — LFP and spike, from one raw stream<a class="headerlink" href="#derived-bands-lfp-and-spike-from-one-raw-stream" title="Permanent link">#</a></h1>
+<p>A Neuropixels 2.0 probe has <strong>no hardware ap/lfp split</strong>. It delivers one 30 kHz stream,
+<code>data.npx.raw</code>, and every band you want to look at is computed from it. Two are:</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>filter</th>
+<th>output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LFP</strong></td>
+<td>2nd-order Bessel <strong>low-pass</strong>, 400 Hz</td>
+<td><code>data.lfp</code></td>
+</tr>
+<tr>
+<td><strong>Spike / AP</strong></td>
+<td>2nd-order Bessel <strong>band-pass</strong>, 300–6000 Hz</td>
+<td><code>data.spike</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both run on <strong>all 384 channels</strong>, both are switchable from the GUI, and both can be displayed —
+side by side, one per row or column.</p>
+<p><img alt="Raw, spike and LFP side by side on a real NP2.0 probe" src="images/band_three_bands_hw.png" /></p>
+<p><em>Real NP2.0 on PXIe. Left: raw, broadband with slow drift. Middle: spike band — the drift is gone,
+the high-frequency content remains. Right: LFP band — the hash is gone, the slow wander remains.</em></p>
+<hr />
+<h2 id="1-one-processor-two-bands">1. One processor, two bands<a class="headerlink" href="#1-one-processor-two-bands" title="Permanent link">#</a></h2>
+<p><code>SpikeBandProcessor</code> is <strong>not a copy</strong> of <code>LFPProcessor</code>. Both are three-line subclasses of
+<code>BandFilterProcessor</code> (<code>src/core/BandFilterProcessor.{hpp,cpp}</code>), which owns the entire loop:
+consuming the raw stream, filtering, timestamping, committing, the liveness counter, and the
+enable/disable switch. A subclass supplies exactly three things — the band's name, the data object
+it writes, and which coefficients to load:</p>
+<pre><code class="language-cpp">class SpikeBandProcessor : public BandFilterProcessor
+{
+public:
+    explicit SpikeBandProcessor(QObject* parent = nullptr)
+        : BandFilterProcessor(&quot;spike&quot;, &quot;data.spike&quot;, parent) {}
+protected:
+    void applyCoefficients(Avx2Filter&amp; f) const override { f.setDefaultSpikeBandFilterCoefs(); }
+};
+</code></pre>
+<p>This is deliberate. "The spike processor is identical to the LFP processor except for the filter" is
+a claim that stays true after the next change to either only if there is one copy of the code. The
+LFP loop was lifted verbatim into the base — it is the same code that has been running, not a
+rewrite.</p>
+<h2 id="2-the-filtering-is-avx2-8-channels-at-a-time">2. The filtering is AVX2, 8 channels at a time<a class="headerlink" href="#2-the-filtering-is-avx2-8-channels-at-a-time" title="Permanent link">#</a></h2>
+<p><code>Avx2Filter</code> holds 8 lanes of a direct-form-I IIR, so 384 channels is <strong>48 filter objects</strong>, and one
+sample means 48 FMA chains rather than 384 scalar ones. Nothing about that changed for the spike
+band: <code>addSample()</code> loops <code>mNumBCoefs</code> / <code>mNumACoefs</code>, so it is order-generic and the 5-tap
+band-pass drops straight in where the 3-tap low-pass was.</p>
+<p>The four <code>setDefault*Coefs()</code> methods were near-identical 40-line blocks. They now share one
+<code>loadCoefs()</code> body, which is also where the "REPLACE, do not append" discipline lives — a real bug
+once, and one that a fourth hand-copied setter would have been free to reintroduce.</p>
+<h3 id="coefficients">Coefficients<a class="headerlink" href="#coefficients" title="Permanent link">#</a></h3>
+<p><code>SpikeBandFilterCoefficients30kHz</code> in <code>src/core/Common.hpp</code>, from
+<code>scipy.signal.bessel(2, [300, 6000], btype="bandpass", norm="mag", fs=30000)</code>.</p>
+<p>Bessel for near-linear phase, so a spike keeps its shape instead of ringing. <code>norm="mag"</code> puts the
+−3 dB points exactly on the band edges; the default <code>norm="phase"</code> drifts them to 374 / 5052 Hz.</p>
+<table>
+<thead>
+<tr>
+<th>50 Hz</th>
+<th>100 Hz</th>
+<th>300 Hz</th>
+<th>1 kHz</th>
+<th>3 kHz</th>
+<th>6 kHz</th>
+<th>10 kHz</th>
+<th>14 kHz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>−28.1</td>
+<td>−16.3</td>
+<td><strong>−3.0</strong></td>
+<td>−0.1</td>
+<td>−0.4</td>
+<td><strong>−3.0</strong></td>
+<td>−12.8</td>
+<td>−41.3</td>
+</tr>
+</tbody>
+</table>
+<p>Unity peak gain, all poles inside the unit circle.</p>
+<p>The band is doing what it says. On the <strong>simulated</strong> source — a pure low-frequency sine — the spike
+column is almost flat while raw and LFP both show the sine, because a 300–6000 Hz band-pass rejects
+it. That makes a poor demo and a good test:</p>
+<p><img alt="The same three bands on the simulated sine source" src="images/band_three_bands.png" /></p>
+<h2 id="3-what-each-band-costs-measured">3. What each band costs, measured<a class="headerlink" href="#3-what-each-band-costs-measured" title="Permanent link">#</a></h2>
+<p>Simulated NP2.0, 384 channels at 30 kHz, backend CPU as a percentage of one core:</p>
+<table>
+<thead>
+<tr>
+<th>state</th>
+<th>CPU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>both bands ON</td>
+<td><strong>7.6 %</strong></td>
+</tr>
+<tr>
+<td>spike OFF (LFP only)</td>
+<td>2.1 %</td>
+</tr>
+<tr>
+<td>both bands OFF</td>
+<td>0.7 %</td>
+</tr>
+<tr>
+<td>both back ON</td>
+<td>7.0 % (repeatable)</td>
+</tr>
+</tbody>
+</table>
+<p>So the spike band costs ~5.5 %-core and the LFP band ~1.4 %-core, and turning both off recovers
+~6.9 % of a 7.6 % backend. That is the entire reason the switches exist.</p>
+<p>Read those numbers as the <strong>end-to-end</strong> cost of a band — filtering <em>plus</em> the display processor's
+min/max reduction <em>plus</em> the WebSocket frames — not as filtering alone. The spike band costs more
+than the LFP band partly because it has five taps rather than three, and partly because
+<code>Avx2Filter::addSample()</code> shifts its state with <code>std::copy_backward</code> on every sample, which is
+O(taps × 8). Replacing that shift with a circular index would remove the difference; it is not done
+here because the same filter is on the ripple-detection path and the current cost is not a
+bottleneck.</p>
+<h2 id="4-enable-disable">4. Enable / disable<a class="headerlink" href="#4-enable-disable" title="Permanent link">#</a></h2>
+<p>Two toolbar buttons, <strong>to the left of the audio and ripple buttons</strong>.</p>
+<p><img alt="The LFP and Spike switches" src="images/band_buttons_hw.png" /></p>
+<p><img alt="The same switches with the spike band off" src="images/band_buttons_spike_off_hw.png" /></p>
+<p><em>Both on, then spike off. An enabled band is green; a disabled one drops out of the per-column band
+picker as well.</em></p>
+<p>A disabled band still <strong>advances its read index</strong> but skips the filtering, the timestamp write and
+the commit. Skipping the advance instead would leave a backlog to be chewed through the instant it
+came back on — a burst of stale samples arriving at once.</p>
+<p>Re-enabling <strong>resets the filter state</strong>. The samples either side of a disabled gap are not
+continuous, and running an IIR across that discontinuity rings for tens of milliseconds and looks
+exactly like signal.</p>
+<p>A band is only offered when the running config declares its processor; the backend says so with
+<code>present: true</code>, and a profile without <code>proc.spike</code> never sends one, so no button appears.</p>
+<h3 id="disabling-lfp-stops-ripple-detection">⚠ Disabling LFP stops ripple detection<a class="headerlink" href="#disabling-lfp-stops-ripple-detection" title="Permanent link">#</a></h3>
+<p>On a 2.0 probe the ripple detector runs on <strong><code>data.lfp</code></strong> — <code>ProcessorManager</code> auto-provisions it
+there, because NP2 has no native LFP band. Switching the LFP band off therefore stops detection, and
+it stops <em>silently</em>: the detector is simply no longer fed.</p>
+<p>The GUI warns when you disable LFP while detection is running. It does <strong>not</strong> block it — turning a
+band off is a legitimate thing to want, and the operator is the one who knows whether detection
+matters right now. On a 1.0 probe this does not apply: the detector uses the hardware
+<code>data.npx.lfp</code>, which no switch here touches.</p>
+<h3 id="control-surface">Control surface<a class="headerlink" href="#control-surface" title="Permanent link">#</a></h3>
+<p>Commands go out on binary id <strong><code>0x219</code></strong> (<code>kBandCommandId</code>), JSON payload. Both processors subscribe
+to the same id and ignore traffic addressed to the other band:</p>
+<pre><code class="language-json">{&quot;band&quot;: &quot;spike&quot;, &quot;action&quot;: &quot;setEnabled&quot;, &quot;value&quot;: false}
+{&quot;action&quot;: &quot;getState&quot;}
+</code></pre>
+<p>State comes back as <code>bandState</code>, relayed by <code>WebSocketServer::slBroadcastBandEvent</code>:</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;bandState&quot;,&quot;band&quot;:&quot;spike&quot;,&quot;enabled&quot;:false,&quot;present&quot;:true,&quot;stream&quot;:&quot;data.spike&quot;}
+</code></pre>
+<p>The buttons render <strong>confirmed</strong> state, never their own request (issue #18).</p>
+<h2 id="5-displaying-a-derived-band">5. Displaying a derived band<a class="headerlink" href="#5-displaying-a-derived-band" title="Permanent link">#</a></h2>
+<p>Until now the derived LFP band existed only as detector input — <strong>no config had ever bound it to the
+display</strong>, and it could not have been: <code>DisplayProcessor</code> cast every stream to
+<code>CircularBuffer&lt;int16, PacketInfo&gt;</code>, and the derived bands are <code>CircularBuffer&lt;float, float&gt;</code>.</p>
+<p><code>StreamState</code> now holds either buffer with an <code>isFloat</code> flag, plus two small accessors
+(<code>totalAdded()</code>, <code>ticksAt()</code>) so the bucketing logic is shared. Two details that matter:</p>
+<ul>
+<li><strong>Timestamps.</strong> Hardware bands carry <code>PacketInfo::Timestamp</code> in 100 kHz ticks; derived bands carry
+  a <code>float</code> in <strong>seconds</strong>. <code>ticksAt()</code> converts, so every timebin comparison downstream stays in
+  ticks and neither kind needs its own bucketing.</li>
+<li><strong>Scale.</strong> The name test for derived bands is an <strong>exact match</strong> on <code>data.lfp</code> / <code>data.spike</code>, and
+  it runs <strong>before</strong> the substring inference — because <code>dataName.find(".lfp")</code> matches <code>data.lfp</code>
+  just as happily as the hardware <code>data.npx.lfp</code>, and would then apply the NP1 LFP-gain scale to a
+  band that is not on that scale. A derived band takes the scale of what it was derived <em>from</em>; a
+  config can override with <code>scale_factor:</code>.</li>
+</ul>
+<p><code>calcMinMax()</code> gained a float path — the same AVX2 min/max, minus the int16→float conversion, kept
+as a separate loop so neither path pays for the other's branch.</p>
+<h3 id="picking-a-band-per-rowcolumn">Picking a band per row/column<a class="headerlink" href="#picking-a-band-per-rowcolumn" title="Permanent link">#</a></h3>
+<p>Each row or column chooses its own band from its own dropdown, so raw, spike and LFP can be watched
+at once. The picker is built from <code>knownStreams</code>, which is populated by <strong>arriving frames</strong> — so a
+band that is switched off leaves the list and comes back when re-enabled.</p>
+<p>That needed one guard. A band processor reads its enable flag once per <em>batch</em>, so a few
+already-consumed samples still commit after the switch and the display emits one last bucket. That
+trailing frame re-added the band to the picker moments after it was removed, and whether you saw it
+came down to timing. <code>AppController.handleNewStream()</code> now refuses to register a stream that
+<code>BandModule.isDisabled()</code> reports as off.</p>
+<p><code>DataStore.forgetStream()</code> also drops the stream's buffers, not just its name: <code>handleNewStream</code> is
+gated on <code>!streams[id]</code>, so keeping them would make the band unable to come <em>back</em> — its next frame
+would early-return out of <code>initializeStream()</code> and never re-register the id.</p>
+<h2 id="6-which-configs-have-it">6. Which configs have it<a class="headerlink" href="#6-which-configs-have-it" title="Permanent link">#</a></h2>
+<p><code>SimNpx2.yaml</code> (no hardware needed) and <code>Npx2Pxi.yaml</code> (real 2.0 on PXIe). Both declare the two
+processors <strong>before</strong> the display, so the output buffers are sized before the display binds them:</p>
+<pre><code class="language-yaml">  - name: &quot;proc.lfp&quot;      # 2nd-order Bessel LOW-PASS  400 Hz       -&gt; data.lfp
+  - name: &quot;proc.spike&quot;    # 2nd-order Bessel BAND-PASS 300-6000 Hz  -&gt; data.spike
+
+  - name: &quot;proc.npx.display&quot;
+    inputs:
+      - data: &quot;raw&quot;
+        name: &quot;data.npx.raw&quot;
+      - data: &quot;lfp&quot;
+        name: &quot;data.lfp&quot;
+      - data: &quot;spike&quot;
+        name: &quot;data.spike&quot;
+</code></pre>
+<p>An optional <code>enabled: false</code> on either processor starts that band switched off.</p>
+<h2 id="7-known-gaps">7. Known gaps<a class="headerlink" href="#7-known-gaps" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>NP1.0 is not wired up.</strong> A 1.0 probe already has hardware <code>data.npx.ap</code> and <code>data.npx.lfp</code>, so
+  neither derived band is needed for display. <code>BandFilterProcessor</code> accepts an <code>inputs:</code> entry and
+  would run off <code>data.npx.ap</code>, but no config does it and it is untested.</li>
+<li><strong>Not covered by <code>tests/gui/</code>.</strong> Driven by hand for this change (buttons, ordering, dropdown
+  contents, toggle round-trip, three bands side by side, on both sim and the real probe). A
+  <code>tests/gui/bands.py</code> following <code>stream_options.py</code> is the natural next step.</li>
+<li><strong>The filter state shift</strong> described in §3 is the one clear remaining optimisation.</li>
+<li><strong>Recording a derived band is untested.</strong> <code>proc.npx.recorder</code> expects the int16 interpreter; these
+  bands are float. Nothing stops a config trying it, and nothing has checked what happens.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/DerivedBands.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-one-processor-two-bands">1. One processor, two bands</a></li>
+<li><a href="#2-the-filtering-is-avx2-8-channels-at-a-time">2. The filtering is AVX2, 8 channels at a time</a><ul>
+<li><a href="#coefficients">Coefficients</a></li>
+</ul>
+</li>
+<li><a href="#3-what-each-band-costs-measured">3. What each band costs, measured</a></li>
+<li><a href="#4-enable-disable">4. Enable / disable</a><ul>
+<li><a href="#disabling-lfp-stops-ripple-detection">⚠ Disabling LFP stops ripple detection</a></li>
+<li><a href="#control-surface">Control surface</a></li>
+</ul>
+</li>
+<li><a href="#5-displaying-a-derived-band">5. Displaying a derived band</a><ul>
+<li><a href="#picking-a-band-per-rowcolumn">Picking a band per row/column</a></li>
+</ul>
+</li>
+<li><a href="#6-which-configs-have-it">6. Which configs have it</a></li>
+<li><a href="#7-known-gaps">7. Known gaps</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

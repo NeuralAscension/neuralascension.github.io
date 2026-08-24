@@ -114,7 +114,7 @@
 side by side, one per row or column.</p>
 <blockquote>
 <p><strong>This is a 2.0 feature.</strong> A 1.0 probe delivers <code>data.npx.ap</code> and <code>data.npx.lfp</code> from the
-headstage, so it does not need either derived band and nothing here is wired for it. See §7.</p>
+headstage, so it does not need either derived band and nothing here is wired for it. See §8.</p>
 </blockquote>
 <p><img alt="Raw, spike and LFP side by side on a real NP2.0 probe" src="images/band_three_bands_hw.png" /></p>
 <p><em>Real NP2.0 on PXIe. Left: raw, broadband with slow drift. Middle: spike band — the drift is gone,
@@ -220,7 +220,108 @@ than the LFP band partly because it has five taps rather than three, and partly 
 O(taps × 8). Replacing that shift with a circular index would remove the difference; it is not done
 here because the same filter is on the ripple-detection path and the current cost is not a
 bottleneck.</p>
-<h2 id="4-enable-disable">4. Enable / disable<a class="headerlink" href="#4-enable-disable" title="Permanent link">#</a></h2>
+<h2 id="4-how-much-delay-each-band-adds">4. How much delay each band adds<a class="headerlink" href="#4-how-much-delay-each-band-adds" title="Permanent link">#</a></h2>
+<p>Two separate things, and they are worth keeping apart.</p>
+<h3 id="filter-group-delay-the-signals-own-delay">Filter group delay -- the signal's own delay<a class="headerlink" href="#filter-group-delay-the-signals-own-delay" title="Permanent link">#</a></h3>
+<p>What the filter itself imposes, computed from the coefficients (<code>scipy.signal.group_delay</code>):</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>in-band mean</th>
+<th>worst in band</th>
+<th>at 1 kHz</th>
+<th>at 3 kHz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>LFP</strong> (low-pass 400 Hz)</td>
+<td><strong>0.625 ms</strong> (18.7 samples)</td>
+<td>0.689 ms at DC</td>
+<td>0.108 ms</td>
+<td>0.013 ms</td>
+</tr>
+<tr>
+<td><strong>Spike</strong> (band-pass 300--6000 Hz)</td>
+<td><strong>0.073 ms</strong> (2.2 samples)</td>
+<td>0.637 ms at the 300 Hz edge</td>
+<td>0.101 ms</td>
+<td>0.044 ms</td>
+</tr>
+</tbody>
+</table>
+<p>The LFP figure is nearly flat across its passband, which is the whole reason for choosing Bessel.
+The spike band is the number that matters for unit activity: at real spike frequencies it is <strong>1 to 3
+samples</strong>, so a waveform arrives essentially where it happened.</p>
+<h3 id="pipeline-delay-how-far-behind-the-probe-the-processor-runs">Pipeline delay -- how far behind the probe the processor runs<a class="headerlink" href="#pipeline-delay-how-far-behind-the-probe-the-processor-runs" title="Permanent link">#</a></h3>
+<p>Measured live, instrumented in <code>BandFilterProcessor</code> and reported as a <code>bandLatency</code> event about
+once per second. The figure is the <strong>backlog at wake-up</strong>: samples already committed by the source
+and not yet filtered.</p>
+<p>Real NP2.0 on PXIe, 384 channels at 30 kHz, 40 one-second windows:</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>backlog mean</th>
+<th>backlog worst</th>
+<th>filter cost</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LFP</td>
+<td><strong>1.001 ms</strong> (30.0 samples)</td>
+<td>2.667 ms</td>
+<td>0.99 us/sample, all 384 ch</td>
+</tr>
+<tr>
+<td>Spike</td>
+<td><strong>1.001 ms</strong> (30.0 samples)</td>
+<td>2.667 ms</td>
+<td>1.33 us/sample, all 384 ch</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Both bands show exactly the same backlog, and that is the finding.</strong> 30 samples is 1 ms, which is
+the granularity the SOURCE commits at -- so the pipeline delay is set by how the probe delivers, not
+by the filtering. Enabling a band does not make it lag more than the other, and the spike band's
+extra taps cost CPU, not latency.</p>
+<h3 id="end-to-end">End to end<a class="headerlink" href="#end-to-end" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>stage</th>
+<th>LFP</th>
+<th>Spike</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>filter group delay</td>
+<td>0.625 ms</td>
+<td>0.073 ms</td>
+</tr>
+<tr>
+<td>pipeline backlog</td>
+<td>1.001 ms</td>
+<td>1.001 ms</td>
+</tr>
+<tr>
+<td><strong>band total</strong></td>
+<td><strong>~1.6 ms</strong></td>
+<td><strong>~1.1 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p>On top of that the live view adds its own bucketing before anything is drawn -- the display
+processor emits on a timebin (20 ms by default, <code>update_interval_ms</code>), which dominates both. If what
+you are judging is "does the trace on screen lag", that display interval is the number to look at,
+not these.</p>
+<p><code>filter_us_per_sample</code> also puts the CPU measurement below on a per-sample footing: 0.99 us x 30 kHz
+is ~3.0 %-core for LFP and 1.33 us x 30 kHz is ~4.0 %-core for spike, which is consistent with the
+end-to-end figures measured a different way.</p>
+<h2 id="5-enable-disable">5. Enable / disable<a class="headerlink" href="#5-enable-disable" title="Permanent link">#</a></h2>
 <p>Two toolbar buttons, <strong>to the left of the audio and ripple buttons</strong>.</p>
 <p><img alt="The LFP and Spike switches" src="images/band_buttons_hw.png" /></p>
 <p><img alt="The same switches with the spike band off" src="images/band_buttons_spike_off_hw.png" /></p>
@@ -252,7 +353,7 @@ to the same id and ignore traffic addressed to the other band:</p>
 <pre><code class="language-json">{&quot;event&quot;:&quot;bandState&quot;,&quot;band&quot;:&quot;spike&quot;,&quot;enabled&quot;:false,&quot;present&quot;:true,&quot;stream&quot;:&quot;data.spike&quot;}
 </code></pre>
 <p>The buttons render <strong>confirmed</strong> state, never their own request (issue #18).</p>
-<h2 id="5-displaying-a-derived-band">5. Displaying a derived band<a class="headerlink" href="#5-displaying-a-derived-band" title="Permanent link">#</a></h2>
+<h2 id="6-displaying-a-derived-band">6. Displaying a derived band<a class="headerlink" href="#6-displaying-a-derived-band" title="Permanent link">#</a></h2>
 <p>Until now the derived LFP band existed only as detector input — <strong>no config had ever bound it to the
 display</strong>, and it could not have been: <code>DisplayProcessor</code> cast every stream to
 <code>CircularBuffer&lt;int16, PacketInfo&gt;</code>, and the derived bands are <code>CircularBuffer&lt;float, float&gt;</code>.</p>
@@ -282,7 +383,7 @@ came down to timing. <code>AppController.handleNewStream()</code> now refuses to
 <p><code>DataStore.forgetStream()</code> also drops the stream's buffers, not just its name: <code>handleNewStream</code> is
 gated on <code>!streams[id]</code>, so keeping them would make the band unable to come <em>back</em> — its next frame
 would early-return out of <code>initializeStream()</code> and never re-register the id.</p>
-<h2 id="6-which-configs-have-it">6. Which configs have it<a class="headerlink" href="#6-which-configs-have-it" title="Permanent link">#</a></h2>
+<h2 id="7-which-configs-have-it">7. Which configs have it<a class="headerlink" href="#7-which-configs-have-it" title="Permanent link">#</a></h2>
 <p><code>SimNpx2.yaml</code> (no hardware needed) and <code>Npx2Pxi.yaml</code> (real 2.0 on PXIe). Both declare the two
 processors <strong>before</strong> the display, so the output buffers are sized before the display binds them:</p>
 <pre><code class="language-yaml">  - name: &quot;proc.lfp&quot;      # 2nd-order Bessel LOW-PASS  400 Hz       -&gt; data.lfp
@@ -298,7 +399,7 @@ processors <strong>before</strong> the display, so the output buffers are sized 
         name: &quot;data.spike&quot;
 </code></pre>
 <p>An optional <code>enabled: false</code> on either processor starts that band switched off.</p>
-<h2 id="7-scope-20-only-and-why-10-is-a-different-question">7. Scope — 2.0 only, and why 1.0 is a different question<a class="headerlink" href="#7-scope-20-only-and-why-10-is-a-different-question" title="Permanent link">#</a></h2>
+<h2 id="8-scope-20-only-and-why-10-is-a-different-question">8. Scope — 2.0 only, and why 1.0 is a different question<a class="headerlink" href="#8-scope-20-only-and-why-10-is-a-different-question" title="Permanent link">#</a></h2>
 <p>Both bands exist because a 2.0 probe has <strong>no hardware ap/lfp split</strong>: one 30 kHz stream, and
 anything else you want has to be computed. A 1.0 probe has the opposite situation — the headstage
 already delivers <code>data.npx.ap</code> (30 kHz) and <code>data.npx.lfp</code> (2.5 kHz) — so it needs none of this to
@@ -311,7 +412,7 @@ as a mechanism, not a decision.</strong> It is untested, no config uses it, and 
 would collide with the bands the hardware already provides (two things called "the LFP band", on
 different sample rates, with different scale factors), and the ripple detector already prefers the
 native <code>data.npx.lfp</code> on a 1.0 probe. Treat 1.0 as unsupported until that discussion happens.</p>
-<h2 id="8-known-gaps">8. Known gaps<a class="headerlink" href="#8-known-gaps" title="Permanent link">#</a></h2>
+<h2 id="9-known-gaps">9. Known gaps<a class="headerlink" href="#9-known-gaps" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>Not covered by <code>tests/gui/</code>.</strong> Driven by hand for this change (buttons, ordering, dropdown
   contents, toggle round-trip, three bands side by side, on both sim and the real probe). A
@@ -330,18 +431,24 @@ native <code>data.npx.lfp</code> on a 1.0 probe. Treat 1.0 as unsupported until 
 </ul>
 </li>
 <li><a href="#3-what-each-band-costs-measured">3. What each band costs, measured</a></li>
-<li><a href="#4-enable-disable">4. Enable / disable</a><ul>
+<li><a href="#4-how-much-delay-each-band-adds">4. How much delay each band adds</a><ul>
+<li><a href="#filter-group-delay-the-signals-own-delay">Filter group delay -- the signal's own delay</a></li>
+<li><a href="#pipeline-delay-how-far-behind-the-probe-the-processor-runs">Pipeline delay -- how far behind the probe the processor runs</a></li>
+<li><a href="#end-to-end">End to end</a></li>
+</ul>
+</li>
+<li><a href="#5-enable-disable">5. Enable / disable</a><ul>
 <li><a href="#disabling-lfp-stops-ripple-detection">⚠ Disabling LFP stops ripple detection</a></li>
 <li><a href="#control-surface">Control surface</a></li>
 </ul>
 </li>
-<li><a href="#5-displaying-a-derived-band">5. Displaying a derived band</a><ul>
+<li><a href="#6-displaying-a-derived-band">6. Displaying a derived band</a><ul>
 <li><a href="#picking-a-band-per-rowcolumn">Picking a band per row/column</a></li>
 </ul>
 </li>
-<li><a href="#6-which-configs-have-it">6. Which configs have it</a></li>
-<li><a href="#7-scope-20-only-and-why-10-is-a-different-question">7. Scope — 2.0 only, and why 1.0 is a different question</a></li>
-<li><a href="#8-known-gaps">8. Known gaps</a></li>
+<li><a href="#7-which-configs-have-it">7. Which configs have it</a></li>
+<li><a href="#8-scope-20-only-and-why-10-is-a-different-question">8. Scope — 2.0 only, and why 1.0 is a different question</a></li>
+<li><a href="#9-known-gaps">9. Known gaps</a></li>
 </ul>
 </div>
 </aside>

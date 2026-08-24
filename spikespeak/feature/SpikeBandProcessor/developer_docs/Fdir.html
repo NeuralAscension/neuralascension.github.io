@@ -42,6 +42,7 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="Logging.html">Logging — format, severity, and what to write</a>
@@ -88,6 +89,10 @@
   <main class="content"><article class="markdown-body"><h1 id="fdir-fault-detection-reporting-and-staying-in-a-valid-state">FDIR — fault detection, reporting, and staying in a valid state<a class="headerlink" href="#fdir-fault-detection-reporting-and-staying-in-a-valid-state" title="Permanent link">#</a></h1>
 <blockquote>
 <p>Issues #11 and #16. Companion to issue #18, which fixed the same disease one layer up.</p>
+<p><strong>A fault we cannot recover from in-process:</strong> two failed Neuropixels connects leave the
+driver in a state where the next acquisition crashes with an access violation. That one is
+handled by a blocking dialog that ends the session — see
+<a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a>.</p>
 </blockquote>
 <p>Three questions this answers: <strong>when something in the pipeline fails, how does the user find out?</strong>,
 <strong>how do we avoid ending up in a state nobody designed?</strong>, and <strong>what is the server doing right now

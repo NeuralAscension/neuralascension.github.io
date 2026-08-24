@@ -42,6 +42,7 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="Logging.html">Logging — format, severity, and what to write</a>
@@ -300,6 +301,10 @@ characteristic failure mode on this repo.</p>
 <tr>
 <td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
 <td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modelled on Trodes.</td>
+</tr>
+<tr>
+<td><a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a></td>
+<td><strong>Stopping before issue #54</strong> — the failed-connect tally, why the threshold is two and never resets, the blocking operator dialog, how restart actually relaunches, and the QThread teardown crash this work uncovered.</td>
 </tr>
 <tr>
 <td><a href="DerivedBands.html"><code>DerivedBands.md</code></a></td>

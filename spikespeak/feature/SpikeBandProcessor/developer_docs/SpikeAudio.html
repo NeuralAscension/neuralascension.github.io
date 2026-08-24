@@ -36,6 +36,7 @@
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
@@ -232,11 +233,49 @@ and LFP streams instead). Extending to NP1 means selecting <code>data.npx.ap</co
 <p>The <code>input_channels</code> block seeds the initial threshold and volume. It does <strong>not</strong> set the listening
 channel — that is an operator decision made against real traces, not something a YAML file can know.</p>
 <hr />
-<h2 id="6-known-gaps">6. Known gaps<a class="headerlink" href="#6-known-gaps" title="Permanent link">#</a></h2>
+<h2 id="6-when-there-is-no-audio-device">6. When there is no audio device<a class="headerlink" href="#6-when-there-is-no-audio-device" title="Permanent link">#</a></h2>
+<p><strong>A missing output device does not stop acquisition.</strong> It used to: <code>Pa_Initialize()</code> failing made
+<code>configure()</code> return false, <code>ProcessorManager</code> treats a failed configure as fatal and abandons the
+whole graph, so a machine with no speakers — or one whose device was held exclusively by something
+else — <strong>could not connect a probe</strong> on any profile that listed <code>proc.audio</code>. The profile was
+correct. The speakers were missing. Acquisition has to survive that.</p>
+<p>The distinction <code>configure()</code> now draws is:</p>
+<table>
+<thead>
+<tr>
+<th>what failed</th>
+<th>weight</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>validateConfig()</code> — the profile is wrong</td>
+<td><strong>fatal</strong>, as before</td>
+<td>nothing can fix itself; the config needs editing</td>
+</tr>
+<tr>
+<td><code>Pa_Initialize()</code> — this machine has no audio</td>
+<td><strong>degraded</strong></td>
+<td>the monitor is a convenience laid over acquisition</td>
+</tr>
+</tbody>
+</table>
+<p>In the degraded case the processor still exists and still behaves like one: it subscribes to command
+id <code>0x218</code>, arms its start report and ticks every 200 ms so the liveness monitor is not staring at a
+processor that never turns, and it answers state queries with</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;audioState&quot;,&quot;available&quot;:false,&quot;unavailable_reason&quot;:&quot;...&quot;,&quot;...&quot;:&quot;...&quot;}
+</code></pre>
+<p>The panel greys itself out and <strong>says why</strong>. "Audio unavailable" with no reason is the kind of
+message that gets reported as a bug against the wrong component.</p>
+<p>Both halves matter and both were bugs: reporting ready, because <code>MainController</code> does not start the
+sources until every processor has, so a silent processor hangs the start outright; and ticking,
+because a processor that never calls <code>noteCycle()</code> is reported as <strong>stalled</strong> (issue #16) for
+working exactly as intended.</p>
+<hr />
+<h2 id="7-known-gaps">7. Known gaps<a class="headerlink" href="#7-known-gaps" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>NP1.0 is unsupported</strong> — see above.</li>
-<li><strong><code>Pa_Initialize()</code> failure is still fatal</strong> (issue #55). No <em>device</em> is handled gracefully; no
-  audio <em>subsystem</em> is not.</li>
 <li><strong>Mono only.</strong> One channel feeds both output channels. Trodes supports a reference channel
   subtraction (<code>listenRefHWChan</code>) and a notch filter; neither is implemented here.</li>
 <li><strong>Not covered by the GUI test suite.</strong> The panel is exercised by
@@ -252,7 +291,8 @@ channel — that is an operator decision made against real traces, not something
 <li><a href="#3-control-surface">3. Control surface</a></li>
 <li><a href="#4-thread-safety">4. Thread safety</a></li>
 <li><a href="#5-which-configs-have-it">5. Which configs have it</a></li>
-<li><a href="#6-known-gaps">6. Known gaps</a></li>
+<li><a href="#6-when-there-is-no-audio-device">6. When there is no audio device</a></li>
+<li><a href="#7-known-gaps">7. Known gaps</a></li>
 </ul>
 </div>
 </aside>

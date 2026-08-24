@@ -36,6 +36,7 @@
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a class="active" href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
@@ -287,6 +288,63 @@ and not yet filtered.</p>
 the granularity the SOURCE commits at -- so the pipeline delay is set by how the probe delivers, not
 by the filtering. Enabling a band does not make it lag more than the other, and the spike band's
 extra taps cost CPU, not latency.</p>
+<h4 id="asap-mode">ASAP mode<a class="headerlink" href="#asap-mode" title="Permanent link">#</a></h4>
+<p>That reading predicts something testable: if the backlog is the source's delivery granularity, then
+changing the granularity should move it and nothing else. <code>low_latency: true</code> on the source (ASAP
+mode -- see <a href="LatencyProfiling.html">LatencyProfiling.md</a>) commits every block as it arrives instead of
+batching, and it does exactly that.</p>
+<p>Simulated NP2.0, 384 ch at 30 kHz, same profile with and without the flag, 35 one-second windows
+each after a 5 s warm-up:</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th>band</th>
+<th>backlog mean</th>
+<th>backlog worst</th>
+<th>commit batch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>normal</td>
+<td>LFP</td>
+<td>1.002 ms</td>
+<td>2.300 ms</td>
+<td>30.1 samples</td>
+</tr>
+<tr>
+<td>normal</td>
+<td>Spike</td>
+<td>1.002 ms</td>
+<td>2.300 ms</td>
+<td>30.1 samples</td>
+</tr>
+<tr>
+<td><strong>ASAP</strong></td>
+<td><strong>LFP</strong></td>
+<td><strong>0.038 ms</strong></td>
+<td>0.567 ms</td>
+<td>1.1 samples</td>
+</tr>
+<tr>
+<td><strong>ASAP</strong></td>
+<td><strong>Spike</strong></td>
+<td><strong>0.037 ms</strong></td>
+<td>0.567 ms</td>
+<td>1.1 samples</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ASAP takes ~1.00 ms off both bands -- a 26x reduction -- and the two bands stay identical to each
+other.</strong> The batch column is the mechanism in plain sight: 30.1 samples per commit becomes 1.1, and
+the backlog follows it down. Nothing in the filtering changed, which is the point; <code>filter_us_per_sample</code>
+is the same 1.3--1.7 us in both modes.</p>
+<p>So the band totals under ASAP are <strong>~0.66 ms</strong> for LFP and <strong>~0.11 ms</strong> for spike, and what remains
+is almost entirely the filter's own group delay -- the floor you cannot buy your way past.</p>
+<p>To reproduce: add <code>low_latency: true</code> to the source block of any 2.0 profile, enable both bands, and
+read the <code>bandLatency</code> events. The figures above came from <code>SimNpx2.yaml</code> with and without that one
+line, nothing else changed.</p>
 <h3 id="end-to-end">End to end<a class="headerlink" href="#end-to-end" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -333,16 +391,94 @@ came back on — a burst of stale samples arriving at once.</p>
 <p>Re-enabling <strong>resets the filter state</strong>. The samples either side of a disabled gap are not
 continuous, and running an IIR across that discontinuity rings for tens of milliseconds and looks
 exactly like signal.</p>
-<p>A band is only offered when the running config declares its processor; the backend says so with
-<code>present: true</code>, and a profile without <code>proc.spike</code> never sends one, so no button appears.</p>
-<h3 id="disabling-lfp-stops-ripple-detection">⚠ Disabling LFP stops ripple detection<a class="headerlink" href="#disabling-lfp-stops-ripple-detection" title="Permanent link">#</a></h3>
-<p>On a 2.0 probe the ripple detector runs on <strong><code>data.lfp</code></strong> — <code>ProcessorManager</code> auto-provisions it
-there, because NP2 has no native LFP band. Switching the LFP band off therefore stops detection, and
-it stops <em>silently</em>: the detector is simply no longer fed.</p>
-<p>The GUI warns when you disable LFP while detection is running. It does <strong>not</strong> block it — turning a
-band off is a legitimate thing to want, and the operator is the one who knows whether detection
-matters right now. On a 1.0 probe this does not apply: the detector uses the hardware
-<code>data.npx.lfp</code>, which no switch here touches.</p>
+<p><strong>And the write slot is the COMMIT count, not the read cursor.</strong> The processor holds two positions:
+where it has read to in <code>data.npx.raw</code>, and where it writes in its own output ring. A disabled band
+advances the first and not the second, so they are <em>not</em> the same number — while every consumer
+indexes the ring by its own committed-sample count (<code>constDataAt</code> is <code>ind % capacity</code>).</p>
+<p>These two roles shared one counter until 2026-08-24. That was correct only for a band running from
+the first sample, which every profile used to do — so the defect was unreachable in practice and
+invisible in review. Making bands start <strong>off</strong> turned it into the default path: the producer would
+resume writing at <code>skipped % capacity</code> while consumers still read from <code>committed % capacity</code>, and
+the band would then serve correct-looking samples of the wrong age — up to a second of extra delay at
+30 kHz, different every session, silently. <code>tests/test_bandfilterprocessor.cpp</code> pins it, and the
+reasoning is in <a href="AgentTraps.html"><code>AgentTraps.md</code></a> §3.</p>
+<h3 id="available-on-every-20-profile-running-on-none-of-them">Available on every 2.0 profile. Running on none of them.<a class="headerlink" href="#available-on-every-20-profile-running-on-none-of-them" title="Permanent link">#</a></h3>
+<p>A 2.0 probe has <strong>no hardware ap/lfp split</strong>: one 30 kHz raw stream, and both bands exist only
+because SpikesPeak derives them. So on a 2.0 source these are not an optional extra a profile opts
+into -- they are the only way to see either band at all. <code>ProcessorManager::setupProcessors</code>
+therefore auto-provisions <code>proc.lfp</code> and <code>proc.spike</code> for <strong>any</strong> source that has <code>data.npx.raw</code> and
+no <code>data.npx.lfp</code>, whether or not the profile lists them, and binds them to the display so the
+per-column dropdown can offer them.</p>
+<p><strong>Declaring a band is not the same as running it.</strong> A band starts <strong>off</strong> — including one the profile
+declares. It runs when one of three things happens:</p>
+<table>
+<thead>
+<tr>
+<th>a band runs because...</th>
+<th>mechanism</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the operator pressed its button</td>
+<td><code>setEnabled</code> on command id <code>0x219</code></td>
+</tr>
+<tr>
+<td>something that needs it turned it on</td>
+<td><code>RippleDetector::ensureInputBandEnabled()</code> — see below</td>
+</tr>
+<tr>
+<td>the profile explicitly asked for it</td>
+<td><code>enabled: true</code> on the processor entry</td>
+</tr>
+</tbody>
+</table>
+<p>This was not the old behaviour and the change is deliberate. <code>mEnabled</code> used to default <strong>true</strong>, so
+merely listing <code>proc.lfp</code> in a profile meant every 2.0 session filtered all 384 channels through a
+band nobody had asked to see, and the GUI button was green before the operator touched anything.
+The rule now is the one an operator would state: <em>minimal things running.</em></p>
+<p>Nothing shipped <strong>records</strong> a derived band, and that is by design rather than by accident — a derived
+band is the raw band with a documented filter on it, so it can be reproduced exactly offline
+(coefficients in <a href="#2-the-filtering-is-avx2-8-channels-at-a-time">§2</a>, and
+<code>ripple_tools/validate_filters.py</code> checks the reproduction to float32 rounding). Recording it would
+double the disk cost for something the raw file already contains. If a profile ever does need one on
+disk, it must also say <code>enabled: true</code> — a recorder pointed at a band that is off writes silence.</p>
+<p>Before this work, a profile written before the bands existed left the operator with no LFP button at
+all, and a profile that declared <code>proc.lfp</code> but never listed <code>data.lfp</code> under the display <code>inputs:</code>
+gave them a green button and no way to look at the band.</p>
+<p>A 1.0 probe is deliberately excluded: it streams real hardware <code>ap</code> and <code>lfp</code>, so deriving a second
+copy is a different feature with a different justification (see <a href="#8-scope--20-only-and-why-10-is-a-different-question">§8</a>).</p>
+<p><strong>Buttons follow the CURRENT graph, not the process.</strong> The registry hands out one instance per
+processor name for the life of the process, so "the object exists" says nothing about the profile in
+front of you -- a 1.0 profile selected after a 2.0 one gets the same <code>proc.lfp</code> object back,
+configured for a source that is gone. <code>BandFilterProcessor::isProvisioned()</code> is what the WebSocket
+layer keys off, cleared by <code>ProcessorManager</code> on teardown; and the browser drops its band state on
+every source change and waits to be told again. Announcing state off object existence is what left a
+<strong>green LFP button on a profile with no derived bands at all</strong>.</p>
+<h3 id="the-ripple-detector-depends-on-the-lfp-band-and-the-backend-enforces-it">The ripple detector depends on the LFP band, and the backend enforces it<a class="headerlink" href="#the-ripple-detector-depends-on-the-lfp-band-and-the-backend-enforces-it" title="Permanent link">#</a></h3>
+<p>On a 2.0 probe the ripple detector reads <strong><code>data.lfp</code></strong> -- the band <code>proc.lfp</code> derives -- because
+there is no native LFP band to read. That dependency is handled in <strong>both directions</strong>, in the
+backend, so the GUI never has to guess:</p>
+<p><strong>Starting detection enables the band.</strong> <code>RippleDetector::ensureInputBandEnabled()</code> runs on a GUI
+<code>start</code>, on the legacy <code>enable</code>, and on <code>auto_start</code>, and switches <code>proc.lfp</code> on if it is off. The
+band then announces its own state and the button turns green -- because the backend did it, not
+because the browser assumed it. A headless or CLI-driven run gets the same guarantee, which is why
+this lives in the detector and not in the GUI.</p>
+<p>The detector reports which band it is bound to in <code>rippleState</code>:</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;rippleState&quot;,&quot;input&quot;:&quot;data.lfp&quot;, ...}
+</code></pre>
+<p>On a 1.0 probe that field reads <code>data.npx.lfp</code> and none of this applies -- the derived band is not in
+the path, and no switch here touches the probe's own LFP.</p>
+<p><strong>Disabling the band while detection runs raises a dialog.</strong></p>
+<p><img alt="The dependency dialog" src="images/gui/band_dependency_modal.png" /></p>
+<p>Not a status line: the consequence is invisible from the button that causes it. The detector does not
+fail, it just stops being fed and reports nothing, which reads as <em>"the ripples stopped happening"</em>.
+Confirming stops detection first and then disables the band, so the state afterwards is the one the
+dialog described. Cancelling changes nothing.</p>
+<p>The dialog only appears while detection is actually <strong>running</strong>. With it idle there is nothing to
+warn about any more -- starting it switches the band back on by itself, so the old silent-failure
+path (band off, press Start, detector reads nothing forever) can no longer happen.</p>
+<p><code>tests/gui/band_dependency.py</code> covers all of it, including the 1.0 case.</p>
 <h3 id="control-surface">Control surface<a class="headerlink" href="#control-surface" title="Permanent link">#</a></h3>
 <p>Commands go out on binary id <strong><code>0x219</code></strong> (<code>kBandCommandId</code>), JSON payload. Both processors subscribe
 to the same id and ignore traffic addressed to the other band:</p>
@@ -433,12 +569,16 @@ native <code>data.npx.lfp</code> on a 1.0 probe. Treat 1.0 as unsupported until 
 <li><a href="#3-what-each-band-costs-measured">3. What each band costs, measured</a></li>
 <li><a href="#4-how-much-delay-each-band-adds">4. How much delay each band adds</a><ul>
 <li><a href="#filter-group-delay-the-signals-own-delay">Filter group delay -- the signal's own delay</a></li>
-<li><a href="#pipeline-delay-how-far-behind-the-probe-the-processor-runs">Pipeline delay -- how far behind the probe the processor runs</a></li>
+<li><a href="#pipeline-delay-how-far-behind-the-probe-the-processor-runs">Pipeline delay -- how far behind the probe the processor runs</a><ul>
+<li><a href="#asap-mode">ASAP mode</a></li>
+</ul>
+</li>
 <li><a href="#end-to-end">End to end</a></li>
 </ul>
 </li>
 <li><a href="#5-enable-disable">5. Enable / disable</a><ul>
-<li><a href="#disabling-lfp-stops-ripple-detection">⚠ Disabling LFP stops ripple detection</a></li>
+<li><a href="#available-on-every-20-profile-running-on-none-of-them">Available on every 2.0 profile. Running on none of them.</a></li>
+<li><a href="#the-ripple-detector-depends-on-the-lfp-band-and-the-backend-enforces-it">The ripple detector depends on the LFP band, and the backend enforces it</a></li>
 <li><a href="#control-surface">Control surface</a></li>
 </ul>
 </li>

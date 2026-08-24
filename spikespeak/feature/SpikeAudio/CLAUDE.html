@@ -36,11 +36,14 @@
 <a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
@@ -89,6 +92,10 @@
 1.0/2.0 over PXIe or OneBox, online ripple detection, closed-loop stimulation.</p>
 <p>Read <a href="developer_docs/README.html"><code>developer_docs/README.md</code></a> first — it is the map. This file is only
 the rules that are easy to get wrong and expensive when you do.</p>
+<p><strong>Then read <a href="developer_docs/AgentTraps.html"><code>developer_docs/AgentTraps.md</code></a></strong> — the things in this
+codebase that are not wrong but are not what they look like (a constant that is ticks and not
+samples, a getter that creates what you asked it to check for, a queued call that is not delivered
+until Play). Every entry cost somebody real time. Add to it when something costs you time.</p>
 <hr />
 <h2 id="the-definition-of-green">THE DEFINITION OF GREEN<a class="headerlink" href="#the-definition-of-green" title="Permanent link">#</a></h2>
 <p><strong>Do not report a build as working, passing, or green until BOTH suites pass.</strong> A compile that
@@ -148,6 +155,28 @@ and the same GUI as real hardware. So when something looks broken:</p>
 </ol>
 <p>This is written up properly in <code>developer_docs/Testing.md</code> §4, with the 2026-08-20 incident that
 produced it: a dead probe reported a completely healthy rig for three and a half minutes.</p>
+<h2 id="what-this-system-is-optimising-for">What this system is optimising for<a class="headerlink" href="#what-this-system-is-optimising-for" title="Permanent link">#</a></h2>
+<p><strong>Real time, minimal overhead, no new dependencies.</strong> This is an acquisition and closed-loop
+stimulation system: the numbers it is judged on are milliseconds of latency and samples that were
+not dropped. Every change is measured against that first.</p>
+<ul>
+<li><strong>Do not add a dependency.</strong> Not a library, not a service, not a runtime. What is already here --
+  Qt, the vendored Neuropixels/NI-DAQ APIs, HDF5, ryml, PortAudio, AVX2 intrinsics -- is the budget.
+  If something seems to need a new one, say so and stop; it is a decision for the operator, not a
+  convenience to be taken.</li>
+<li><strong>Nothing runs that nobody asked for.</strong> A processor that is not being used should not be filtering
+  384 channels. Features arrive available and off, not on by default. (The derived bands are the
+  worked example -- see <code>developer_docs/DerivedBands.md</code> §5.)</li>
+<li><strong>Do not put work on the hot path.</strong> Per-sample clock reads, allocations, locks and logging in a
+  loop that runs at 30 kHz are all defects, whatever they are measuring. Measure per batch.</li>
+<li><strong>Do not record what can be recomputed.</strong> A derived band is the raw band plus documented
+  coefficients, so it is reproduced offline exactly rather than written to disk twice.</li>
+<li><strong>The GUI is on notice.</strong> SciChart is a dependency we intend to remove. Do not deepen the coupling
+  to it, do not build new features that only work through it, and prefer plain DOM/canvas for
+  anything new.</li>
+</ul>
+<p>When a change trades latency, CPU or a dependency for convenience, that trade is the headline of
+your report -- not a footnote.</p>
 <h2 id="repo-conventions">Repo conventions<a class="headerlink" href="#repo-conventions" title="Permanent link">#</a></h2>
 <ul>
 <li><code>SpikesPeak_Status.md</code> is <strong>the</strong> canonical dated log. Not a todo file, not per-effort status files.</li>
@@ -169,6 +198,7 @@ produced it: a dead probe reported a completely healthy rig for three and a half
 <li><a href="#running-the-app">Running the app</a></li>
 <li><a href="#hardware-safety-read-before-touching-a-rig">Hardware safety — read before touching a rig</a></li>
 <li><a href="#sim-first-always">Sim first, always</a></li>
+<li><a href="#what-this-system-is-optimising-for">What this system is optimising for</a></li>
 <li><a href="#repo-conventions">Repo conventions</a></li>
 </ul>
 </div>

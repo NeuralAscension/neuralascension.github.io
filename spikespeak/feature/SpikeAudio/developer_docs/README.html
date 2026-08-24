@@ -36,11 +36,14 @@
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="Logging.html">Logging — format, severity, and what to write</a>
@@ -119,6 +122,10 @@ repo root <a href="../CLAUDE.html"><code>CLAUDE.md</code></a> carries the same c
    headlessly; almost every script under <code>ripple_tools/</code> is built on the same WS client.</li>
 <li><strong><a href="GuiTesting.html"><code>GuiTesting.md</code></a></strong> — the UI is an external browser, so "check the GUI" means driving a
    real Chromium over CDP (<code>python/tools/cdp.py</code>) and screenshotting it.</li>
+<li><strong><a href="AgentTraps.html"><code>AgentTraps.md</code></a></strong> — the things here that are not wrong but are not what they look
+   like: a constant named for a sample rate that is a tick rate, a getter that <em>creates</em> what you asked it
+   to check for, a queued call that is not delivered until Play, a fatal that reports as a test with no
+   output. Every entry cost somebody real time. <strong>Add to it when something costs you time.</strong></li>
 <li><strong>The doc for your actual task</strong> from the tables below.</li>
 </ol>
 <p><strong>Before you touch hardware</strong>, also read the Safety rules in the <code>spikespeak</code> skill (never force-kill a
@@ -173,6 +180,10 @@ characteristic failure mode on this repo.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><a href="AgentTraps.html"><code>AgentTraps.md</code></a></td>
+<td><strong>The things that are not what they look like</strong> — names that mean something else (<code>kHeadstageSamplingRate</code> is 100 kHz TICKS; <code>getDataByName</code> CREATES), what is actually running when, the ring-buffer commit-count invariant, the Windows/shell/build traps, and the recurring "announced REQUESTED state instead of CONFIRMED" defect class. Written from real time lost; keep adding.</td>
+</tr>
 <tr>
 <td><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></td>
 <td>Understand the whole system: hosting model, threading, data plane, QWebChannel surface, per-module command model (Option A).</td>
@@ -299,6 +310,14 @@ characteristic failure mode on this repo.</p>
 <tr>
 <td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
 <td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modelled on Trodes.</td>
+</tr>
+<tr>
+<td><a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a></td>
+<td><strong>Stopping before issue #54</strong> — the failed-connect tally, why the threshold is two and never resets, the blocking operator dialog, how restart actually relaunches, and the QThread teardown crash this work uncovered.</td>
+</tr>
+<tr>
+<td><a href="DerivedBands.html"><code>DerivedBands.md</code></a></td>
+<td><strong>The LFP and spike bands derived from one raw stream</strong> — one shared AVX2 band processor, the 300–6000 Hz Bessel coefficients, the measured CPU cost of each band, the enable/disable switches, and how a float band reaches the display at all.</td>
 </tr>
 <tr>
 <td><a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a></td>

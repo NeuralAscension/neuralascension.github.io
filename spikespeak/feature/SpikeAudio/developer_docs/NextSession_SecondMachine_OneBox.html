@@ -36,11 +36,14 @@
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
 <a href="Logging.html">Logging — format, severity, and what to write</a>
@@ -218,15 +221,18 @@ hardcoded-path problems, and you do not want to be debugging a build while a pro
 </ol>
 <hr />
 <h2 id="5-two-tests-you-must-not-fix">5. Two tests you must NOT "fix"<a class="headerlink" href="#5-two-tests-you-must-not-fix" title="Permanent link">#</a></h2>
-<p><strong><code>tests/gui/stream_options.py</code> is expected to be RED.</strong> It catches
-<a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a> — switching source after acquisition
-has run fails while <code>stateSource</code> reports success. That is a real, pre-existing backend defect and
-the test is doing its job.</p>
-<p>It <strong>passes when run standalone</strong> (<code>python tests/gui/stream_options.py</code>), because each source gets its
-own <code>Gui</code>, and a <code>Gui</code> that started its own backend also quits it — so the second source lands on a
-fresh backend. Under the runner the backend is shared and has already streamed, which is the
-operator's real situation. <strong>Do not make the test restart the backend between sources</strong>; that hides
-the bug rather than fixing it.</p>
+<p><strong><code>tests/gui/stream_options.py</code> WAS expected to be RED. As of 2026-08-24 it is green, and it should
+stay that way.</strong></p>
+<p>It caught <a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a>, which was recorded as
+"switching source after acquisition has run fails while <code>stateSource</code> reports success". Half of that
+was right. The switch does not fail — disconnect first and it works. What failed was a select issued
+<strong>while a source was still connected</strong>, which <code>MainController</code> refuses by design and which
+<code>onSourceSelection</code> then reported as a successful switch anyway. Both halves are fixed: the refusal
+now restores the true source and says what to do about it, and the harness disconnects before
+selecting, which is what a real operator does.</p>
+<p>The corrected write-up, including the experiment that settles it, is
+<a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a> §4a. If this test goes red again, it is a real defect
+— read that section before adjusting the test.</p>
 <p>So on this machine, a "green" GUI run means <strong>5 of 6, with <code>stream_options</code> red for that reason</strong>. If
 it is red for any <em>other</em> reason, that is a new finding — report it.</p>
 <p><strong>Prove any test you add can fail.</strong> Inject a regression, watch it go red, revert. An always-green

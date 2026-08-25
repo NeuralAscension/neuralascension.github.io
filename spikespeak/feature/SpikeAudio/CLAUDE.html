@@ -170,13 +170,21 @@ exits <code>0xC0000135</code>. The backend <strong>auto-quits ~2 s after the las
   released only on a clean exit; a kill costs a physical power-cycle. Shut down via the WebSocket
   <code>quit</code> command or the GUI's Disconnect. Since 2026-08-21 every teardown vendor call is bounded, so
   a wedged basestation no longer hangs shutdown — but the rule stands.</li>
-<li><strong>Do not leave a rig streaming</strong> while you do unrelated work (code, plots, docs). Pause and
-  disconnect as soon as you move on. Long idle streams have stalled the NI-DAQ.</li>
-<li><strong>Do not leave the rig or a browser running for the operator to look at.</strong> Shut everything down and
-  report with saved screenshots.</li>
-<li>Killing browsers: kill <strong>only</strong> the isolated debug-port profile you launched. A blanket
-  <code>Get-Process chrome | Stop-Process</code> closes the operator's real windows.</li>
+<li><strong>Do not leave the rig up while you are not actively using it.</strong> Not streaming, and not merely
+  connected. Pause → Disconnect → <code>quit</code> the moment you stop using it, including while you edit code,
+  write docs, or think. Three reasons, in increasing order of cost:
+  1. A running backend <strong>holds <code>bin/SpikesPeak.exe</code> open</strong>, so the next build dies on
+     <code>LNK1104: cannot open file</code> — and the obvious "fix" is to kill the process, which is the one
+     thing you must not do with a OneBox open.
+  2. Long idle streams have <strong>stalled the NI-DAQ</strong>.
+  3. A probe left streaming into nothing is a probe nobody is watching.</li>
 </ul>
+<p>Bring it up for a measurement, take the measurement, bring it down. The only exception is when the
+  operator has asked you to leave it up for them — say so explicitly when you do.
+- <strong>Do not leave the rig or a browser running for the operator to look at.</strong> Shut everything down and
+  report with saved screenshots.
+- Killing browsers: kill <strong>only</strong> the isolated debug-port profile you launched. A blanket
+  <code>Get-Process chrome | Stop-Process</code> closes the operator's real windows.</p>
 <h2 id="sim-first-always">Sim first, always<a class="headerlink" href="#sim-first-always" title="Permanent link">#</a></h2>
 <p>Every simulated source drives the same display processor, the same ring buffers, the same WebSocket
 and the same GUI as real hardware. So when something looks broken:</p>

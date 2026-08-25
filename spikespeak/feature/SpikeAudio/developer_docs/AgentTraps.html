@@ -326,6 +326,57 @@ trigger, an unbounded teardown call. None is observable from a return value, so 
 value-checking would have found any of them. The observable is the <strong>sequence of calls</strong>, which is
 why <code>tests/fake_neuropix_api.cpp</code> exists. See <code>Testing.md</code> §4a.</p>
 <hr />
+<h2 id="5c-measuring-things-on-this-rig">5c. Measuring things on this rig<a class="headerlink" href="#5c-measuring-things-on-this-rig" title="Permanent link">#</a></h2>
+<p>Every entry below is a mistake made on 2026-08-25, each of which produced a confident wrong number
+before it was caught.</p>
+<p><strong>Two timings issued back-to-back are NOT independent.</strong> The detector fires the DAC and then the stim
+server. Reading <code>detect_to_dac_us</code> = 164 and <code>detect_to_send_us</code> = 172 as two independent costs, and
+concluding the ordering bias was 8 us, was wrong: they are sequential, so the second contains the
+first. Swapping the order with <code>dac_trigger_order: stim_first</code> gave <code>detect_to_send_us</code> = <strong>6 us</strong> and
+<code>detect_to_dac_us</code> = 202 us -- the DAC call alone costs ~200 us of the detector thread, and the real
+ordering bias is <strong>115 us</strong>, not 8. If two measurements share a thread, measure the swap; do not
+subtract.</p>
+<p><strong>A high percentile misses a short pulse.</strong> A 130 us stimulus pulse is about 4 samples at 30.3 kHz, so
+1300 of them in a 695 s recording is 0.025% of the samples -- below even the 99.9th percentile. An
+edge detector thresholding at <code>percentile(sig, 99.9)</code> reported the stimulator's line as having NO
+swing at all. Use <code>max()</code> for pulse detection, with a debounce, and require a real swing (&gt;1 V) rather
+than an adaptive fraction of whatever noise the channel has.</p>
+<p><strong>An adaptive threshold on a floating line detects noise.</strong> The same detector, using
+<code>mean + max(0.25, half the excursion)</code>, reported ~1590 "rising edges" on two floating lines resting at
+1.715 V, and auto-picked one of them as the stimulator. Floating inputs on this breakout sit at
+~1.715 V and wander; anything that calls that an edge will find thousands.</p>
+<p><strong><code>rig.record(out_dir, name)</code> writes into <code>out_dir/name/</code>,</strong> not <code>out_dir</code>. Globbing the parent finds
+nothing and fails as an <code>IndexError</code> far from the cause. And a second run into the same <code>name</code> adds a
+second timestamped sidecar beside the first -- <strong>sort by mtime</strong>, or you will silently analyse the old
+recording. Both happened; the second reported a 5 s smoke test's n=104 as though it were the
+1000-detection run. Full layout in <code>ClosedLoopDriving.md</code> section 3a.</p>
+<p><strong>Existence is not visibility.</strong> The GUI docks (<code>#obx-dock</code>, the ripple dock) are built into the DOM at
+startup and merely hidden. A retry loop guarded on <code>!!document.getElementById('obx-dock')</code> exits
+immediately having clicked nothing, and the screenshot comes back with no panel in it -- twice, here.
+Test <code>getComputedStyle(d).display !== 'none'</code>. Same shape as the <code>.active-view</code> trap that
+<code>live_view()</code> already documents.</p>
+<p><strong>A control-plane probe is not a liveness test</strong> -- see section 5a. Restated here because it is the
+same error as all of the above: checking the thing that is easy to check instead of the thing you
+actually mean.</p>
+<hr />
+<h2 id="5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half">5d. Enabling something is half a feature; disabling it is the other half<a class="headerlink" href="#5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half" title="Permanent link">#</a></h2>
+<p><code>BandFilterProcessor::setEnabledExternally(true, ...)</code> had exactly ONE call site and
+<code>setEnabledExternally(false, ...)</code> had NONE. So <code>RippleDetector::ensureInputBandEnabled()</code> switched
+<code>proc.lfp</code> on -- correctly, a 2.0 probe has no hardware LFP band -- and nothing ever switched it back
+off. One ripple run left the LFP band filtering 384 channels for the rest of the session, with no
+consumer, and nothing in the GUI to say why it was on.</p>
+<p>That is the "nothing runs that nobody asked for" rule in <code>CLAUDE.md</code>, broken by the feature that
+enforces the other half of it. Fixed 2026-08-25 with <code>releaseInputBand()</code>, and the same
+enable/release pair now exists for the audio monitor's <code>proc.spike</code>.</p>
+<p><strong>If you add an <code>ensureXEnabled()</code>, write <code>releaseX()</code> in the same commit</strong>, and give it the ownership
+rule both of these use: <em>release only what you enabled</em>. A band the operator switched on for
+themselves must survive the module that merely also wanted it.</p>
+<p><strong>And a feature that quietly does nothing is worse than one that fails.</strong> The audio monitor was silent
+because <code>mListenChannel</code> defaults to -1 and the sample loop takes a <code>!valid</code> branch, writing zeros --
+no error, no warning, nothing in the panel. With the threshold at 0 and every other control correct,
+the only available conclusion was "the audio is broken". If a module cannot act without a choice
+nobody has made yet, either make the choice and announce it, or say out loud that it is waiting.</p>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -351,6 +402,8 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5-windows-the-shell-and-the-build">5. Windows, the shell, and the build</a></li>
 <li><a href="#5a-hardware-and-telling-it-apart-from-your-own-bug">5a. Hardware, and telling it apart from your own bug</a></li>
 <li><a href="#5b-a-green-suite-is-a-statement-about-what-it-links">5b. A green suite is a statement about what it LINKS</a></li>
+<li><a href="#5c-measuring-things-on-this-rig">5c. Measuring things on this rig</a></li>
+<li><a href="#5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half">5d. Enabling something is half a feature; disabling it is the other half</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

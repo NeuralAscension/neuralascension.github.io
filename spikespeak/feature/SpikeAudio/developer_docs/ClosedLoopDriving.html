@@ -192,6 +192,36 @@ than a burst.</p>
 <p><code>rig.test_fire()</code> fires without a detection, which is the fastest way to prove the whole path
 end to end before trusting a closed-loop number.</p>
 <hr />
+<h2 id="3a-where-recordings-land">3a. Where recordings land<a class="headerlink" href="#3a-where-recordings-land" title="Permanent link">#</a></h2>
+<p><code>rig.record(out_dir, name)</code> does <strong>not</strong> write into <code>out_dir</code>. It creates <code>out_dir/name/</code> and writes
+there, one <code>.bin</code> plus a <code>.bin.json</code> sidecar per band, each stamped with the start time:</p>
+<pre><code>RecordingTests/2026-08-25_trigger_ab/          &lt;- what you passed as out_dir
+  trigger_ab_ripple.json                       &lt;- the ripple sidecar, written at record START
+  trigger_ab/                                  &lt;- what you passed as name
+    trigger_ab_adc_20260825_095710.bin
+    trigger_ab_adc_20260825_095710.bin.json    &lt;- frame layout lives HERE
+    trigger_ab_raw_20260825_095710.bin
+    trigger_ab_raw_20260825_095710.bin.json
+</code></pre>
+<p>Two consequences worth knowing before you write an analysis script:</p>
+<ul>
+<li><strong>Look one level down.</strong> Globbing <code>out_dir/*.bin.json</code> finds nothing and the failure surfaces as an
+  <code>IndexError</code> on an empty list, well away from the cause.</li>
+<li><strong>Pick the NEWEST sidecar, not the first alphabetically.</strong> A second run into the same <code>name</code> adds a
+  second timestamped pair beside the first. Sorting by name and taking <code>[0]</code> silently analyses the
+  OLD recording -- which is exactly what happened on 2026-08-25, reporting a 5 s smoke test's n=104
+  as though it were the 1000-detection run. Sort by mtime.</li>
+</ul>
+<p>The sidecar is the authority on how to read the <code>.bin</code>: it carries <code>frame.bytes</code>, the header layout,
+<code>payload_dtype</code>, <code>num_channels</code> and <code>sample_rate_hz</code>. Do not hard-code a stride.</p>
+<pre><code class="language-python">meta = json.load(open(newest_sidecar))
+fb, nch = meta[&quot;frame&quot;][&quot;bytes&quot;], meta[&quot;num_channels&quot;]
+raw = np.fromfile(bin_path, dtype=np.uint8)
+n = len(raw) // fb
+frames = raw[: n * fb].reshape(n, fb)
+data = frames[:, meta[&quot;frame&quot;][&quot;header_bytes&quot;]:].copy().view(np.int16).reshape(n, nch)
+</code></pre>
+<hr />
 <h2 id="4-where-the-logs-are">4. Where the logs are<a class="headerlink" href="#4-where-the-logs-are" title="Permanent link">#</a></h2>
 <p><strong>The backend writes <code>output.log</code> to its WORKING DIRECTORY</strong>, not next to the binary. If you launch
 it with <code>cwd=REPO</code> the log is <code>REPO/output.log</code>, and the copy in <code>build-*/bin/</code> is whatever was left
@@ -253,6 +283,7 @@ that a hardware failure had nothing to do with a change I had made that evening.
 </ul>
 </li>
 <li><a href="#3-stimulation">3. Stimulation</a></li>
+<li><a href="#3a-where-recordings-land">3a. Where recordings land</a></li>
 <li><a href="#4-where-the-logs-are">4. Where the logs are</a></li>
 <li><a href="#5-harness-rules-learned-by-losing-runs-to-each">5. Harness rules, learned by losing runs to each</a></li>
 <li><a href="#6-when-the-hardware-is-the-problem-the-logs-say-so-plainly">6. When the hardware is the problem, the logs say so plainly</a></li>

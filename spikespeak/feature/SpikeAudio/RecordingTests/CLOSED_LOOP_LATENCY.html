@@ -59,12 +59,13 @@
 <a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -783,6 +784,149 @@ removes it too. The NI-DAQ total is authoritative.</p>
 </div>
 </div>
 <hr />
+<hr />
+<h2 id="trigger-transport-the-onebox-dac-against-the-pi-2026-08-25">Trigger transport: the OneBox DAC against the Pi (2026-08-25)<a class="headerlink" href="#trigger-transport-the-onebox-dac-against-the-pi-2026-08-25" title="Permanent link">#</a></h2>
+<p>Everything above measures the closed loop through the <strong>Pi</strong>: detector → UDP → Pi 3B+ → AM 2300. The
+OneBox has a second way out — the WavePlayer DAC, driven over USB with no second computer in the path
+— and this is what that is worth.</p>
+<p><strong>The OneBox DAC reaches voltage a median 363 µs before the Pi does</strong>, order-corrected, n ≈ 1000 per
+ordering.</p>
+<h3 id="what-was-measured-and-why-it-is-not-the-ack">What was measured, and why it is not the ACK<a class="headerlink" href="#what-was-measured-and-why-it-is-not-the-ack" title="Permanent link">#</a></h3>
+<p><code>detect_to_ack_us</code> is a software round trip: the Pi's acknowledgement coming back over the network.
+It is not the stimulus. The stimulus is a <strong>voltage on a wire</strong>, so both paths are measured as
+voltages:</p>
+<table>
+<thead>
+<tr>
+<th>path</th>
+<th>measured at</th>
+<th>signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OneBox DAC</td>
+<td>ADC <strong>IO11</strong>, via a cable from IO0</td>
+<td>2 V, 60 µs / 10 µs / 60 µs</td>
+</tr>
+<tr>
+<td>Pi → AM 2300</td>
+<td>ADC <strong>IO2</strong></td>
+<td>3.3 V logic gate, same shape</td>
+</tr>
+</tbody>
+</table>
+<p>Both are triggered from the <strong>same threshold crossing</strong> and captured by the OneBox's own 12-channel
+ADC — one file, one clock. The separation is a subtraction of sample indices, so there is no
+cross-clock fit and none of the off-by-one that §24 of the status log cost a session to.</p>
+<p>Note the DAC is read on <strong>IO11 through a cable</strong>, not on IO0. IO0 is the DAC's own pin: the ADC input
+and DAC output share that BNC, so reading there samples the signal where it is generated, with no
+cable and no external analog path, while the Pi is read after its driver and its cable. That
+asymmetry favours the DAC. Measuring both through a cable removes it. <em>(It made no difference —
+IO0 and IO11 both gave 462.0 µs on the dac_first arm — but it had to be checked rather than assumed.)</em></p>
+<h3 id="both-orderings-because-the-order-is-a-real-bias">Both orderings, because the order is a real bias<a class="headerlink" href="#both-orderings-because-the-order-is-a-real-bias" title="Permanent link">#</a></h3>
+<p>Two triggers cannot leave one thread at the same instant, and the one issued first is issued earlier.
+<code>dac_trigger_order</code> runs it both ways:</p>
+<table>
+<thead>
+<tr>
+<th>ordering</th>
+<th>detect→DAC</th>
+<th>detect→send</th>
+<th>Pi edge − DAC edge</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dac_first</code></td>
+<td>169 µs</td>
+<td>175 µs</td>
+<td>462 µs</td>
+</tr>
+<tr>
+<td><code>stim_first</code></td>
+<td>192 µs</td>
+<td>6 µs</td>
+<td>264 µs</td>
+</tr>
+</tbody>
+</table>
+<p>The UDP send costs <strong>6 µs</strong>. The DAC's <code>np_setSWTriggerEx</code> costs <strong>~170–200 µs of the detector
+thread</strong>, so whichever is issued second waits for the first. The bias is therefore <strong>99 µs</strong>, and the
+order-corrected answer is the mean of the two medians.</p>
+<p><em>A practical consequence worth acting on: firing the stim server FIRST costs 6 µs and removes ~200 µs
+of delay from the Pi path while barely moving the DAC.</em></p>
+<h3 id="pi-edge-dac-edge">Pi edge − DAC edge<a class="headerlink" href="#pi-edge-dac-edge" title="Permanent link">#</a></h3>
+<p>Positive means the DAC reached voltage first.</p>
+<table>
+<thead>
+<tr>
+<th>statistic</th>
+<th><code>dac_first</code></th>
+<th><code>stim_first</code></th>
+<th>order-corrected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>median</td>
+<td>462 µs</td>
+<td>264 µs</td>
+<td><strong>363 µs</strong></td>
+</tr>
+<tr>
+<td>mean ± sd</td>
+<td>481 ± 59 µs</td>
+<td>267 ± 47 µs</td>
+<td>374 µs</td>
+</tr>
+<tr>
+<td>p5 – p95</td>
+<td>396 – 594 µs</td>
+<td>198 – 363 µs</td>
+<td>297 – 479 µs</td>
+</tr>
+<tr>
+<td>min / max</td>
+<td>330 / 693 µs</td>
+<td>165 / 429 µs</td>
+<td>248 / 561 µs</td>
+</tr>
+<tr>
+<td>n / unmatched</td>
+<td>1026 / 0</td>
+<td>1019 / 0</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p class="figpair">
+  <img class="fig-light" src="latency/onebox_dac_vs_pi.png" alt="OneBox DAC versus Pi trigger latency, both orderings">
+  <img class="fig-dark" src="latency/onebox_dac_vs_pi_dark.png" alt="OneBox DAC versus Pi trigger latency, both orderings">
+</p>
+
+<h3 id="what-this-does-not-say">What this does NOT say<a class="headerlink" href="#what-this-does-not-say" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>It is not an end-to-end stimulus comparison.</strong> IO0 carries the DAC's <em>actual output waveform</em>;
+  IO2 carries the <em>trigger going into</em> the AM 2300, which then has its own latency before it
+  stimulates. 363 µs is therefore a <strong>lower bound</strong> on the real difference in favour of the DAC.</li>
+<li><strong>±33 µs on every figure.</strong> The ADC samples at 30.3 kHz. No difference smaller than one sample is
+  reported as real.</li>
+<li><strong>The DAC is a voltage source; the AM 2300 is a constant-current stimulator.</strong> These are not
+  interchangeable for driving tissue. The comparison is about how fast a TRIGGER gets out, which is
+  the question the WavePlayer was built to answer.</li>
+<li><strong>The Pi keeps one capability the DAC does not have here</strong>: it is a general pulse generator with
+  its own timing. The DAC's resolution is one playback sample — 10 µs at 100 kHz, finer only by
+  raising the playback rate.</li>
+</ul>
+<h3 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h3>
+<pre><code class="language-bash">python fair_ab.py 1000 11 2      # n per ordering, DAC channel, Pi channel
+</code></pre>
+<p>Profile: <code>Npx2OneBoxAsap.yaml</code> plus <code>dac_trigger: true</code> and <code>dac_trigger_order: dac_first|stim_first</code>.
+Detector at z = 0 (the probe is in air; noise must cross constantly), lockout 0.05 s, quorum 1. The
+edge detector uses a <strong>max-based</strong> threshold with a 5 ms debounce — a percentile misses a 130 µs pulse
+entirely, which is 0.02 % of the samples in a run this long.</p>
+<hr />
 <h2 id="cross-probe-comparison">Cross-probe comparison<a class="headerlink" href="#cross-probe-comparison" title="Permanent link">#</a></h2>
 <p><strong>NP2.0 is faster than NP1.0 in both delivery modes</strong> — ~0.3 ms by default (1.12–1.35 vs 1.48 ms) and
 ~0.37 ms with ASAP (0.55–0.61 vs 0.94–0.98 ms). The gap is <strong>not</strong> in the shared network/stimulator path
@@ -1229,7 +1373,7 @@ this run. It reads as a clean logic line: idle 0.0002 V, peak 3.296 V, pulses ~9
 edges must be grouped into events. Here 1309 raw edges grouped to exactly <strong>1000 events</strong>, and the count
 is identical for any grouping gap from 1 ms to 100 ms — that insensitivity is what shows the extra edges
 are pulse structure rather than noise or double-triggering. <code>stim_events_same_clock()</code> groups at 20 ms.</p>
-<h3 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h3>
+<h3 id="reproducing_1">Reproducing<a class="headerlink" href="#reproducing_1" title="Permanent link">#</a></h3>
 <pre><code class="language-bash"># record to a ripple target (drives connect -&gt; train -&gt; record; --z 2.5 as used here)
 python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot;     --channels 0 --quorum 1 --z 2.5 --n 1000 --dir &lt;ABS recdir&gt; --name &lt;name&gt; --timeout 3600
 
@@ -1266,6 +1410,14 @@ the check to demand of any closed-loop recording before quoting a latency from i
 <ul>
 <li><a href="#headline">Headline</a></li>
 <li><a href="#results-by-probe">Results by probe</a></li>
+<li><a href="#trigger-transport-the-onebox-dac-against-the-pi-2026-08-25">Trigger transport: the OneBox DAC against the Pi (2026-08-25)</a><ul>
+<li><a href="#what-was-measured-and-why-it-is-not-the-ack">What was measured, and why it is not the ACK</a></li>
+<li><a href="#both-orderings-because-the-order-is-a-real-bias">Both orderings, because the order is a real bias</a></li>
+<li><a href="#pi-edge-dac-edge">Pi edge − DAC edge</a></li>
+<li><a href="#what-this-does-not-say">What this does NOT say</a></li>
+<li><a href="#reproducing">Reproducing</a></li>
+</ul>
+</li>
 <li><a href="#cross-probe-comparison">Cross-probe comparison</a></li>
 <li><a href="#method">Method</a></li>
 <li><a href="#corrections-applied">Corrections applied</a></li>
@@ -1277,7 +1429,7 @@ the check to demand of any closed-loop recording before quoting a latency from i
 <li><a href="#figures">Figures</a></li>
 <li><a href="#why-this-measurement-is-structurally-simpler-than-the-pxie-one">Why this measurement is structurally simpler than the PXIe one</a></li>
 <li><a href="#reading-the-stim-line">Reading the stim line</a></li>
-<li><a href="#reproducing">Reproducing</a></li>
+<li><a href="#reproducing_1">Reproducing</a></li>
 <li><a href="#two-traps-this-run-exposed">Two traps this run exposed</a></li>
 <li><a href="#quality-of-this-run">Quality of this run</a></li>
 </ul>

@@ -59,12 +59,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -234,6 +235,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></td>
 <td><strong>How to drive the rig headlessly without losing runs to it.</strong> Use <code>ripple_tools/rig.py</code>; call <code>retrain()</code> or the detector never trains; tell "no samples" from "trained but quiet" using <code>rippleEnvelope</code>; the backend writes <code>output.log</code> to its WORKING directory; and what a wedged basestation looks like in the log.</td>
+</tr>
+<tr>
+<td><a href="AudioVideoLatency.html"><code>AudioVideoLatency.md</code></a></td>
+<td><strong>What you see, what you hear, and how old both are.</strong> You see a spike ~73 ms BEFORE you hear it: the trace is ~19 ms behind the probe, the speaker ~92 ms, and 91.4 ms of that is PortAudio's output latency rather than anything SpikesPeak can shrink. Includes what is instrumented, what each figure costs, and the two mistakes made getting there (a poll-time data race, and a claim that the ring depth was unmeasurable).</td>
 </tr>
 <tr>
 <td><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></td>

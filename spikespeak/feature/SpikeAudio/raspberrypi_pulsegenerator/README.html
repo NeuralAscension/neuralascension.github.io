@@ -214,7 +214,7 @@ prompt <strong>on the Pi</strong> (it looks like <code>stimserver@raspberrypi:~ 
 case‑sensitive.</p>
 </blockquote>
 <hr />
-<h2 id="5-give-the-pi-a-fixed-address-static-ip-from-scratch">5. Give the Pi a fixed address (static IP) — <strong>from scratch</strong><a class="headerlink" href="#5-give-the-pi-a-fixed-address-static-ip-from-scratch" title="Permanent link">#</a></h2>
+<h2 id="5-give-the-pi-a-fixed-address-static-ip-from-scratch">5. Give the Pi a fixed address (static IP), <strong>from scratch</strong><a class="headerlink" href="#5-give-the-pi-a-fixed-address-static-ip-from-scratch" title="Permanent link">#</a></h2>
 <p>SpikesPeak sends <code>fire</code> to the hard‑coded address <strong><code>192.168.1.100</code>, port <code>8888</code></strong>. So the Pi must always be
 at <code>192.168.1.100</code>, and your <strong>PC must be on the same <code>192.168.1.x</code> network</strong> (e.g. the PC at
 <code>192.168.1.201</code>). "Static IP" just means <em>fixed</em> instead of <em>automatically assigned (DHCP)</em>.</p>
@@ -448,7 +448,7 @@ matches the ESP32 baseline (~131 µs per pulse) the system was originally verifi
 </tr>
 <tr>
 <td>Installer prints <code>No connection named Stimulation Server</code></td>
-<td>Do the rename in <a href="#5-give-the-pi-a-fixed-address-static-ip--from-scratch">§5</a> first, or set the IP on <code>Wired connection 1</code> directly. (Harmless if the IP is already set.)</td>
+<td>Do the rename in <a href="#5-give-the-pi-a-fixed-address-static-ip-from-scratch">§5</a> first, or set the IP on <code>Wired connection 1</code> directly. (Harmless if the IP is already set.)</td>
 </tr>
 <tr>
 <td><code>systemctl is-active</code> ≠ <code>active</code></td>
@@ -623,7 +623,7 @@ kernel intact, so you can always revert by deleting that line. <strong>Do not ov
 <li><a href="#2-flash-the-operating-system-onto-the-microsd-on-your-pc">2. Flash the operating system onto the microSD (on your PC)</a></li>
 <li><a href="#3-first-boot-find-the-pi-on-the-network">3. First boot — find the Pi on the network</a></li>
 <li><a href="#4-first-ssh-login">4. First SSH login</a></li>
-<li><a href="#5-give-the-pi-a-fixed-address-static-ip-from-scratch">5. Give the Pi a fixed address (static IP) — from scratch</a></li>
+<li><a href="#5-give-the-pi-a-fixed-address-static-ip-from-scratch">5. Give the Pi a fixed address (static IP), from scratch</a></li>
 <li><a href="#6-wire-the-am-2300-to-the-pi-header">6. Wire the AM 2300 to the Pi header</a><ul>
 <li><a href="#find-the-pins-on-the-pis-40pin-header">Find the pins on the Pi's 40‑pin header</a></li>
 <li><a href="#the-wiring-table-verified-against-the-am-2300-manual-p67">The wiring table (verified against the AM 2300 manual, p.6–7)</a></li>

@@ -197,7 +197,7 @@ data delivery the loop runs at <strong>0.55–0.61 ms on Neuropixels 2.0</strong
 </table>
 <blockquote>
 <p>The OneBox rows are measured on a <strong>different transport</strong> (USB3/FTDI) and with a <strong>different stim
-capture</strong> (the OneBox's own ADC, not the NI-DAQ) — see <a href="#onebox--usb3-transport-same-clock-capture">OneBox</a>
+capture</strong> (the OneBox's own ADC, not the NI-DAQ) — see <a href="#onebox-usb3-transport-same-clock-capture">OneBox</a>
 below. As of 2026-08-20 the OneBox has the <strong>full 3 x 2 matrix on both probes</strong>, so it is directly
 comparable to the PXIe rows above. <strong>The OneBox matches or beats PXIe in every one of the twelve
 cells</strong> — never slower, on either probe, in either delivery mode.</p>
@@ -851,7 +851,7 @@ Offline pipeline, exact-detector reproduction and the sync fit:
 <code>analysis/</code> figures, <code>_summary.json</code> and the WS captures' derived results are.
 </content></p>
 <hr />
-<h2 id="onebox-usb3-transport-same-clock-capture">OneBox — USB3 transport, same-clock capture<a class="headerlink" href="#onebox-usb3-transport-same-clock-capture" title="Permanent link">#</a></h2>
+<h2 id="onebox-usb3-transport-same-clock-capture">OneBox: USB3 transport, same-clock capture<a class="headerlink" href="#onebox-usb3-transport-same-clock-capture" title="Permanent link">#</a></h2>
 <p>The results above are all PXIe. This section is the <strong>OneBox</strong> equivalent: the same probe and the same
 synthetic ripple, but the basestation is a Neuropixels <strong>OneBox</strong> on USB3/FTDI instead of a PXIe module,
 and the stimulus is captured on the <strong>OneBox's own 12-channel ADC</strong> instead of the NI-DAQ.</p>
@@ -1268,7 +1268,7 @@ the check to demand of any closed-loop recording before quoting a latency from i
 <li><a href="#method">Method</a></li>
 <li><a href="#corrections-applied">Corrections applied</a></li>
 <li><a href="#how-to-reproduce">How to reproduce</a></li>
-<li><a href="#onebox-usb3-transport-same-clock-capture">OneBox — USB3 transport, same-clock capture</a><ul>
+<li><a href="#onebox-usb3-transport-same-clock-capture">OneBox: USB3 transport, same-clock capture</a><ul>
 <li><a href="#the-full-matrix-2026-08-20-real-probes-in-saline-live-pi-3b-am-2300">The full matrix (2026-08-20, real probes in saline, live Pi 3B+ / AM 2300)</a></li>
 <li><a href="#what-the-matrix-says">What the matrix says</a></li>
 <li><a href="#onebox-vs-pxie-cell-for-cell">OneBox vs PXIe, cell for cell</a></li>

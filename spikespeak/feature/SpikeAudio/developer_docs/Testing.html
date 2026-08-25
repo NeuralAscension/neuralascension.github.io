@@ -198,6 +198,20 @@ stdout does not always survive being piped through Git Bash. When you need the o
 ask Qt Test for a file instead — this always works:
 <code>test_boundedcall.exe -o result.txt,txt</code></p>
 </blockquote>
+<h3 id="reading-a-red-suite">Reading a red suite<a class="headerlink" href="#reading-a-red-suite" title="Permanent link">#</a></h3>
+<p>The test binaries emit <strong>nothing on stdout</strong> in this environment — verified 2026-08-24 across every
+suite, passing and failing alike, whether run through ctest, through a shell, or redirected to a
+file. So a failure used to print a bare <code>***Failed</code> with no case name and no <code>QCOMPARE</code> diff, which
+made debugging a red suite guesswork.</p>
+<p>Every suite now writes a Qt Test log via <code>-o &lt;name&gt;.log,txt</code> (see <code>tests/CMakeLists.txt</code>), and
+<code>scripts/run_tests.py</code> prints it for any suite that fails:</p>
+<pre><code>  ❌ 1 OF 18 SUITES FAILED
+
+     FAIL!  : TestOneBoxWavePlayer::stopIsSilentWhenNeverUsed() Compared values are not the same
+        Actual   (FakeNpx::calls().size()): 2
+        Expected (size_t(0))              : 0
+</code></pre>
+<p><code>QWARN</code> lines are included deliberately: the bounded-teardown tests report their reason that way.</p>
 <h3 id="the-suites">The suites<a class="headerlink" href="#the-suites" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -531,6 +545,96 @@ USB-C / 12 V, or press the back-panel <strong>RESET</strong>. Confirm the box is
 (<code>ERROR_OPEN_FAILED</code>) from any application means the device cannot be opened — usually a handle not
 released by a force-killed process, or a wedged box.</p>
 <hr />
+<h2 id="4a-testing-what-the-code-says-to-the-hardware">4a. Testing what the code SAYS TO THE HARDWARE<a class="headerlink" href="#4a-testing-what-the-code-says-to-the-hardware" title="Permanent link">#</a></h2>
+<p>On 2026-08-24 the C++ suite reported <strong>17/17 green</strong> while two real defects sat in the OneBox path.
+The operator's reaction was the correct one: <em>"maybe the C++ end shouldn't be 17/17 green if the way
+it was configured was not accurate with regards to the sequence of calls."</em></p>
+<p>The reason was structural, not a lapse in effort. <strong>No test target linked a single line of
+<code>OneBoxSource.cpp</code> or <code>NpInterface.cpp</code>.</strong> Of everything under <code>src/modules/neuropixels/</code>, exactly one
+file was compiled into a test: <code>NpxChannelMap.cpp</code>, 36 lines of arithmetic. So 17/17 was a true
+statement about 17 things, none of which was the hardware sequence. Adding more tests of the same
+shape would not have changed that.</p>
+<p>The two defects also share a property that defeats ordinary unit tests: <strong>neither is about a value a
+function returns.</strong></p>
+<table>
+<thead>
+<tr>
+<th>defect</th>
+<th>what was wrong</th>
+<th>what every test saw</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>issue #49</td>
+<td><code>arm()</code> never called <code>np_DAC_enableOutput</code>, so the DAC drove nothing</td>
+<td>every call returned SUCCESS</td>
+</tr>
+<tr>
+<td>the follow-up regression</td>
+<td><code>stop()</code> made two UNBOUNDED vendor calls, on every disconnect, for a feature nobody used</td>
+<td>every call returned SUCCESS</td>
+</tr>
+<tr>
+<td>the trigger routing</td>
+<td><code>SM_Output_AcquisitionTrigger</code> was never routed; we relied on an undocumented FPGA default</td>
+<td>every call returned SUCCESS</td>
+</tr>
+</tbody>
+</table>
+<p>Three defects, one signature: <strong>acquisition that returns SUCCESS from every call and delivers
+nothing.</strong> The observable is the <em>sequence</em>, not the return codes.</p>
+<h3 id="the-seam-a-link-time-fake-of-the-vendor-api">The seam: a link-time fake of the vendor API<a class="headerlink" href="#the-seam-a-link-time-fake-of-the-vendor-api" title="Permanent link">#</a></h3>
+<p><code>tests/fake_neuropix_api.{hpp,cpp}</code> defines the <code>np_*</code> symbols itself. A test target links <strong>it</strong>
+instead of <code>NeuropixAPI_x64_4_1_3.lib</code>, and every vendor call the production code makes is recorded
+in order, with its arguments.</p>
+<pre><code class="language-cmake">spikespeak_test(test_oneboxwaveplayer SOURCES test_oneboxwaveplayer.cpp
+                                              fake_neuropix_api.cpp
+                                              ${CMAKE_SOURCE_DIR}/src/modules/neuropixels/OneBoxWavePlayer.cpp
+                                              ${CMAKE_SOURCE_DIR}/src/core/ConnectAttemptLog.cpp
+                                              LIBS ryml)
+</code></pre>
+<p>Why link-time and not an injected interface:</p>
+<ul>
+<li><strong>The production code compiles unmodified.</strong> No <code>#ifdef TEST</code>, no virtual dispatch, no function
+  pointer table — and therefore nothing whatsoever added to the 30 kHz acquisition path. What the
+  test exercises is byte-for-byte what ships.</li>
+<li><strong>It cannot be bypassed.</strong> A function-pointer table can be sidestepped by a future direct
+  <code>Neuropixels::np_x()</code> call, and the test then goes quietly blind. The fake <em>is</em> the symbol.</li>
+<li><strong>A new hardware interaction has to be acknowledged.</strong> Adding a vendor call to a tested file fails
+  to LINK until the symbol is added to the fake.</li>
+<li>It is not a new pattern here: <code>external/neuropixels/api/stubs/</code> already does this for the
+  non-Windows build.</li>
+</ul>
+<p>The fake can also <strong>stop answering</strong> — <code>FakeNpx::setBlocking("np_x", 6000)</code> — which is how a wedged
+basestation is simulated with no hardware:</p>
+<pre><code>QWARN : [Npx] ERROR: np_DAC_enableOutput(DAC0, false) did not return within 3000 ms...
+QWARN : [Npx] Skipping np_waveplayer_stop -- the basestation has already stopped responding.
+PASS  : stopSurvivesAWedgedBasestation()
+</code></pre>
+<p>That is the bounded-teardown protection being <em>demonstrated</em>, not merely believed. Its whole purpose
+is that a dead basestation cannot hang shutdown — and on a OneBox a force-kill costs a physical
+power-cycle, because the FT601 handle is only released on a clean exit.</p>
+<h3 id="two-traps-in-tests-of-this-kind">Two traps in tests of this kind<a class="headerlink" href="#two-traps-in-tests-of-this-kind" title="Permanent link">#</a></h3>
+<p><strong>Vacuous ordering.</strong> <code>QVERIFY(indexOf("a") &lt; indexOf("b"))</code> passes trivially if NEITHER call
+happened — both are <code>-1</code>. Always assert the anchors exist first:</p>
+<pre><code class="language-cpp">QVERIFY(enable &gt;= 0 &amp;&amp; arm &gt;= 0);
+QVERIFY(enable &lt; arm);
+</code></pre>
+<p><strong>Golden-sequence snapshots.</strong> "Assert the recorded log equals these 41 calls in this order" is one
+line and would have caught all three defects. Do not. It goes red on every legitimate edit, so it
+gets re-baselined by whoever is in a hurry, and after two re-baselines it asserts nothing. Only
+<em>relational</em> invariants belong here: X before Y, X present, X never present, teardown terminates.</p>
+<h3 id="where-this-stops-honestly">Where this stops, honestly<a class="headerlink" href="#where-this-stops-honestly" title="Permanent link">#</a></h3>
+<p><code>test_oneboxwaveplayer</code> covers the WavePlayer's own sequence behaviourally, and the trigger-routing
+helper behaviourally. But <strong>"nobody calls the helper" — the defect that actually shipped — is covered
+only by a source-text guard</strong>, because linking <code>OneBoxSource.cpp</code> into a test means also linking
+<code>NpInterface.cpp</code> and defining 38 vendor symbols. The guard is labelled as one in the test file.</p>
+<p>That larger tier is worth doing and is <strong>not blocked on the <code>SpikesPeakCore</code> extraction</strong>, contrary
+to the note at the bottom of <code>tests/CMakeLists.txt</code>: that note is about <code>src/core/Utils.cpp</code>, the
+composition root. <code>OneBoxSource.cpp</code>'s only <code>Utils::</code> reference is <code>toStdString</code>, which is inline in
+the header. The link closure is <code>NpInterface.cpp</code> plus a few small files.</p>
+<hr />
 <h2 id="5-what-is-worth-a-test-here">5. What is worth a test here<a class="headerlink" href="#5-what-is-worth-a-test-here" title="Permanent link">#</a></h2>
 <p>Prefer components that are pure, on the data path, or encode a rule that has bitten us:</p>
 <ul>
@@ -559,6 +663,7 @@ setter set something.</p>
 <ul>
 <li><a href="#why-this-exists">Why this exists</a></li>
 <li><a href="#1-running-the-tests">1. Running the tests</a><ul>
+<li><a href="#reading-a-red-suite">Reading a red suite</a></li>
 <li><a href="#the-suites">The suites</a></li>
 </ul>
 </li>
@@ -575,6 +680,12 @@ setter set something.</p>
 <li><a href="#step-3-ask-what-the-counters-actually-count">Step 3 — Ask what the counters actually count</a></li>
 <li><a href="#step-4-read-what-the-hardware-is-actually-being-told">Step 4 — Read what the hardware is actually being told</a></li>
 <li><a href="#step-5-if-the-rig-is-wedged">Step 5 — If the rig is wedged</a></li>
+</ul>
+</li>
+<li><a href="#4a-testing-what-the-code-says-to-the-hardware">4a. Testing what the code SAYS TO THE HARDWARE</a><ul>
+<li><a href="#the-seam-a-link-time-fake-of-the-vendor-api">The seam: a link-time fake of the vendor API</a></li>
+<li><a href="#two-traps-in-tests-of-this-kind">Two traps in tests of this kind</a></li>
+<li><a href="#where-this-stops-honestly">Where this stops, honestly</a></li>
 </ul>
 </li>
 <li><a href="#5-what-is-worth-a-test-here">5. What is worth a test here</a></li>

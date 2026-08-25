@@ -312,6 +312,20 @@ produces ~19 detections in 50 s, reliably. Any "is the detector broken?" questio
 first. That is how a hardware failure was separated from a same-evening code change, rather than by
 argument.</p>
 <hr />
+<h2 id="5b-a-green-suite-is-a-statement-about-what-it-links">5b. A green suite is a statement about what it LINKS<a class="headerlink" href="#5b-a-green-suite-is-a-statement-about-what-it-links" title="Permanent link">#</a></h2>
+<p>On 2026-08-24 the C++ suite reported <strong>17/17 green</strong> while three real defects sat in the OneBox path.
+Not because the tests were weak, but because <strong>no test target linked a single line of
+<code>OneBoxSource.cpp</code> or <code>NpInterface.cpp</code>.</strong> Of everything under <code>src/modules/neuropixels/</code>, exactly one
+file was compiled into a test: <code>NpxChannelMap.cpp</code>, 36 lines of arithmetic.</p>
+<p>So before trusting a green light, ask what it covers. <code>grep spikespeak_test tests/CMakeLists.txt</code>
+lists every production file any test links; anything absent from that list is untested regardless of
+how many suites pass.</p>
+<p><strong>And the defects that hide there share a signature.</strong> All three were of the form <em>"every vendor call
+returns SUCCESS and nothing happens"</em> -- a missing <code>DAC_enableOutput</code>, an unrouted acquisition
+trigger, an unbounded teardown call. None is observable from a return value, so no amount of
+value-checking would have found any of them. The observable is the <strong>sequence of calls</strong>, which is
+why <code>tests/fake_neuropix_api.cpp</code> exists. See <code>Testing.md</code> §4a.</p>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -336,6 +350,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#4-testing">4. Testing</a></li>
 <li><a href="#5-windows-the-shell-and-the-build">5. Windows, the shell, and the build</a></li>
 <li><a href="#5a-hardware-and-telling-it-apart-from-your-own-bug">5a. Hardware, and telling it apart from your own bug</a></li>
+<li><a href="#5b-a-green-suite-is-a-statement-about-what-it-links">5b. A green suite is a statement about what it LINKS</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

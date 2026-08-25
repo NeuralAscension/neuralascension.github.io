@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Ripple-detection GUI — design, WS contract, and integration plan</span>
+  <span class="crumb">Developer Docs / Ripple detection and closed loop / Ripple-detection GUI — design, WS contract, and integration plan</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -30,47 +30,70 @@
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<details class="navgroup"><summary>Start here<span class="navcount">3</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
-<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
-<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="ControlCLI.html">Control CLI — headless command interface</a>
-<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a class="active" href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
-<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
-<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="Logging.html">Logging — format, severity, and what to write</a>
-<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
-<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a class="active" href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
-<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
-<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
-<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -363,6 +386,10 @@ arm/disarm to <code>setStimArmed</code> on the main thread + broadcast armed-by-
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
 /* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
    panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
 document.querySelectorAll(".tabs").forEach(function(t){

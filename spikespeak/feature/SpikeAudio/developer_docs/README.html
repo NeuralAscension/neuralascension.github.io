@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / SpikesPeak — Developer Docs</span>
+  <span class="crumb">Developer Docs / Start here / SpikesPeak — Developer Docs</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -30,47 +30,70 @@
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<details class="navgroup" open><summary>Start here<span class="navcount">3</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
-<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
-<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="ControlCLI.html">Control CLI — headless command interface</a>
-<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
-<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
-<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="Logging.html">Logging — format, severity, and what to write</a>
-<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
-<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
-<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
-<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
-<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -171,7 +194,24 @@ characteristic failure mode on this repo.</p>
   <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
 </ul>
 <h2 id="what-is-here">What is here<a class="headerlink" href="#what-is-here" title="Permanent link">#</a></h2>
-<p><strong>Architecture &amp; contracts</strong> — read before touching the core</p>
+<p>Forty-odd pages, in eleven groups. <strong>The generated book uses the same groups, in the same order</strong>, as
+the collapsible sections of its left nav (<code>scripts/build_docs.py</code> → <code>GROUPS</code>). If you add a doc, or move
+one between groups, do it in <strong>both</strong> places — the map a human reads and the map the book renders are no
+use to anyone once they disagree. The build prints a warning naming any page that is in neither.</p>
+<p><a href="#start-here">Start here</a> ·
+<a href="#architecture-and-contracts">Architecture and contracts</a> ·
+<a href="#extending-the-stack">Extending the stack</a> ·
+<a href="#probes-and-daq-hardware">Probes and DAQ hardware</a> ·
+<a href="#signal-processing">Signal processing</a> ·
+<a href="#ripple-detection-and-closed-loop">Ripple detection and closed loop</a> ·
+<a href="#live-view-and-gui">Live view and GUI</a> ·
+<a href="#recording-and-headless-control">Recording and headless control</a> ·
+<a href="#testing">Testing</a> ·
+<a href="#working-on-this-repo">Working on this repo</a> ·
+<a href="#plans-and-open-briefs">Plans and open briefs</a> ·
+<a href="#elsewhere-in-this-book">Elsewhere in this book</a></p>
+<h3 id="start-here">Start here<a class="headerlink" href="#start-here" title="Permanent link">#</a></h3>
+<p>Read before touching the core. (In the book this group also holds <em>this</em> page.)</p>
 <table>
 <thead>
 <tr>
@@ -188,21 +228,32 @@ characteristic failure mode on this repo.</p>
 <td><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></td>
 <td>Understand the whole system: hosting model, threading, data plane, QWebChannel surface, per-module command model (Option A).</td>
 </tr>
+</tbody>
+</table>
+<h3 id="architecture-and-contracts">Architecture and contracts<a class="headerlink" href="#architecture-and-contracts" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a></td>
 <td>Frontend to backend commands: the per-module <code>Q_INVOKABLE</code>/QWebChannel standard, examples, the thread-safety rule, and the recipe to add a command.</td>
 </tr>
 <tr>
-<td><a href="Logging.html"><code>Logging.md</code></a></td>
-<td><strong>Log format and severity (issue #2):</strong> what every line carries (time, level, thread, file:line), why severity belongs in the level and not the message text, and what not to log.</td>
-</tr>
-<tr>
 <td><a href="Fdir.html"><code>Fdir.md</code></a></td>
 <td><strong>Fault detection, reporting, valid state + whole-system monitoring (issues #11/#16/#18):</strong> the confirmed-not-requested rule, the generic processor fault relay, the startup watchdog, ErrorLog, the <code>getSystemState</code> snapshot and the processor liveness monitor.</td>
 </tr>
+<tr>
+<td><a href="Logging.html"><code>Logging.md</code></a></td>
+<td><strong>Log format and severity (issue #2):</strong> what every line carries (time, level, thread, file:line), why severity belongs in the level and not the message text, and what not to log.</td>
+</tr>
 </tbody>
 </table>
-<p><strong>Extending the stack</strong></p>
+<h3 id="extending-the-stack">Extending the stack<a class="headerlink" href="#extending-the-stack" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -225,7 +276,101 @@ characteristic failure mode on this repo.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Live view &amp; rendering</strong></p>
+<h3 id="probes-and-daq-hardware">Probes and DAQ hardware<a class="headerlink" href="#probes-and-daq-hardware" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a></td>
+<td>NP2.0 multishank: geometry, mapping, what is wired vs stubbed.</td>
+</tr>
+<tr>
+<td><a href="NiDaq.html"><code>NiDaq.md</code></a></td>
+<td><strong>NI-DAQ streaming, configs, the probe codependence, the stuck-reservation failure mode, and the 2026-07 robustness fixes.</strong></td>
+</tr>
+<tr>
+<td><a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a></td>
+<td><strong>Stopping before issue #54</strong> — the failed-connect tally, why the threshold is two and never resets, the blocking operator dialog, how restart actually relaunches, and the QThread teardown crash this work uncovered.</td>
+</tr>
+<tr>
+<td><a href="OpenEphys-NP2-Reference.html"><code>OpenEphys-NP2-Reference.md</code></a></td>
+<td>How the vendored OpenEphys plugin drives 2.0 multishank (reference).</td>
+</tr>
+<tr>
+<td><a href="OpenEphys-OneBox-Reference.html"><code>OpenEphys-OneBox-Reference.md</code></a></td>
+<td>How the vendored OpenEphys plugin drives the <strong>OneBox</strong> USB basestation — a digest cross-checked symbol-by-symbol against the vendored v4 header. Supporting reference for <a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a>, which is the authority.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="signal-processing">Signal processing<a class="headerlink" href="#signal-processing" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="DerivedBands.html"><code>DerivedBands.md</code></a></td>
+<td><strong>The LFP and spike bands derived from one raw stream</strong> — one shared AVX2 band processor, the 300–6000 Hz Bessel coefficients, the measured CPU cost of each band, the enable/disable switches, and how a float band reaches the display at all.</td>
+</tr>
+<tr>
+<td><a href="FilterDebugging.html"><code>FilterDebugging.md</code></a></td>
+<td>The per-sample filter <code>.bin</code> dumps, the two compile-time kill switches (<code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code>, <code>DEBUGGING_LFP_FILTERS</code> — both ship <strong>false</strong>), the dump formats, and how the filters were <strong>validated</strong> to float32 rounding.</td>
+</tr>
+<tr>
+<td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
+<td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modelled on Trodes.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="ripple-detection-and-closed-loop">Ripple detection and closed loop<a class="headerlink" href="#ripple-detection-and-closed-loop" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="RippleDetection.html"><code>RippleDetection.md</code></a></td>
+<td>The SWR detection algorithm + the NP1 vs NP2 detector input paths (native LFP vs derived <code>data.lfp</code>).</td>
+</tr>
+<tr>
+<td><a href="RippleGui.html"><code>RippleGui.md</code></a></td>
+<td>The GUI-driven ripple module (dock, per-channel controls, <strong>editable stim pulse params</strong>, the binary command frame).</td>
+</tr>
+<tr>
+<td><a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a></td>
+<td>The detector threading + why the stim socket/ACK path is thread-safe.</td>
+</tr>
+<tr>
+<td><a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a></td>
+<td><strong>The offline-analysis + sync canon.</strong> Reproduce the NP2 detector EXACTLY from disk (Bessel <code>data.lfp</code>), the closed-loop <strong>latency method</strong> (pulse-anchored + burst-anchored cross-check), the <strong>NI-DAQ↔NPX sync fit and all three clock/sync bugs</strong> (clock-scale ramp + two off-by-ones), and how to read a detection/pulse <strong>count mismatch</strong>. Read before trusting a recorded latency.</td>
+</tr>
+<tr>
+<td><a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a></td>
+<td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag — now on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>). Numbers live in the Hardware Results page.</td>
+</tr>
+</tbody>
+</table>
+<p>The closed loop <strong>end to end</strong> (ripple → UDP <code>fire</code> → Pi → AM 2300 → the fired-ACK → red LED) and its
+hardware verification are recorded in <a href="../SpikesPeak_Status.html"><code>../SpikesPeak_Status.md</code></a> §21–§25; the old
+<code>StimClosedLoop_Status.md</code> snapshot now lives in <a href="archive/README.html"><code>archive/</code></a>. Pi <strong>setup</strong> is in
+<code>raspberrypi_pulsegenerator/README.md</code>.</p>
+<p><strong>Hardware test results</strong> live next to the data in <code>RecordingTests/</code> and are in this book under
+<strong>"Hardware Results"</strong>: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>CLOSED_LOOP_LATENCY.md</code></a> — one
+consolidated, <strong>tabbed</strong> page (NP1.0 / NP2.0) with the full quorum × delivery latency matrix at 1000
+detections per cell, detection-integrity and sync tables, the stage decomposition, and the cross-probe
+comparison. Both probes run the <strong>identical</strong> test matrix; the tabs show the parallel results.</p>
+<h3 id="live-view-and-gui">Live view and GUI<a class="headerlink" href="#live-view-and-gui" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -248,30 +393,7 @@ characteristic failure mode on this repo.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Neuropixels &amp; NI-DAQ</strong></p>
-<table>
-<thead>
-<tr>
-<th>Doc</th>
-<th>Read it to…</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a></td>
-<td>NP2.0 multishank: geometry, mapping, what is wired vs stubbed.</td>
-</tr>
-<tr>
-<td><a href="OpenEphys-NP2-Reference.html"><code>OpenEphys-NP2-Reference.md</code></a></td>
-<td>How the vendored OpenEphys plugin drives 2.0 multishank (reference).</td>
-</tr>
-<tr>
-<td><a href="NiDaq.html"><code>NiDaq.md</code></a></td>
-<td><strong>NI-DAQ streaming, configs, the probe codependence, the stuck-reservation failure mode, and the 2026-07 robustness fixes.</strong></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Recording</strong></p>
+<h3 id="recording-and-headless-control">Recording and headless control<a class="headerlink" href="#recording-and-headless-control" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -288,65 +410,13 @@ characteristic failure mode on this repo.</p>
 <td><a href="RecordingTest.html"><code>RecordingTest.md</code></a></td>
 <td>The headless "Recording Test" runbook (NP1.0 + NP2.0).</td>
 </tr>
-</tbody>
-</table>
-<p><strong>Ripple detection &amp; closed-loop stimulation</strong></p>
-<table>
-<thead>
 <tr>
-<th>Doc</th>
-<th>Read it to…</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="RippleDetection.html"><code>RippleDetection.md</code></a></td>
-<td>The SWR detection algorithm + the NP1 vs NP2 detector input paths (native LFP vs derived <code>data.lfp</code>).</td>
-</tr>
-<tr>
-<td><a href="RippleGui.html"><code>RippleGui.md</code></a></td>
-<td>The GUI-driven ripple module (dock, per-channel controls, <strong>editable stim pulse params</strong>, the binary command frame).</td>
-</tr>
-<tr>
-<td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
-<td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modelled on Trodes.</td>
-</tr>
-<tr>
-<td><a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a></td>
-<td><strong>Stopping before issue #54</strong> — the failed-connect tally, why the threshold is two and never resets, the blocking operator dialog, how restart actually relaunches, and the QThread teardown crash this work uncovered.</td>
-</tr>
-<tr>
-<td><a href="DerivedBands.html"><code>DerivedBands.md</code></a></td>
-<td><strong>The LFP and spike bands derived from one raw stream</strong> — one shared AVX2 band processor, the 300–6000 Hz Bessel coefficients, the measured CPU cost of each band, the enable/disable switches, and how a float band reaches the display at all.</td>
-</tr>
-<tr>
-<td><a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a></td>
-<td>The detector threading + why the stim socket/ACK path is thread-safe.</td>
-</tr>
-<tr>
-<td><a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a></td>
-<td><strong>The offline-analysis + sync canon.</strong> Reproduce the NP2 detector EXACTLY from disk (Bessel <code>data.lfp</code>), the closed-loop <strong>latency method</strong> (pulse-anchored + burst-anchored cross-check), the <strong>NI-DAQ↔NPX sync fit and all three clock/sync bugs</strong> (clock-scale ramp + two off-by-ones), and how to read a detection/pulse <strong>count mismatch</strong>. Read before trusting a recorded latency.</td>
-</tr>
-<tr>
-<td><a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a></td>
-<td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag — now on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>). Numbers live in the Hardware Results page.</td>
-</tr>
-<tr>
-<td><a href="FilterDebugging.html"><code>FilterDebugging.md</code></a></td>
-<td>The per-sample filter <code>.bin</code> dumps, the two compile-time kill switches (<code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code>, <code>DEBUGGING_LFP_FILTERS</code> — both ship <strong>false</strong>), the dump formats, and how the filters were <strong>validated</strong> to float32 rounding.</td>
+<td><a href="ControlCLI.html"><code>ControlCLI.md</code></a></td>
+<td><strong>Both headless command interfaces:</strong> the built-in <strong>console</strong> commands (<code>connect</code>/<code>play</code>/<code>pause</code>/<code>disconnect</code>/<code>quit</code> — issue #6, Windows-confirmed) and the <strong>WebSocket CLI</strong> <code>python/spikespeak_cli.py</code> (<code>list</code>/<code>select</code>/<code>record</code>/…), with a tutorial + worked examples.</td>
 </tr>
 </tbody>
 </table>
-<p>The closed loop <strong>end to end</strong> (ripple → UDP <code>fire</code> → Pi → AM 2300 → the fired-ACK → red LED) and its
-hardware verification are recorded in <a href="../SpikesPeak_Status.html"><code>../SpikesPeak_Status.md</code></a> §21–§25; the old
-<code>StimClosedLoop_Status.md</code> snapshot now lives in <a href="archive/README.html"><code>archive/</code></a>. Pi <strong>setup</strong> is in
-<code>raspberrypi_pulsegenerator/README.md</code>.</p>
-<p><strong>Hardware test results</strong> live next to the data in <code>RecordingTests/</code> and are in this book under
-<strong>"Hardware Results"</strong>: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>CLOSED_LOOP_LATENCY.md</code></a> — one
-consolidated, <strong>tabbed</strong> page (NP1.0 / NP2.0) with the full quorum × delivery latency matrix at 1000
-detections per cell, detection-integrity and sync tables, the stage decomposition, and the cross-probe
-comparison. Both probes run the <strong>identical</strong> test matrix; the tabs show the parallel results.</p>
-<p><strong>Testing &amp; tooling</strong></p>
+<h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -364,78 +434,12 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td><strong>What the GUI tests actually cover</strong> — the 16-cell layout matrix (columns × ripple dock × orientation) with screenshots, every stream option's expected units/labels/depth, the GUI→backend parameter round trip, and an explicit list of what is NOT covered yet.</td>
 </tr>
 <tr>
-<td><a href="NextSession_SecondMachine_OneBox.html"><code>NextSession_SecondMachine_OneBox.md</code></a></td>
-<td><strong>Brief for an agent standing this up on a SECOND Windows machine with a OneBox and no PXIe</strong> — prerequisites and every known hardcoded path, the build recipe, the definition of green, which test is expected to be red and why, and the OneBox verification order. Tracking issue #52.</td>
-</tr>
-<tr>
-<td><a href="NextTask_DocsRefresh.html"><code>NextTask_DocsRefresh.md</code></a></td>
-<td><strong>IN PROGRESS — the documentation refresh.</strong> Which screenshots have been recaptured on the real rig, which are still stale and exactly what each one needs (a ripple signal, the NP2 probe, a play file, NI-DAQ), which prose has been corrected and what is still wrong, and the traps that waste a recapture pass.</td>
-</tr>
-<tr>
 <td><a href="GuiTesting.html"><code>GuiTesting.md</code></a></td>
 <td>Drive + screenshot the browser GUI headlessly (CDP harness), UI element ids, teardown discipline, the 9/9 smoke test.</td>
 </tr>
-<tr>
-<td><a href="ControlCLI.html"><code>ControlCLI.md</code></a></td>
-<td><strong>Both headless command interfaces:</strong> the built-in <strong>console</strong> commands (<code>connect</code>/<code>play</code>/<code>pause</code>/<code>disconnect</code>/<code>quit</code> — issue #6, Windows-confirmed) and the <strong>WebSocket CLI</strong> <code>python/spikespeak_cli.py</code> (<code>list</code>/<code>select</code>/<code>record</code>/…), with a tutorial + worked examples.</td>
-</tr>
-<tr>
-<td><a href="UsingAgy.html"><code>UsingAgy.md</code></a></td>
-<td>The Claude-conducts / agy-executes delegation workflow used on this repo.</td>
-</tr>
 </tbody>
 </table>
-<p><strong>Cross-platform</strong></p>
-<table>
-<thead>
-<tr>
-<th>Doc</th>
-<th>Read it to…</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="SimDataLinux.html"><code>SimDataLinux.md</code></a></td>
-<td>Make the simulated NP1.0 source fully work on Linux (no hardware): the spec, locked decisions, phased plan.</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Open task briefs</strong> (delete/archive them once done — see the archive policy below)</p>
-<table>
-<thead>
-<tr>
-<th>Doc</th>
-<th>Read it to…</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><a href="NextTask_OneBoxLatencyMatrix.html"><code>NextTask_OneBoxLatencyMatrix.md</code></a></td>
-<td><strong>Ready to run</strong> — the five remaining closed-loop latency cells for NP2.0 on the OneBox (then NP1.0): exact commands, the OneBox-specific analyser flags, and the stim ARM-vs-GATE fix that a first attempt tripped over.</td>
-</tr>
-<tr>
-<td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
-<td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
-</tr>
-<tr>
-<td><a href="NextTask_CommandEventBus.html"><code>NextTask_CommandEventBus.md</code></a></td>
-<td>Open design brief — the <strong>config-declared, runtime-modifiable, unified command <em>and</em> event subscription bus</strong> (off the hot path). The four mechanisms today, multiple solution options, a recommended <code>MessageBus</code> plan + phased steps + a measured validation. Closes the retired <code>todo.txt</code> items 5–6 / Status §31.</td>
-</tr>
-<tr>
-<td><a href="NextTask_SourceArchitecture.html"><code>NextTask_SourceArchitecture.md</code></a></td>
-<td>Open design brief — <strong>reorganizing "source options"</strong>: taming the 23-config explosion + the dual picker, and supporting arbitrary NPX simulation, NeuroNexus/Intan probes, and <strong>replay-a-recording-by-hitting-Play</strong>. Current-state map + four options + a phased plan. Planning only.</td>
-</tr>
-<tr>
-<td><a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a></td>
-<td><strong>Implementation plan for Neuropixels OneBox</strong> (USB basestation) — verified v4 API deltas vs PXI (platform + <code>mapBS</code> + FTDI check), reuse of the probe workers/IMRO, the new 12-ch ADC stream, and the DAC/WavePlayer native closed-loop stim output. One new file pair (<code>OneBoxSource.*</code>) + a thin virtual seam; phased 0→5. Includes the exact FTDI D3XX 1.3.0.10 driver + link.</td>
-</tr>
-<tr>
-<td><a href="NextTask_OneBoxClosedLoopLatency.html"><code>NextTask_OneBoxClosedLoopLatency.md</code></a></td>
-<td><strong>NEXT UP</strong> — closed-loop latency recordings + measurements with the probe on the <strong>OneBox</strong>, NP1.0 AND NP2.0, on the synthetic ripple signal. The OneBox is a different transport (USB3/FTDI) from the PXIe rig the existing sub-ms numbers came from, so the cost is an open question. Resolve the stim-capture sync approach first (NI-DAQ vs the OneBox's own ADC).</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Meta</strong></p>
+<h3 id="working-on-this-repo">Working on this repo<a class="headerlink" href="#working-on-this-repo" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -446,15 +450,79 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tbody>
 <tr>
 <td><a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a></td>
-<td>Regenerate this docs <strong>book</strong> (<code>python scripts/build_docs.py</code>; the only dependency is <code>markdown</code>).</td>
+<td>Regenerate this docs <strong>book</strong> (<code>python scripts/build_docs.py</code>; the only dependency is <code>markdown</code>), and how the nav grouping is defined.</td>
 </tr>
+<tr>
+<td><a href="UsingAgy.html"><code>UsingAgy.md</code></a></td>
+<td>The Claude-conducts / agy-executes delegation workflow used on this repo.</td>
+</tr>
+<tr>
+<td><a href="SimDataLinux.html"><code>SimDataLinux.md</code></a></td>
+<td>Make the simulated NP1.0 source fully work on Linux (no hardware): the spec, locked decisions, phased plan.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="plans-and-open-briefs">Plans and open briefs<a class="headerlink" href="#plans-and-open-briefs" title="Permanent link">#</a></h3>
+<p>Transient by design — delete or archive each one once it is done (see the archive policy below).</p>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="NextTask_OneBoxClosedLoopLatency.html"><code>NextTask_OneBoxClosedLoopLatency.md</code></a></td>
+<td><strong>NEXT UP</strong> — closed-loop latency recordings + measurements with the probe on the <strong>OneBox</strong>, NP1.0 AND NP2.0, on the synthetic ripple signal. The OneBox is a different transport (USB3/FTDI) from the PXIe rig the existing sub-ms numbers came from, so the cost is an open question. Resolve the stim-capture sync approach first (NI-DAQ vs the OneBox's own ADC).</td>
+</tr>
+<tr>
+<td><a href="NextTask_OneBoxLatencyMatrix.html"><code>NextTask_OneBoxLatencyMatrix.md</code></a></td>
+<td><strong>Ready to run</strong> — the five remaining closed-loop latency cells for NP2.0 on the OneBox (then NP1.0): exact commands, the OneBox-specific analyser flags, and the stim ARM-vs-GATE fix that a first attempt tripped over.</td>
+</tr>
+<tr>
+<td><a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a></td>
+<td><strong>Implementation plan for Neuropixels OneBox</strong> (USB basestation) — verified v4 API deltas vs PXI (platform + <code>mapBS</code> + FTDI check), reuse of the probe workers/IMRO, the new 12-ch ADC stream, and the DAC/WavePlayer native closed-loop stim output. One new file pair (<code>OneBoxSource.*</code>) + a thin virtual seam; phased 0→5. Includes the exact FTDI D3XX 1.3.0.10 driver + link.</td>
+</tr>
+<tr>
+<td><a href="NextTask_SourceArchitecture.html"><code>NextTask_SourceArchitecture.md</code></a></td>
+<td>Open design brief — <strong>reorganizing "source options"</strong>: taming the 23-config explosion + the dual picker, and supporting arbitrary NPX simulation, NeuroNexus/Intan probes, and <strong>replay-a-recording-by-hitting-Play</strong>. Current-state map + four options + a phased plan. Planning only.</td>
+</tr>
+<tr>
+<td><a href="NextTask_CommandEventBus.html"><code>NextTask_CommandEventBus.md</code></a></td>
+<td>Open design brief — the <strong>config-declared, runtime-modifiable, unified command <em>and</em> event subscription bus</strong> (off the hot path). The four mechanisms today, multiple solution options, a recommended <code>MessageBus</code> plan + phased steps + a measured validation. Closes the retired <code>todo.txt</code> items 5–6 / Status §31.</td>
+</tr>
+<tr>
+<td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
+<td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
+</tr>
+<tr>
+<td><a href="NextTask_DocsRefresh.html"><code>NextTask_DocsRefresh.md</code></a></td>
+<td><strong>IN PROGRESS — the documentation refresh.</strong> Which screenshots have been recaptured on the real rig, which are still stale and exactly what each one needs (a ripple signal, the NP2 probe, a play file, NI-DAQ), which prose has been corrected and what is still wrong, and the traps that waste a recapture pass.</td>
+</tr>
+<tr>
+<td><a href="NextSession_SecondMachine_OneBox.html"><code>NextSession_SecondMachine_OneBox.md</code></a></td>
+<td><strong>Brief for an agent standing this up on a SECOND Windows machine with a OneBox and no PXIe</strong> — prerequisites and every known hardcoded path, the build recipe, the definition of green, which test is expected to be red and why, and the OneBox verification order. Tracking issue #52.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="elsewhere-in-this-book">Elsewhere in this book<a class="headerlink" href="#elsewhere-in-this-book" title="Permanent link">#</a></h3>
+<p>Not under <code>developer_docs/</code>, but part of the same book and reachable from its nav.</p>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Read it to…</th>
+</tr>
+</thead>
+<tbody>
 <tr>
 <td><a href="../SpikesPeak_Status.html"><code>../SpikesPeak_Status.md</code></a></td>
 <td><strong>The canonical running status log</strong> — start with its <strong>Session index</strong> for a dated, topic-tagged list of everything that happened (§21–§25 cover the 2026-07 closed-loop work). This is where "what happened when" lives.</td>
 </tr>
 <tr>
-<td><a href="archive/README.html"><code>archive/README.md</code></a></td>
-<td>Retired task briefs + superseded status snapshots, with a table of what replaced each — <strong>and how a returning collaborator should catch up</strong>.</td>
+<td><a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a></td>
+<td>The <strong>Hardware Results</strong> page — the measured closed-loop latency matrix on real NP1.0 and NP2.0 hardware.</td>
 </tr>
 <tr>
 <td><a href="../images/architecture_overview.html"><code>../images/architecture_overview.md</code></a></td>
@@ -463,6 +531,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="../user_docs/"><code>../user_docs/</code></a></td>
 <td>End-user GUI guide (connect + stream a probe, run ripple detection).</td>
+</tr>
+<tr>
+<td><a href="archive/README.html"><code>archive/README.md</code></a></td>
+<td>Retired task briefs + superseded status snapshots, with a table of what replaced each — <strong>and how a returning collaborator should catch up</strong>.</td>
 </tr>
 </tbody>
 </table>
@@ -522,9 +594,17 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
   <code>../SpikesPeak_Status.md</code> are running references, not snapshots — do not archive them. A <em>scoped</em> status
   snapshot (one effort, now finished) does get archived once its content is folded into
   <code>../SpikesPeak_Status.md</code> — that is what happened to <code>StimClosedLoop_Status.md</code> on 2026-07-20.</li>
-<li><strong>Rebuild the book after editing</strong> (<code>python scripts/build_docs.py</code>) so <code>docs_site/</code> matches the markdown.</li>
+<li><strong>A new doc goes in a group, in two places.</strong> Add it to the right table above <strong>and</strong> to <code>GROUPS</code> in
+  <code>scripts/build_docs.py</code> — they are the same list, and the build warns by name if you miss one. A doc
+  in neither still renders, under "Unsorted" at the bottom of the nav, which is where docs go to be
+  missed.</li>
+<li><strong>Keep spaced separators out of headings</strong> (<code>Scope — 2.0 only</code>, <code>Linux / simulated</code>). GitHub and the
+  book slugify those into <em>different</em> anchors, so a link to one works in exactly one of the two places
+  this file is read. Write <code>Scope: 2.0 only</code>. See <a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a>.</li>
+<li><strong>Rebuild the book after editing</strong> (<code>python scripts/build_docs.py</code>) so <code>docs_site/</code> matches the
+  markdown, and read its last line — <code>… N links, 0 broken</code>, with no <code>WARNING:</code> above it.</li>
 </ul>
-<h2 id="operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo — gotchas that cost agents time (read first)<a class="headerlink" href="#operating-this-repo-gotchas-that-cost-agents-time-read-first" title="Permanent link">#</a></h2>
+<h2 id="operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo: gotchas that cost agents time (read first)<a class="headerlink" href="#operating-this-repo-gotchas-that-cost-agents-time-read-first" title="Permanent link">#</a></h2>
 <p><strong>Rebuilding:</strong> <code>rebuild.bat</code> in the repo root. Double-click it (the window stays open so you can read
 the result) or run it from a terminal. It finds Visual Studio via <code>vswhere</code> and the <code>build-*Release</code>
 tree itself, and <strong>exits with the build's real status</strong> so a script can branch on it -- pass
@@ -901,11 +981,23 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
 </ul>
 </li>
 <li><a href="#what-is-here">What is here</a><ul>
+<li><a href="#start-here">Start here</a></li>
+<li><a href="#architecture-and-contracts">Architecture and contracts</a></li>
+<li><a href="#extending-the-stack">Extending the stack</a></li>
+<li><a href="#probes-and-daq-hardware">Probes and DAQ hardware</a></li>
+<li><a href="#signal-processing">Signal processing</a></li>
+<li><a href="#ripple-detection-and-closed-loop">Ripple detection and closed loop</a></li>
+<li><a href="#live-view-and-gui">Live view and GUI</a></li>
+<li><a href="#recording-and-headless-control">Recording and headless control</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#working-on-this-repo">Working on this repo</a></li>
+<li><a href="#plans-and-open-briefs">Plans and open briefs</a></li>
+<li><a href="#elsewhere-in-this-book">Elsewhere in this book</a></li>
 <li><a href="#where-artifacts-belong-screenshots-figures-captures">Where artifacts belong (screenshots, figures, captures)</a></li>
 <li><a href="#doc-conventions-keep-this-book-small">Doc conventions (keep this book small)</a></li>
 </ul>
 </li>
-<li><a href="#operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo — gotchas that cost agents time (read first)</a></li>
+<li><a href="#operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo: gotchas that cost agents time (read first)</a></li>
 <li><a href="#60-second-orientation">60-second orientation</a></li>
 <li><a href="#the-golden-rules-do-not-fight-these">The golden rules (do not fight these)</a></li>
 <li><a href="#dependencies">Dependencies</a><ul>
@@ -926,6 +1018,10 @@ routing only — prefer <code>Q_INVOKABLE</code>). A new source/sink otherwise l
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
 /* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
    panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
 document.querySelectorAll(".tabs").forEach(function(t){

@@ -30,47 +30,70 @@
 <a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<details class="navgroup"><summary>Start here<span class="navcount">3</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
-<a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
-<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
 <a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
-<a href="developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
-<a href="developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
-<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
-<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
-<a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
-<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
-<a href="developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
-<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
-<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -4372,7 +4395,140 @@ item on #55.</p>
 <li><strong><a href="CLAUDE.html"><code>CLAUDE.md</code></a> gained "What this system is optimising for"</strong> — real time, minimal
   overhead, no new dependencies, nothing running that nobody asked for, and SciChart explicitly on
   notice for removal.</li>
-</ul></article>
+</ul>
+<hr />
+<h2 id="54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight">54. THE TEST SUITE GROWS TEETH, AND THE AUDIO FINDS ITS WAY OUT  (2026-08-24, overnight)<a class="headerlink" href="#54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight" title="Permanent link">#</a></h2>
+<p>Four operator instructions drove this, and each one turned into a defect rather than a feature:</p>
+<blockquote>
+<p>"for the GUI then it seems like you're not testing every possible case ... shouldn't you also add
+in error checks to the GUI testing suite? I realize this makes it run longer which is okay but be
+thorough."</p>
+<p>"there are typically going to be multiple audio output things available per computer ... the
+audioprocessor needs to be able to adapt to whatever the user changed the audioplayback output
+device to in real-time"</p>
+<p>"For Audio button just have the audio emoji makes it smaller. You probably need the 'bands' button
+and a drop down"</p>
+<p>"given that more things are added to the GUI the shrinking should set wider width limit probably
+to pass"</p>
+</blockquote>
+<h3 id="541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug">54.1 The width limit did not need widening — and finding that out found a bug<a class="headerlink" href="#541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug" title="Permanent link">#</a></h3>
+<p><code>toolbar_layout</code> ran only on the harness default, which is a <strong>1.0</strong> source. A 1.0 source has no
+derived bands, so the toolbar under test was missing the Bands button entirely: <strong>the 1080 px floor
+had been established against the fewest buttons the application can display.</strong> It now sweeps both
+toolbars:</p>
+<table>
+<thead>
+<tr>
+<th>toolbar</th>
+<th>modules</th>
+<th>folds into 1080 px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0 (light)</td>
+<td>ripple</td>
+<td>2 rows, <code>tb-peek-view</code> from 1280</td>
+</tr>
+<tr>
+<td>2.0 (heavy)</td>
+<td><strong>Bands</strong>, audio, ripple</td>
+<td>identical</td>
+</tr>
+</tbody>
+</table>
+<p>So the floor stays at 1080, measured rather than assumed — consolidating the two band buttons into
+one paid for the new one.</p>
+<p>That sweep printed which module buttons were present at each width, and the 1.0 row read
+<code>audio,ripple</code>. <strong>No shipped 1.0 profile declares <code>proc.audio</code>.</strong> The audio button had been on the
+toolbar of every profile ever selected, controlling a processor that was not on the graph — the
+identical defect §53.3 fixed for the band buttons, in a module nobody had re-checked. Two causes,
+both fixed: <code>getProcessorByName()</code> lazily CREATES, so the relay's non-null test was always true; and
+<code>AudioModule._build()</code> ran on <code>DOMContentLoaded</code> and showed its button regardless of any backend
+state. <code>isProvisioned()</code> now lives on <code>IProcessor</code> rather than on one subclass, so the next module
+cannot repeat it.</p>
+<h3 id="542-audio-now-actually-follows-the-output-device-you-choose">54.2 Audio now actually follows the output device you choose<a class="headerlink" href="#542-audio-now-actually-follows-the-output-device-you-choose" title="Permanent link">#</a></h3>
+<p>The operator's requirement was real-time adaptation. The reason it did not work is worth stating
+precisely, because it is not obvious:</p>
+<p><strong><code>Pa_GetDefaultOutputDevice()</code> returns a CONCRETE endpoint.</strong> Measured here: index 1,
+<em>"ASUS VE278 (NVIDIA High Definition Audio)"</em> via MME, on a machine reporting <strong>fourteen</strong> output
+devices across MME / DirectSound / WASAPI / WDM-KS. A stream opened on a concrete endpoint keeps
+playing to that endpoint forever, whatever the operator later selects in Windows.</p>
+<p>Index 0 on the same machine was <strong>"Microsoft Sound Mapper - Output"</strong> — the virtual endpoint that
+routes to whatever the current default is, and moves the instant it changes. So follow-the-default
+mode now opens the <strong>follower</strong> (<code>AudioWorker::findDefaultFollower()</code>), and adaptation costs nothing:
+no polling, no re-initialisation, no gap in the audio. Falls back to the plain default where no
+follower exists (macOS), and the match is by name, which is a heuristic and is documented as one.</p>
+<p>Also added: the panel enumerates every device with its host API and lets the operator pin one
+(<code>setDevice</code> on id <code>0x218</code>, <code>-1</code> to go back to following); a watchdog notices a stream whose device
+was unplugged, disabled or taken exclusively, and reopens on whatever the machine offers now — the
+same path that picks up speakers plugged in <em>after</em> the session started. The watchdog backs off to
+one attempt per 5 s when there is no device at all, because on a rack-mounted rig that branch is
+reached on every tick and re-enumerating means <code>Pa_Terminate()</code> + <code>Pa_Initialize()</code>.</p>
+<h3 id="543-three-toolbar-buttons-became-two">54.3 Three toolbar buttons became two<a class="headerlink" href="#543-three-toolbar-buttons-became-two" title="Permanent link">#</a></h3>
+<p>Audio is the glyph alone; LFP and Spike collapsed into one <strong>Bands</strong> button with a dropdown whose
+badge counts how many bands are <em>running</em>, not how many exist. It scales: a third derived band is
+another menu row rather than another permanent fixture on a bar with a hard width floor.</p>
+<h3 id="544-the-gui-suite-now-catches-what-it-could-not-see">54.4 The GUI suite now catches what it could not see<a class="headerlink" href="#544-the-gui-suite-now-catches-what-it-could-not-see" title="Permanent link">#</a></h3>
+<p><strong>Every test asserts the page threw nothing.</strong> <code>Gui.check_clean()</code> reads a collector installed via
+<code>Page.addScriptToEvaluateOnNewDocument</code> — in place before any application script runs — that records
+uncaught exceptions, unhandled rejections, failed resource loads and <code>console.error</code>. A GUI can look
+perfectly correct in a screenshot while throwing on every frame and not one layout assertion would
+notice. Collected in the page rather than off the CDP event stream, because <code>cdp.py</code>'s <code>send()</code> loops
+until it sees its own message id and discards everything else.</p>
+<p><strong>Three new suites</strong>, all hardware-free:</p>
+<table>
+<thead>
+<tr>
+<th>suite</th>
+<th>covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error_paths</code></td>
+<td>A refused select, a refused play, a source that cannot load, and controls that must be DISABLED rather than inert. The refused-select case is the regression test §53.6 shipped without.</td>
+</tr>
+<tr>
+<td><code>audio_panel</code></td>
+<td>Device enumeration, follow-the-default vs pinned, the picker round trip through the backend, threshold and mute. The panel had no coverage at all.</td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td>Arm to record to stop, and <strong>what reached the disk</strong> — non-zero <code>.bin</code> sizes and a sidecar whose <code>sample_rate_hz</code> is not 0 and whose <code>band</code> is not a filename. Recording is what this application exists to do and it had no GUI test.</td>
+</tr>
+</tbody>
+</table>
+<p><code>stream_options</code> also gained the <strong>2.0-on-OneBox</strong> profile — the closest simulated twin of the rig
+configuration in use, and the only shipped source that puts a non-384-wide stream (the 12-channel
+SDR ADC) beside a probe band.</p>
+<p>Every new assertion was proven able to fail by injecting the defect it exists to catch and watching
+it go red: the follower selection, the refused-select restore, the error collector, and the band
+write-slot fix from §53.5.</p>
+<h3 id="545-one-runner-one-page-an-eta">54.5 One runner, one page, an ETA<a class="headerlink" href="#545-one-runner-one-page-an-eta" title="Permanent link">#</a></h3>
+<p><code>python scripts/run_all_tests.py</code> runs both suites behind a live page: per-test bars with
+elapsed-vs-expected, an overall countdown, a streaming tail of the running test's output, and the
+time remaining in the tab title. The GUI suite used to print <strong>nothing</strong> until it had finished, so
+the honest answer to "how long until this is done" was "no idea", for eleven minutes, every time.</p>
+<p>Estimates come from what the tests actually took on this machine last time; progress is measured in
+TIME, not tests completed, because the GUI tests differ by 3x in duration. Standard library only —
+<code>http.server</code>, <code>threading</code>, <code>subprocess</code> — and the page is plain HTML/CSS/DOM with one fetch loop,
+per the dependency rule now written into CLAUDE.md.</p>
+<h3 id="546-a-risk-this-work-created-caught-before-it-reached-the-rig">54.6 A risk this work created, caught before it reached the rig<a class="headerlink" href="#546-a-risk-this-work-created-caught-before-it-reached-the-rig" title="Permanent link">#</a></h3>
+<p>Auto-provisioning <code>proc.audio</code> onto every probe profile made a latent bug reachable. <code>AudioWorker</code>
+returned from three paths -- no output device, <code>Pa_OpenStream</code> failed, <code>Pa_StartStream</code> failed --
+<strong>without emitting <code>sigAwStarted</code></strong>. <code>MainController</code> does not start the SOURCES until every
+processor has reported ready, so any of those three would have hung the start.</p>
+<p>Before this change only five profiles carried <code>proc.audio</code>, and on a machine where the device opens
+it never fired. After it, every probe profile carries it. On a rig, during an experiment, that
+surfaces as <em>"the probe will not start"</em> with the real cause being a sound device.</p>
+<p>All three paths now report started. Verified by forcing <code>Pa_OpenStream</code> to fail: the source still
+connects and streams (578 frames in 12 s, which is exactly one third of the 1734 measured with the
+bands on -- frames scale with active streams, and bands now default off).</p>
+<p>Found by reading the diff for what it had made reachable, not by a test. Worth saying plainly,
+because the tests added this same night would not have caught it: they all run on a machine whose
+audio device opens.</p>
+<p><strong>Green at the end of the night: 17/17 C++ suites, 10/10 GUI tests (~19 min).</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -4666,6 +4822,15 @@ item on #55.</p>
 <li><a href="#539-housekeeping-this-turned-up">53.9 Housekeeping this turned up</a></li>
 </ul>
 </li>
+<li><a href="#54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight">54. THE TEST SUITE GROWS TEETH, AND THE AUDIO FINDS ITS WAY OUT (2026-08-24, overnight)</a><ul>
+<li><a href="#541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug">54.1 The width limit did not need widening — and finding that out found a bug</a></li>
+<li><a href="#542-audio-now-actually-follows-the-output-device-you-choose">54.2 Audio now actually follows the output device you choose</a></li>
+<li><a href="#543-three-toolbar-buttons-became-two">54.3 Three toolbar buttons became two</a></li>
+<li><a href="#544-the-gui-suite-now-catches-what-it-could-not-see">54.4 The GUI suite now catches what it could not see</a></li>
+<li><a href="#545-one-runner-one-page-an-eta">54.5 One runner, one page, an ETA</a></li>
+<li><a href="#546-a-risk-this-work-created-caught-before-it-reached-the-rig">54.6 A risk this work created, caught before it reached the rig</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>
@@ -4673,6 +4838,10 @@ item on #55.</p>
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
 /* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
    panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
 document.querySelectorAll(".tabs").forEach(function(t){

@@ -146,7 +146,7 @@
 (<code>select → waitready → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → pause → disconnect → quit</code>),
 which drives the backend over the WebSocket; an open browser mirrors it live. See
 <a href="ControlCLI.html">ControlCLI.md</a>. To visualise a finished recording,
-<code>python examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
+<code>python python/examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
 <strong><code>channels.png</code></strong> (the recorded electrodes in µV) into the recording folder.</p>
 </blockquote>
 <p>Verify a file with <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels &lt;N&gt; --rate 30000</code>

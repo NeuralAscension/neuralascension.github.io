@@ -920,7 +920,7 @@ of delay from the Pi path while barely moving the DAC.</em></p>
   raising the playback rate.</li>
 </ul>
 <h3 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h3>
-<pre><code class="language-bash">python fair_ab.py 1000 11 2      # n per ordering, DAC channel, Pi channel
+<pre><code class="language-bash">python ripple_tools/fair_ab.py 1000 11 2      # n per ordering, DAC channel, Pi channel
 </code></pre>
 <p>Profile: <code>Npx2OneBoxAsap.yaml</code> plus <code>dac_trigger: true</code> and <code>dac_trigger_order: dac_first|stim_first</code>.
 Detector at z = 0 (the probe is in air; noise must cross constantly), lockout 0.05 s, quorum 1. The

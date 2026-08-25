@@ -259,7 +259,7 @@ Shutdown initiated
 </tr>
 </tbody>
 </table>
-<p>Run modes: interactive REPL (<code>python spikespeak_cli.py</code>), one-shot (<code>python spikespeak_cli.py list</code>),
+<p>Run modes: interactive REPL (<code>python python/spikespeak_cli.py</code>), one-shot (<code>python python/spikespeak_cli.py list</code>),
 scripted (<code>--script "a; b; c"</code>), or commands on stdin. <code>--host</code> / <code>--port</code> target a remote backend.</p>
 <h2 id="how-the-gui-mirrors-a-cli-session">How the GUI mirrors a CLI session<a class="headerlink" href="#how-the-gui-mirrors-a-cli-session" title="Permanent link">#</a></h2>
 <p>Each state-changing command broadcasts a <strong>state event</strong> to <em>all</em> clients; the browser reflects it in
@@ -308,7 +308,7 @@ LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib QT_QPA_PLATFORM=offscreen ./bin/SpikesPea
 </code></pre>
 <p><code>QT_QPA_PLATFORM=offscreen</code> is needed because the app links WebEngineWidgets/Widgets and there's no
 display; <code>LD_LIBRARY_PATH</code> points at the non-system Qt. There are no hardware DLLs to stage; the CLI drives
-it the same way (<code>python spikespeak_cli.py --host localhost …</code>), and the source to <code>select</code> is
+it the same way (<code>python python/spikespeak_cli.py --host localhost …</code>), and the source to <code>select</code> is
 <strong>"Simulated Data"</strong>. See <a href="SimDataLinux.html">SimDataLinux.md</a>.</p>
 <p><strong>Windows (the historical hardware box) — runtime DLLs:</strong> the exe is normally launched by Qt Creator,
 which sets up the runtime environment. To launch it <strong>standalone</strong> (e.g. from a script), these
@@ -348,11 +348,11 @@ instead (legacy behavior); if no Chromium-family browser is found it falls back 
   safe even if you forget to <code>pause</code> — but a record test should still <code>stop</code> first for a clean file.</li>
 </ul>
 <h2 id="example-a-full-headless-record-test-validated-on-live-hardware">Example: a full headless record test (validated on live hardware)<a class="headerlink" href="#example-a-full-headless-record-test-validated-on-live-hardware" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python spikespeak_cli.py --script \
+<pre><code class="language-bash">python python/spikespeak_cli.py --script \
   &quot;select 'NPX 1.0 with NI-DAQ'; waitready 40; probemap default; sleep 2; play; sleep 3; \
    record /path/to/RecordingTests test2; sleep 15; stop; sleep 2; pause; sleep 2; disconnect; sleep 3; quit&quot;
 # then plot + verify (saves sync.png + channels.png into the recording folder):
-python examples/plot_recording.py /path/to/RecordingTests/test2
+python python/examples/plot_recording.py /path/to/RecordingTests/test2
 </code></pre>
 <p>This exact flow was validated on the live rig: probe found via <code>waitready</code>, 15.4 s recorded (electrodes
 <code>[1,192,196]</code> @30k/2.5k + 8 NI-DAQ @40k), clean teardown, and the sync plot recovered a real <strong>+10.2 ppm</strong>
@@ -385,7 +385,7 @@ WebSocket client leaves. So for a multi-step session, do it all inside <strong>o
    <code>stop → pause → disconnect → quit</code> order is the safe teardown — see above.)</li>
 <li><strong>Verify the files</strong> (they land in <code>RecordingTests/demo1/</code>, relative to the backend's working dir):
    <code>bash
-   python examples/plot_recording.py RecordingTests/demo1</code></li>
+   python python/examples/plot_recording.py RecordingTests/demo1</code></li>
 </ol>
 <h2 id="more-examples">More examples<a class="headerlink" href="#more-examples" title="Permanent link">#</a></h2>
 <pre><code class="language-bash"># interactive REPL — type commands one at a time, server stays up until you quit

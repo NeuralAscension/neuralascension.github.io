@@ -116,7 +116,8 @@
   <main class="content"><article class="markdown-body"><h1 id="what-you-see-what-you-hear-and-how-old-both-are">What you see, what you hear, and how old both are<a class="headerlink" href="#what-you-see-what-you-hear-and-how-old-both-are" title="Permanent link">#</a></h1>
 <p>The operator's question, verbatim: <em>"what I'm looking at, what I'm hearing, in which order, and how
 delayed is this from the raw data collection."</em></p>
-<p><strong>You see it first, by about 70 ms.</strong> On an NP2.0 probe on a OneBox:</p>
+<p><strong>You see it first, by about 97 ms on the shipped default device</strong> — and that gap is mostly a
+settings choice, not a law of physics. On an NP2.0 probe on a OneBox:</p>
 <table>
 <thead>
 <tr>
@@ -133,12 +134,14 @@ delayed is this from the raw data collection."</em></p>
 </tr>
 <tr>
 <td><strong>ear</strong> — sound from the speaker</td>
-<td><strong>≥ 92 ms</strong></td>
-<td>PortAudio's output latency, 91.4 ms of it</td>
+<td><strong>~116 ms</strong></td>
+<td>the audio device: 99.9 ms of output latency plus a 15 ms ring</td>
 </tr>
 </tbody>
 </table>
-<p>So a spike is on screen roughly <strong>73 ms before</strong> you hear it. That is not a small offset — it is
+<p>So a spike is on screen roughly <strong>97 ms before</strong> you hear it — on the shipped default device.
+Changing the audio device cuts that to about 28 ms (see §2), which is the single largest
+latency win available anywhere in this document. That is not a small offset — it is
 about four display frames — and it matters whenever the two are being compared by eye and ear at
 once, which is exactly what a spike monitor is for.</p>
 <blockquote>
@@ -163,7 +166,8 @@ because the ordering claim is meaningless without them.</p>
        EYE  ~19 ms                                  |
                                               host API + device
                                                     |
-                                                   EAR  &gt;= 92 ms
+                                                   EAR  ~116 ms  (default)
+                                                        ~47 ms   (best real device)
 </code></pre>
 <p>The display path is short because it is allowed to be lossy: it bins, publishes what it has, and the
 browser draws it. The audio path cannot be lossy — a gap in audio is an audible click — so it is
@@ -185,14 +189,24 @@ buffered, and <strong>the buffering is almost entirely outside SpikesPeak.</stro
 <td>how far behind the acquisition writer the audio converter runs</td>
 </tr>
 <tr>
+<td><code>output_latency_measured_ms</code></td>
+<td>99.90 ms</td>
+<td>what the device is actually doing, per callback</td>
+</tr>
+<tr>
 <td><code>output_latency_ms</code></td>
 <td>91.43 ms</td>
-<td>PortAudio's own estimate for the open stream</td>
+<td>what PortAudio PROMISED at open — see why this is not the one to trust</td>
+</tr>
+<tr>
+<td><code>audio_ring_depth_ms</code></td>
+<td>15.11 ms</td>
+<td>converted audio queued ahead of the frame being played</td>
 </tr>
 <tr>
 <td><strong>raw → ear</strong></td>
-<td><strong>≥ 92.4 ms</strong></td>
-<td>the sum, and a lower bound — see the caveat below</td>
+<td><strong>~116.0 ms</strong></td>
+<td>source lag + ring depth + measured output latency</td>
 </tr>
 <tr>
 <td><strong>raw → eye</strong></td>
@@ -201,22 +215,136 @@ buffered, and <strong>the buffering is almost entirely outside SpikesPeak.</stro
 </tr>
 </tbody>
 </table>
-<p>The same measurement against the <strong>simulated</strong> NP2.0 source gives 1.00 / 91.43 / 20.0 ms. That the
+<p>The same measurement against the <strong>simulated</strong> NP2.0 source gives the same audio figures and a
+20.0 ms display interval. That the
 figures are indistinguishable is the point: <strong>none of this latency is the probe's.</strong> It is the host
 audio stack and the display cadence, so it is the same on any source, and it will be the same on
 PXIe. (Which is worth confirming rather than assuming — see §5.)</p>
-<h3 id="the-914-ms-is-not-ours-to-fix">The 91.4 ms is not ours to fix<a class="headerlink" href="#the-914-ms-is-not-ours-to-fix" title="Permanent link">#</a></h3>
-<p>It is what the MME host API and the selected device report. Nothing in SpikesPeak can shrink it. What
-<em>can</em>:</p>
-<ul>
-<li><strong>A different host API.</strong> The device list exposes MME, DirectSound, WASAPI and WDM-KS for the same
-  hardware. WASAPI in particular is usually far lower than MME's ~90 ms.</li>
-<li><strong>A different device.</strong> Monitor audio over HDMI is typically worse than a local interface.</li>
-</ul>
-<p>The audio panel's device picker is the lever. <code>output_latency_measured_ms</code> reports what the device is
-<em>actually</em> doing per callback (<code>outputBufferDacTime - currentTime</code>) rather than what it promised at
-open; a divergence between the two is itself a diagnostic.</p>
-<hr />
+<h3 id="the-output-latency-is-not-ours-to-fix-but-it-is-ours-to-choose">The output latency is not ours to fix — but it IS ours to choose<a class="headerlink" href="#the-output-latency-is-not-ours-to-fix-but-it-is-ours-to-choose" title="Permanent link">#</a></h3>
+<p>91.4 ms is what the MME host API reports for the selected device. Nothing in SpikesPeak can shrink
+it. Choosing a different device can, and by a lot — so the audio panel's device picker is a latency
+control, not a convenience.</p>
+<p>Measured on this machine, 2026-08-25, same probe, muted, ranked by <strong>measured</strong> latency:</p>
+<table>
+<thead>
+<tr>
+<th>idx</th>
+<th>host API</th>
+<th>device</th>
+<th>promised</th>
+<th>measured</th>
+<th>ring depth</th>
+<th>raw → ear</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5</td>
+<td>DirectSound</td>
+<td>Primary Sound Driver</td>
+<td>120.00 ms</td>
+<td><strong>8.71 ms</strong></td>
+<td>27.17 ms</td>
+<td>~36.9 ms</td>
+</tr>
+<tr>
+<td>6</td>
+<td>DirectSound</td>
+<td>ASUS VE278 (NVIDIA)</td>
+<td>120.00 ms</td>
+<td><strong>13.06 ms</strong></td>
+<td>33.17 ms</td>
+<td>~47.2 ms</td>
+</tr>
+<tr>
+<td>8</td>
+<td>DirectSound</td>
+<td>LG HDR WFHD (NVIDIA)</td>
+<td>120.00 ms</td>
+<td>13.06 ms</td>
+<td>33.54 ms</td>
+<td>~47.6 ms</td>
+</tr>
+<tr>
+<td>7</td>
+<td>DirectSound</td>
+<td>Digital Audio (S/PDIF)</td>
+<td>120.00 ms</td>
+<td>18.14 ms</td>
+<td>29.89 ms</td>
+<td>~49.0 ms</td>
+</tr>
+<tr>
+<td>9</td>
+<td>DirectSound</td>
+<td>Speakers (NoMachine)</td>
+<td>120.00 ms</td>
+<td>18.87 ms</td>
+<td>12.74 ms</td>
+<td>~32.6 ms</td>
+</tr>
+<tr>
+<td>18</td>
+<td>WDM-KS</td>
+<td>SPDIF Out</td>
+<td>11.00 ms</td>
+<td>19.89 ms</td>
+<td><strong>2.46 ms</strong></td>
+<td><strong>~23.4 ms</strong></td>
+</tr>
+<tr>
+<td>22</td>
+<td>WDM-KS</td>
+<td>Speakers ()</td>
+<td>10.00 ms</td>
+<td>19.89 ms</td>
+<td>49.81 ms</td>
+<td>~71.7 ms</td>
+</tr>
+<tr>
+<td>13</td>
+<td>WASAPI</td>
+<td>Speakers (NoMachine)</td>
+<td>22.00 ms</td>
+<td>19.99 ms</td>
+<td>9.23 ms</td>
+<td>~30.2 ms</td>
+</tr>
+<tr>
+<td>0</td>
+<td><strong>MME</strong></td>
+<td><strong>Sound Mapper (default)</strong></td>
+<td>91.43 ms</td>
+<td><strong>99.90 ms</strong></td>
+<td>15.11 ms</td>
+<td><strong>~116.0 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p><code>raw → ear</code> = source lag (1.0 ms) + ring depth + measured output latency.</p>
+<p><strong>Refused to open</strong>: WASAPI on indices 10, 11, 12 and WDM-KS on 19, 20. That includes
+<strong>WASAPI → ASUS VE278</strong>, the entry for the actual monitor speakers.</p>
+<h3 id="three-things-this-overturns">Three things this overturns<a class="headerlink" href="#three-things-this-overturns" title="Permanent link">#</a></h3>
+<p><strong>1. "Use WASAPI" is wrong on this machine.</strong> It is the usual advice and it fails here: WASAPI
+refuses to open every real output except a virtual NoMachine device. The advice that survives
+measurement is <strong>DirectSound → ASUS VE278</strong>: same physical speakers as the MME default, and
+<strong>13.06 ms instead of 99.90 ms</strong>.</p>
+<p><strong>2. PortAudio's promised latency is not merely imprecise, it is ANTI-correlated here.</strong>
+DirectSound <em>promises</em> 120 ms — the worst figure in the table — and measures 8.7–18.9 ms, the best.
+WDM-KS promises 10 ms and measures 19.9 ms. Ranking by the promised number picks almost exactly the
+wrong device, which is what the first version of the comparison script did before its own output was
+read properly. <strong>Trust <code>output_latency_measured_ms</code>; the promised figure is buffer geometry, not
+behaviour.</strong></p>
+<p><strong>3. The ring depth matters as much as the output latency, and moves independently.</strong> WDM-KS SPDIF
+has the <em>worst</em> measured output latency of the low-latency group (19.89 ms) and the <em>best</em> total
+(~23.4 ms), because its ring sits at 2.46 ms while DirectSound's sits at ~30 ms. Optimising output
+latency alone would have chosen wrongly. This is why the earlier figure in this document — "≥ 92.4
+ms" — was a lower bound: it omitted the ring, which had not yet been measured.</p>
+<h3 id="so-does-the-ordering-ever-flip">So does the ordering ever flip?<a class="headerlink" href="#so-does-the-ordering-ever-flip" title="Permanent link">#</a></h3>
+<p>No, not on this machine. Even the best total (~23 ms on WDM-KS SPDIF, which is a digital output and
+may not reach a speaker at all) is at best level with the ~19 ms display path, and the best
+<em>practical</em> option for the monitor speakers is ~47 ms. <strong>You still see it before you hear it</strong> — but
+the gap narrows from ~97 ms to ~28 ms simply by changing the device.</p>
 <h2 id="3-what-is-instrumented-and-what-it-costs">3. What is instrumented, and what it costs<a class="headerlink" href="#3-what-is-instrumented-and-what-it-costs" title="Permanent link">#</a></h2>
 <p>All of it reaches the GUI through the existing <code>audioState</code> event, which the audio dock polls at 4 Hz
 <strong>only while it is open</strong>.</p>
@@ -273,7 +401,7 @@ cadence rather than by anything measurable here". It is measurable — from <em>
 which is where that cadence lives, and where both operands were already in registers.</p>
 <hr />
 <h2 id="4-reproducing">4. Reproducing<a class="headerlink" href="#4-reproducing" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python measure_av_latency.py &quot;NPX 2.0 Multishank (OneBox)&quot;
+<pre><code class="language-bash">python ripple_tools/measure_av_latency.py &quot;NPX 2.0 Multishank (OneBox)&quot;
 </code></pre>
 <p>The script brings the rig up, counts binary frames <strong>in the page</strong> over a real interval (rather than
 trusting a configured rate), polls <code>audioState</code>, and tears down gracefully.</p>
@@ -333,7 +461,9 @@ would not be surprising.</p></article>
 <ul>
 <li><a href="#1-the-two-paths-and-why-they-are-so-different">1. The two paths, and why they are so different</a></li>
 <li><a href="#2-measured-np20-on-a-onebox-2026-08-25">2. Measured, NP2.0 on a OneBox (2026-08-25)</a><ul>
-<li><a href="#the-914-ms-is-not-ours-to-fix">The 91.4 ms is not ours to fix</a></li>
+<li><a href="#the-output-latency-is-not-ours-to-fix-but-it-is-ours-to-choose">The output latency is not ours to fix — but it IS ours to choose</a></li>
+<li><a href="#three-things-this-overturns">Three things this overturns</a></li>
+<li><a href="#so-does-the-ordering-ever-flip">So does the ordering ever flip?</a></li>
 </ul>
 </li>
 <li><a href="#3-what-is-instrumented-and-what-it-costs">3. What is instrumented, and what it costs</a><ul>

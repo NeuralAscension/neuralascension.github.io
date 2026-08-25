@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</span>
+  <span class="crumb">Developer Docs / Testing / Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -30,43 +30,72 @@
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
-<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
-<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup" open><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a class="active" href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
-<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="Logging.html">Logging — format, severity, and what to write</a>
-<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
-<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
-<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
-<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -89,6 +118,78 @@
 picker, live view, NP2.0 editor) <strong>without a human at the mouse</strong>, you drive a real browser
 programmatically and screenshot <em>it</em>. This was used heavily to build/verify the 2026-07-06 work and is the
 recommended way to check any GUI change.</p>
+<hr />
+<h2 id="0-start-here-you-almost-certainly-want-gui-not-raw-cdp">0. START HERE — you almost certainly want <code>Gui</code>, not raw CDP<a class="headerlink" href="#0-start-here-you-almost-certainly-want-gui-not-raw-cdp" title="Permanent link">#</a></h2>
+<p><strong>Do not hand-roll a browser launch.</strong> <code>tests/gui/_harness.py</code> already starts the backend, launches a
+Chromium with an isolated profile on a free debug port, waits for both, and tears everything down. It
+is what the ten GUI tests use. Sections 1–2 below describe the raw layer underneath it — read those
+only when you need something the harness does not do.</p>
+<p>This is the whole recipe for "screenshot the app doing X":</p>
+<pre><code class="language-python">import base64, os, sys, time
+REPO = r&quot;C:\Users\BIOEl\Documents\Code\SpikesPeak&quot;
+sys.path.insert(0, os.path.join(REPO, &quot;tests&quot;, &quot;gui&quot;))
+sys.path.insert(0, os.path.join(REPO, &quot;python&quot;, &quot;tools&quot;))
+from _harness import Gui
+
+def shot(g, path):
+    data = g.c.send(&quot;Page.captureScreenshot&quot;, format=&quot;png&quot;)[&quot;data&quot;]
+    with open(path, &quot;wb&quot;) as fh:
+        fh.write(base64.b64decode(data))
+
+with Gui(source=&quot;NPX 2.0 Multishank (OneBox)&quot;, window=(1920, 1080)) as g:
+    g.live_view(play=True, settle=10)      # switch to Live Data + press play, VERIFYING both took
+    shot(g, r&quot;...\scratchpad\live.png&quot;)
+
+    # pause before the context manager tears down -- never leave a real probe streaming
+    g.c.eval(&quot;(() =&gt; { const b = document.getElementById('playPauseBtn');&quot;
+             &quot;  if (b &amp;&amp; !/play-ready/.test(b.className)) b.click(); })()&quot;)
+    time.sleep(2)
+</code></pre>
+<p><code>Gui(...)</code> takes <code>source=</code> (the config's internal <code>name:</code>), <code>window=(w, h)</code> and
+<code>monitor="portrait"</code>. Useful methods: <code>live_view(play, settle)</code>, <code>columns(n)</code>, <code>width(px)</code>,
+<code>probe(js)</code> (returns parsed JSON), <code>errors()</code>, <code>check_clean(ck)</code>, <code>shoot(name)</code>.</p>
+<h3 id="where-screenshots-go">Where screenshots go<a class="headerlink" href="#where-screenshots-go" title="Permanent link">#</a></h3>
+<p><code>g.shoot("name.png")</code> writes into <code>developer_docs/images/gui/</code> — that directory is the docs'
+<strong>coverage gallery</strong>, committed and regenerated by the GUI suite. For ad-hoc screenshots for an
+operator, <strong>write to the session scratchpad instead</strong> (as above), or you dirty the repo with images
+nobody asked for.</p>
+<h3 id="probe-returns-parsed-json-and-your-selector-is-probably-wrong"><code>probe()</code> returns parsed JSON, and your selector is probably wrong<a class="headerlink" href="#probe-returns-parsed-json-and-your-selector-is-probably-wrong" title="Permanent link">#</a></h3>
+<p><code>g.probe(js)</code> parses the returned string, so return <code>JSON.stringify({...})</code>. And verify any selector
+you invent — on 2026-08-25 <code>document.querySelectorAll('.chart-column').length</code> returned <strong>0</strong> on a
+page that was visibly rendering two full columns. A count of zero from a selector you guessed is a
+statement about the selector, not about the page. Prefer ids that the app actually uses
+(<code>playPauseBtn</code>, <code>columns</code>, <code>tab-btn-data</code>, <code>view-data</code>, <code>obx-dock</code>) and confirm against a
+screenshot. Writing this very section I reached for <code>.obx-dock</code> as a class; it is an <strong>id</strong>. Check
+the module's CSS before trusting a selector -- <code>webinterface/OneBoxModule.js</code> defines <code>#obx-dock</code>.</p>
+<p><strong>And EXISTENCE IS NOT VISIBILITY.</strong> These docks are built into the DOM at startup and hidden; the
+tab button only flips <code>display</code>. So <code>!!document.getElementById('obx-dock')</code> is true from the moment
+the page loads, and a retry loop guarded on it exits immediately having clicked nothing -- which is
+how two attempts to photograph this panel produced screenshots with no panel in them. Test what you
+actually mean:</p>
+<pre><code class="language-js">const d = document.getElementById('obx-dock');
+const open = !!d &amp;&amp; getComputedStyle(d).display !== 'none';
+</code></pre>
+<p>This is the same mistake as trusting <code>.active-view</code>, which <code>live_view()</code> already documents: the class
+says one thing and <code>display</code> decides.</p>
+<h3 id="toolbar-buttons-that-open-docks-may-need-more-than-one-click">Toolbar buttons that open docks may need more than one click<a class="headerlink" href="#toolbar-buttons-that-open-docks-may-need-more-than-one-click" title="Permanent link">#</a></h3>
+<p><code>▣ OneBox</code>, <code>Ripple Detection</code> and <code>Bands</code> open floating docks. A single synthetic <code>.click()</code> right
+after <code>live_view()</code> can land while the app is still wiring up and be silently lost — the same failure
+<code>live_view()</code> itself guards against by clicking, confirming and retrying. Do the same: click, then
+<strong>confirm the dock exists</strong> before shooting.</p>
+<pre><code class="language-python">for _ in range(5):
+    if g.probe(&quot;JSON.stringify({open: (() =&gt; { const d = document.getElementById('obx-dock');&quot;
+               &quot; return !!d &amp;&amp; getComputedStyle(d).display !== 'none'; })()})&quot;).get(&quot;open&quot;):
+        break
+    g.c.eval(&quot;[...document.querySelectorAll('button')]&quot;
+             &quot;.find(b =&gt; /onebox/i.test(b.textContent))?.click()&quot;)
+    time.sleep(1.2)
+</code></pre>
+<h3 id="real-hardware">Real hardware<a class="headerlink" href="#real-hardware" title="Permanent link">#</a></h3>
+<p>Everything in <code>CLAUDE.md</code>'s hardware-safety section still applies when the source is a real probe:
+pause before teardown, never force-kill the backend, and kill only the harness's own isolated-profile
+browser (the harness does this itself on exit). Do not leave a rig streaming while you go and do
+something else.</p>
+<hr />
 <p>Two layers:
 - <strong>Backend commands</strong> (select/play/record/quit) → <code>python/spikespeak_cli.py</code> over WS:1234. See
   <a href="ControlCLI.html">ControlCLI.md</a>. A watching browser mirrors CLI actions live.
@@ -332,6 +433,13 @@ browser window on a debug port) for the duration, so the auto-quit never fires. 
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
+<li><a href="#0-start-here-you-almost-certainly-want-gui-not-raw-cdp">0. START HERE — you almost certainly want Gui, not raw CDP</a><ul>
+<li><a href="#where-screenshots-go">Where screenshots go</a></li>
+<li><a href="#probe-returns-parsed-json-and-your-selector-is-probably-wrong">probe() returns parsed JSON, and your selector is probably wrong</a></li>
+<li><a href="#toolbar-buttons-that-open-docks-may-need-more-than-one-click">Toolbar buttons that open docks may need more than one click</a></li>
+<li><a href="#real-hardware">Real hardware</a></li>
+</ul>
+</li>
 <li><a href="#1-launch-one-backend-one-browser">1. Launch: one backend + one browser</a><ul>
 <li><a href="#gotchas-each-cost-real-time-on-2026-07-06-dont-repeat-them">Gotchas (each cost real time on 2026-07-06 — don't repeat them)</a></li>
 </ul>
@@ -356,6 +464,10 @@ browser window on a debug port) for the duration, so the auto-quit never fires. 
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
 /* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
    panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
 document.querySelectorAll(".tabs").forEach(function(t){

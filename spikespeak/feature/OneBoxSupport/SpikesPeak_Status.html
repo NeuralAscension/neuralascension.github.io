@@ -30,43 +30,72 @@
 <a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
-<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
-<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
-<a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="developer_docs/Logging.html">Logging — format, severity, and what to write</a>
-<a href="developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
-<a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
-<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
-<a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
-<a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -329,6 +358,21 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S52</strong></td>
 <td><strong>2026-08-21</strong></td>
 <td><strong>Configuration 4 (Windows + PXIe, no OneBox) on the original rig, and four issues worked to conclusion.</strong> PXIe NP2.0 verified end to end (connect 8.5 s, ~580 frames/12 s, record, three clean disconnect/reconnect cycles, zero warnings). Found a reproducible <strong>access violation</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/54">#54</a>): two failed OneBox connects poison the next PXIe acquisition. Fixed a <strong>hardcoded audio device</strong> that made both NI-DAQ PXIe profiles unusable off the original box (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/55">#55</a>). Made recording sidecars <strong>describe the frame</strong>, closing the de-interleaving trap behind <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>'s "anomalous" ADC statistics. <strong>Retracted <a href="https://github.com/NeuralAscension/SpikesPeak/issues/56">#56</a> as my own test error</strong> — PXIe reconnect works.</td>
+</tr>
+<tr>
+<td><strong>S53</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The derived bands belong to the probe, not to the profile.</strong> <code>proc.lfp</code> / <code>proc.spike</code> auto-provisioned on every 2.0 profile (declared, not running); the detector now enforces its own input band rather than trusting the GUI. <strong>The one that mattered:</strong> a re-enabled band served STALE samples — <code>BandFilterProcessor</code> indexed its output ring by the count of samples it had READ, not by what it had COMMITTED. Also: a refused source select reported itself as a switch, and a missing audio device could stop acquisition.</td>
+</tr>
+<tr>
+<td><strong>S54</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The test suite grows teeth, and the audio finds its way out.</strong> GUI suite extended to error paths, band dependencies, the audio panel and record flow (10 tests); one runner with a live ETA page for both suites. Audio now follows the OS default output device in real time and works on NP1.0 by reading its native AP band. The toolbar's three band buttons became a Bands dropdown plus an emoji audio button. Width floor measured, not guessed: 1080 px holds.</td>
+</tr>
+<tr>
+<td><strong>S55</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The DAC was never switched on, and the OneBox stopped streaming.</strong> <a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed: <code>arm()</code> never called <code>np_DAC_enableOutput</code>, so a correct WavePlayer drove nothing. Output measured on <strong>DAC0 → breakout BNC IO0</strong>, NOT the SMA; sync provably undisturbed; 6553.6 codes/V confirmed twice. New <code>dac_trigger</code> fires both trigger paths from one crossing. Then the OneBox stopped delivering packets — bisected to acquisition start with vendor-API-only programs (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/59">#59</a>), which blocks the latency A/B (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/60">#60</a>). New references: <code>ConfigReference.md</code>, <code>ClosedLoopDriving.md</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -4214,7 +4258,390 @@ command — three clean cycles.</p>
 came from the <strong>pause</strong> a moment earlier; the meaningful signal was the <em>absence</em> of any disconnect
 log line, not the presence of that one. Second, #54 was checked against controls before filing and
 held; #56 was not, and did not. The check that would have caught it — does the backend acknowledge
-this command at all — costs one grep.</p></article>
+this command at all — costs one grep.</p>
+<hr />
+<h2 id="53-the-derived-bands-belong-to-the-probe-not-to-the-profile-2026-08-24">53. THE DERIVED BANDS BELONG TO THE PROBE, NOT TO THE PROFILE  (2026-08-24)<a class="headerlink" href="#53-the-derived-bands-belong-to-the-probe-not-to-the-profile-2026-08-24" title="Permanent link">#</a></h2>
+<p>Four defects reported from one session in front of the GUI, all the same shape: <strong>the GUI was allowed
+to hold state the backend had not confirmed, and the backend was allowed to leave a dependency
+implicit.</strong> Fixing them exposed a fifth that was considerably worse than any of them.</p>
+<h3 id="531-what-was-reported">53.1 What was reported<a class="headerlink" href="#531-what-was-reported" title="Permanent link">#</a></h3>
+<blockquote>
+<p>"the controls are pinned even when source is disconnected. Also the LFP and Spikeband options were
+both enabled (green) when I disconnected from the probe and reconnected to the probe with another
+config file but neither of them had the opportunity from the controls for me to select spike or lfp
+band."</p>
+</blockquote>
+<p>Measured before touching anything, with no source connected:</p>
+<pre><code>colOptions: all &quot;Waiting for data...&quot;        &lt;- controls for a stream that does not exist
+lfpBtn:   {shown:true, on:false}
+spikeBtn: {shown:true, on:true}              &lt;- green, for a processor from a source that was gone
+</code></pre>
+<h3 id="532-the-bands-are-a-property-of-the-probe-not-of-the-yaml">53.2 The bands are a property of the probe, not of the YAML<a class="headerlink" href="#532-the-bands-are-a-property-of-the-probe-not-of-the-yaml" title="Permanent link">#</a></h3>
+<p>A 2.0 probe has <strong>no hardware ap/lfp split</strong>. One 30 kHz raw stream; the LFP and spike bands exist
+only because SpikesPeak derives them. So on a 2.0 source they are not an optional extra a profile
+opts into — they are the only way to see either band at all, and a profile written before they
+existed offered no way to look at them.</p>
+<p><code>ProcessorManager::setupProcessors</code> now auto-provisions <code>proc.lfp</code> and <code>proc.spike</code> for <strong>any</strong> source
+with <code>data.npx.raw</code> and no <code>data.npx.lfp</code>, and binds them to the display so the per-column dropdown
+can offer them. 1.0 is deliberately excluded — it streams real hardware bands, and deriving a second
+copy is a different feature with a different justification.</p>
+<p><strong>Declared is not running.</strong> <code>mEnabled</code> used to default <em>true</em>, so merely listing <code>proc.lfp</code> meant
+every 2.0 session filtered all 384 channels through a band nobody had asked to see, with the button
+green before the operator touched anything. A band now starts <strong>off</strong> and runs when one of three
+things happens: the operator presses its button, something that needs it turns it on, or the profile
+says <code>enabled: true</code>. Nothing shipped records a derived band, so nothing records silence as a result
+— and that is by design, since a derived band is the raw band plus documented coefficients and is
+reproduced offline exactly.</p>
+<h3 id="533-why-the-button-was-green-for-a-source-that-was-gone">53.3 Why the button was green for a source that was gone<a class="headerlink" href="#533-why-the-button-was-green-for-a-source-that-was-gone" title="Permanent link">#</a></h3>
+<p>The processor registry hands out <strong>one instance per name for the life of the process</strong>, so "the object
+exists" says nothing about the profile in front of you. <code>WebSocketServer</code> was keying the band relay
+off <code>getProcessorByName(...) != nullptr</code> — and that call <em>lazily creates</em>, so it was true on every
+profile ever.</p>
+<ul>
+<li><code>BandFilterProcessor::isProvisioned()</code> — set by <code>configure()</code>, cleared by <code>ProcessorManager</code> on
+  teardown. The relay keys off that, and announces <strong>directly</strong> rather than by a queued <code>getState</code>,
+  because processor threads do not start until Play and the buttons would otherwise stay hidden until
+  then — on a control whose whole purpose is to be set <em>before</em> streaming.</li>
+<li>The browser <strong>drops</strong> its band and audio state on a source change and waits to be told again.</li>
+</ul>
+<h3 id="534-the-dependency-enforced-where-it-belongs">53.4 The dependency, enforced where it belongs<a class="headerlink" href="#534-the-dependency-enforced-where-it-belongs" title="Permanent link">#</a></h3>
+<p>On a 2.0 probe the ripple detector reads <code>data.lfp</code>. That was a comment in a config file and a warning
+line in the GUI. It is now enforced in the backend, both directions:</p>
+<table>
+<thead>
+<tr>
+<th>direction</th>
+<th>behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>start detection with the band off</td>
+<td><code>RippleDetector::ensureInputBandEnabled()</code> switches <code>proc.lfp</code> on — on GUI start, on the legacy <code>enable</code>, and on <code>auto_start</code>, so a headless run gets the same guarantee. The band announces its own state; the button turns green because the backend did it.</td>
+</tr>
+<tr>
+<td>disable the band while detection runs</td>
+<td>a blocking dialog naming <strong>both</strong> consequences. Confirming stops detection first, then disables the band. Cancelling changes nothing.</td>
+</tr>
+</tbody>
+</table>
+<p>The detector reports its bound band in <code>rippleState</code> (<code>"input":"data.lfp"</code>), so the GUI decides from
+what the backend says rather than from a guess about probe type — which also handles a 1.0 profile
+deliberately pointed at a derived band, where a probe-type test would be wrong.</p>
+<h3 id="535-the-one-that-mattered-a-re-enabled-band-was-silently-stale">53.5 THE ONE THAT MATTERED — a re-enabled band was silently stale<a class="headerlink" href="#535-the-one-that-mattered-a-re-enabled-band-was-silently-stale" title="Permanent link">#</a></h3>
+<p>Found by an adversarial review of the diff, not by any test that existed.</p>
+<p><code>BandFilterProcessor</code> used <strong>one counter for two roles</strong>: the read cursor into <code>data.npx.raw</code>, and
+the write slot into its own output ring. A disabled band advances the first and commits nothing, so
+they diverge by exactly the length of the disabled stretch — while every consumer indexes the ring by
+its own committed-sample count (<code>constDataAt</code> is <code>ind % capacity</code>).</p>
+<p>That was correct only for a band running from the first sample, which is what every profile used to
+do. <strong>§53.2 turned it into the default path.</strong> The producer would resume writing at
+<code>skipped % capacity</code> while consumers still read from <code>committed % capacity</code>, and the band would then
+serve correct-looking samples of the wrong age: up to a second of extra delay at 30 kHz, different
+every session, on a closed loop this repo defends in single milliseconds. Nothing throws, nothing
+logs, and no test that checks "is data flowing" would see it.</p>
+<p>The write slot now follows the commit count. <code>tests/test_bandfilterprocessor.cpp</code> (new, 17th suite)
+pins it and was proven able to fail by restoring the single counter.</p>
+<h3 id="536-a-refused-source-select-reported-itself-as-a-switch">53.6 A refused source select reported itself as a switch<a class="headerlink" href="#536-a-refused-source-select-reported-itself-as-a-switch" title="Permanent link">#</a></h3>
+<p><code>GuiTestCoverage.md</code> §4a recorded this as "once acquisition has run, switching to another source
+fails". That diagnosis was <strong>wrong</strong>, and the WebSocket experiment that settles it takes two minutes:
+disconnect first and the switch after streaming works perfectly. What actually happens is that
+<code>handleConnectRequest</code> <strong>refuses</strong> a connect while a source is still selected — correct behaviour —
+while <code>onSourceSelection</code> had already broadcast <code>stateSource</code> naming the requested source. The GUI's
+own picker sends <code>selectSource</code> with no Disconnect, so this is the ordinary operator path.</p>
+<p>The picker therefore showed the new source while the OLD source's streams kept flowing; a recording
+taken in that state would carry the wrong band. Now the refusal restores the source that actually
+holds, re-asserts <code>deviceReady</code>, hands the module state back, and says <em>"Still connected to X.
+Disconnect before selecting another source"</em> instead of diagnosing hardware that is fine.</p>
+<h3 id="537-asap-mode-on-the-derived-bands">53.7 ASAP mode on the derived bands<a class="headerlink" href="#537-asap-mode-on-the-derived-bands" title="Permanent link">#</a></h3>
+<p>Simulated NP2.0, 384 ch, same profile with and without <code>low_latency: true</code>, 35 one-second windows:</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th>LFP backlog</th>
+<th>Spike backlog</th>
+<th>commit batch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>normal</td>
+<td>1.002 ms</td>
+<td>1.002 ms</td>
+<td>30.1 samples</td>
+</tr>
+<tr>
+<td><strong>ASAP</strong></td>
+<td><strong>0.038 ms</strong></td>
+<td><strong>0.037 ms</strong></td>
+<td>1.1 samples</td>
+</tr>
+</tbody>
+</table>
+<p><strong>ASAP takes ~1.00 ms off both bands — 26× — and the two stay identical to each other.</strong> The batch
+column is the mechanism in plain sight: the backlog is the source's commit granularity, not the
+filtering, so changing the granularity moves it and nothing else (<code>filter_us_per_sample</code> unchanged at
+1.3–1.7 µs). Under ASAP the band totals are ~0.66 ms (LFP) and ~0.11 ms (spike) — almost entirely the
+filter's own group delay, which is the floor.</p>
+<h3 id="538-a-missing-audio-device-stopped-acquisition">53.8 A missing audio device stopped acquisition<a class="headerlink" href="#538-a-missing-audio-device-stopped-acquisition" title="Permanent link">#</a></h3>
+<p><code>Pa_Initialize()</code> failing made <code>AudioProcessor::configure()</code> return false; <code>ProcessorManager</code> treats a
+failed configure as fatal and abandons the whole graph. So a machine with no speakers <strong>could not
+connect a probe</strong> on any profile listing <code>proc.audio</code>. The profile was fine; the speakers were
+missing.</p>
+<p><code>configure()</code> now separates a <strong>wrong profile</strong> (<code>validateConfig</code> — still fatal) from a <strong>missing
+device</strong> (degraded): the processor stays on the graph, reports ready (sources do not start until every
+processor has), ticks so the liveness monitor is not staring at a processor that never turns, and
+answers <code>available:false</code> with an <code>unavailable_reason</code> the panel shows. Verified by forcing
+<code>Pa_Initialize</code> to fail: 1713 frames streamed in 12 s with audio unavailable. Closes the last open
+item on #55.</p>
+<h3 id="539-housekeeping-this-turned-up">53.9 Housekeeping this turned up<a class="headerlink" href="#539-housekeeping-this-turned-up" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>The GUI harness never disconnected before selecting</strong>, and a connect while connected is refused
+  <em>quietly</em>. It worked by accident — the backend auto-quits ~2 s after its last client leaves — until
+  a test connected inside that window, reused a backend that still had a source, and ran against the
+  <em>previous</em> test's source. Twelve unrelated failures about labels and units.</li>
+<li><strong><code>BandFilterProcessor.cpp</code> included <code>&lt;QApplication&gt;</code></strong>, pulling Qt Widgets into a signal-processing
+  translation unit, for a symbol it did not use. It does use <code>QCoreApplication::processEvents()</code>,
+  which is Core.</li>
+<li><strong><a href="developer_docs/AgentTraps.html"><code>developer_docs/AgentTraps.md</code></a> is new</strong> — the things here that are
+  not wrong but are not what they look like, written from time actually lost. <code>kHeadstageSamplingRate</code>
+  is 100 kHz <em>ticks</em>, not the 30 kHz sample rate (cost two red runs against correct code);
+  <code>getDataByName</code> <em>creates</em> what you asked it to check for; a queued call to a processor is not
+  delivered until Play; destroying a running <code>QThread</code> reports as a test with no output at all.</li>
+<li><strong><a href="CLAUDE.html"><code>CLAUDE.md</code></a> gained "What this system is optimising for"</strong> — real time, minimal
+  overhead, no new dependencies, nothing running that nobody asked for, and SciChart explicitly on
+  notice for removal.</li>
+</ul>
+<hr />
+<h2 id="54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight">54. THE TEST SUITE GROWS TEETH, AND THE AUDIO FINDS ITS WAY OUT  (2026-08-24, overnight)<a class="headerlink" href="#54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight" title="Permanent link">#</a></h2>
+<p>Four operator instructions drove this, and each one turned into a defect rather than a feature:</p>
+<blockquote>
+<p>"for the GUI then it seems like you're not testing every possible case ... shouldn't you also add
+in error checks to the GUI testing suite? I realize this makes it run longer which is okay but be
+thorough."</p>
+<p>"there are typically going to be multiple audio output things available per computer ... the
+audioprocessor needs to be able to adapt to whatever the user changed the audioplayback output
+device to in real-time"</p>
+<p>"For Audio button just have the audio emoji makes it smaller. You probably need the 'bands' button
+and a drop down"</p>
+<p>"given that more things are added to the GUI the shrinking should set wider width limit probably
+to pass"</p>
+</blockquote>
+<h3 id="541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug">54.1 The width limit did not need widening — and finding that out found a bug<a class="headerlink" href="#541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug" title="Permanent link">#</a></h3>
+<p><code>toolbar_layout</code> ran only on the harness default, which is a <strong>1.0</strong> source. A 1.0 source has no
+derived bands, so the toolbar under test was missing the Bands button entirely: <strong>the 1080 px floor
+had been established against the fewest buttons the application can display.</strong> It now sweeps both
+toolbars:</p>
+<table>
+<thead>
+<tr>
+<th>toolbar</th>
+<th>modules</th>
+<th>folds into 1080 px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0 (light)</td>
+<td>ripple</td>
+<td>2 rows, <code>tb-peek-view</code> from 1280</td>
+</tr>
+<tr>
+<td>2.0 (heavy)</td>
+<td><strong>Bands</strong>, audio, ripple</td>
+<td>identical</td>
+</tr>
+</tbody>
+</table>
+<p>So the floor stays at 1080, measured rather than assumed — consolidating the two band buttons into
+one paid for the new one.</p>
+<p>That sweep printed which module buttons were present at each width, and the 1.0 row read
+<code>audio,ripple</code>. <strong>No shipped 1.0 profile declares <code>proc.audio</code>.</strong> The audio button had been on the
+toolbar of every profile ever selected, controlling a processor that was not on the graph — the
+identical defect §53.3 fixed for the band buttons, in a module nobody had re-checked. Two causes,
+both fixed: <code>getProcessorByName()</code> lazily CREATES, so the relay's non-null test was always true; and
+<code>AudioModule._build()</code> ran on <code>DOMContentLoaded</code> and showed its button regardless of any backend
+state. <code>isProvisioned()</code> now lives on <code>IProcessor</code> rather than on one subclass, so the next module
+cannot repeat it.</p>
+<h3 id="542-audio-now-actually-follows-the-output-device-you-choose">54.2 Audio now actually follows the output device you choose<a class="headerlink" href="#542-audio-now-actually-follows-the-output-device-you-choose" title="Permanent link">#</a></h3>
+<p>The operator's requirement was real-time adaptation. The reason it did not work is worth stating
+precisely, because it is not obvious:</p>
+<p><strong><code>Pa_GetDefaultOutputDevice()</code> returns a CONCRETE endpoint.</strong> Measured here: index 1,
+<em>"ASUS VE278 (NVIDIA High Definition Audio)"</em> via MME, on a machine reporting <strong>fourteen</strong> output
+devices across MME / DirectSound / WASAPI / WDM-KS. A stream opened on a concrete endpoint keeps
+playing to that endpoint forever, whatever the operator later selects in Windows.</p>
+<p>Index 0 on the same machine was <strong>"Microsoft Sound Mapper - Output"</strong> — the virtual endpoint that
+routes to whatever the current default is, and moves the instant it changes. So follow-the-default
+mode now opens the <strong>follower</strong> (<code>AudioWorker::findDefaultFollower()</code>), and adaptation costs nothing:
+no polling, no re-initialisation, no gap in the audio. Falls back to the plain default where no
+follower exists (macOS), and the match is by name, which is a heuristic and is documented as one.</p>
+<p>Also added: the panel enumerates every device with its host API and lets the operator pin one
+(<code>setDevice</code> on id <code>0x218</code>, <code>-1</code> to go back to following); a watchdog notices a stream whose device
+was unplugged, disabled or taken exclusively, and reopens on whatever the machine offers now — the
+same path that picks up speakers plugged in <em>after</em> the session started. The watchdog backs off to
+one attempt per 5 s when there is no device at all, because on a rack-mounted rig that branch is
+reached on every tick and re-enumerating means <code>Pa_Terminate()</code> + <code>Pa_Initialize()</code>.</p>
+<h3 id="543-three-toolbar-buttons-became-two">54.3 Three toolbar buttons became two<a class="headerlink" href="#543-three-toolbar-buttons-became-two" title="Permanent link">#</a></h3>
+<p>Audio is the glyph alone; LFP and Spike collapsed into one <strong>Bands</strong> button with a dropdown whose
+badge counts how many bands are <em>running</em>, not how many exist. It scales: a third derived band is
+another menu row rather than another permanent fixture on a bar with a hard width floor.</p>
+<h3 id="544-the-gui-suite-now-catches-what-it-could-not-see">54.4 The GUI suite now catches what it could not see<a class="headerlink" href="#544-the-gui-suite-now-catches-what-it-could-not-see" title="Permanent link">#</a></h3>
+<p><strong>Every test asserts the page threw nothing.</strong> <code>Gui.check_clean()</code> reads a collector installed via
+<code>Page.addScriptToEvaluateOnNewDocument</code> — in place before any application script runs — that records
+uncaught exceptions, unhandled rejections, failed resource loads and <code>console.error</code>. A GUI can look
+perfectly correct in a screenshot while throwing on every frame and not one layout assertion would
+notice. Collected in the page rather than off the CDP event stream, because <code>cdp.py</code>'s <code>send()</code> loops
+until it sees its own message id and discards everything else.</p>
+<p><strong>Three new suites</strong>, all hardware-free:</p>
+<table>
+<thead>
+<tr>
+<th>suite</th>
+<th>covers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>error_paths</code></td>
+<td>A refused select, a refused play, a source that cannot load, and controls that must be DISABLED rather than inert. The refused-select case is the regression test §53.6 shipped without.</td>
+</tr>
+<tr>
+<td><code>audio_panel</code></td>
+<td>Device enumeration, follow-the-default vs pinned, the picker round trip through the backend, threshold and mute. The panel had no coverage at all.</td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td>Arm to record to stop, and <strong>what reached the disk</strong> — non-zero <code>.bin</code> sizes and a sidecar whose <code>sample_rate_hz</code> is not 0 and whose <code>band</code> is not a filename. Recording is what this application exists to do and it had no GUI test.</td>
+</tr>
+</tbody>
+</table>
+<p><code>stream_options</code> also gained the <strong>2.0-on-OneBox</strong> profile — the closest simulated twin of the rig
+configuration in use, and the only shipped source that puts a non-384-wide stream (the 12-channel
+SDR ADC) beside a probe band.</p>
+<p>Every new assertion was proven able to fail by injecting the defect it exists to catch and watching
+it go red: the follower selection, the refused-select restore, the error collector, and the band
+write-slot fix from §53.5.</p>
+<h3 id="545-one-runner-one-page-an-eta">54.5 One runner, one page, an ETA<a class="headerlink" href="#545-one-runner-one-page-an-eta" title="Permanent link">#</a></h3>
+<p><code>python scripts/run_all_tests.py</code> runs both suites behind a live page: per-test bars with
+elapsed-vs-expected, an overall countdown, a streaming tail of the running test's output, and the
+time remaining in the tab title. The GUI suite used to print <strong>nothing</strong> until it had finished, so
+the honest answer to "how long until this is done" was "no idea", for eleven minutes, every time.</p>
+<p>Estimates come from what the tests actually took on this machine last time; progress is measured in
+TIME, not tests completed, because the GUI tests differ by 3x in duration. Standard library only —
+<code>http.server</code>, <code>threading</code>, <code>subprocess</code> — and the page is plain HTML/CSS/DOM with one fetch loop,
+per the dependency rule now written into CLAUDE.md.</p>
+<h3 id="546-a-risk-this-work-created-caught-before-it-reached-the-rig">54.6 A risk this work created, caught before it reached the rig<a class="headerlink" href="#546-a-risk-this-work-created-caught-before-it-reached-the-rig" title="Permanent link">#</a></h3>
+<p>Auto-provisioning <code>proc.audio</code> onto every probe profile made a latent bug reachable. <code>AudioWorker</code>
+returned from three paths -- no output device, <code>Pa_OpenStream</code> failed, <code>Pa_StartStream</code> failed --
+<strong>without emitting <code>sigAwStarted</code></strong>. <code>MainController</code> does not start the SOURCES until every
+processor has reported ready, so any of those three would have hung the start.</p>
+<p>Before this change only five profiles carried <code>proc.audio</code>, and on a machine where the device opens
+it never fired. After it, every probe profile carries it. On a rig, during an experiment, that
+surfaces as <em>"the probe will not start"</em> with the real cause being a sound device.</p>
+<p>All three paths now report started. Verified by forcing <code>Pa_OpenStream</code> to fail: the source still
+connects and streams (578 frames in 12 s, which is exactly one third of the 1734 measured with the
+bands on -- frames scale with active streams, and bands now default off).</p>
+<p>Found by reading the diff for what it had made reachable, not by a test. Worth saying plainly,
+because the tests added this same night would not have caught it: they all run on a machine whose
+audio device opens.</p>
+<p><strong>Green at the end of the night: 17/17 C++ suites, 10/10 GUI tests (~19 min).</strong></p>
+<hr />
+<h2 id="55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late">55. THE DAC WAS NEVER SWITCHED ON, AND THE ONEBOX STOPPED STREAMING  (2026-08-24, late)<a class="headerlink" href="#55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late" title="Permanent link">#</a></h2>
+<p>Issue #49 had been open four days on the theory that the WavePlayer output was going to the wrong
+connector. It was going nowhere, and the reason was one missing line in our own code.</p>
+<h3 id="551-arm-never-enabled-the-dac-output">55.1 <code>arm()</code> never enabled the DAC output<a class="headerlink" href="#551-arm-never-enabled-the-dac-output" title="Permanent link">#</a></h3>
+<p>A DAC channel does not drive its pin until <code>np_DAC_enableOutput(ch, true)</code> is called.
+<code>DAC_setVoltage()</code> alone changes nothing on the wire, and neither does a correctly loaded and armed
+WavePlayer buffer. So every call returned SUCCESS, <code>wavePlayerStatus()</code> reported
+<code>loaded=yes armed=yes</code>, and all twelve ADC channels recorded silence. The status was accurate. The
+box simply was not driving anything.</p>
+<p>Found by a DC sweep rather than by reasoning: a commanded level appeared on its BNC the instant
+<code>DAC_enableOutput</code> was added, and not before.</p>
+<h3 id="552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma">55.2 The output is on DAC0 → breakout BNC IO0, not the SMA<a class="headerlink" href="#552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma" title="Permanent link">#</a></h3>
+<p>Measured with DAC0 <strong>and</strong> DAC4 both output-enabled, so a routing surprise would show up somewhere.
+A 1 Hz ±2 V square, sd per channel over 3 s before vs 5 s during:</p>
+<pre><code>IO0    sd 0.0002 -&gt; 1.9894    min -1.992  max +1.998   &lt;== the waveform
+IO4    sd 0.0002 -&gt; 0.0001    held at -0.017 V         (DAC4: enabled, idle)
+IO9    sd 0.0001 -&gt; 0.0001    4.963 V, unchanged       &lt;== SMA, untouched
+</code></pre>
+<p>IO4/IO6 sitting at −0.017 V rather than the ~1.715 V float of the other idle lines is the control:
+"enabled" really does mean "driving".</p>
+<p><code>waveplayer_arm</code> is documented as <em>"routing output DAC0 to the SMA output"</em>. The first half is right;
+the SMA half does not happen on this hardware. <strong>Do not generalise into a DAC-N → IO-N map</strong> — the
+sweep found DAC4 driving IO4 <em>and</em> IO6 together, which is unexplained.</p>
+<p>Two things fell out of the same measurement:</p>
+<ul>
+<li><strong>Arming does not disturb sync.</strong> IO9 carried the 1 Hz sync clock throughout and did not move by an
+  LSB across arm, fire and stop. The teardown-ordering comment claimed a race between
+  <code>waveplayer_stop</code> and <code>setSyncAsInput</code>; they touch different pins.</li>
+<li><strong><code>kDefaultCodesPerVolt = 6553.6</code> is confirmed</strong>, twice: a DC sweep read back linear, and the
+  WavePlayer path — the one that matters, since it goes through the raw <code>int16</code> buffer — returned
+  +1.998/−1.992 for ±2.000 V commanded. "Nominal" is gone from the GUI.</li>
+</ul>
+<p>Wording corrected in <code>OneBoxWavePlayer.{hpp,cpp}</code>, <code>OneBoxSource.cpp</code> and <code>OneBoxModule.js</code>, each
+carrying the measurement inline. <strong>#49 closed.</strong></p>
+<h3 id="553-dac_trigger-both-trigger-paths-from-one-crossing">55.3 <code>dac_trigger</code>: both trigger paths from one crossing<a class="headerlink" href="#553-dac_trigger-both-trigger-paths-from-one-crossing" title="Permanent link">#</a></h3>
+<p>New detector config key (default off). When set, every detection fires the OneBox WavePlayer as well
+as the stim server, and <code>detect_to_dac_us</code> is recorded beside <code>detect_to_send_us</code>. Both come from the
+same threshold crossing, which makes it a paired comparison rather than two runs matched afterwards —
+removing the sync-alignment class of error that cost a session in §24.</p>
+<p>The meta-method index is resolved once and cached (a by-name <code>invokeMethod</code> would put a string lookup
+inside the interval being measured), the invoke is <code>DirectConnection</code> on purpose, and each stage is
+timed from the detection instant so whichever fires second is not charged for the first.</p>
+<p>Verified to initialise on the real rig — <code>DAC trigger armed</code>, <code>stim params -&gt; 60 us phase, 10 us gap,
+1 Hz, 1 ms train</code>, <code>ARM stim -&gt; 192.168.1.100:8888</code>. The measurement itself did not run, because:</p>
+<h3 id="554-the-onebox-stopped-delivering-data-and-it-is-not-our-code">55.4 The OneBox stopped delivering data, and it is not our code<a class="headerlink" href="#554-the-onebox-stopped-delivering-data-and-it-is-not-our-code" title="Permanent link">#</a></h3>
+<p>Connect succeeds completely — FTDI 1.3.10, device found by serial, headstage auto-detected on port 1,
+ADC range read back from the device. Then acquisition starts and <strong>zero samples arrive</strong>, after which
+a second <code>np_arm()</code> never returns and teardown abandons every remaining vendor call on its timeout.</p>
+<p>Bisected with three standalone programs that link only the vendor API:</p>
+<table>
+<thead>
+<tr>
+<th>exercised</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>basestation — <code>scanBS</code>/<code>mapBS</code>/<code>openBS</code>/<code>closeBS</code>/<code>unmapBS</code></td>
+<td><strong>clean</strong>, twice</td>
+</tr>
+<tr>
+<td>+ probe — <code>detectHeadStage</code>/<code>openProbe</code>/<code>init</code>/<code>closeProbe</code></td>
+<td><strong>clean</strong></td>
+</tr>
+<tr>
+<td>+ acquisition — <code>np_arm</code>/<code>np_setSWTrigger</code>/<code>np_readPackets</code></td>
+<td><strong>0 packets; box then dead</strong></td>
+</tr>
+</tbody>
+</table>
+<p><code>np_readPackets</code> returned SUCCESS on every call for three seconds and produced nothing. Tracked as
+<strong>#59</strong>; the blocked measurement is <strong>#60</strong>.</p>
+<p>Two traps came out of this and are now in <code>AgentTraps.md</code>:</p>
+<ul>
+<li><strong>A control-plane probe is not a liveness test.</strong> After the first failure the basestation-only
+  sequence came back completely clean and I reported the box as recovered. The next streaming attempt
+  reproduced the fault exactly. The control plane and the data plane fail independently here.</li>
+<li><strong>The second <code>np_arm()</code> is what hangs.</strong> Since <code>closeDataSource()</code> opens with <code>np_arm (close)</code>, a
+  dead data plane presents as a <em>teardown</em> hang — pointing the reader at shutdown code, where the bug
+  is not.</li>
+</ul>
+<p>The stall watchdog and the bounded vendor calls both did their job: acquisition reporting healthy
+while zero samples arrived was caught in 3 s, and a wedged basestation did not hang shutdown.</p>
+<h3 id="555-two-references-written-because-they-were-needed-this-session">55.5 Two references, written because they were needed this session<a class="headerlink" href="#555-two-references-written-because-they-were-needed-this-session" title="Permanent link">#</a></h3>
+<p><code>ConfigReference.md</code> — 77 config keys across every source and processor, extracted from the call
+sites and verified against every shipped profile; where they disagreed the code won. Plus the 48
+runtime-only parameters, which is the more useful half: <code>zscore_threshold</code> and <code>lockout_seconds</code> are
+<strong>not</strong> config keys, and a profile built around them produces nothing while looking correct.</p>
+<p><code>ClosedLoopDriving.md</code> — the command sequences that work. Use <code>ripple_tools/rig.py</code>; <code>retrain()</code> is
+mandatory and its absence is indistinguishable from a working detector on a quiet signal; how to tell
+"no samples" from "trained but quiet" via <code>rippleEnvelope</code>; and <code>output.log</code> lives in the backend's
+<strong>working</strong> directory. I lost a run to the missing <code>retrain()</code> this very session, after writing the
+page that says so.</p>
+<p><strong>Green at the end: 17/17 C++ suites, 10/10 GUI tests.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -4496,6 +4923,35 @@ this command at all — costs one grep.</p></article>
 <li><a href="#525-56-filed-then-retracted-as-a-test-error">52.5 #56 — filed, then retracted as a test error</a></li>
 </ul>
 </li>
+<li><a href="#53-the-derived-bands-belong-to-the-probe-not-to-the-profile-2026-08-24">53. THE DERIVED BANDS BELONG TO THE PROBE, NOT TO THE PROFILE (2026-08-24)</a><ul>
+<li><a href="#531-what-was-reported">53.1 What was reported</a></li>
+<li><a href="#532-the-bands-are-a-property-of-the-probe-not-of-the-yaml">53.2 The bands are a property of the probe, not of the YAML</a></li>
+<li><a href="#533-why-the-button-was-green-for-a-source-that-was-gone">53.3 Why the button was green for a source that was gone</a></li>
+<li><a href="#534-the-dependency-enforced-where-it-belongs">53.4 The dependency, enforced where it belongs</a></li>
+<li><a href="#535-the-one-that-mattered-a-re-enabled-band-was-silently-stale">53.5 THE ONE THAT MATTERED — a re-enabled band was silently stale</a></li>
+<li><a href="#536-a-refused-source-select-reported-itself-as-a-switch">53.6 A refused source select reported itself as a switch</a></li>
+<li><a href="#537-asap-mode-on-the-derived-bands">53.7 ASAP mode on the derived bands</a></li>
+<li><a href="#538-a-missing-audio-device-stopped-acquisition">53.8 A missing audio device stopped acquisition</a></li>
+<li><a href="#539-housekeeping-this-turned-up">53.9 Housekeeping this turned up</a></li>
+</ul>
+</li>
+<li><a href="#54-the-test-suite-grows-teeth-and-the-audio-finds-its-way-out-2026-08-24-overnight">54. THE TEST SUITE GROWS TEETH, AND THE AUDIO FINDS ITS WAY OUT (2026-08-24, overnight)</a><ul>
+<li><a href="#541-the-width-limit-did-not-need-widening-and-finding-that-out-found-a-bug">54.1 The width limit did not need widening — and finding that out found a bug</a></li>
+<li><a href="#542-audio-now-actually-follows-the-output-device-you-choose">54.2 Audio now actually follows the output device you choose</a></li>
+<li><a href="#543-three-toolbar-buttons-became-two">54.3 Three toolbar buttons became two</a></li>
+<li><a href="#544-the-gui-suite-now-catches-what-it-could-not-see">54.4 The GUI suite now catches what it could not see</a></li>
+<li><a href="#545-one-runner-one-page-an-eta">54.5 One runner, one page, an ETA</a></li>
+<li><a href="#546-a-risk-this-work-created-caught-before-it-reached-the-rig">54.6 A risk this work created, caught before it reached the rig</a></li>
+</ul>
+</li>
+<li><a href="#55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late">55. THE DAC WAS NEVER SWITCHED ON, AND THE ONEBOX STOPPED STREAMING (2026-08-24, late)</a><ul>
+<li><a href="#551-arm-never-enabled-the-dac-output">55.1 arm() never enabled the DAC output</a></li>
+<li><a href="#552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma">55.2 The output is on DAC0 → breakout BNC IO0, not the SMA</a></li>
+<li><a href="#553-dac_trigger-both-trigger-paths-from-one-crossing">55.3 dac_trigger: both trigger paths from one crossing</a></li>
+<li><a href="#554-the-onebox-stopped-delivering-data-and-it-is-not-our-code">55.4 The OneBox stopped delivering data, and it is not our code</a></li>
+<li><a href="#555-two-references-written-because-they-were-needed-this-session">55.5 Two references, written because they were needed this session</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>
@@ -4503,6 +4959,10 @@ this command at all — costs one grep.</p></article>
 <script>
 document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
 (function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
 /* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
    panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
 document.querySelectorAll(".tabs").forEach(function(t){

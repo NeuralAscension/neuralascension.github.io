@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Driving SpikesPeak headlessly — the sequences that actually work - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Start here / Driving SpikesPeak headlessly — the sequences that actually work</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a class="active" href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="driving-spikespeak-headlessly-the-sequences-that-actually-work">Driving SpikesPeak headlessly — the sequences that actually work<a class="headerlink" href="#driving-spikespeak-headlessly-the-sequences-that-actually-work" title="Permanent link">#</a></h1>
+<p>Every agent that has driven this rig has rediscovered the same few facts the expensive way. This is
+those facts. If you are about to write a script that selects a source and starts ripple detection,
+read this first; it will save you two failed runs, which is what it cost me on 2026-08-24.</p>
+<blockquote>
+<p>Config keys — what you <em>can</em> put in a profile, and the much longer list of what you cannot — are in
+<strong><a href="ConfigReference.html"><code>ConfigReference.md</code></a></strong>. This page is about the commands.</p>
+</blockquote>
+<hr />
+<h2 id="1-use-ripple_toolsrigpy-do-not-hand-roll-the-websocket">1. Use <code>ripple_tools/rig.py</code>. Do not hand-roll the WebSocket.<a class="headerlink" href="#1-use-ripple_toolsrigpy-do-not-hand-roll-the-websocket" title="Permanent link">#</a></h2>
+<p>It already exists, every closed-loop script in the repo uses it, and it knows the ordering rules
+below. Hand-rolling the frames is how you end up debugging your own harness instead of the rig.</p>
+<pre><code class="language-python">import sys, os
+sys.path.insert(0, os.path.join(REPO, &quot;ripple_tools&quot;))
+from rig import Rig
+
+rig = Rig(capture_path=&quot;events.jsonl&quot;)   # background reader thread; every event captured
+rig.select(&quot;Simulated NPX 2.0 Ripples&quot;)
+rig.wait_ready(timeout=45)
+rig.play()
+</code></pre>
+<p><code>Rig</code> maintains live state as events arrive — <code>rig.baselines</code>, <code>rig.detections</code>, <code>rig.latency</code>,
+<code>rig.stim_fired</code> — so you assert on what the backend said, not on what you hope it did.</p>
+<hr />
+<h2 id="2-the-detection-sequence-in-the-only-order-that-works">2. The detection sequence, in the only order that works<a class="headerlink" href="#2-the-detection-sequence-in-the-only-order-that-works" title="Permanent link">#</a></h2>
+<pre><code class="language-python">rig.set_channels([100, 150, 200]); time.sleep(0.6)   # ELECTRODES, not read-out channels
+for e in electrodes:
+    rig.set_z(e, 5.0)
+rig.set_param(&quot;quorum_count&quot;, 1)
+rig.set_param(&quot;estimation_seconds&quot;, 10.0)
+rig.set_param(&quot;lockout_seconds&quot;, 0.2)
+rig.retrain()            # &lt;-- THE STEP EVERYONE MISSES
+rig.start()
+rig.wait_baselines(electrodes, timeout=40)           # block until every channel has a threshold
+</code></pre>
+<p><strong><code>retrain()</code> is not optional.</strong> <code>set_channels()</code> does not begin baseline collection. Without
+<code>retrain()</code> the detector sits with no threshold, forever, emitting nothing — and because it emits
+nothing, it looks exactly like a detector that is working on a quiet signal. I lost two runs to this
+before reading <code>ripple_tools/run_np2_tests.py</code>, which has had the correct sequence all along.</p>
+<p><strong>Then wait for baselines rather than sleeping.</strong> Training takes <code>baseline_gate_seconds</code> (settle) plus
+<code>estimation_seconds</code> (collection), both measured in acquired samples, so wall-clock is only a
+prediction. <code>wait_baselines()</code> returns when the thresholds actually exist.</p>
+<h3 id="how-to-tell-not-training-from-trained-but-quiet">How to tell "not training" from "trained but quiet"<a class="headerlink" href="#how-to-tell-not-training-from-trained-but-quiet" title="Permanent link">#</a></h3>
+<p>They look identical from the outside and have completely different causes.</p>
+<table>
+<thead>
+<tr>
+<th>symptom</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>no <code>rippleBaseline</code>, <strong>no <code>rippleEnvelope</code></strong></td>
+<td>the detector is receiving <strong>no samples</strong>. Its input band is not producing, or the source is not streaming. Not a threshold problem.</td>
+</tr>
+<tr>
+<td>no <code>rippleBaseline</code>, envelopes arriving</td>
+<td>training in progress, or <code>retrain()</code> was never called</td>
+</tr>
+<tr>
+<td>baselines present, no <code>rippleDetected</code></td>
+<td>trained and quiet — z is too high for this signal</td>
+</tr>
+</tbody>
+</table>
+<p><code>rippleEnvelope</code> is the vital sign. Zero of them means look upstream, not at z.</p>
+<hr />
+<h2 id="3-stimulation">3. Stimulation<a class="headerlink" href="#3-stimulation" title="Permanent link">#</a></h2>
+<pre><code class="language-python">rig.set_stim_params(phase_us=60, gap_us=10, freq_hz=1, total_ms=1)   # ONE biphasic pulse
+rig.set_stim_enabled(True)     # master gate: without it no datagram can leave the host
+rig.arm_stim(True)             # the Pi must be ARMED before it will fire
+</code></pre>
+<p>Three separate things, and all three are required. <code>stimulation</code> gates whether a datagram can be
+sent at all; arming is what the Pi needs before a <code>fire</code> does anything; the params shape the pulse.
+A 1 ms train at 1 Hz is a <strong>single</strong> pulse — use that when you want one pulse per detection rather
+than a burst.</p>
+<p><code>rig.test_fire()</code> fires without a detection, which is the fastest way to prove the whole path
+end to end before trusting a closed-loop number.</p>
+<hr />
+<h2 id="3a-where-recordings-land">3a. Where recordings land<a class="headerlink" href="#3a-where-recordings-land" title="Permanent link">#</a></h2>
+<p><code>rig.record(out_dir, name)</code> does <strong>not</strong> write into <code>out_dir</code>. It creates <code>out_dir/name/</code> and writes
+there, one <code>.bin</code> plus a <code>.bin.json</code> sidecar per band, each stamped with the start time:</p>
+<pre><code>RecordingTests/2026-08-25_trigger_ab/          &lt;- what you passed as out_dir
+  trigger_ab_ripple.json                       &lt;- the ripple sidecar, written at record START
+  trigger_ab/                                  &lt;- what you passed as name
+    trigger_ab_adc_20260825_095710.bin
+    trigger_ab_adc_20260825_095710.bin.json    &lt;- frame layout lives HERE
+    trigger_ab_raw_20260825_095710.bin
+    trigger_ab_raw_20260825_095710.bin.json
+</code></pre>
+<p>Two consequences worth knowing before you write an analysis script:</p>
+<ul>
+<li><strong>Look one level down.</strong> Globbing <code>out_dir/*.bin.json</code> finds nothing and the failure surfaces as an
+  <code>IndexError</code> on an empty list, well away from the cause.</li>
+<li><strong>Pick the NEWEST sidecar, not the first alphabetically.</strong> A second run into the same <code>name</code> adds a
+  second timestamped pair beside the first. Sorting by name and taking <code>[0]</code> silently analyses the
+  OLD recording -- which is exactly what happened on 2026-08-25, reporting a 5 s smoke test's n=104
+  as though it were the 1000-detection run. Sort by mtime.</li>
+</ul>
+<p>The sidecar is the authority on how to read the <code>.bin</code>: it carries <code>frame.bytes</code>, the header layout,
+<code>payload_dtype</code>, <code>num_channels</code> and <code>sample_rate_hz</code>. Do not hard-code a stride.</p>
+<pre><code class="language-python">meta = json.load(open(newest_sidecar))
+fb, nch = meta[&quot;frame&quot;][&quot;bytes&quot;], meta[&quot;num_channels&quot;]
+raw = np.fromfile(bin_path, dtype=np.uint8)
+n = len(raw) // fb
+frames = raw[: n * fb].reshape(n, fb)
+data = frames[:, meta[&quot;frame&quot;][&quot;header_bytes&quot;]:].copy().view(np.int16).reshape(n, nch)
+</code></pre>
+<hr />
+<h2 id="4-where-the-logs-are">4. Where the logs are<a class="headerlink" href="#4-where-the-logs-are" title="Permanent link">#</a></h2>
+<p><strong>The backend writes <code>output.log</code> to its WORKING DIRECTORY</strong>, not next to the binary. If you launch
+it with <code>cwd=REPO</code> the log is <code>REPO/output.log</code>, and the copy in <code>build-*/bin/</code> is whatever was left
+there by an earlier session.</p>
+<p>I spent twenty minutes analysing a stale <code>bin/output.log</code> from six hours earlier and concluded the
+detector had bound to the wrong band on an NP2 probe. It had not. <strong>Check the mtime before you trust
+a log.</strong></p>
+<p>The launcher's own stdout (<code>Press any key to continue . . .</code>) is not the application log — that is
+<code>run_spikespeak.bat</code> pausing. Seeing only that line means the backend exited.</p>
+<hr />
+<h2 id="5-harness-rules-learned-by-losing-runs-to-each">5. Harness rules, learned by losing runs to each<a class="headerlink" href="#5-harness-rules-learned-by-losing-runs-to-each" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Write results incrementally.</strong> A run that collects for fifteen minutes and writes at the end
+  loses everything to a socket error during teardown. Stream to a <code>.jsonl</code> and flush.</li>
+<li><strong>Verify parameters took; do not assume.</strong> Every detector command is <em>queued</em> to its thread. Read
+  the values back from <code>rippleState</code> and refuse to collect if they did not land.</li>
+<li><strong>Run unbuffered</strong> (<code>python -u</code>) or you are blind for the whole run and cannot tell slow from hung.</li>
+<li><strong>Match real keys, not substrings.</strong> <code>if "auto_start" not in text</code> is true even when the file only
+  <em>mentions</em> <code>auto_start</code> in a comment — which is exactly what the shipped OneBox profile does. Use
+  <code>re.search(r"^\s+auto_start\s*:", text, re.M)</code>.</li>
+<li><strong>Never force-kill the backend with hardware open.</strong> Shut down with <code>Disconnect</code> then <code>quit</code>. If it
+  will not exit, say so and leave it — a kill costs a physical power-cycle.</li>
+</ul>
+<hr />
+<h2 id="6-when-the-hardware-is-the-problem-the-logs-say-so-plainly">6. When the hardware is the problem, the logs say so plainly<a class="headerlink" href="#6-when-the-hardware-is-the-problem-the-logs-say-so-plainly" title="Permanent link">#</a></h2>
+<p>Two guards exist precisely so a dead rig does not masquerade as a software bug. Both fired on
+2026-08-24 and correctly identified a wedged OneBox:</p>
+<pre><code>source &quot;source.npx.onebox&quot; has not produced data in 3 s (stuck at 0 cycles)
+        -- acquisition is running but nothing is arriving
+...
+np_arm(16) did not return within 3000 ms. Abandoning the call and continuing teardown
+Virtual slot 16 was NOT released -- the box did not respond.
+</code></pre>
+<p>The first is the <strong>stall watchdog</strong>: acquisition reported healthy while zero samples arrived. The
+second is the <strong>bounded vendor call</strong>: a basestation that stops responding no longer hangs shutdown.</p>
+<p>If you see either, stop debugging your script — the problem is not in your code. Power-cycle the box.</p>
+<p><strong>And do not let a successful reconnect convince you it recovered.</strong> Measured 2026-08-24: after this
+failure a control-plane probe (scan → map → open → close → unmap, no acquisition) succeeded
+completely, which looks like a clean box. The very next streaming attempt reproduced the fault
+exactly — connect fine, headstage detected, software trigger fired, then zero samples and the box
+dead again. <strong>The control plane and the data plane fail independently.</strong> Proving the box answers
+<code>openBS</code> proves nothing about whether it will stream.</p>
+<hr />
+<h2 id="7-sim-first-always">7. Sim first, always<a class="headerlink" href="#7-sim-first-always" title="Permanent link">#</a></h2>
+<p>Every simulated source drives the same processors, ring buffers, WebSocket and GUI as real hardware.
+When something looks broken, reproduce it in sim before touching the rig — and if sim works and
+hardware does not, that is evidence about the rig, not about your code.</p>
+<p><code>Simulated NPX 2.0 Ripples</code> injects real ripple events and detects them reliably: with the sequence
+in §2 it trains three channels and produces ~19 detections in 50 s, every time. That makes it the
+control for any "is the detector broken?" question — which is how I established, in four minutes,
+that a hardware failure had nothing to do with a change I had made that evening.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/ClosedLoopDriving.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-use-ripple_toolsrigpy-do-not-hand-roll-the-websocket">1. Use ripple_tools/rig.py. Do not hand-roll the WebSocket.</a></li>
+<li><a href="#2-the-detection-sequence-in-the-only-order-that-works">2. The detection sequence, in the only order that works</a><ul>
+<li><a href="#how-to-tell-not-training-from-trained-but-quiet">How to tell "not training" from "trained but quiet"</a></li>
+</ul>
+</li>
+<li><a href="#3-stimulation">3. Stimulation</a></li>
+<li><a href="#3a-where-recordings-land">3a. Where recordings land</a></li>
+<li><a href="#4-where-the-logs-are">4. Where the logs are</a></li>
+<li><a href="#5-harness-rules-learned-by-losing-runs-to-each">5. Harness rules, learned by losing runs to each</a></li>
+<li><a href="#6-when-the-hardware-is-the-problem-the-logs-say-so-plainly">6. When the hardware is the problem, the logs say so plainly</a></li>
+<li><a href="#7-sim-first-always">7. Sim first, always</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -62,6 +62,20 @@ a:hover{text-decoration:underline}
 .sidebar a:hover{background:var(--accent);color:var(--ink);text-decoration:none}
 .sidebar a.active{background:linear-gradient(180deg,var(--brand-2),var(--brand));color:#fff;font-weight:600;
   box-shadow:var(--shadow)}
+/* Collapsible nav groups (Developer Docs). Native <details>, so the nav works with scripting off. */
+.sidebar .navgroup{margin-bottom:1px}
+.sidebar .navgroup>summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;
+  padding:6px 11px;border-radius:9px;font-size:13px;font-weight:600;color:var(--ink);
+  transition:background-color .13s}
+.sidebar .navgroup>summary::-webkit-details-marker{display:none}
+.sidebar .navgroup>summary::before{content:"";flex:none;width:0;height:0;opacity:.55;
+  border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;
+  transition:transform .15s ease}
+.sidebar .navgroup[open]>summary::before{transform:rotate(90deg)}
+.sidebar .navgroup>summary:hover{background:var(--accent)}
+.sidebar .navgroup .navcount{margin-left:auto;font-size:10.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+.sidebar .navgroup>a{margin-left:16px;border-left:1px solid var(--line);border-radius:0 9px 9px 0}
 .content{min-width:0;padding:34px 48px 90px;max-width:920px;margin:0 auto}
 .toc-col{position:sticky;top:58px;height:calc(100vh - 58px);overflow:auto;padding:26px 16px;font-size:12.5px;
   border-left:1px solid var(--line);transition:border-color .25s}
@@ -120,6 +134,9 @@ a:hover{text-decoration:underline}
   box-shadow:var(--shadow);transition:transform .16s ease,box-shadow .16s ease,border-color .16s}
 .card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--line-2)}
 .card h3{margin:.1em 0 .6em;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+/* Eyebrow naming the parent section on a card that is one GROUP of a larger section. */
+.card .cardsec{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+  color:var(--brand-ink);opacity:.75;margin-bottom:2px}
 .card a{display:block;padding:4px 0;font-size:14px;color:var(--ink)}
 .card a:hover{color:var(--brand-ink)}
 ::-webkit-scrollbar{width:11px;height:11px}

@@ -30,9 +30,11 @@
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup" open><summary>Start here<span class="navcount">3</span></summary>
+<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
@@ -149,6 +151,7 @@ repo root <a href="../CLAUDE.html"><code>CLAUDE.md</code></a> carries the same c
    like: a constant named for a sample rate that is a tick rate, a getter that <em>creates</em> what you asked it
    to check for, a queued call that is not delivered until Play, a fatal that reports as a test with no
    output. Every entry cost somebody real time. <strong>Add to it when something costs you time.</strong></li>
+<li><strong><a href="ConfigReference.html"><code>ConfigReference.md</code></a></strong> and <strong><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></strong> — before you write a profile or a script that drives the backend. What is a config key and what is a runtime command is not guessable from the YAML, and the driving sequence has one step everybody misses.</li>
 <li><strong>The doc for your actual task</strong> from the tables below.</li>
 </ol>
 <p><strong>Before you touch hardware</strong>, also read the Safety rules in the <code>spikespeak</code> skill (never force-kill a
@@ -223,6 +226,14 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="AgentTraps.html"><code>AgentTraps.md</code></a></td>
 <td><strong>The things that are not what they look like</strong> — names that mean something else (<code>kHeadstageSamplingRate</code> is 100 kHz TICKS; <code>getDataByName</code> CREATES), what is actually running when, the ring-buffer commit-count invariant, the Windows/shell/build traps, and the recurring "announced REQUESTED state instead of CONFIRMED" defect class. Written from real time lost; keep adding.</td>
+</tr>
+<tr>
+<td><a href="ConfigReference.html"><code>ConfigReference.md</code></a></td>
+<td><strong>Every config key, and the much longer list of what is NOT one.</strong> 77 keys across every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
+</tr>
+<tr>
+<td><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></td>
+<td><strong>How to drive the rig headlessly without losing runs to it.</strong> Use <code>ripple_tools/rig.py</code>; call <code>retrain()</code> or the detector never trains; tell "no samples" from "trained but quiet" using <code>rippleEnvelope</code>; the backend writes <code>output.log</code> to its WORKING directory; and what a wedged basestation looks like in the log.</td>
 </tr>
 <tr>
 <td><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></td>

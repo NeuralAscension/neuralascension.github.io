@@ -30,9 +30,11 @@
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup" open><summary>Start here<span class="navcount">3</span></summary>
+<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a class="active" href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
@@ -168,6 +170,16 @@ everything is <a href="README.html"><code>README.md</code></a>.</p>
 <td>A stream opened on it keeps playing there forever, so changing the Windows output device does nothing. The device that <em>follows</em> the default is a different one — index 0, <code>Microsoft Sound Mapper - Output</code>. See <a href="SpikeAudio.html">SpikeAudio.md</a> §7.</td>
 </tr>
 <tr>
+<td><code>np_unmapBS(x)</code></td>
+<td>Takes a <strong>SLOT</strong>, while its partner is <code>np_mapBS(serial, slot)</code>.</td>
+<td>They read as a symmetric pair and are not one. Passing the serial indexes a slot table with 25420802 and faults <code>0xC0000005</code> <strong>after <code>np_closeBS</code> has already returned ok</strong> -- which looks exactly like a driver bug in a vendor API that already has one (#54).</td>
+</tr>
+<tr>
+<td><code>waveplayer_arm()</code> "routes DAC0 to the SMA output"</td>
+<td>It routes to <strong>DAC0</strong>, and DAC0 reaches breakout BNC <strong>IO0</strong>. The SMA half did not happen on this hardware.</td>
+<td>Measured: a 1 Hz +/-2 V square moved IO0 from sd 0.0002 to 1.9894 V while IO9 (the SMA) stayed at 4.963 V, unchanged. Four days of #49 were spent looking at the SMA.</td>
+</tr>
+<tr>
 <td><code>getProcessorByName("proc.audio") != nullptr</code></td>
 <td>Lazily CREATES. True on every profile, including ones with no audio processor.</td>
 <td>An audio button on 1.0 sources controlling nothing. Ask <code>IProcessor::isProvisioned()</code>.</td>
@@ -262,6 +274,44 @@ because the merged version looks tidier and someone will try to merge it back.</
   exit; a kill costs a physical power-cycle. Shut down with the WebSocket <code>quit</code> command.</li>
 </ul>
 <hr />
+<h2 id="5a-hardware-and-telling-it-apart-from-your-own-bug">5a. Hardware, and telling it apart from your own bug<a class="headerlink" href="#5a-hardware-and-telling-it-apart-from-your-own-bug" title="Permanent link">#</a></h2>
+<p><strong>A DAC channel drives nothing until its output is enabled.</strong> <code>DAC_setVoltage()</code> alone changes no
+voltage on the wire; <code>DAC_enableOutput(ch, true)</code> is what connects the driver. A correct WavePlayer
+with no enabled output produces exactly the silence you would expect from a broken one. This is the
+whole of issue #49.</p>
+<p><strong>The backend writes <code>output.log</code> to its WORKING DIRECTORY.</strong> Launch it with <code>cwd=REPO</code> and the log
+is <code>REPO/output.log</code>; the copy in <code>build-*/bin/</code> is whatever an earlier session left. <strong>Check the
+mtime before you trust a log</strong> -- twenty minutes went into analysing a six-hour-old file and
+concluding the detector had bound to the wrong band. It had not.</p>
+<p><strong><code>rippleEnvelope</code> is the detector's vital sign.</strong> No baselines <em>and</em> no envelopes means the detector
+is receiving no samples at all -- look at the source, not at the threshold. No baselines <em>with</em>
+envelopes means training is in progress or <code>retrain()</code> was never called. The two are indistinguishable
+from the outside and have nothing in common.</p>
+<p><strong>A wedged basestation announces itself.</strong> Two guards exist for this and both work:</p>
+<pre><code>source &quot;source.npx.onebox&quot; has not produced data in 3 s (stuck at 0 cycles)
+np_arm(16) did not return within 3000 ms. Abandoning the call and continuing teardown
+Virtual slot 16 was NOT released -- the box did not respond.
+</code></pre>
+<p>If you see either, stop debugging software. The cost of not noticing is hours spent proving your own
+correct code is correct.</p>
+<p><strong>A successful reconnect does NOT mean it recovered.</strong> Measured 2026-08-24: after this failure a
+control-plane probe (scan → map → open → close → unmap, no acquisition) came back completely clean,
+and I told the operator the box was fine. The next streaming attempt reproduced the fault exactly.
+The control plane and the data plane fail independently here — <code>openBS</code> succeeding says nothing about
+whether the box will deliver a single sample.</p>
+<p><strong><code>np_readPackets</code> returns SUCCESS while delivering nothing.</strong> It reported code 0 on every call for
+three solid seconds and produced 0 packets. A return code is not liveness; only a packet count is.
+The codebase already says this twice (<code>NpInterface.cpp:186</code>, <code>:439</code>) because it cost a session on
+2026-08-20, and it cost another on 2026-08-24.</p>
+<p><strong>The second <code>np_arm()</code> hangs when the data plane is dead.</strong> The first returns SUCCESS immediately.
+Since <code>closeDataSource()</code> opens with <code>np_arm (close)</code>, a dead data plane surfaces as a teardown hang
+rather than as an acquisition error -- which points the reader at the shutdown code, where the bug is
+not. Bisect with a standalone program before suspecting teardown.</p>
+<p><strong>Sim is the control, and it is four minutes.</strong> <code>Simulated NPX 2.0 Ripples</code> trains three channels and
+produces ~19 detections in 50 s, reliably. Any "is the detector broken?" question is answered there
+first. That is how a hardware failure was separated from a same-evening code change, rather than by
+argument.</p>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -285,6 +335,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#3-ring-buffers-the-write-slot-is-the-commit-count">3. Ring buffers: the write slot is the COMMIT count</a></li>
 <li><a href="#4-testing">4. Testing</a></li>
 <li><a href="#5-windows-the-shell-and-the-build">5. Windows, the shell, and the build</a></li>
+<li><a href="#5a-hardware-and-telling-it-apart-from-your-own-bug">5a. Hardware, and telling it apart from your own bug</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

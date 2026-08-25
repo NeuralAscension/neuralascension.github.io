@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration reference — every key, and what is NOT a key - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Start here / Configuration reference — every key, and what is NOT a key</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a class="active" href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="configuration-reference-every-key-and-what-is-not-a-key">Configuration reference — every key, and what is NOT a key<a class="headerlink" href="#configuration-reference-every-key-and-what-is-not-a-key" title="Permanent link">#</a></h1>
+<p>Written because agents keep relearning this the expensive way, including me: I invented
+<code>zscore_threshold</code> and <code>lockout_seconds</code> as ripple-detector config keys, wrote a profile around them,
+and watched a run produce nothing. <strong>Neither is a config key.</strong> They are runtime parameters, set over
+the WebSocket, and no amount of staring at YAML would have said so.</p>
+<p>Extracted from the call sites (<code>cfg.has_child</code>, <code>cfg[...]</code>, <code>getConfigValue&lt;&gt;</code>), then verified a
+second time against every shipped profile in <code>config/</code>. Where the two disagreed, the code won.</p>
+<blockquote>
+<p>Driving the app headlessly — the command sequences that actually work — is
+<strong><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></strong>. Read that one before writing a script.</p>
+</blockquote>
+<hr />
+<h2 id="the-three-rules-that-cause-the-most-lost-time">The three rules that cause the most lost time<a class="headerlink" href="#the-three-rules-that-cause-the-most-lost-time" title="Permanent link">#</a></h2>
+<p><strong>1. A config's identity is its internal <code>name:</code> field, not the filename.</strong> The directory is scanned
+and every <code>*.yaml</code> is loaded; <code>selectSource</code> matches on <code>name:</code>. Renaming a file changes nothing;
+renaming <code>name:</code> breaks every reference to it.</p>
+<p><strong>2. Most detection parameters are NOT config keys.</strong> The ripple detector reads eleven keys from
+YAML. Its detection channels, z-score, lockout, quorum, minimum duration and estimation window are
+<strong>runtime-only</strong> — there is no way to set them in a profile, and a key you invent is silently
+ignored. The tables below mark this explicitly for every module.</p>
+<p><strong>3. Booleans are parsed from STRINGS, and the two idioms have opposite defaults.</strong> <code>getConfigValue&lt;&gt;</code>
+goes through ryml's <code>read_dec</code> and is integer-only, so it cannot read a YAML <code>true</code>. Every boolean is
+therefore compared as text, in one of two ways:</p>
+<table>
+<thead>
+<tr>
+<th>idiom</th>
+<th>true when</th>
+<th>used by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>default-on</strong></td>
+<td>anything except <code>false</code> / <code>0</code> / <code>no</code> / <code>off</code></td>
+<td><code>debug_files</code>, <code>auto_start</code>, <code>stimulation</code>, <code>low_latency</code></td>
+</tr>
+<tr>
+<td><strong>default-off</strong></td>
+<td>only <code>true</code> / <code>1</code> / <code>yes</code> / <code>on</code></td>
+<td><code>enabled</code> (bands), <code>dac_trigger</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both are case-SENSITIVE. <code>TRUE</code> is not <code>true</code>, and under the default-on idiom <code>TRUE</code> reads as <strong>true</strong>
+while under default-off it reads as <strong>false</strong>. If you are adding a key, match the idiom of the
+processor you are adding it to and say which one you chose.</p>
+<hr />
+<h2 id="ripple-detector-procrippledetector">Ripple detector: <code>proc.rippledetector</code><a class="headerlink" href="#ripple-detector-procrippledetector" title="Permanent link">#</a></h2>
+<p><em><code>src/modules/swr/RippleDetector.{hpp,cpp}</code></em></p>
+<h3 id="config-keys">Config keys<a class="headerlink" href="#config-keys" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>parsed as</th>
+<th>default</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string (ryml node val)</td>
+<td>none -- required; it is the node's identity</td>
+<td>Identifies this processor node as the ripple detector. Read by ProcessorManager when it walks the <code>processors:</code> list and validated (must exist, must be non-empty) by ConfigManager::parseProcs -- NOT read by RippleDetector::configure(), which never touches cfg["name"]. A config's identity is this field, not the filename.</td>
+</tr>
+<tr>
+<td><code>input</code></td>
+<td>string via Utils::toStdString(cfg["input"].val())</td>
+<td>"data.lfp" (the NP2 derived-LFP path)</td>
+<td>Registry name of the band the detector consumes. NP1 uses "data.npx.lfp" (native 2.5 kHz hardware LFP, read directly); NP2 uses "data.lfp" (float 30 kHz produced by proc.lfp). Also reported back to the GUI in rippleState as <code>input</code> (RippleDetector.cpp:458), which is how the GUI knows whether switching the LFP band off would kill detection. If the named data object does not exist, configure() returns false (RippleDetector.cpp:224-227).</td>
+</tr>
+<tr>
+<td><code>input_type</code></td>
+<td>string via Utils::toStdString(cfg["input_type"].val())</td>
+<td>"float"</td>
+<td>Selects which CircularBuffer template the input is cast to. EXACTLY the string "int16" binds CircularBuffer<int16, Neuropixels::PacketInfo> (NP1 direct path); ANY other value (including a typo) silently binds CircularBuffer<float,float>. A mismatch with the actual buffer type is an unchecked static_cast (RippleDetector.cpp:228-234).</td>
+</tr>
+<tr>
+<td><code>decimation_factor</code></td>
+<td>int via Utils::getConfigValue<int>() (c4::read_dec, return value DISCARDED)</td>
+<td>12; also 12 whenever the parsed value ends up &lt;= 0 (guard at RippleDetector.cpp:126)</td>
+<td>Every Nth input sample is fed to the filter/detector chain, bringing the input rate down to the fixed 2.5 kHz processing rate. NP1 = 1 (input already 2.5 kHz), NP2 = 12 (30 kHz / 12). Also multiplies into mBaselineGateSamples (RippleDetector.cpp:242-243). Parse semantics: c4::read_dec zeroes the target first and stops at the first non-digit without reporting failure, so "abc" and "-1" both land on 0 and the &gt;0 guard restores 12, while "3.5" silently yields 3.</td>
+</tr>
+<tr>
+<td><code>debug_files</code></td>
+<td>bool-as-string; TRUE unless the literal text is "false", "0", "no" or "off"</td>
+<td>true (constructor member init, RippleDetector.cpp:69)</td>
+<td>Runtime half of the gate on the per-sample waveform dumps lfp-data.bin / ripple-band-data.bin / envelope-data.bin / ripple-detection-time.bin. CURRENTLY A NO-OP IN ANY SHIPPED BUILD: every write is also gated by the compile-time <code>static constexpr bool DEBUGGING_RIPPLE_DETECTION_FILTERS = false</code> (RippleDetector.cpp:40), so <code>debug_files: true</code> alone creates no files. Setting it true costs nothing until that constexpr is flipped.</td>
+</tr>
+<tr>
+<td><code>auto_start</code></td>
+<td>bool-as-string; TRUE unless the literal text is "false", "0", "no" or "off"</td>
+<td>false (constructor member init, RippleDetector.cpp:80)</td>
+<td>Whether the module runs on Play. false = stay idle until a GUI/CLI "start" command; true = enable detection + begin baseline training the moment the source starts, and call ensureInputBandEnabled() so a headless run cannot silently read a disabled band.</td>
+</tr>
+<tr>
+<td><code>baseline_gate_seconds</code></td>
+<td>double via std::stod() on the raw string (invalid text -&gt; qWarning, keeps default)</td>
+<td>6.0 (constructor member init, RippleDetector.cpp:70)</td>
+<td>Amplifier-settle dead time ignored before baseline collection starts. Converted to pre-decimation input samples as kLfpSamplingRate(2500) * decimation_factor * this, so it means the same wall-clock on NP1 @2.5 kHz and NP2 @30 kHz. Total warm-up to a live threshold = this + the runtime estimation_seconds.</td>
+</tr>
+<tr>
+<td><code>stimulation</code></td>
+<td>bool-as-string; TRUE unless the literal text is "false", "0", "no" or "off"</td>
+<td>false (constructor member init, RippleDetector.cpp:66) -- stimulation is OPT-IN</td>
+<td>Master gate on the StimulatorClient. When false the client is still constructed (so the toggle works without streaming) but every send path early-returns, so no datagram can physically leave the host. Does NOT arm the stimulator -- arming stays an explicit user action. Runtime-toggleable via the setStimEnabled command. NOTE: no shipped config in config/*.yaml sets this key.</td>
+</tr>
+<tr>
+<td><code>stim_ip</code></td>
+<td>string via Utils::toStdString(cfg["stim_ip"].val())</td>
+<td>"192.168.1.100"</td>
+<td>UDP target host for the stimulation server (Raspberry Pi / ESP32). READ ONLY ON THE FIRST configure() -- the whole block is inside <code>if (mStimulatorClient == nullptr)</code> (RippleDetector.cpp:173), and the detector is a registry singleton, so re-configuring for a second profile keeps the first profile's target. Retarget at runtime with the setStimServer command instead. Not set by any shipped config.</td>
+</tr>
+<tr>
+<td><code>stim_port</code></td>
+<td>int via Utils::getConfigValue<int>() (c4::read_dec, return value DISCARDED), then cast to quint16</td>
+<td>8888</td>
+<td>UDP target port for the stimulation server. Same first-configure-only caveat as stim_ip. UNGUARDED parse: unlike decimation_factor there is no &gt;0 fallback, so a non-numeric value (c4::read_dec zeroes the target and bails on the first non-digit) silently becomes port 0. Not set by any shipped config.</td>
+</tr>
+<tr>
+<td><code>dac_trigger</code></td>
+<td>bool-as-string, OPPOSITE polarity to the other bools: TRUE only if the text is exactly "true", "1", "yes" or "on"; anything else (including "TRUE") is false</td>
+<td>false (member init, RippleDetector.hpp:176)</td>
+<td>Second trigger path: on a detection, also fire the OneBox DAC wave player over USB in addition to the UDP stim server, so the two paths can be compared on the same threshold crossing. Resolved lazily/reflectively at start via resolveDacTrigger() (RippleDetector.cpp:622-636, called from slIpStartProcessor at :898), so it is safe with no OneBox present -- it just warns. Not set by any shipped config.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-only-not-config-keys">Runtime only: NOT config keys<a class="headerlink" href="#runtime-only-not-config-keys" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>how to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>detection channels (the electrode set)</td>
+<td>action "setChannels" -- {"command":"ripple","action":"setChannels","electrodes":[int,...]}. Electrode numbers (not read-out channels); negative entries dropped. Applies via mergeDetectionChannels() = "train-only-new": kept electrodes retain their filter delay-line state, trained baseline and channel state; dropped ones are discarded; new ones start untrained. Quorum is re-clamped to the new channel count (RippleDetector.cpp:866). Handler: RippleDetector.cpp:731-739; merge at :828-867. Electrodes -&gt; read-out channels are resolved through ChannelMapService (resolveDetectionChannels, RippleDetector.cpp:802-825); an unmapped electrode falls back to identity with a qWarning. THERE IS NO CONFIG KEY FOR THIS -- configure() explicitly does mDetectionElectrodes.clear() and starts with ZERO channels (RippleDetector.cpp:204-206).</td>
+</tr>
+<tr>
+<td>z-score threshold (per electrode)</td>
+<td>action "setZ" -- {"command":"ripple","action":"setZ","electrode":int,"z":double}. Defaults if absent: electrode -1 (matches nothing), z 3.0. Sets that channel's zScoreThreshold and, if already trained, recomputes actualThreshold = mu + z*sigma and emits a rippleBaseline event. Handler: RippleDetector.cpp:717-730. No config key; the constructor default mZScoreThreshold = 5.0 (RippleDetector.cpp:72) is only the seed for freshly created channels (applied at :855).</td>
+</tr>
+<tr>
+<td>estimation_seconds (baseline duration)</td>
+<td>action "setParam" -- {"command":"ripple","action":"setParam","name":"estimation_seconds","value":double}. Value must be &gt;= 0. Sets samplesForBaseline = round(2500 * value) on every channel. Handler: RippleDetector.cpp:709-711. No config key (constructor default 10.0 s, RippleDetector.cpp:71).</td>
+</tr>
+<tr>
+<td>min_duration_seconds</td>
+<td>action "setParam" with name "min_duration_seconds", value &gt;= 0. Seconds a channel must stay above threshold before it reports a crossing. Handler: RippleDetector.cpp:707. No config key (constructor default 0.0, RippleDetector.cpp:77).</td>
+</tr>
+<tr>
+<td>lockout_seconds</td>
+<td>action "setParam" with name "lockout_seconds", value &gt;= 0. Per-channel refractory after a reported crossing; also written into every DetectionParams::lockoutPeriod. Handler: RippleDetector.cpp:706. No config key (constructor default 0.2 s, RippleDetector.cpp:73).</td>
+</tr>
+<tr>
+<td>coincidence_window_seconds</td>
+<td>action "setParam" with name "coincidence_window_seconds", value &gt;= 0. Window inside which the quorum crossings must all fall. Handler: RippleDetector.cpp:708. No config key (constructor default 0.05 s, RippleDetector.cpp:76).</td>
+</tr>
+<tr>
+<td>quorum_count</td>
+<td>action "setParam" with name "quorum_count", value rounded to int. The ONLY setParam name exempt from the value &gt;= 0 guard (RippleDetector.cpp:705). Clamped to [1, number of resolved detection channels]. Handler: RippleDetector.cpp:712-714. No config key (configure() hardcodes mQuorumCount = 1 at RippleDetector.cpp:206; constructor seed also 1 at :75).</td>
+</tr>
+<tr>
+<td>running / detecting (module enable)</td>
+<td>action "start" (RippleDetector.cpp:681-692) or "pause" (:693-696), plus a legacy "enable" toggle {"action":"enable","enabled":bool} (:697-701, default true when the field is missing). "start" calls ensureInputBandEnabled() (turns proc.lfp on for NP2), sets mEnabled, and on a FIRST start sets the training origin and clears all baselines; a start after a pause just resumes with the existing baselines. "pause" stops detection, training and stim but leaves envelopes streaming and baselines intact. The only config influence is auto_start.</td>
+</tr>
+<tr>
+<td>retrain</td>
+<td>action "retrain" -- {"command":"ripple","action":"retrain"}, no payload. Resets the training origin to now, clears every channel's baseline (mean/sigma/threshold/samples), resets all ChannelDetectState, and clears the global stim lockout. Handler: RippleDetector.cpp:740-747.</td>
+</tr>
+<tr>
+<td>stimulation master gate (runtime twin of the <code>stimulation:</code> config key)</td>
+<td>action "setStimEnabled" -- {"command":"ripple","action":"setStimEnabled","value":bool}. NOT routed through slApplyCommand: WebSocketServer calls RippleDetector::setStimEnabled(bool) with Qt::DirectConnection on the MAIN thread (WebSocketServer.cpp:1053-1059) so it works when not streaming. Turning it OFF disarms first, so it can never strand an armed stimulator. Implementation: RippleDetector.cpp:416-444.</td>
+</tr>
+<tr>
+<td>arm / disarm the stimulator</td>
+<td>actions "armStim" / "disarmStim" -- {"command":"ripple","action":"armStim"} (no payload). Also NOT routed through slApplyCommand: WebSocketServer invokes RippleDetector::setStimArmed(bool) with Qt::DirectConnection on the main thread (WebSocketServer.cpp:1050-1052). Ignored with a qWarning when the master gate is off. Broadcasts a rippleStimStatus event. Implementation: RippleDetector.cpp:392-413. No config key -- arming is always an explicit user action, never done by configure().</td>
+</tr>
+<tr>
+<td>stim server target (ip / port)</td>
+<td>action "setStimServer" -- {"command":"ripple","action":"setStimServer","ip":"192.168.1.100:8888"} or {"ip":"192.168.1.100","port":8888}. If "ip" contains a colon it is split and the port parsed from it (garbage -&gt; keeps 8888); otherwise an optional "port" field is used, default 8888. Retargets the live StimulatorClient. Handler: RippleDetector.cpp:761-778. This is the runtime override for the first-configure-only stim_ip/stim_port keys.</td>
+</tr>
+<tr>
+<td>stim pulse train: phase_us, gap_us, freq_hz, total_ms</td>
+<td>action "setStimParams" -- {"command":"ripple","action":"setStimParams","phase_us":int,"gap_us":int,"freq_hz":int,"total_ms":int}. Per-field defaults when a field is missing: 60 / 10 / 100 / 500. Clamped inside StimulatorClient::setStimParams to phase [10,100000] us, gap [0,100000] us, freq [1,10000] Hz, train [1,600000] ms (StimulatorClient.cpp:54-61). Handler: RippleDetector.cpp:748-759. No config keys for any of the four.</td>
+</tr>
+<tr>
+<td>test fire (manual pulse, no detection)</td>
+<td>action "testFire" -- {"command":"ripple","action":"testFire"}, no payload. Arms then fires (connect() is idempotent). Ignored with a qWarning if the master gate is off. Handler: RippleDetector.cpp:780-792.</td>
+</tr>
+<tr>
+<td>ripple sidecar write / clear (recording-driven, not a ripple command)</td>
+<td>Not reachable through the "ripple" command at all. WebSocketServer::setRecording invokes the Q_INVOKABLE slots RippleDetector::slWriteRippleSidecar(dir,name) on record START and slClearRippleSidecar() on record STOP, both Qt::QueuedConnection onto the worker thread (WebSocketServer.cpp:1025-1033; declared RippleDetector.hpp:90 and :94). Writes <dir>/<name>_ripple.json with the resolved detection channels + estimated per-electrode thresholds + params (writeRippleSidecar, RippleDetector.cpp:534-...); rewritten once training completes (called again at :1046).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> VERIFICATION RESULT: every claimed key and every claimed runtime command was confirmed against a real call site. NOTHING was removed. All corrections are line numbers plus one substantive parse-semantics fix (item 2 below). CORRECTIONS MADE 1. Line-number fixes (the code has shifted since the schema was written): - stimulation: applied at RippleDetector.cpp:192, not :191. - stim_ip: the <code>if (mStimulatorClient == nullptr)</code> guard is at :173, not :176 (:176 is the <code>std::string stimIp</code> default). - dac_trigger: member init is RippleDetector.hpp:176, not :171; the configure() block is :212-214, not :212-215. - baseline_gate_seconds: consumed at :242-243 (mBaselineGateSamples), not :239-241. - debug_files: the compile-time constexpr is at :40, not :39; the file-open gate is :256 (single line), not ":253-258"; added the five hot-path write gates (:969, :978, :995, :1139, :1224). - auto_start: used in slIpStartProcessor at :895-897, not :889-892; constructor init is :80, not :78. - Constructor seed lines were all off by one to two: mBaselineDurationSeconds 10.0 s is :71 (claimed :70), mZScoreThreshold 5.0 is :72 (claimed :71), mLockoutSeconds 0.2 is :73 (claimed :72), mCoincidenceWindowSeconds 0.05 is :76 (claimed :74), mMinDurationSeconds 0.0 is :77 (claimed :75), mQuorumCount 1 is :75. - configure()'s hardcoded quorum is at :206 (claimed :208); mDetectionElectrodes.clear() at :204. - setParam estimation_seconds handler spans :709-711 (claimed :709-710); quorum_count :712-714 (claimed :711-713); setStimServer :761-778; testFire :780-792; setStimParams :748-759; setStimArmed :392-413 (claimed :391-404); resolveDetectionChannels :802-825 (claimed :803-827). - WebSocketServer: armStim/disarmStim at :1050-1052 (claimed :1049-1052); sidecar block :1025-1033 (claimed :1024-1032). Ripple dispatch :1041-1065, binary handler :1163-1175, textMessageReceived connect :807 -- all confirmed as claimed. - webinterface/NetworkClient.js: sendCommand spans 414-448 with the framing at 436-447 (claimed 414-440). RippleModule.js:216 confirmed exactly. - Added the second <code>name</code> call site: ConfigManager::parseProcs validates it at src/core/Configuration.cpp:166-176 (invalid or empty name = config rejected). 2. SUBSTANTIVE FIX -- the getConfigValue parse story in the original gotcha #5 was wrong. Utils::getConfigValue (src/core/Utils.hpp:60-65) calls c4::read_dec and DISCARDS its bool return; c4::read_dec (ext/rapidyaml/ext/c4core/src/c4/charconv.hpp:862-874) sets <code>*v = 0</code> FIRST and returns false at the first non-digit, keeping whatever digits it already accumulated. So it does NOT "leave the temp untouched". Consequences: - decimation_factor: "abc" -&gt; 0 -&gt; the &gt;0 ternary restores 12 (same end result, different mechanism); "-1" -&gt; 0 -&gt; 12; but "3.5" silently yields decimation 3, and "12abc" yields 12. A float-looking value is truncated without warning. - stim_port: NEW GOTCHA -- there is no &gt;0 guard on this one, so a non-numeric stim_port silently becomes port 0 rather than 8888. 3. Removed nothing. The only claim I could not reproduce verbatim was cosmetic: RippleDetector.cpp:540-580 is the SIDECAR json builder, not rippleState; the <code>input</code> field the schema attributes to rippleState is real but lives at RippleDetector.cpp:458 inside rippleStateJson(). Corrected in the <code>input</code> row. CROSS-CHECK AGAINST config/*.yaml (28 files, 19 reference proc.rippledetector; 7 of those references are comments, so 19 real nodes -- NpxSynthRipples.yaml carries a bare node with no keys) - Keys claimed AND used by shipped configs: name, input, input_type, decimation_factor, auto_start, debug_files, baseline_gate_seconds. - Keys claimed but used by NO shipped config: stimulation, stim_ip, stim_port, dac_trigger. Confirmed by grepping the whole config dir -- zero hits. Live in code, unreachable from any shipped profile: a rig wanting closed-loop stim from YAML must add <code>stimulation: true</code> itself, or flip the gate at runtime from the Ripple dock. - Keys appearing under a shipped proc.rippledetector node but NOT in the list: NONE. I extracted every key of every ripple block across all 28 files; the set is exactly {input, input_type, decimation_factor, auto_start, debug_files, baseline_gate_seconds}. So there are NO DEAD KEYS for this module. Also grepped for plausible stale detection keys (z_score, quorum, estimation_seconds, lockout, coincidence, min_duration, baseline_duration) -- zero hits anywhere in config/. - The four NP2 hardware profiles (Npx2OneBox, Npx2OneBoxAsap, Npx2PxiNiDaqAsap, NpxPxiNiDaq) set ONLY debug_files: false and rely on the code defaults for everything else, which is why <code>input: data.lfp</code> / <code>decimation_factor: 12</code> never appear there. TRANSPORT / BINARY COMMAND ID (all confirmed) All ripple runtime commands reach the backend as command "ripple". Frame layout (WebSocketServer::onBinaryMessageReceived, src/core/WebSocketServer.cpp:1163-1175 + SP::extractCommand, src/core/Commands.cpp:12-29): byte0..1 = command id, big-endian uint16 byte2..3 = TOTAL length (4 + payload), big-endian uint16; a mismatch is rejected as "Invalid message" byte4.. = UTF-8 JSON payload Every header byte is masked to unsigned char before shifting (Commands.cpp:14-18) -- that fix exists because a signed char &gt;= 0x80 used to corrupt the length. Ripple commands use id 0x1000, the "wrap a text command" id: WebSocketServer feeds command.data straight back into onTextMessageReceived(); any other id goes to CommandDispatcher::executeCallbacks. The browser sends exactly this (webinterface/RippleModule.js:216 -&gt; NetworkClient.sendCommand, webinterface/NetworkClient.js:436-447). A plain WebSocket TEXT frame carrying the same JSON also works with no framing at all -- ripple_tools/rig.py does that (rig.py:127-128 send(), :159-160 ripple()) -- because onTextMessageReceived is connected directly to QWebSocket::textMessageReceived (WebSocketServer.cpp:807). Dispatch, WebSocketServer.cpp:1041-1065: everything is forwarded to RippleDetector::slApplyCommand via Qt::QueuedConnection onto the detector's WORKER thread -- EXCEPT armStim, disarmStim and setStimEnabled, called DirectConnection on the MAIN thread, because the worker event loop only runs during Play and the operator must be able to change the stim gate before pressing play. Every slApplyCommand branch ends by broadcasting the full rippleState snapshot (RippleDetector.cpp:799), which is what keeps a second browser / the CLI in sync. THE CONFIG-VS-RUNTIME SPLIT, STATED PLAINLY CONFIG (11 keys, 10 of them optional; only <code>name</code> is required): name, input, input_type, decimation_factor, debug_files, auto_start, baseline_gate_seconds, stimulation, stim_ip, stim_port, dac_trigger. These are the WIRING and the OPT-INs: which band to read, how to cast it, how far to decimate, whether to run unattended, whether a datagram may leave the host at all. RUNTIME-ONLY (everything an operator actually tunes): detection electrodes, per-electrode z, estimation_seconds, min_duration_seconds, lockout_seconds, coincidence_window_seconds, quorum_count, run/pause, retrain, arm/disarm, stim server target, and all four pulse-train parameters. configure() is explicit -- RippleDetector.cpp:201-206 clears the electrode list, hardcodes quorum to 1, and the comment reads "Detection electrodes are now STRICTLY GUI-driven... All detection parameters (quorum, baseline_duration, z_score, etc.) are also strictly GUI-driven." The constructor values (z 5.0, lockout 0.2 s, estimation 10.0 s, window 0.05 s, min-duration 0.0 s, quorum 1) are seeds for freshly created channels and the initial rippleState the dock renders -- they are NOT reachable from YAML. GOTCHAS WORTH CARRYING INTO THE DOC (all re-verified) 1. stim_ip / stim_port are read only when mStimulatorClient is still null (guard at RippleDetector.cpp:173). The detector is a registry singleton, so on a second configure() (source switch, or the auto-provision path) the FIRST profile's stim target survives. Retarget with setStimServer. 2. Bool parsing is inconsistent. debug_files, auto_start and stimulation are "true unless it says false/0/no/off" -- so <code>debug_files: maybe</code> is TRUE. dac_trigger is the opposite: "false unless it says true/1/yes/on" -- and it is case-sensitive, so <code>dac_trigger: True</code> is FALSE. 3. debug_files is inert in any shipped build: the per-sample dumps are AND-ed with the compile-time <code>static constexpr bool DEBUGGING_RIPPLE_DETECTION_FILTERS = false</code> at RippleDetector.cpp:40. 4. input_type is a string equality test against "int16" and nothing else; every other value takes the float branch with an unchecked static_cast of the registry object. 5. Integer parse failure is silent and NOT a no-op -- see correction 2 above. decimation_factor lands on 12 only because of its own &gt;0 guard; stim_port has no such guard and can silently become 0. 6. If the config omits proc.rippledetector entirely, ProcessorManager AUTO-PROVISIONS one so the GUI dock always works, synthesising this YAML in C++ (ProcessorManager.cpp:190-237): input/input_type/decimation_factor picked from which LFP band exists (hasData at :205-206, deliberately not getDataByName, which lazily creates), auto_start:false, debug_files:false, baseline_gate_seconds:1.0. So those six keys have a second, code-side default set that differs from the constructor defaults (notably baseline gate 1.0 s instead of 6.0 s, and debug_files false instead of true). 7. setParam silently ignores an unknown name and any negative value except for quorum_count (RippleDetector.cpp:705) -- a bad command is a no-op, not an error, and the client still gets a rippleState echo that looks like success.</p>
+<h2 id="derived-bands-and-audio-proclfp-procspike-procaudio">Derived bands and audio: <code>proc.lfp</code>, <code>proc.spike</code>, <code>proc.audio</code><a class="headerlink" href="#derived-bands-and-audio-proclfp-procspike-procaudio" title="Permanent link">#</a></h2>
+<p><em><code>src/core/BandFilterProcessor.{hpp,cpp}</code>, <code>src/modules/audio/AudioProcessor.{hpp,cpp}</code></em></p>
+<h3 id="config-keys_1">Config keys<a class="headerlink" href="#config-keys_1" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>parsed as</th>
+<th>default</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proc.lfp / proc.spike -&gt; inputs</code></td>
+<td>seq of maps. Only element [0] is looked at, and only its <code>name</code> child. Guarded by cfg.has_child("inputs") then inputs.is_seq() &amp;&amp; inputs.num_children() &gt; 0.</td>
+<td>absent -&gt; the subclass default input name (see <code>inputs[0].name</code>)</td>
+<td>Optional override of which 30 kHz registry data object this band filters. The coefficients are designed for 30 kHz, so the named band must be 30 kHz.</td>
+</tr>
+<tr>
+<td><code>proc.lfp / proc.spike -&gt; inputs[0].name</code></td>
+<td>string, via Utils::toStdString(first["name"].val()); guarded by first.has_child("name") &amp;&amp; !Utils::isNodeInvalid(first["name"]), so a missing or empty-string value is skipped</td>
+<td>"data.npx.raw" -- BandFilterProcessor::defaultInputName(), src/core/BandFilterProcessor.hpp:93. CONFIRMED that neither LFPProcessor nor SpikeBandProcessor overrides it (each subclass body is only a constructor plus applyCoefficients), so both bands default to data.npx.raw.</td>
+<td>Registry name of the input band (e.g. "data.npx.ap" so an NP1.0 probe can derive the same bands off its hardware AP stream).</td>
+</tr>
+<tr>
+<td><code>proc.lfp / proc.spike -&gt; enabled</code></td>
+<td>BOOL-AS-STRING. Utils::toStdString(cfg["enabled"].val()) then v == "true" || v == "1" || v == "yes" || v == "on". Anything else (including a YAML <code>True</code>) is false. getConfigValue&lt;&gt; is NOT used -- it goes through ryml::read_dec and is integer-only, so it cannot read a YAML boolean.</td>
+<td>false -- mEnabled(false) in the constructor (BandFilterProcessor.cpp:49). A band is DECLARED but not RUNNING unless the profile says so, or the GUI turns it on, or RippleDetector::ensureInputBandEnabled() turns it on.</td>
+<td>Whether the band starts filtering at Play. A disabled band still advances its read index but does no filtering and commits nothing.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; input_channels</code></td>
+<td>seq. REQUIRED: cfg["input_channels"] must be valid and is_seq(), and num_children() must be &lt;= 2 (numAudioChannels). Failure is FATAL -- validateConfig returns false, configure() returns false, and ProcessorManager::discardPartialSetup() abandons the whole processor graph.</td>
+<td>no default; absent = configuration error</td>
+<td>Stereo output description. Its length is validated and its element [0] seeds the live gain/threshold; nothing else about it reaches the audio path (mNextVals/mCurrVals are sized to the compile-time constant numAudioChannels=2 at AudioProcessor.cpp:593-594, not to this seq).</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; input_channels[].channel</code></td>
+<td>uint32 via Utils::getConfigValue<uint32>()</td>
+<td>0 (mAudioParams is std::fill'd with a value-initialised AudioParams{} at :813 before parsing; the struct at AudioProcessor.hpp:202-207 has no default member initialisers, so {} zeroes it)</td>
+<td>DEAD. Parsed into AudioParams::listenChannel and then never read by anything -- a repo-wide grep for <code>mAudioParams</code> and <code>listenChannel</code> returns only the write at :819 and the two consumers at :893-894, which take [0].threshold and [0].gain. The listening channel is RUNTIME-ONLY (mListenChannel starts at -1 = nothing selected, AudioProcessor.hpp:219). The <code>channel: 0</code> in all five shipped profiles has no effect whatsoever.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; input_channels[0].gain</code></td>
+<td>uint32 via Utils::getConfigValue<uint32>(), then std::clamp(gain / 10.0f, 0.0f, 1.0f) into std::atomic<float> mGain</td>
+<td>0 -&gt; gain 0.0 = silent, when the key is present but unparseable. When input_channels is an EMPTY seq the <code>if (!mAudioParams.empty())</code> guard at :892 skips the seeding entirely and the header default mGain{0.5f} (AudioProcessor.hpp:221) survives. Shipped profiles and the auto-provision YAML use 5 -&gt; 0.5.</td>
+<td>Seeds the volume slider only (0..1, multiplied by kGainHeadroom=8 on the audio path at :1028). Live-adjustable afterwards, so this is a starting value, not a setting.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; input_channels[0].threshold</code></td>
+<td>uint32 via Utils::getConfigValue<uint32>(), stored as float ADC counts in std::atomic<float> mThresholdCounts</td>
+<td>0 -&gt; no dead zone, when present but unparseable. With an empty input_channels seq the header default mThresholdCounts{0.0f} (AudioProcessor.hpp:220) survives -- same value either way. Shipped profiles and the auto-provision YAML use 25.</td>
+<td>Seeds the digital-diode dead zone in ADC counts: |x| &lt; threshold collapses to silence, the rest is shifted toward zero (:994-999). Applied in filterData(), BEFORE subsampleData(). Live-adjustable afterwards.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; audio_output</code></td>
+<td>map. Optional; both of its keys are optional. Only rejected when a key is PRESENT BUT EMPTY. The node is handed to AudioWorker::configure(cfg["audio_output"]), which guards with <code>const bool haveCfg = !outputCfg.invalid() &amp;&amp; outputCfg.is_map();</code></td>
+<td>absent / {} -&gt; follow the system default output device (selectDevice(-1), which prefers the platform's follower endpoint over Pa_GetDefaultOutputDevice()'s concrete endpoint -- see :157-162)</td>
+<td>Optional pinning of the PortAudio output endpoint.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; audio_output.device_name</code></td>
+<td>string via Utils::toQString(outputCfg["device_name"].val()); matched with QString::indexOf(..., 0, Qt::CaseInsensitive) -- a case-insensitive SUBSTRING match, not an exact name</td>
+<td>empty -&gt; no device search is attempted at all (findTargetDevice is only called when deviceName is non-empty, :144-145); falls through to follow-the-system-default</td>
+<td>Pins a specific output endpoint by (substring of) its PortAudio device name. A named device that does not exist on this machine logs a warning at :152-156 and falls back to the system default -- deliberately NOT fatal.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; audio_output.host_api_name</code></td>
+<td>string via Utils::toQString(); same case-insensitive substring match</td>
+<td>empty -&gt; matches every host API (an empty QString is a substring of everything), so device_name alone picks the first matching output device on any API</td>
+<td>Disambiguates the same device exposed on several host APIs (MME vs WASAPI vs DirectSound). Only consulted inside findTargetDevice, i.e. only when device_name is non-empty.</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; input</code></td>
+<td>string via Utils::toStdString(cfg["input"].val()), guarded by cfg.has_child("input")</td>
+<td>absent -&gt; decided at runtime by initData(): "data.npx.ap" if the registry HAS it (NP1.0, unfiltered), else "data.npx.raw" (NP2.0, filtered), else audio is disabled for the session (initData returns false -&gt; configure returns false, which IS fatal -- see notes)</td>
+<td>Overrides which probe band the monitor listens to. Setting it also sets mFilterInput = (input != "data.npx.ap").</td>
+</tr>
+<tr>
+<td><code>proc.audio -&gt; filter</code></td>
+<td>BOOL-AS-STRING: "true"/"1"/"yes"/"on" -&gt; true, anything else -&gt; false (same idiom as the band <code>enabled</code> key)</td>
+<td>absent -&gt; the header default mFilterInput = true (AudioProcessor.hpp:176), overwritten by initData()'s auto-detection whenever <code>input</code> was not set: false for data.npx.ap, true for data.npx.raw</td>
+<td>Whether to apply the 300-6000 Hz 2nd-order Bessel band-pass to the input band before it is heard. GOTCHA: only effective when <code>input</code> is ALSO set -- see notes.</td>
+</tr>
+<tr>
+<td><code>(all three) name</code></td>
+<td>string -- read by the framework, NOT by these modules</td>
+<td>no default; required, and a missing/empty one fails config parsing</td>
+<td>Selects which registered processor this node configures ("proc.lfp", "proc.spike", "proc.audio" -- registered in src/core/Utils.cpp:124-126). Listed only so the reference is complete: the modules' own configure() never reads it.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-only-not-config-keys_1">Runtime only: NOT config keys<a class="headerlink" href="#runtime-only-not-config-keys_1" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>how to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>proc.lfp / proc.spike -- band enable/disable (the ONLY runtime knob either band has)</td>
+<td>Binary command id 0x219 (SpikesPeak::kBandCommandId, src/core/BandFilterProcessor.hpp:162). JSON: {"band":"lfp"|"spike", "action":"setEnabled", "value":<bool>}. <code>value</code> is read with QJsonValue::toBool(true), so a missing or non-bool value means TRUE. Handler: BandFilterProcessor::slBpHandleCommand, src/core/BandFilterProcessor.cpp:350-387; setEnabled branch at :370-375. Both band processors subscribe to the SAME id (:136) and each ignores a payload whose "band" names the other (:364-367); an ABSENT or empty "band" means ALL bands. Sent by webinterface/BandModule.js:214 and :252 through the _send helper at :169-171.</td>
+</tr>
+<tr>
+<td>proc.lfp / proc.spike -- state query</td>
+<td>0x219, JSON: {"band":"lfp"|"spike", "action":"getState"} (band optional -&gt; fans out to every band). The branch is a deliberate no-op (BandFilterProcessor.cpp:376-378); the unconditional emitBandState() at :386 is the answer. Any OTHER action string logs "Unknown band action" and returns WITHOUT broadcasting (:379-382). Reply event: {"event":"bandState","band":"lfp"|"spike","enabled":<bool>,"present":true,"stream":"data.lfp"|"data.spike"} (bandStateJson, :328-341). CORRECTION: the shipped GUI never sends this -- grep of webinterface/BandModule.js finds no getState. The browser gets band state from an UNSOLICITED push instead: WebSocketServer calls band-&gt;announceState() directly (src/core/WebSocketServer.cpp:354-369 on source selection, and :100-114 announceOptionalModuleState, invoked at :174 and :720), because the processor threads do not start until Play and a queued getState would sit undelivered.</td>
+</tr>
+<tr>
+<td>proc.lfp / proc.spike -- enable from inside the backend (no WebSocket involved)</td>
+<td>BandFilterProcessor::setEnabledExternally(bool, const QString&amp; reason) (src/core/BandFilterProcessor.cpp:142-153). Repo-wide grep confirms exactly ONE call site: RippleDetector::ensureInputBandEnabled (src/modules/swr/RippleDetector.cpp:655-673), which switches proc.lfp on when the detector's input is "data.lfp" and detection starts (called from slApplyCommand at :684 for "start" and :698 for the legacy "enable"). It announces CONFIRMED state either way, so the GUI button follows what the backend did.</td>
+</tr>
+<tr>
+<td>proc.audio -- listening channel (which probe channel you hear)</td>
+<td>Binary command id 0x218. JSON: {"action":"setChannel","value":<int>}. Handler src/modules/audio/AudioProcessor.cpp:1140-1152. -1 is legitimate and means "stop listening" (distinct from muted); any value &gt;= the input band's channel count is REJECTED with a warning and no state change (and n is 0 when mRawData is null, so every non-negative channel is refused in the degraded case). Starts at -1 (silent) every session -- no YAML key can set it, by design. GUI: webinterface/AudioModule.js:208-209, and #aud-clear sends -1 at :190.</td>
+</tr>
+<tr>
+<td>proc.audio -- digital-diode threshold (ADC counts)</td>
+<td>0x218, {"action":"setThreshold","value":<number>}. Read with toDouble(0.0), floored at 0 via std::max. AudioProcessor.cpp:1153-1156. Seeded once from input_channels[0].threshold, live from here on. GUI: AudioModule.js:183.</td>
+</tr>
+<tr>
+<td>proc.audio -- volume / gain</td>
+<td>0x218, {"action":"setGain","value":&lt;0..1 number&gt;}. Read with toDouble(0.5) and clamped to [0,1]. AudioProcessor.cpp:1157-1160. GUI sends slider percent / 100 (AudioModule.js:188). Seeded once from input_channels[0].gain / 10.</td>
+</tr>
+<tr>
+<td>proc.audio -- mute</td>
+<td>0x218, {"action":"setEnabled","value":<bool>}. toBool(true), so a missing value means unmute. AudioProcessor.cpp:1161-1164. Not the same as channel -1: muted keeps the channel selected. GUI: AudioModule.js:191.</td>
+</tr>
+<tr>
+<td>proc.audio -- output device selection</td>
+<td>0x218, {"action":"setDevice","value":<PortAudio device index>}. A missing "value", or -1, means "follow the system default". AudioProcessor.cpp:1165-1177 forwards it to AudioWorker::slAwSelectDevice via QMetaObject::invokeMethod with Qt::QueuedConnection (the worker owns the PortAudio handle); with no worker (no audio device on this machine) it logs and ignores. This is the runtime equivalent of the audio_output.device_name/host_api_name config keys. GUI: AudioModule.js:197.</td>
+</tr>
+<tr>
+<td>proc.audio -- state query</td>
+<td>0x218, {"action":"getState"} -- no-op branch at :1178-1180, answered by the unconditional emitAudioState() at :1188. An unknown action warns and returns without broadcasting (:1181-1184). Reply event <code>audioState</code> (audioStateJson, :1071-1117): enabled, channel, threshold, gain, num_channels, input_band, filtered, band, available, unavailable_reason, device_index, device_name, device_host_api, follow_default, devices[]. Sent by the GUI at AudioModule.js:224; ALSO pushed synthetically by WebSocketServer, which invokes slApHandleCommand with a literal {"action":"getState"} QByteArray on GUI connect (src/core/WebSocketServer.cpp:108-113) and on source selection (:375-386).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> VERDICT: every claimed key was confirmed at a real call site. NOTHING was removed. The corrections below are line-number fixes, two default refinements, and one wrong claim about the GUI. === CORRECTIONS MADE === 1. <code>audio_output</code> where-clause said \"127-131 in AudioWorker::configure\". WRONG LINE: :127-131 is the blank line plus the function signature and its comment header. The actual <code>!outputCfg.invalid() &amp;&amp; outputCfg.is_map()</code> guard is a single line at :137. Fixed. 2. <code>filter</code> gotcha cited initData()'s clobber at \":686-694\". The <code>if (mInputName.empty())</code> block is :683-695, with the two mFilterInput writes at :686 and :689. Fixed. The claim itself is CONFIRMED: configure() reads <code>input</code> (:864-869), then <code>filter</code> (:870-873), then calls initData() (:875), and initData() only enters the auto-pick branch when mInputName is empty -- in which case it overwrites mFilterInput. A profile with <code>filter:</code> and no <code>input:</code> has its value silently discarded. 3. Band auto-provision YAML cited as ProcessorManager.cpp:114-116. Actual: the <code>ryml::parse_in_arena(\"enabled: false\\n\")</code> is :117 and the configure() is :118 (the 2.0 gate is :101-105, the skip-if-declared is :109-111). Fixed. 4. Audio auto-provision cited as :158-175. Tightened: the synthesized YAML string is built at :165-174 and configured at :175; the guard is :154-157. Fixed. 5. <code>name</code> cited Configuration.cpp:165-175 and ProcessorManager.cpp:53. Actual: Configuration.cpp:166-175, ProcessorManager.cpp:54 (read) / :58-59 (dispatch). Fixed. 6. emitAudioState() after the audio command switch cited as :1186. Actual :1188. Fixed. (bandStateJson :328-341, slBpHandleCommand :350-387, reportLatency :288-326 all confirmed as claimed.) 7. RippleDetector::ensureInputBandEnabled cited as :654-672. Actual :655-673. Fixed. 8. WRONG CLAIM, now corrected in the runtime section: \"getState fans out ... Sent by webinterface/BandModule.js:171,214,252\". BandModule.js sends only setEnabled (:214, :252, via the _send helper at :169-171) and NEVER sends getState -- grep confirms zero matches. The band buttons are populated by an unsolicited backend push (announceState) instead. The 0x219 getState branch exists and works, but nothing shipped exercises it. The audio getState IS sent by the GUI (AudioModule.js:224) and additionally pushed by WebSocketServer. 9. DEFAULT REFINED for input_channels[0].gain / [0].threshold. The claim gave \"0 (zero-filled struct)\". True only when the key is present but unparseable. There is a second path: <code>input_channels: []</code> is a valid seq with 0 children, passes validateConfig, leaves mAudioParams empty, and the <code>if (!mAudioParams.empty())</code> guard at :892 skips the seeding -- so the HEADER defaults survive: mGain{0.5f} and mThresholdCounts{0.0f} (AudioProcessor.hpp:220-221). Gain 0.5, not 0.0. Recorded on both keys. 10. Verified and kept as claimed: neither LFPProcessor nor SpikeBandProcessor overrides defaultInputName() -- both subclass bodies contain only a constructor and applyCoefficients(). Both bands really do default to data.npx.raw. === CROSS-CHECK AGAINST config/<em>.yaml (28 files) === Declarations found (<code>grep -n 'name: \"proc\\.(lfp|spike|audio)\"'</code>): * proc.lfp in 13 profiles: Npx2OneBox:27, Npx2OneBoxAsap:34, Npx2Pxi:19, Npx2PxiNiDaqAsap:37, NpxPxiNiDaq:32, NpxSynthRipples:21, SimNpx2:28, SimNpx2NiDaq:39, SimNpx2NiDaqRipples:47, SimNpx2OneBox:49, SimNpx2RealNiDaqRipples:31, SimNpx2RippleModule:34, SimNpx2Ripples:43. * proc.spike in 2: Npx2Pxi:20, SimNpx2:29. * proc.audio in 5: Npx2OneBox:49, Npx2Pxi:40, Npx2PxiNiDaqAsap:68, NpxPxiNiDaq:63, SimNpx2:50. CLAIMED KEYS THAT NO SHIPPED CONFIG USES (all fine -- real code, unused by profiles): band <code>inputs</code>, band <code>inputs[0].name</code>, band <code>enabled</code>, audio <code>input</code>, audio <code>filter</code>, audio <code>audio_output.device_name</code>, audio <code>audio_output.host_api_name</code>. Every one of the 15 proc.lfp/proc.spike declarations is name-only -- zero keys. Every proc.audio block is exactly <code>audio_output: {}</code> plus two input_channels entries of channel/gain/threshold. KEYS IN A SHIPPED CONFIG THAT ARE NOT IN THE LIST: NONE. Every key written under these three processors in config/</em>.yaml is accounted for by a verified call site. No missed keys. DEAD / INEFFECTIVE KEYS -- CONFIRMED, and this is the part that matters. 1. <code>input_channels[].channel</code> is DEAD, verified by exhaustive grep of <code>mAudioParams</code> and <code>listenChannel</code> across src/ and webinterface/: the only hits are the write at AudioProcessor.cpp:819 and the two consumers at :893-894, which read [0].threshold and [0].gain. All five shipped profiles write <code>channel: 0</code> twice, ten dead lines. The listening channel is runtime-only and starts unselected on purpose. 2. The SECOND input_channels entry is effectively dead, and the configs PROVE it rather than merely allowing it: Npx2PxiNiDaqAsap.yaml:78 and NpxPxiNiDaq.yaml:73 ship <code>gain: 25</code> on entry [1] while entry [0] is <code>gain: 5</code>. 25/10 = 2.5, which would clamp to 1.0 = full volume -- a 2x difference from the other three profiles that is silently discarded, because only index [0] seeds the atomics. Two profiles differ from three others in a value that cannot have an effect. Stereo width comes from the compile-time constant numAudioChannels=2 (mNextVals/mCurrVals sized at :593-594); the seq's only real jobs are to exist, to be a seq, and to be no longer than 2. 3. <code>filter:</code> WITHOUT <code>input:</code> is silently clobbered (see correction 2 above). No shipped profile sets either, so this is a trap for a future profile, not a live bug. CONFIG vs RUNTIME, one line each. * proc.lfp / proc.spike: config = <code>inputs[0].name</code> and <code>enabled</code> and NOTHING ELSE. Runtime = enable/disable only. The filter coefficients are NOT configurable -- compiled in by the subclass (LFPProcessor::applyCoefficients -&gt; setDefaultLFPFilterCoefs, 2nd-order Bessel low-pass 400 Hz; SpikeBandProcessor -&gt; setDefaultSpikeBandFilterCoefs, band-pass 300-6000 Hz). The output data name (\"data.lfp\"/\"data.spike\", fixed by the constructor argument), the ring capacity (30000 x kMaxChannels, cpp:118) and the 8-channels-per-AVX2-filter grouping (kChannelsPerFilter=8, kNumFilters=48, cpp:34-35) are hard-coded. There is no YAML key for cutoff, order, channel subset, or output name. * proc.audio: config = <code>input_channels</code> (shape + element [0]'s gain/threshold as seeds), <code>audio_output.device_name</code>/<code>.host_api_name</code>, <code>input</code>, <code>filter</code>. Runtime = channel, threshold, gain, mute, device. Sample rate (audioSampleRate 44100), stereo channel count (numAudioChannels 2) and kGainHeadroom (8.0f) are compile-time constants at AudioProcessor.cpp:24-28. WIRE FRAMING (both ids), verified. webinterface/NetworkClient.js:436-445 -- a binary WS frame of 4 header bytes then UTF-8 JSON: [id&gt;&gt;8, id&amp;0xFF, totalLen&gt;&gt;8, totalLen&amp;0xFF], where totalLen = 4 + payload bytes, i.e. it INCLUDES the header. WebSocketServer.cpp:1163-1174 extracts the command and hands (id, data) to SP::getCommandDispatcher().executeCallbacks(), except id 0x1000 which is routed to the text handler. Each processor subscribes in configure() (BandFilterProcessor.cpp:136; AudioProcessor.cpp:900, and also at :855 on the degraded no-device path so the panel can still be told WHY it is grey). Handlers run on the MAIN thread; the processor threads only read atomics. DEFAULTS WHEN THE PROFILE DOES NOT DECLARE THE PROCESSOR AT ALL. ProcessorManager auto-provisions all three, so these synthesized nodes are the real shipped defaults on most rigs: * Bands, on any 2.0-style source (data.npx.raw present AND data.npx.lfp absent, tested with hasData() not getDataByName()): configured from the literal YAML \"enabled: false\n\" (ProcessorManager.cpp:117-118) -- provisioned, present in the GUI band menu, doing no work until switched on. NP1.0 is deliberately excluded (:94-96). A profile that declared the band is skipped (:109-111) and its own <code>enabled:</code> wins. * Audio, on any source with data.npx.ap or data.npx.raw: configured from a synthesized node \"audio_output: {}\" plus two entries of {channel: 0, gain: 5, threshold: 25} (ProcessorManager.cpp:165-174). That is where the effective default gain 0.5 and threshold 25 counts come from. A profile that DOES declare proc.audio wins; the block is skipped (:154). PARSING CAVEAT on getConfigValue<T>. src/core/Utils.hpp:58-65 is <code>auto val = node.val(); ryml::read_dec&lt;T&gt;(val, result);</code> with an explicit \"Must check validity of node first!\" comment -- it does not check. configureInputChannels calls it on channelCfg[\"channel\"|\"gain\"|\"threshold\"] with NO has_child guard (AudioProcessor.cpp:818-821), so all three keys are effectively mandatory on every input_channels entry: a missing one calls .val() on an invalid node (ryml asserts in debug; undefined in release) rather than falling back to the zero-filled default. A key that is PRESENT but unparseable does leave the zeroed default. FAILURE WEIGHTS, since they change what a bad key costs. * Band configure() returns false only when the named input or the output data object cannot be resolved (BandFilterProcessor.cpp:96-114) -&gt; ProcessorManager::discardPartialSetup(), whole graph abandoned. * Audio validateConfig failure (missing/invalid/oversized input_channels, or a present-but-empty device_name/host_api_name) is FATAL the same way (:830-833). So is initData() returning false when the registry has neither data.npx.ap nor data.npx.raw (:875-878) -- note the log line at :691-692 says \"spike audio DISABLED. Acquisition is unaffected\", but the return value IS propagated as a configure() failure, so that comment overstates the softness of that one path. * A MISSING AUDIO DEVICE is genuinely soft: Pa_Initialize failure returns TRUE after subscribing and marking provisioned (:847-858), and AudioWorker::configure returns true on every device failure (:168-181). \"The profile was fine; the speakers were missing\" must never stop a recording. UNSOLICITED EVENT worth knowing about on 0x219's channel: each band also emits {\"event\":\"bandLatency\", band, backlog_mean_samples, backlog_max_samples, backlog_mean_ms, backlog_max_ms, filter_us_per_sample, batches, samples} once per 30000 input samples (~1 s at 30 kHz), from reportLatency (BandFilterProcessor.cpp:288-326). It is not requestable and has no config key.</p>
+<h2 id="top-level-of-a-profile-and-how-it-is-loaded">Top level of a profile, and how it is loaded<a class="headerlink" href="#top-level-of-a-profile-and-how-it-is-loaded" title="Permanent link">#</a></h2>
+<p><em><code>src/core/Configuration.{hpp,cpp}</code>, <code>ProcessorManager.cpp</code>, <code>SourceManager.cpp</code></em></p>
+<h3 id="config-keys_2">Config keys<a class="headerlink" href="#config-keys_2" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>parsed as</th>
+<th>default</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string, via Utils::toStdString(root["name"].val())</td>
+<td>NONE -- REQUIRED. Missing (node .invalid()) or empty =&gt; parseConfig() returns false, and main.cpp treats that as fatal (process exits 1).</td>
+<td>THE IDENTITY of the config profile. It is the key mConfigs is stored under, the string every lookup (getSourceConfig / getProcConfig / getSimVariant / isGuiHidden) takes, and the string <code>connect &lt;X&gt;</code> / the GUI <code>selectSource</code> value must match exactly. The FILENAME is never used as an identifier.</td>
+</tr>
+<tr>
+<td><code>sources</code></td>
+<td>seq (ryml sequence of maps); validated by parseSources()</td>
+<td>NONE -- REQUIRED. Absent =&gt; qCritical "\"sources\" configuration missing!" and parseConfig() returns false (fatal at startup). Present but not a sequence =&gt; false. Any child missing a non-empty <code>name</code> =&gt; false.</td>
+<td>The list of data-source modules to instantiate. Each child's <code>name</code> is looked up in the SourceRegistry/ObjectFactory (e.g. source.npx.pxi, source.npx.onebox, source.npx.sim2, source.nidaq). SourceManager iterates it and calls initDataSource(child) per entry. Note getSourceConfig() blindly returns root["sources"] on the documented assumption that parseConfig already proved it exists.</td>
+</tr>
+<tr>
+<td><code>processors</code></td>
+<td>seq (ryml sequence of maps); validated by parseProcs()</td>
+<td>OPTIONAL. Absent =&gt; only a qWarning ("does not have any processor configuration"); the config still loads. getProcConfig() then returns std::nullopt. Present but not a sequence, or a child with an invalid/empty <code>name</code> =&gt; parseConfig() returns false (fatal at startup).</td>
+<td>The list of processor modules to instantiate and configure. ProcessorManager iterates it, resolves each child's <code>name</code> in the ProcessorRegistry and calls processor-&gt;configure(child). ⚠️ CONSEQUENCE THAT SURPRISES PEOPLE: if this key is ABSENT, setupProcessors() returns true at ProcessorManager.cpp:47 BEFORE reaching any of the three auto-provision blocks -- so a config with no <code>processors:</code> gets NO proc.lfp, NO proc.spike, NO proc.audio and NO proc.rippledetector either.</td>
+</tr>
+<tr>
+<td><code>sim_variant</code></td>
+<td>string (raw scalar via .val(), no trimming beyond ryml's quote handling)</td>
+<td>ABSENT =&gt; std::nullopt. Returning nullopt is what marks a profile as "real hardware" rather than a simulation scenario.</td>
+<td>Human-readable label for a selectable SIMULATION SCENARIO. Any config carrying this key is reported in the <code>simVariants</code> array of the configList reply as {name, label}, and the GUI groups those under its single "Simulated Data" picker instead of listing them as separate hardware sources. Purely presentational -- it changes nothing about how the config is built.</td>
+</tr>
+<tr>
+<td><code>gui_hidden</code></td>
+<td>BOOL-AS-STRING, hand-rolled and case-SENSITIVE. Read as a raw scalar string, then: false only if the string is exactly "false", "0", "no" or "off"; ANY other value (including "False", "FALSE", "True", "maybe", "") is TRUE.</td>
+<td>false (key absent =&gt; false; unknown config name =&gt; false)</td>
+<td>Omits the profile from the GUI Source dropdown while leaving it fully selectable by exact name from the control CLI (headless validation profiles). Reported as a SEPARATE <code>guiHidden</code> array in the configList reply so <code>configs</code> stays the complete list -- hiding from the GUI must never make a profile unselectable from a script. Shipped users: config/SimNpx1Ripples.yaml:6 and config/SimNpx2Ripples.yaml:6, both <code>gui_hidden: true</code>. ⚠️ <code>gui_hidden: False</code> (capitalised, which YAML itself considers false) evaluates to TRUE here.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-only-not-config-keys_2">Runtime only: NOT config keys<a class="headerlink" href="#runtime-only-not-config-keys_2" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>how to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WHICH CONFIG PROFILE IS ACTIVE (the entire top-level selection). Nothing in any YAML file selects itself; the profile is chosen at runtime over the WebSocket.</td>
+<td>WIRE FORMAT for every command below: a BINARY WebSocket frame = 4-byte big-endian header [id&gt;&gt;8, id&amp;0xFF, totalLen&gt;&gt;8, totalLen&amp;0xFF] followed by the UTF-8 JSON body; totalLen counts the 4 header bytes. Built by webinterface/NetworkClient.js:436-447; parsed by SpikesPeak::extractCommand in src/core/Commands.cpp:12-30 (totalLength at :18, id at :23, body sliced at :25 -- every byte masked to unsigned char, a documented fix for headers &gt;= 0x80). Command id 0x1000 is the control-JSON channel: src/core/WebSocketServer.cpp:1163-1175 routes id 0x1000 to onTextMessageReceived(command.data) (:1169-1170) and every other id to CommandDispatcher::executeCallbacks (:1173). A plain TEXT frame carrying the same JSON also works -- onTextMessageReceived is connected directly to textMessageReceived at WebSocketServer.cpp:807.</td>
+</tr>
+<tr>
+<td>listConfigs -- enumerate every loaded profile, plus the sim_variant and gui_hidden subsets</td>
+<td>0x1000 + {"command":"listConfigs"}. Handler: src/core/WebSocketServer.cpp:933-960. Reply broadcast: {"event":"configList", "configs":[<every internal name: field>], "simVariants":[{"name":...,"label":...}], "guiHidden":[names]} (built at :936-959). Sent automatically by the browser on socket open (webinterface/NetworkClient.js:32).</td>
+</tr>
+<tr>
+<td>selectSource -- connect a profile by its internal name: (this is the top-level equivalent of "load this config")</td>
+<td>0x1000 + {"command":"selectSource","value":"<exact internal name: field>"} , with an optional {"playbackFile":"<abs path to .h5>"} used only when the name contains the literal substring "(play file)" (src/core/WebSocketServer.cpp:886-925; a "(play file)" name with no path opens a native QFileDialog at :899-921 and sets SP::Npx::SynthRippleSource::sPlaybackFile at :896 / :913). Flows to onSourceSelection (WebSocketServer.cpp:117) -&gt; MainController::handleTextCommand("connect <name>") (WebSocketServer.cpp:139-140) -&gt; handleConnectRequest (MainController.cpp:95) -&gt; setupSources then setupProcessors. Sent by webinterface/main.js:899-901.</td>
+</tr>
+<tr>
+<td>Disconnect -- tear the whole graph down (frees hardware, clears all four registries)</td>
+<td>0x1000 + {"command":"Disconnect","value":"<anything, presence of the key is all that is checked>"}. Handler: src/core/WebSocketServer.cpp:927-929 -&gt; teardownSource() (:417) -&gt; handleTextCommand("disconnect") (:451). Sent by webinterface/main.js:319 (value is the literal string "moo").</td>
+</tr>
+<tr>
+<td>setPlaying -- start/stop acquisition on the already-connected profile</td>
+<td>0x1000 + {"command":"setPlaying","value":true|false} -&gt; WebSocketServer.cpp:854-856 -&gt; setPlaying() (:728) -&gt; handleTextCommand("play") at :731 or ("pause") at :771. NOTE handlePlayRequest returning true means the request was ACCEPTED, not that acquisition is running (comment at MainController.cpp:201).</td>
+</tr>
+<tr>
+<td>getSystemState -- ask outright what the server currently holds (acquisition state, source name, per-source and per-processor liveness)</td>
+<td>0x1000 + {"command":"getSystemState"} -&gt; WebSocketServer.cpp:962-967 -&gt; broadcastJson(systemStateJson()), built from MainController::systemState() (MainController.cpp:232-262): {acquisition: no_source|connected|acquiring|unknown, source, sourceDown, sources:[...], processors:[...]}. Polled by webinterface/SystemMonitor.js:28-29.</td>
+</tr>
+<tr>
+<td>setProbeMap -- apply a named IMRO map to the connected profile's sources</td>
+<td>0x1000 + {"command":"setProbeMap","value":"default"|"bank0".."bank2"|"<path>.imro"}. Handler src/core/WebSocketServer.cpp:968-989; it re-reads getSourceConfig(mSourceName) at :975 purely to recover the registry module names, then calls sourceObj-&gt;applyNamedMap(which). Not a config key -- nothing in the YAML sets this.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> == VERDICT == All five claimed top-level keys CONFIRMED at real call sites; nothing was removed. Corrections are line-number precision only, listed at the end. The cross-check against all 28 shipped configs found NO dead top-level key and NO missed top-level key. == CROSS-CHECK AGAINST config/<em>.yaml (28 files: 28 .yaml, 0 .yml) == Every column-0 key across all 28 files, enumerated with <code>grep -h "^[^ #]" *.yaml</code>: exactly <code>name</code> (28), <code>sources</code> (28), <code>processors</code> (28), <code>sim_variant</code> (16), <code>gui_hidden</code> (2). Nothing else appears at column 0 in any file. - Claimed keys no shipped config uses: NONE. All five are exercised. - Keys in a shipped config that are NOT in the list: NONE. No dead top-level key exists. - <code>gui_hidden</code> users (both <code>true</code>): config/SimNpx1Ripples.yaml:6, config/SimNpx2Ripples.yaml:6 -- matches the claim exactly. - <code>sim_variant</code> users (16): NiDaqOnly, Npx1SynthRipples, NpxSynthRipples, SimNpx1, SimNpx1LatencyAsap, SimNpx1LatencyBaseline, SimNpx1NiDaq, SimNpx1NiDaqRipples, SimNpx1OneBox, SimNpx1RippleModule, SimNpx2, SimNpx2NiDaq, SimNpx2NiDaqRipples, SimNpx2OneBox, SimNpx2RealNiDaqRipples, SimNpx2RippleModule. Note two of these (NiDaqOnly, and the two </em>SynthRipples play-file profiles) are NOT simulations of a probe in the naive sense -- <code>sim_variant</code> is purely the GUI-picker grouping tag, which the claim states correctly. - DUPLICATE-NAME CHECK RUN: I extracted the internal <code>name:</code> from all 28 files. All 28 are distinct, so the silent-collision hazard below is currently latent, not active. == HOW A CONFIG IS IDENTIFIED == By its internal top-level <code>name:</code> field, NEVER by the filename. main.cpp:261-288 (parseAllConfigs) globs <code>&lt;exeDir&gt;/../config</code> (main.cpp:465) for <em>.yaml and </em>.yml with QDir::Name sorting (main.cpp:267, :272-273) and feeds every hit to parseConfig(); parseConfig stores the whole tree as mConfigs[<the name: field>] (Configuration.cpp:238). The filename survives only as (a) the glob filter -- a stray non-YAML file such as a saved .imro is skipped so it cannot abort startup (main.cpp:269-273) -- and (b) the alphabetical parse ORDER. ⚠️ DUPLICATE-NAME HAZARD CONFIRMED: <code>mConfigs[configName] = tree</code> (Configuration.cpp:238) is a plain map assignment with no collision check. Two files with the same <code>name:</code> silently collapse to one, and the alphabetically LATER filename wins. No warning is emitted. == STRICT LOADING == parseAllConfigs returns false if ANY single file fails (main.cpp:281-283), and main.cpp:466-470 exits with code 1. One malformed config therefore prevents the whole application from starting. Validation is limited to: root is a map (Configuration.cpp:194-197); <code>name</code> present and non-empty; <code>sources</code> present, a seq, every child having a non-empty <code>name</code>; <code>processors</code>, IF present, a seq with every child having a non-empty <code>name</code>. Nothing else in the file is validated at load time -- every other key is checked (or ignored) later by the individual source/processor configure(). == ORDER OF OPERATIONS ON CONNECT (this is what makes auto-provisioning work) == MainController::handleConnectRequest (MainController.cpp:95-148) constructs a fresh ProcessorManager + SourceManager, then calls setupSources FIRST (:131) and setupProcessors SECOND (:139). CONFIRMED. Sources register their declared output bands in the DataRegistry during initDataSource, so by the time ProcessorManager runs, DataRegistry::hasData() can be used to detect the probe type. == AUTO-PROVISIONED PROCESSORS -- EXACT CONDITIONS (all confirmed) == All three blocks live at the END of ProcessorManager::setupProcessors, AFTER the loop over declared processors (:50-77). GLOBAL PRECONDITION: the config must have a <code>processors:</code> node at all -- if it does not, getProcConfig returns nullopt and setupProcessors returns true at ProcessorManager.cpp:44-48 (the <code>return true;</code> is line 47), before any of them. All three test with DataRegistry::hasData() and never getDataByName(). Verified in src/core/Registry.cpp: getDataByName (:30-51) falls through to ObjectFactory::createObjectByName and INSERTS the result into mDataInfoMap, i.e. it lazily creates; hasData (:53-60) is a bare mDataInfoMap.contains() under the mutex with an explicit comment that it deliberately does NOT fall through to the factory. The code comments at ProcessorManager.cpp:98-100 and :193-200 record that this exact trap once made the NP2 ripple branch unreachable dead code. 1) proc.lfp and proc.spike -- ProcessorManager.cpp:97-143 (a bare scoped block; <code>{</code> at :97, <code>}</code> at :143). CONDITION: hasData("data.npx.raw") &amp;&amp; !hasData("data.npx.lfp") (:101-103, <code>isTwoPointOh</code> at :103, tested at :105). 1.0 is deliberately excluded (comment :94-96). SKIPPED per-band if the profile already declared it (mProcessorDatas.contains, :109-111) -- the profile's own <code>enabled:</code> then wins. Unresolvable processor name =&gt; qWarning + continue (:114-117). CONFIGURED WITH the literal synthesized YAML <code>enabled: false\n</code> (:117), so the band is PRESENT but idle until the operator presses its GUI band button. Then, still inside the isTwoPointOh branch, proc.npx.display is qobject_cast to Npx::DisplayProcessor (:129-130) and given ensureDerivedBandStream("lfp","data.lfp") at :136 and ("spike","data.spike") at :139, each guarded by its own hasData() at :135 and :138. 2) proc.audio -- ProcessorManager.cpp:154-184 (<code>if</code> at :154, <code>}</code> at :184). CONDITION: !mProcessorDatas.contains("proc.audio") (:154) &amp;&amp; ( hasData("data.npx.ap") || hasData("data.npx.raw") ) (:155-156) -- i.e. any probe source, 1.0 or 2.0. CONFIGURED WITH synthesized YAML built at :165-173: <code>audio_output: {}</code> plus TWO input_channels entries (stereo: one probe channel to both ears), each <code>channel: 0, gain: 5, threshold: 25</code>. The LISTENING CHANNEL IS DELIBERATELY NOT SET -- comment at :160-164 says that is a runtime judgement made against real traces. 3) proc.rippledetector -- ProcessorManager.cpp:190-237 (<code>if</code> at :190, <code>}</code> at :237). CONDITION: !mProcessorDatas.contains("proc.rippledetector") (:190) AND an LFP band exists. Branch order is intentional (:205-211): hasData("data.npx.lfp") -&gt; input=data.npx.lfp, input_type=int16, decimation_factor=1 (NP1 native hardware LFP, 2.5 kHz) else hasData("data.lfp") -&gt; input=data.lfp, input_type=float, decimation_factor=12 (NP2 band derived by proc.lfp) else -&gt; nothing is provisioned; qDebug "No LFP band available" (:234-236) Plus fixed <code>auto_start: false</code> (:222), <code>debug_files: false</code> (:223), <code>baseline_gate_seconds: 1.0</code> (:224). Created IDLE with zero detection channels -- everything else (channels, z-score, lockout, quorum, min-duration) arrives at runtime from the GUI Ripple dock. setupProcessors then <code>return true;</code> at :239. == WHAT HAPPENS WHEN configure() FAILS == TWO COMPLETELY DIFFERENT OUTCOMES, and the difference is whether the processor was DECLARED or AUTO-PROVISIONED. A) A DECLARED processor (from the <code>processors:</code> seq) -- FATAL to the connect. ProcessorManager.cpp:67-73: qWarning, then discardPartialSetup(), then return false. Identical treatment if the registry cannot produce the processor at all (unknown name, or a module not compiled into this build) -- ProcessorManager.cpp:60-65. discardPartialSetup (ProcessorManager.cpp:400-429): calls markUnprovisioned() on every processor built so far (:407-409 -- they OUTLIVE the graph, the registry keeps one instance per name for the life of the process, so a stale "provisioned" flag would make the GUI show band/audio buttons belonging to the previous profile), then quit()+wait(2000)+deleteLater() on each QThread (:420-426) and clears mProcessorDatas/mProcsReady (:427-428). Nothing has been START-ed at that point (setupProcessors only constructs), so this is safe. The manager is left EMPTY rather than half-populated, which is what makes "did setup succeed?" answerable. MainController.cpp:139-143 then logs "Failed to set up processors", calls teardownManagers() (cleanupProcessors -&gt; cleanupSources -&gt; clearRegistry() on all four registries -&gt; deleteLater both managers -&gt; QCoreApplication::sendPostedEvents(DeferredDelete) to force the deletions to complete NOW, MainController.cpp:60-92) and returns false. WebSocketServer::onSourceSelection sees connectOk==false (:140) and: setDeviceState(false) (:180); schedules a 400 ms singleShot fallback dialog (:194 onward) that fires ONLY if no source already broadcast a "hardware-error", quoting ErrorLog::instance().since(logMark) -- so the specific reason survives even when the object that reported it is already destroyed. If a source was ALREADY connected when the refused select arrived, the previous mSourceName / display procs / deviceReady are RESTORED and the operator is told "Still connected to X. Disconnect before selecting another source." (:160-177). B) An AUTO-PROVISIONED processor -- NON-FATAL. Every one of the three blocks only qWarnings and moves on: proc.lfp/proc.spike at ProcessorManager.cpp:122-124 (and :114-117 for an unresolvable name), proc.audio at :179-181, proc.rippledetector at :230-232. The connect still succeeds; the feature is simply absent. For proc.lfp/proc.spike the failure is also caught downstream -- ensureDerivedBandStream is guarded by hasData() (:135, :138), so a band whose configure() failed does NOT get a display stream bound to a buffer nothing will ever write. C) SOURCE setup failure, for contrast (SourceManager.cpp:24-68): the source name not being in the registry (:46-50) or initDataSource(child) returning false (:52-61) both return false; the latter also records ConnectAttemptLog::noteFailure keyed by transport (:58-60, issue #54). MainController.cpp:131-137 then calls teardownManagers() explicitly so an NI-DAQ that reserved before a later source failed is RELEASED rather than left reserved for the next attempt. D) A processor that configures fine but never reports READY: ProcessorManager arms an 8 s single-shot watchdog before starting anything (kStartupTimeoutMs = 8000, ProcessorManager.hpp:54; armed at ProcessorManager.cpp:312). On expiry slPmStartupTimedOut (:572-591) latches mStartupFailed (:577), names the processors that never checked in, and emits sigPmStartupFailed (:590); MainController::slMcOnStartupFailed (:308-322) walks the state back and emits the acquisition-stopped signal. Late "ready" arrivals are logged but must NOT resurrect the cycle (:460). Readiness is tracked by REGISTRY KEY via nameForSender(sender()) (:378, used at :444 and :483), never by the label the processor reports -- the comment at :438-443 records that every RecordProcessor emits the same "recorder", so a profile with an NPX and an NI-DAQ recorder would otherwise contribute one identity for two processors and hang until the watchdog fired. == DEAD CODE -- CONFIRMED == ConfigManager::getConfig(const std::string&amp;) (declared Configuration.hpp:27-28, implemented Configuration.cpp:31-39) has ZERO callers. I grepped <code>getConfig(</code> and <code>.getConfig</code> across all of src/ and tests/ -- the only hits are the declaration and the definition itself. Every real consumer goes through getSourceConfig / getProcConfig / getSimVariant / isGuiHidden / listConfigNames. A separate grep for <code>crootref</code>/<code>rootref()</code> outside Configuration.cpp found only three hits (ProcessorManager.cpp:118, :175, :226), and all three are on locally-synthesized auto-provision trees, not on a config file's root. That is the proof that the five keys above are the COMPLETE top-level surface: no other code path can reach an arbitrary root-level key. == CORRECTIONS MADE TO THE SUBMITTED SCHEMA == Substance: none. All five keys, their types, defaults, semantics and fatality behaviour verified as claimed. Line-number fixes only: 1. Commands.cpp:32-49 -&gt; Commands.cpp:12-30. extractCommand begins at line 12; totalLength is parsed at :18, id at :23, body at :25. The submitted range points past the end of the file's function (the file ends at :31). 2. ProcessorManager.cpp ":130-141" for the ensureDerivedBandStream guards -&gt; the hasData() guards are at :135 and :138 and the calls at :136 and :139 (the qobject_cast is at :129-130). 3. discardPartialSetup ":400-431" -&gt; :400-429 (the closing brace is at :429). 4. Registry.cpp ":53-61" for hasData -&gt; :53-60. getDataByName ":31-51" -&gt; :30-51 (return type on :30). 5. WebSocketServer.cpp ":140-141" for handleTextCommand("connect ...") -&gt; :139-140 (:139 builds the string, :140 calls). 6. MainController::systemState ":231-262" -&gt; :232-262 (:231 is the return type). 7. ProcessorManager consumption of <code>processors</code> ":42-78" -&gt; :42-77 (getProcConfig at :42-43, declared loop at :50-77, return true at :239). 8. listConfigs handler ":933-961" -&gt; :933-960; selectSource ":886-926" -&gt; :886-925; parseSources ":116-147" -&gt; :115-147; parseProcs ":150-181" -&gt; :149-181. Off-by-one on the enclosing braces. 9. WebSocketServer consumption of <code>sources</code> was given as ":250-284" and ":286-306"; the actual getSourceConfig/getProcConfig call sites are single lines :250, :286, :433, :975, :1150. Narrowed to those. == ONE FACTUAL PRECISION THE SUBMITTED NOTES GOT SLIGHTLY WRONG == The submitted notes describe the inconsistent severity levels correctly, but the message TEXT in parseSources is worth quoting exactly, because someone grepping output.log for "sources" will miss it: Configuration.cpp:120 emits <code>"source" configuration is invalid</code> and :125 emits <code>"source" configuration must be a sequence</code> -- SINGULAR "source", not "sources", even though the key is <code>sources</code>. Only the missing-key path at :220 says <code>"sources" configuration missing!</code>. parseProcs (:154, :159, :168) correctly says "processors" / "Processor". The severity asymmetry itself is confirmed: qDebug (not qCritical) at :125 (non-seq sources), :174 (empty processor name), :207 (empty config name) and :214 (the sources rollup); all still return false and still abort startup.</p>
+<h2 id="display-and-recording-procnpxdisplay-procnpxrecorder-the-ni-daq-pair">Display and recording: <code>proc.npx.display</code>, <code>proc.npx.recorder</code>, the NI-DAQ pair<a class="headerlink" href="#display-and-recording-procnpxdisplay-procnpxrecorder-the-ni-daq-pair" title="Permanent link">#</a></h2>
+<p><em><code>DisplayProcessor.{hpp,cpp}</code>, <code>RecordProcessor</code> (registered under both recorder names)</em></p>
+<h3 id="config-keys_3">Config keys<a class="headerlink" href="#config-keys_3" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>parsed as</th>
+<th>default</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proc.npx.display: update_interval_ms</code></td>
+<td>int via SP::Utils::getConfigValue<int> (ryml read_dec; guarded by cfg.has_child)</td>
+<td>20 (ctor member init, DisplayProcessor.cpp:53)</td>
+<td>Display timer period in ms; becomes QTimer::setInterval(mUpdateIntervalMs) for the whole processor, and with timebins_per_update sets mTicksPerTimebin = 100000/1000 * (update_interval_ms/timebins_per_update).</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: timebins_per_update</code></td>
+<td>int via SP::Utils::getConfigValue<int></td>
+<td>20 (ctor member init, DisplayProcessor.cpp:54)</td>
+<td>Min/max buckets emitted per display packet; written into every stream's binary header as u32 numBins and used to size the tick-per-timebin math.</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: inputs</code></td>
+<td>seq (ryml node; must satisfy !invalid() &amp;&amp; is_seq())</td>
+<td>NONE -- REQUIRED. Missing or non-seq =&gt; qCritical and configure() returns false (profile setup aborts).</td>
+<td>List of display streams to bind. Each child is one live-view band.</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: inputs[].data</code></td>
+<td>string via SP::Utils::toStdString(child["data"].val())</td>
+<td>NONE -- REQUIRED (isNodeInvalid check =&gt; configure() returns false)</td>
+<td>The STREAM ID sent on the wire ([u8 len][idStr] packet header) and the key the browser routes traces by -- 'ap', 'lfp', 'raw', 'adc', 'spike'. Must be unique within the processor (duplicate =&gt; configure fails).</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: inputs[].name</code></td>
+<td>string via SP::Utils::toStdString(child["name"].val())</td>
+<td>NONE -- REQUIRED (isNodeInvalid check =&gt; configure() returns false)</td>
+<td>Registry data-object name to bind ('data.npx.ap' / 'data.npx.lfp' / 'data.npx.raw' / 'data.npx.adc' / 'data.lfp' / 'data.spike'). Unknown name =&gt; configure fails. Also drives the SCALE INFERENCE and the int16-vs-float buffer choice (data.lfp/data.spike are the only float bands).</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: inputs[].scale_factor</code></td>
+<td>float via std::stof on the raw scalar (NOT getConfigValue -- that helper is integer-only); parse failure only warns and keeps the inferred value</td>
+<td>absent =&gt; INFERRED from the data name: data.lfp/data.spike =&gt; (1/84/4096)<em>1e4; </em>.ap =&gt; (1.2/1024<em>1e4)/500; </em>.lfp =&gt; (1.2/1024<em>1e4)/250; </em>.raw =&gt; (1/84/4096)<em>1e4; </em>.adc =&gt; the live gAdcVoltsPerCount (default 5/32768 V); anything else =&gt; 1.0</td>
+<td>Explicit per-stream display scale override (counts -&gt; display units), the escape hatch when the name-based inference is wrong (e.g. a derived band computed from an NP1 ap source).</td>
+</tr>
+<tr>
+<td><code>proc.npx.display: inputs[].num_channels</code></td>
+<td>int via SP::Utils::getConfigValue<int>; values &lt;= 0 are ignored (fall back to the default)</td>
+<td>384</td>
+<td>Trace count for this stream; sizes the min/max arrays and is written into the packet header as u32 numChannels so the browser renders the right number of traces. Set to 12 for the OneBox ADC band.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings</code></td>
+<td>seq (must satisfy !invalid() &amp;&amp; is_seq())</td>
+<td>NONE -- REQUIRED. Missing or non-seq =&gt; qCritical and configure() returns false.</td>
+<td>List of recordings this processor manages; one output .bin (+ .json sidecar) per entry.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: output_directory</code></td>
+<td>string via SP::Utils::toStdString(dirNode.val()); read only if !invalid() &amp;&amp; has_val()</td>
+<td>"" (empty) =&gt; files land in the process working directory. NOTE: the GUI/CLI-supplied dir always overrides this when non-empty (applyRecordingState:270).</td>
+<td>Optional base directory for recorded files. Not present in ANY shipped config -- code-supported but unused by every profile in config/.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings[].data_name</code></td>
+<td>string via SP::Utils::toStdString(child["data_name"].val())</td>
+<td>NONE -- REQUIRED (isNodeInvalid check =&gt; configure() returns false)</td>
+<td>Registry data object to record ('data.npx.ap', 'data.npx.lfp', 'data.npx.raw', 'data.npx.adc', 'data.nidaq.raw', 'data.nidaq.di'). Read TWICE: RecordProcessor stores it for the sidecar, and the same child node is handed to the data interpreter, which reads data_name again to bind its buffer.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings[].data_interpreter_name</code></td>
+<td>string via SP::Utils::toStdString(child["data_interpreter_name"].val())</td>
+<td>NONE -- REQUIRED (isNodeInvalid check =&gt; configure() returns false)</td>
+<td>Registered interpreter that serializes the frames ('interp.npx.ap|lfp|raw|adc', 'interp.nidaq.raw|di'). Must be UNIQUE across the recordings list (it is the map key) and must exist in the registry, else configure() fails. Its NAME is also the semantic switch used at record time: contains 'npx' &amp;&amp; !contains 'adc' =&gt; the runtime channel override applies; contains 'nidaq' =&gt; float64 frame layout in the sidecar.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings[].output_filename</code></td>
+<td>string via SP::Utils::toStdString(child["output_filename"].val())</td>
+<td>NONE -- REQUIRED (isNodeInvalid check =&gt; configure() returns false)</td>
+<td>BAND STEM, not a full filename. Final path is <dir>/<namePrefix>/<namePrefix><em><output_filename></em><yyyyMMdd_hhmmss>.bin, and the value is echoed into the sidecar as meta["band"].</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings[].channels</code></td>
+<td>seq of int, each via SP::Utils::getConfigValue<int>; a non-seq node logs 'is not an array, ignoring'; entries outside [0, kMaxChannels) or duplicates are dropped with a warning</td>
+<td>absent/empty =&gt; NO filter: the interpreter writes the whole channel block (sidecar records channels:[] and num_channels:0, reader infers N from file size)</td>
+<td>Default set of channel indices written to disk, in file column order (NPX: electrode numbers under the applied map; NI-DAQ: ai indices). Stored as recordIndices and copied to activeRecordIndices; a runtime override replaces the active copy for one session only and leaves this default intact.</td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder / proc.nidaq.recorder: recordings[].sample_rate_hz</code></td>
+<td>double via std::stod on the raw scalar (NOT getConfigValue -- integer-only); throw =&gt; warning, value stays 0.0</td>
+<td>0.0 (i.e. 'unset' -- written to the sidecar as 0)</td>
+<td>METADATA ONLY. It is never used to time anything; it is copied verbatim into the per-file .bin.json sidecar as sample_rate_hz for offline postprocessing. A wrong value here silently mistimes every offline analysis and nothing in the backend notices.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: update_interval_ms</code></td>
+<td>int via SP::Utils::getConfigValue<int></td>
+<td>20 (ctor, NiDaqDisplayProcessor.cpp:20)</td>
+<td>NI-DAQ display timer period in ms; also a factor in samples-per-bin.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: timebins_per_update</code></td>
+<td>int via SP::Utils::getConfigValue<int></td>
+<td>20 (ctor, NiDaqDisplayProcessor.cpp:21)</td>
+<td>Buckets per display packet for the NI-DAQ streams.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: sample_rate_hz</code></td>
+<td>double via std::stod (getConfigValue is integer-only); throw =&gt; warning, keeps 40000.0</td>
+<td>40000.0 (ctor, NiDaqDisplayProcessor.cpp:22)</td>
+<td>PROCESSOR-LEVEL (not per-input). Sets mSamplesPerBin = rate * (update_interval_ms/timebins_per_update)/1000, clamped to &gt;= 1 -- i.e. the NI-DAQ decimation. Unlike the NPX display (which buckets by 100 kHz hardware TICKS) the NI-DAQ path buckets by SAMPLE COUNT, so a wrong rate here visibly wrong-speeds the NI-DAQ traces.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: inputs</code></td>
+<td>seq (must satisfy !invalid() &amp;&amp; is_seq())</td>
+<td>NONE -- REQUIRED; missing or non-seq =&gt; configure() returns false</td>
+<td>NI-DAQ display streams to bind.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: inputs[].data</code></td>
+<td>string via SP::Utils::toStdString</td>
+<td>NONE -- REQUIRED (isNodeInvalid =&gt; configure() returns false)</td>
+<td>Stream id on the wire ('nidaq', 'nidaq_di'); must be unique in this processor.</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: inputs[].name</code></td>
+<td>string via SP::Utils::toStdString</td>
+<td>NONE -- REQUIRED (isNodeInvalid =&gt; configure() returns false)</td>
+<td>Registry data object; must dynamic_cast to SP::NiDaq::NiDaqData or configure() fails ('data.nidaq.raw' / 'data.nidaq.di').</td>
+</tr>
+<tr>
+<td><code>proc.nidaq.display: inputs[].scale</code></td>
+<td>float via std::stof; throw =&gt; warning and 1.0</td>
+<td>1.0 (raw volts) -- set at NiDaqDisplayProcessor.cpp:88 before the optional override</td>
+<td>Per-stream display scale, volts -&gt; display units (e.g. 5.0 on the DI stream to make 0/1 lines visible; 1000000 would give microvolts). NOTE THE NAME: the NI-DAQ display reads 'scale', the NPX display reads 'scale_factor' -- they are NOT interchangeable and the wrong one is silently ignored.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-only-not-config-keys_3">Runtime only: NOT config keys<a class="headerlink" href="#runtime-only-not-config-keys_3" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>how to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recording start/stop</td>
+<td>RUNTIME ONLY -- there is no YAML key that starts a recording. Two equivalent paths, no binary command id (the old 0x1001 binary command was removed; see the comment at src/core/WebSocketServer.cpp:308-315, sentence at :310). (a) QWebChannel invokable, which is what the GUI Record button uses: window.recordersByName['proc.npx.recorder'].setRecording(enable, dir, namePrefix, channels) -- Q_INVOKABLE void setRecording(bool, QString outputDir, QString namePrefix, QVariantList channels = {}) at src/modules/recording/RecordProcessor.hpp:44-45, called from webinterface/main.js:821 (stop) and :844 (start), with the handle map built at main.js:810-812. (b) WebSocket JSON, which fans out to EVERY recorder: {"command":"setRecording","value":true|false,"dir":"<path>","name":"<prefix>","channels":[int,...]} -- handled at src/core/WebSocketServer.cpp:990-1019 (invokeMethod at :1016-1018). Confirmation comes back as the recorder's own sigRecordingStateChanged (connected WebSocketServer.cpp:321-323), never echoed from the request.</td>
+</tr>
+<tr>
+<td>Recording output directory (dir)</td>
+<td>RUNTIME ONLY in practice. Supplied per session by the GUI record dialog / the WS <code>dir</code> field; it OVERRIDES the YAML output_directory whenever non-empty (src/modules/recording/RecordProcessor.cpp:270). YAML output_directory is only the fallback.</td>
+</tr>
+<tr>
+<td>Recording name prefix (animal / recording id)</td>
+<td>RUNTIME ONLY -- no YAML key exists. Third argument of setRecording / the WS <code>name</code> field. It creates the per-session folder and prefixes every file: <dir>/<name>/<name><em><band></em><timestamp>.bin (src/modules/recording/RecordProcessor.cpp:276-278, :292, :333).</td>
+</tr>
+<tr>
+<td>Recorded channel selection (per session)</td>
+<td>RUNTIME OVERRIDE of the YAML <code>channels:</code>. Fourth argument of setRecording (QVariantList of read-out channel indices) or the WS <code>channels</code> array (WebSocketServer.cpp:1001-1003). Validated by validateChannelOverride (src/modules/recording/RecordProcessor.cpp:225, same range/duplicate rules as YAML) and written to activeRecordIndices for THIS session only; recordIndices (the YAML default) is untouched. Applied ONLY to interpreters whose name contains 'npx' and NOT 'adc' -- NI-DAQ recordings and the OneBox ADC recording always keep their configured channels (RecordProcessor.cpp:312-330, switch at :323). Empty list =&gt; fall back to the YAML default.</td>
+</tr>
+<tr>
+<td>Recording timestamp / filename suffix</td>
+<td>RUNTIME, not configurable at all: QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"), one timestamp shared by every band in the session (src/modules/recording/RecordProcessor.cpp:290).</td>
+</tr>
+<tr>
+<td>OneBox ADC display scale (volts per count)</td>
+<td>RUNTIME, and NOT a display-processor key. The ADC band re-reads its scale from a static publisher on EVERY display cycle (src/modules/neuropixels/DisplayProcessor.cpp:311 load, :314-316 apply to any state.isAdc stream): DisplayProcessor::setAdcVoltsPerCount (DisplayProcessor.hpp:69, .cpp:38), pushed by OneBoxSource::applyAdcVoltageRange (src/modules/neuropixels/OneBoxSource.cpp:506 and :513). The range itself is a SOURCE key <code>adc_voltage_range</code> on source.npx.onebox, parsed with the ryml <code>&gt;&gt;</code> operator (OneBoxSource.cpp:162-166, default 5.0 V, member documented OneBoxSource.hpp:157) plus the runtime Q_INVOKABLE bool setAdcVoltageRange(double volts) (OneBoxSource.hpp:82, impl .cpp:521).</td>
+</tr>
+<tr>
+<td>Which band the live view shows</td>
+<td>RUNTIME, browser-side only. The display processor multiplexes every configured stream onto the socket with its id in the packet header; the operator's band choice is a frontend selection among those ids. No backend command exists for it -- DisplayProcessor and NiDaqDisplayProcessor register NO CommandDispatcher subscriber. A repo-wide grep for addSubscriber finds exactly two command ids in use: 0x218 audio (src/modules/audio/AudioProcessor.cpp:855 and again :900) and kBandCommandId = 0x219 (defined src/core/BandFilterProcessor.hpp:162, subscribed src/core/BandFilterProcessor.cpp:136). No WebSocketServer JSON command touches either display processor (the command chain runs WebSocketServer.cpp:854 'setPlaying' through :1135 'quit').</td>
+</tr>
+<tr>
+<td>Derived-band display streams on NP2.0 ('lfp', 'spike')</td>
+<td>RUNTIME/AUTO, no YAML entry needed. If the profile's display <code>inputs:</code> omits them, ProcessorManager auto-binds them after configure() via DisplayProcessor::ensureDerivedBandStream(streamId, dataName) with 384 channels and the inferred scale (src/core/ProcessorManager.cpp:130-141; DisplayProcessor.cpp:248-260). A profile that DOES list them wins (early return at DisplayProcessor.cpp:251-253).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> VERIFICATION RESULT: every claimed key was confirmed at a real call site; NOTHING was removed. Repo root C:/Users/BIOEl/Documents/Code/SpikesPeak (paths above are repo-relative). Read-only session: no file was modified, nothing was built or run, ports 1234/8234 untouched. METHOD. I re-read DisplayProcessor::configure/bindStream, RecordProcessor::configure/applyRecordingState/writeMetadataSidecar, NiDaqDisplayProcessor::configure, both interpreters' configure(), and then ran an EXHAUSTIVE sweep -- <code>grep -n 'has_child|cfg\\[|child\\[|node\\['</code> over all five files -- which returned exactly the 21 config reads listed above and no others. The claimed key set is therefore complete as well as correct: no key is read anywhere in these modules outside configure(). CORRECTIONS MADE (all line-number precision; no claim's substance changed): 1. Interpreter registration lines in src/core/Utils.cpp were off by one block: interp.npx.raw/ap/lfp/adc are :132/:134/:135/:137 (claimed 131-136), interp.nidaq.raw/di are :153/:156 (claimed 152-155). Recorder registrations :127 and :158 confirmed as claimed; added the display registrations, proc.npx.display :123 and proc.nidaq.display :157. 2. getConfigValue&lt;&gt; lives at src/core/Utils.hpp:58-65 with <code>ryml::read_dec&lt;tValueType&gt;(val, result)</code> at :64 (claimed 60-65). The semantic claim is confirmed verbatim: it is integral-only and the read_dec return value IS discarded, so a malformed or non-integer scalar silently leaves the caller's variable unchanged. 3. AudioProcessor subscribes to 0x218 at TWO sites, :855 and :900, not one. The claim that these are the only two command IDs in the codebase still holds (0x218 audio, 0x219 = kBandCommandId, BandFilterProcessor.hpp:162) -- the grep for addSubscriber returns only those two plus the CommandDispatch.hpp declarations. 4. <code>inputs[].scale</code> on the NI-DAQ display: split the claimed range into the exact lines -- default assigned :88, has_child :89, std::stof :91, warning :93-94, applied per sample at :249. 5. <code>adc_voltage_range</code> is parsed with the ryml stream operator (<code>cfg["adc_voltage_range"] &gt;&gt; v</code>, OneBoxSource.cpp:164), not getConfigValue; setAdcVoltageRange impl is at .cpp:521. 6. Sharpened three claims with the evidence found: the ADC scale refresh is genuinely PER CYCLE (DisplayProcessor.cpp:311-316, a relaxed atomic load hoisted out of the inner loop); the empty-<code>channels</code> "whole block" write is at Npx.cpp:83-88; the WebSocketServer command chain spans :854 (setPlaying) to :1135 (quit), confirming no display-processor command exists. CONFIG CROSS-CHECK (all 28 files in config/, parsed with PyYAML, keys collected per processor block and per inputs[]/recordings[] child). The complete key set appearing in YAML for these four processors is: name, inputs, data, num_channels, scale, sample_rate_hz, timebins_per_update, update_interval_ms, recordings, data_name, data_interpreter_name, output_filename, channels. Every one maps to a verified call site, so there are NO DEAD KEYS in these blocks -- the original claim is confirmed by measurement, not assertion. Counts: proc.npx.display in 27 files (num_channels in only 6 -- the OneBox ADC profiles); proc.npx.recorder in 26; proc.nidaq.display and proc.nidaq.recorder in 10 each, and the NI-DAQ display sets update_interval_ms/timebins_per_update/sample_rate_hz/scale in all 10. <code>name:</code> at the processor level is not a module key -- ProcessorManager::setupProcessors reads it to look the processor up in the registry (src/core/ProcessorManager.cpp:54). CLAIMED KEYS NO SHIPPED CONFIG USES (confirmed, and this is the more useful list): - proc.npx.display <code>update_interval_ms</code> and <code>timebins_per_update</code> -- read by DisplayProcessor but present in ZERO configs; every NPX display runs on the hardcoded 20 ms / 20 bins. Only the NI-DAQ display blocks set them. - proc.npx.display <code>inputs[].scale_factor</code> -- supported (DisplayProcessor.cpp:104-112) but set by no config; every stream uses the name-based inference. - recorder <code>output_directory</code> -- supported (RecordProcessor.cpp:46-50) but set by no config, and the GUI/CLI dir overrides it anyway. No key appears in a shipped config for these modules that is missing from the list above. KEY-NAME TRAP (confirmed at both call sites). The two display processors do not share a scale key: proc.npx.display reads <code>scale_factor</code> (std::stof, DisplayProcessor.cpp:104-106), proc.nidaq.display reads <code>scale</code> (std::stof, NiDaqDisplayProcessor.cpp:89-91). Neither warns about the other's spelling -- the wrong one is silently ignored. Likewise <code>num_channels</code> is NPX-display-only; the NI-DAQ display takes its channel count from the NiDaqData buffer at the first tick (ensureReady), so a <code>num_channels</code> there would be dead. REQUIRED vs OPTIONAL. Hard-required (configure() returns false, aborting the whole profile setup): display <code>inputs</code> plus each entry's <code>data</code> and <code>name</code>; recorder <code>recordings</code> plus each entry's <code>data_name</code>, <code>data_interpreter_name</code>, <code>output_filename</code>. Everything else is optional with the defaults listed. Additional non-key failure modes: duplicate display stream id, duplicate data_interpreter_name, unknown registry data/interpreter name, and (NI-DAQ only) a data object that is not a NiDaqData. There is no bool-as-string key and no map-valued key in any of these four processors. RECORDER IS ONE CLASS, TWO REGISTRATIONS. proc.npx.recorder and proc.nidaq.recorder are both SP::Recording::RecordProcessor, so the key set is identical; only the interpreter NAMES differ, and the name is what selects NPX-vs-NI-DAQ behaviour at record time (channel-override eligibility RecordProcessor.cpp:323, sidecar frame layout :407). Same for interpreters: interp.npx.raw/ap/lfp/adc are all NpxDataInterpreter and interp.nidaq.raw/di are both NiDaqDataInterpreter; each reads exactly one key, <code>data_name</code>, from the SAME recordings[] child node the recorder passes down (RecordProcessor.cpp:83). SIDECAR PROVENANCE. Only two YAML values reach the offline world: <code>output_filename</code> (as meta["band"], :413) and <code>sample_rate_hz</code> (:418); <code>channels</code> reaches it indirectly as the ACTIVE list (:419 num_channels, :425-426 channels), together with a derived frame description -- NPX [uint32 timestamp][uint16 sync][int16 x N], NI-DAQ [float64 timestamp][float64 x N] (:456-457).</p>
+<h2 id="sources-pxie-onebox-and-the-simulated-ones">Sources: PXIe, OneBox, and the simulated ones<a class="headerlink" href="#sources-pxie-onebox-and-the-simulated-ones" title="Permanent link">#</a></h2>
+<p><em><code>NpInterface.cpp</code>, <code>OneBoxSource.cpp</code>, <code>SimDataSource.cpp</code>, <code>SimData2Source.cpp</code>, <code>SimOneBoxAdcSource.cpp</code>, <code>SynthRippleSource.cpp</code></em></p>
+<h3 id="config-keys_4">Config keys<a class="headerlink" href="#config-keys_4" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>parsed as</th>
+<th>default</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.pxi :: low_latency</code></td>
+<td>bool-as-string -- the raw scalar is compared against the literal set {"true","1","yes","on"}; ANY other text (including "True", "TRUE", "Yes") is silently false</td>
+<td>false (absent =&gt; mLowLatency stays false)</td>
+<td>ASAP probe polling: the acquisition worker polls every event-loop pass instead of on the 1 ms timer, so each commit carries the fewest LFP samples. Removes the ~800 us block-delivery staleness in the closed loop; costs CPU.</td>
+</tr>
+<tr>
+<td><code>source.npx.pxi :: imro_path</code></td>
+<td>string (Utils::toStdString(cfg["imro_path"].val()) -&gt; QString)</td>
+<td>empty QString =&gt; load the built-in default map / let the frontend set one (NpInterface.cpp:963)</td>
+<td>Path to an .imro channel-map file parsed at basestation init (parseImroFile); on parse failure it warns and falls back to loadDefaultImro(). Consumed at NpInterface.cpp:1731-1737 (NP1) and :1747-1753 (NP2).</td>
+</tr>
+<tr>
+<td><code>source.npx.pxi :: outputs (seq) / outputs[].name (string)</code></td>
+<td>seq of maps (guarded by cfg["outputs"].is_seq()); only the child key <code>name</code> is read, as a string, and SUBSTRING-matched for ".raw" / ".ap" / ".lfp"</td>
+<td>absent or not-a-seq =&gt; expectedProbe = eUnknown =&gt; no probe-mismatch check is performed</td>
+<td>Infers which probe TYPE this profile is written for (".raw" =&gt; NP2.0 multishank, ".ap"/".lfp" =&gt; NP1.0) purely so a mismatch with the PHYSICALLY DETECTED probe raises a <code>probe-mismatch</code> guiStatus. It does NOT choose which buffers get bound -- that is driven by mProbeType from hardware detection (branches at NpInterface.cpp:993 and :1034).</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox :: low_latency</code></td>
+<td>bool-as-string, identical to the PXIe path (inherited)</td>
+<td>false</td>
+<td>Inherited verbatim: OneBoxSource::initDataSource calls NeuropixelsSource::initDataSource(cfg) first, so every source-level key the PXIe source reads is also read here. Used by Npx1OneBoxAsap.yaml / Npx2OneBoxAsap.yaml.</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox :: imro_path</code></td>
+<td>string (inherited)</td>
+<td>empty =&gt; default/frontend map</td>
+<td>Inherited from NeuropixelsSource::initDataSource. No shipped OneBox YAML sets it.</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox :: outputs[].name containing ".adc"</code></td>
+<td>seq of maps (guarded by is_seq()); child <code>name</code> read as string, substring-matched for ".adc"</td>
+<td>absent =&gt; mAdcEnabled = false; the 12-channel ADC stream is never set up and the source is probe-only</td>
+<td>THE opt-in switch for the OneBox 12-channel analog-input stream. Declaring an output named <code>data.npx.adc</code> is what makes OneBoxSource bind the data.npx.adc buffer, call np_ADC_enableProbe, set the range, spawn OneBoxAdcWorker and construct the WavePlayer (:177). There is no boolean key for this.</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox :: adc_voltage_range</code></td>
+<td>double, via ryml's <code>cfg["adc_voltage_range"] &gt;&gt; v</code> deserialization (NOT getConfigValue, NOT std::stod). NOT error-tolerant: ryml's operator&gt;&gt; calls _RYML_CB_ERR("could not deserialize value") on a failed parse (ext/rapidyaml/src/c4/yml/node.hpp:619-624), and no custom ryml callbacks are installed anywhere in src/, so a malformed scalar hits the DEFAULT ryml error handler (abort/throw) rather than falling back.</td>
+<td>5.0 V (member initializer mAdcRangeVolts = 5.0, OneBoxSource.hpp:158; the local seed <code>double v = 5.0</code> at OneBoxSource.cpp:163 duplicates the same literal). Only read at all when the ADC is enabled (i.e. after the <code>.adc</code> output check).</td>
+<td>OneBox ADC input full-scale range in volts. applyAdcVoltageRange accepts EXACTLY 2.5, 5 or 10 (qFuzzyCompare) and refuses anything else rather than rounding; on success it re-reads the device's true volts-per-count via np_ADC_getStreamConversionFactor and republishes it to the display.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: inject_ripples</code></td>
+<td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
+<td>false (SimSignalProfile::injectRipples = false, SimDataSource.hpp:57)</td>
+<td>Turns on the Gaussian-enveloped synthetic ripple burst injected into BOTH the 30 kHz AP band and the LFP band. Off =&gt; plain two-sine profile.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: ripple_amplitude</code></td>
+<td>double via std::stod on the raw scalar, wrapped in try/catch (invalid =&gt; qWarning + keep the default)</td>
+<td>100.0 (ADC counts, burst peak pre-noise) -- SimDataSource.hpp:58</td>
+<td>Peak amplitude of the injected ripple burst, in ADC counts.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: ripple_freq_hz</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>200.0 Hz -- SimDataSource.hpp:59</td>
+<td>Carrier frequency of the injected burst; the centre of the 150-250 Hz ripple band.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: ripple_period_s</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>2.0 s -- SimDataSource.hpp:60</td>
+<td>Inter-burst interval: one Gaussian-enveloped burst every N seconds.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: noise_amplitude</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>0.0 -- SimDataSource.hpp:64 (0 takes the fast clean-sine path, no per-channel RNG)</td>
+<td>Sigma of independent per-channel Gaussian background noise, in ADC counts. Non-zero is REQUIRED for the ripple detector's z-score threshold to mean anything (a noiseless sine has baseline std ~0).</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata :: low_latency</code></td>
+<td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
+<td>false</td>
+<td>ASAP delivery: smaller sample blocks per commit (SimNpx1Worker::setLowLatency, applied at startAcq, SimDataSource.cpp:358).</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: inject_ripples</code></td>
+<td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
+<td>false -- SimData2Source.hpp:52</td>
+<td>Injects the synthetic ripple burst straight into data.npx.raw (NP2 has a single band); proc.lfp's low-pass carries it into data.lfp for the detector.</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: ripple_amplitude</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>100.0 ADC counts -- SimData2Source.hpp:53</td>
+<td>Peak amplitude of the injected ripple burst.</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: ripple_freq_hz</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>200.0 Hz -- SimData2Source.hpp:54</td>
+<td>Carrier frequency of the injected burst.</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: ripple_period_s</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>2.0 s -- SimData2Source.hpp:55</td>
+<td>Inter-burst interval.</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: noise_amplitude</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>0.0 -- SimData2Source.hpp:59</td>
+<td>Per-channel Gaussian noise sigma in ADC counts; needed for a meaningful detector baseline std.</td>
+</tr>
+<tr>
+<td><code>source.npx.sim2 :: low_latency</code></td>
+<td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
+<td>false</td>
+<td>ASAP delivery (SimNpx2Worker::setLowLatency, applied at startAcq, SimData2Source.cpp:299).</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: num_channels</code></td>
+<td>int via Utils::getConfigValue<int> = ryml::read_dec. DIGITS ONLY, no sign, no hex, no float, NO overflow check; read_dec zeroes the out-param BEFORE parsing and stops at the first non-digit, so it does NOT preserve the pre-seeded value. The return value is discarded, so nothing warns.</td>
+<td>12 (SimAdcProfile::numChannels, SimOneBoxAdcSource.hpp:53). Accepted range enforced: 1..64; anything outside is silently discarded, which is what saves the default when the parse yields 0.</td>
+<td>Width of the simulated OneBox ADC stream. Also sizes the data.npx.adc buffer (setCapacity at :211). Read FIRST, so it bounds the sync_channel/grounded_channel clamps below.</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: sample_rate_hz</code></td>
+<td>double via std::stod (try/catch, warns and keeps the default)</td>
+<td>30300.0 Hz -- SimOneBoxAdcSource.hpp:54 (the real OneBox ADC rate, ~30300.5 Hz)</td>
+<td>Wall-clock pacing of the simulated ADC worker.</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: volt_range</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>5.0 V -- SimOneBoxAdcSource.hpp:55. NOTE: unlike the real OneBox this is NOT validated against {2.5, 5, 10}; any double is accepted.</td>
+<td>Full-scale +/- range used to convert the synthesised volts into int16 counts, matching OneBoxSource's hardware factor.</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: sync_channel</code></td>
+<td>int via Utils::getConfigValue<int> = ryml::read_dec (digits only; a leading '-' fails on the first character AFTER the out-param has already been zeroed)</td>
+<td>0 -- SimOneBoxAdcSource.hpp:56. Range check is <code>s &gt;= -1 &amp;&amp; s &lt; numChannels</code>, but see the note: the -1 sentinel is UNREACHABLE from YAML because read_dec turns "-1" into 0, which passes the check and sets syncChannel = 0.</td>
+<td>Which ADC channel carries the 0/3.3 V TTL square pulse train (models the standalone "ADC" SMA).</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: grounded_channel</code></td>
+<td>int via Utils::getConfigValue<int> = ryml::read_dec (same digits-only limitation)</td>
+<td>1 -- SimOneBoxAdcSource.hpp:59. Range check <code>g &gt;= -1 &amp;&amp; g &lt; numChannels</code>; the -1 ("none") sentinel is likewise unreachable from YAML -- "-1" parses to 0 and grounds channel 0.</td>
+<td>Which channel is held at the noise floor only, so the visible contrast with the floating channels matches a real grounded input.</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: noise_volts</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>0.004 V -- SimOneBoxAdcSource.hpp:60</td>
+<td>Sigma of the Gaussian noise floor added to EVERY simulated ADC channel, in volts.</td>
+</tr>
+<tr>
+<td><code>source.npx.simadc :: mains_volts</code></td>
+<td>double via std::stod (try/catch)</td>
+<td>0.35 V -- SimOneBoxAdcSource.hpp:61</td>
+<td>Amplitude of the 50 Hz mains-hum pickup (plus harmonic) on the modelled "floating" channel (ch3).</td>
+</tr>
+<tr>
+<td><code>source.npx.synthripples :: outputs (seq) / outputs[].name (string)</code></td>
+<td>seq of maps, iterated with cfg["outputs"].children() and only a <code>has_child("outputs")</code> guard -- NO .is_seq() check, unlike the pxi/onebox paths. Only the child key <code>name</code> is read, as a string, and compared for EXACT equality against "data.npx.ap" / "data.npx.lfp"; the first entry is also used verbatim as a registry lookup key.</td>
+<td>absent/empty =&gt; single-band playback into "data.npx.raw" (SynthRippleSource.cpp:510), and mIsNp2 = true</td>
+<td>THE only YAML key this source reads. Binding BOTH data.npx.ap and data.npx.lfp selects dual-band NP1 playback (30 kHz AP file + 2.5 kHz LFP file). Anything else is single-band playback into outputs[0].name (or data.npx.raw). It also decides which probe the source pretends to be: name != "data.npx.ap" =&gt; NP2 channel map, else NP1 (:524).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="runtime-only-not-config-keys_4">Runtime only: NOT config keys<a class="headerlink" href="#runtime-only-not-config-keys_4" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>how to set it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Playback .h5 file for source.npx.synthripples (which file is replayed)</td>
+<td>NOT a config key. WebSocket TEXT JSON: {"command":"selectSource", "value":"<config name containing '(play file)'>", "playbackFile":"<absolute .h5 path>"}. WebSocketServer.cpp:886-899 checks QFile::exists then writes the STATIC SynthRippleSource::sPlaybackFile (declared SynthRippleSource.hpp:92, defined .cpp:28) before onSourceSelection(). Omit <code>playbackFile</code> and the backend pops a non-native QFileDialog (WebSocketServer.cpp:899-922) and echoes {"event":"playbackFilePicked"}. Cleared in closeDataSource() (SynthRippleSource.cpp:536). Absent =&gt; hardcoded fallbacks: ../data/synthetic_ripples.h5 (single-band, :273-278) or ../data/synthetic_ripples_np1_lfp.h5 + _ap.h5 (dual-band, :494-498); the AP sibling is derived by string-replacing "_lfp"-&gt;"_ap".</td>
+</tr>
+<tr>
+<td>Probe channel map / electrode selection (NP1 banks, NP2 shank+bank, references, gains, AP filter) -- all sources</td>
+<td>NOT config (except the optional <code>imro_path</code> seed). QWebChannel Q_INVOKABLE calls on the source object, reached over the SAME WebSocket by the QWebChannel protocol envelope (a JSON object carrying a "type" key, routed at WebSocketTransport.cpp:44-49; type 6 = INVOKE_METHOD). Methods: getImroAsJson(), getImroAsImroText(), updateImroFromJson(QString), applyMapToHardware(), saveImroToFile(QString), loadImroFromText(QString) -- NpInterface.hpp:202-207; mirrored (minus saveImroToFile) on SimDataSource.hpp:170-174, SimData2Source.hpp:153-157, SynthRippleSource.hpp:106-110. Frontend callers: webinterface/ImroManager.js:524, :766, :791, :901.</td>
+</tr>
+<tr>
+<td>Named probe-map preset ("default" | "bank0" | "bank1" | "bank2" | "<path>.imro")</td>
+<td>NOT a config key. WebSocket TEXT JSON: {"command":"setProbeMap", "value":"bank1"}. WebSocketServer.cpp:968-989 walks the active config's sources and calls IDataSource::applyNamedMap(which) on each; unhandled =&gt; a guiStatus error. Implementations: NpInterface.cpp:1895 (empty/"default"/"bank0" =&gt; loadDefaultImro; "bank1"/"bank2" are NP1-ONLY and resolve to <exe>/../imro_maps/npx1_bank<N>.imro; anything else is treated as a server-side .imro path), SimDataSource.cpp:394 ("default"|"bank0"|"bank1"|"bank2"), SimData2Source.cpp:335 ("default" | "banka" | "bank0" -- all three map to loadDefaultImro; no bank1/bank2). SynthRippleSource does NOT override it. Base default returns false (IDataSource.hpp:46-49).</td>
+</tr>
+<tr>
+<td>Tip referencing on/off (NP1/NP2 hardware)</td>
+<td>NOT a config key. Q_INVOKABLE over QWebChannel: setTipReferencing(bool) / isTipReferencing() -- NpInterface.hpp:214-215. Hardware sources only.</td>
+</tr>
+<tr>
+<td>OneBox ADC voltage range at runtime (2.5 / 5 / 10 V)</td>
+<td>Config key <code>adc_voltage_range</code> sets the INITIAL value only; changing it live is runtime-only. Q_INVOKABLE over QWebChannel: setAdcVoltageRange(double volts) and the getter adcVoltageRange() -- OneBoxSource.hpp:81-82, implemented OneBoxSource.cpp:520-528 -&gt; applyAdcVoltageRange (:477). Frontend: webinterface/OneBoxModule.js:204.</td>
+</tr>
+<tr>
+<td>OneBox WavePlayer (analog stim waveform out of the back-panel SMA): pulse phase, gap, amplitude, DAC sample rate, arming, firing, DC level</td>
+<td>ENTIRELY runtime -- there are NO YAML keys for any of these. Q_INVOKABLE over QWebChannel (OneBoxSource.hpp:91-99): wavePlayerLoad(int phaseUs, int gapUs, double amplitudeVolts, double sampleRateHz = 100000.0), wavePlayerArm(bool singleShot = true), wavePlayerFire(), wavePlayerStop(), wavePlayerSetDcLevel(int dacChannel, double volts), wavePlayerStatus(). Frontend: webinterface/OneBoxModule.js:162-164, :196-197, :219. The WavePlayer object is constructed at OneBoxSource.cpp:177 -- reached only when the ADC path was enabled by a <code>.adc</code> output, since the non-ADC path returns at :138.</td>
+</tr>
+<tr>
+<td>Basestation slot / port / dock</td>
+<td>NEITHER config nor runtime. Seeded as C++ constructor arguments at registration -- registerDataSource<NeuropixelsSource>("source.npx.pxi", 3, 4, 1, nullptr) at src/core/Utils.cpp:141-142 and registerDataSource<OneBoxSource>("source.npx.onebox", 16, 1, 1, nullptr) at :145-146 (both inside #ifdef NPX_HW_ENABLED) -- then OVERWRITTEN by hardware auto-detection (NpInterface.cpp:1531 mSlot, :1600 mPort, :1628 mDock). For OneBox, 16 is the virtual slot re-derived by np_mapBS. No YAML key exists.</td>
+</tr>
+<tr>
+<td>Stream start/stop, recording, disconnect</td>
+<td>Runtime WebSocket TEXT JSON, not config: {"command":"setPlaying","value":true|false} (WebSocketServer.cpp:854), {"command":"setRecording","value":true|false,...} (:990), {"command":"Disconnect","value":...} (:927), plus listConfigs (:933), getSystemState (:962), restart (:1066), quit (:1135).</td>
+</tr>
+<tr>
+<td>BINARY command ids</td>
+<td>NONE of the six Neuropixels sources subscribe to the binary CommandDispatcher at all. The only binary ids in the whole tree are 0x218 (AudioProcessor, src/modules/audio/AudioProcessor.cpp:855 and :900) and kBandCommandId = 0x219 (BandFilterProcessor, src/core/BandFilterProcessor.hpp:162, subscribed at BandFilterProcessor.cpp:136). Source runtime control is exclusively (a) TEXT-JSON commands in WebSocketServer::onTextMessageReceived and (b) QWebChannel Q_INVOKABLE calls.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes.</strong> VERIFICATION METHOD: <code>grep -n 'has_child|ConstNodeRef|cfg\\[|getConfigValue|node\\['</code> over the whole of src/modules/neuropixels/ returns an EXHAUSTIVE list of config reads. Every claimed call site was opened and read. Nothing was removed as unconfirmable -- all 27 claimed keys exist and behave as described, with the parse-semantics corrections below. No key was missed: the grep produces no cfg read in these six classes that is not in the list. CORRECTIONS MADE (5): 1. <strong><code>source.npx.simadc</code> integer keys -- the parse story was wrong, and it hides a real bug.</strong> The claim said getConfigValue "ignores the return value, so a non-numeric scalar leaves the pre-seeded current value". It does not. <code>Utils::getConfigValue</code> (src/core/Utils.hpp:58-65) forwards to <code>c4::read_dec</code> (ext/rapidyaml/ext/c4core/src/c4/charconv.hpp:862-874), which does <code>*v = 0;</code> BEFORE the digit loop and returns false at the first non-digit. Consequences, all silent because the caller discards the bool: (a) <code>num_channels: 16x</code> yields 16 and is ACCEPTED (partial parse); (b) there is no overflow check, values wrap; (c) most importantly, <strong>read_dec does not accept negative numbers</strong>, so <code>sync_channel: -1</code> and <code>grounded_channel: -1</code> -- the documented "no sync channel" / "none" sentinels that the range checks <code>&gt;= -1</code> exist to admit -- parse to <strong>0</strong>, pass the range check, and silently select CHANNEL 0 instead. The -1 sentinel is unreachable from YAML. No shipped config uses -1, so nothing is broken today, but the range check is a lie about what the key accepts. Same helper, same defect, in NiDaqSimSource.cpp:162 and DisplayProcessor.cpp:120 (out of scope here). 2. <strong><code>adc_voltage_range</code> does not silently fall back to 5.0 on a bad value.</strong> ryml's <code>operator&gt;&gt;</code> (ext/rapidyaml/src/c4/yml/node.hpp:619-624) calls <code>_RYML_CB_ERR(tree_-&gt;m_callbacks, "could not deserialize value")</code> when <code>read()</code> fails, and <code>grep -rn 'set_callbacks|ryml::Callbacks|error_callback'</code> over src/ returns NOTHING -- no custom handler is installed -- so a malformed scalar hits ryml's DEFAULT error handler (abort/throw), not the local <code>double v = 5.0</code> seed. The 5.0 seed only matters as a duplicate of the member default, which is a real (if currently harmless) smell. 3. <strong><code>SimData2Source::applyNamedMap</code> accepts three spellings, not one.</strong> SimData2Source.cpp:337 tests <code>w == "default" || w == "banka" || w == "bank0"</code>, all three routing to loadDefaultImro(). The claim said "default" only. 4. <strong>Line-number fixes on NpInterface.cpp:</strong> the probe-mismatch warning block is at :1062-1073 (claimed :1059-1071); the buffer-binding branches driven by the DETECTED mProbeType are at :993 (NP1) and :1034 (NP2) (claimed :996/:1030). 5. <strong><code>source.npx.synthripples :: outputs</code> has no <code>.is_seq()</code> guard</strong> -- only <code>cfg.has_child("outputs")</code> (SynthRippleSource.cpp:461), unlike NpInterface.cpp:971 and OneBoxSource.cpp:131 which both check <code>is_seq()</code>. A scalar <code>outputs:</code> would be iterated as a childless node rather than rejected. CROSS-CHECK AGAINST ALL 28 SHIPPED CONFIGS (config/<em>.yaml, sources: blocks extracted and read in full): </em>Claimed keys NO shipped config uses (live but undocumented in configs):<em> - <code>imro_path</code> on source.npx.pxi and source.npx.onebox. Fully wired (read NpInterface.cpp:959, consumed :1731/:1747), set by zero config files. - <code>adc_voltage_range</code> on source.npx.onebox. Fully wired (OneBoxSource.cpp:162), set by zero config files, so every OneBox profile runs at the +/-5 V default. </em>Keys appearing in a shipped config for these modules that are NOT in the list -- both are DEAD, not missed:<em> - </em><em><code>outputs[].data</code></em><em> (<code>- data: "ap"</code> / <code>"lfp"</code> / <code>"raw"</code> / <code>"adc"</code>). Present under EVERY source in EVERY shipped config; read by no source. The three <code>"outputs"</code> call sites (NpInterface.cpp:971, OneBoxSource.cpp:131, SynthRippleSource.cpp:461) all read only the sibling <code>name</code>. The <code>data:</code> key IS live elsewhere -- in a PROCESSOR's <code>inputs:</code> list (DisplayProcessor.cpp:87+:94, NiDaqDisplayProcessor.cpp:59+:65 both require it) -- which is presumably why it was copied onto sources. Documentation only on a source node. - </em><em>The entire <code>outputs:</code> block on source.npx.simdata, source.npx.sim2 and source.npx.simadc.</em>* Those three classes never call <code>cfg.has_child("outputs")</code>; they hardcode their registry lookups ("data.npx.ap"+"data.npx.lfp" at SimDataSource.cpp:309-310, "data.npx.raw" at SimData2Source.cpp:259, "data.npx.adc" at SimOneBoxAdcSource.cpp:205). SimNpx1.yaml, SimNpx2.yaml, SimNpx1OneBox.yaml, SimNpx2OneBox.yaml and the rest declare them anyway. Inert. (Contrast source.npx.pxi/onebox/synthripples, where <code>outputs[].name</code> IS load-bearing -- so the block cannot be deleted repo-wide, only from the three sim sources.) - No other key. Note that <code>num_channels</code> / <code>sample_rate_hz</code> / <code>sync_channel</code> / <code>sync_drift_ppm</code> DO appear in SimNpx1NiDaq.yaml, SimNpx2NiDaq.yaml and SimNpx2NiDaqRipples.yaml, but under <code>source.nidaq.sim</code> (NiDaqSimSource.cpp:162), a different module -- not an npx source key. FIELDS THAT LOOK CONFIGURABLE AND ARE NOT (hardcoded struct members, no call site; verified by grepping for the plausible key spellings -- <code>ap_freq</code>, <code>ap_amplitude</code>, <code>lfp_freq</code>, <code>lfp_amplitude</code>, <code>sync_freq</code>, <code>sync_volts</code> all return zero hits in src/): - SimSignalProfile: numChannels(384), apFreqHz(10), apAmplitude(150), lfpFreqHz(4), lfpAmplitude(150) -- SimDataSource.hpp:46-50. - Sim2SignalProfile: numChannels(384), apFreqHz(10), apAmplitude(75), lfpFreqHz(4), lfpAmplitude(45) -- SimData2Source.hpp:43-47. - SimAdcProfile: syncFreqHz(1.0) and syncVolts(3.3) -- SimOneBoxAdcSource.hpp:57-58. The header comment at :48 claims "All parameters are YAML-editable"; these two are not (the other seven are). The comment is wrong and worth fixing. - SynthRippleSource has no signal knobs -- the waveform comes from the HDF5 file. Its file-side contract is dataset <code>"data"</code> (SynthRippleSource.cpp:289; 1-D [nSamples] broadcast to all channels, or 2-D [nSamples x nChannels]) plus attributes <code>sampling_rate</code> (int32, warns on mismatch -- :316-323, and again for the dual-band loader at :390-393) and <code>num_channels</code> (int32, optional, informational -- :326-331). HDF5 attributes, not YAML. PARSE-SEMANTICS GOTCHAS WORTH DOCUMENTING: - Booleans are compared as raw STRINGS against {"true","1","yes","on"} with NO case folding. <code>low_latency: True</code> or <code>inject_ripples: YES</code> evaluates to FALSE, silently. Five call sites share this idiom: NpInterface.cpp:952, SimDataSource.cpp:280 and :297, SimData2Source.cpp:229 and :246. (A sixth instance of the same idiom, inverted, lives in Configuration.cpp:110 for <code>gui_hidden</code>.) - Three different parsers are in use for numbers across these six sources -- <code>std::stod</code> in try/catch (warn + keep default), <code>ryml::read_dec</code> via getConfigValue (digits-only, zeroes-then-partial-parses, no warning), and bare <code>ryml operator&gt;&gt;</code> (aborts via the default callback). Only the first is actually safe. <code>adc_voltage_range</code> is the sole user of the third. - In NpInterface.cpp:971-982 the probe-type inference gives ".raw" unconditional precedence: the ".raw" branch overwrites expectedProbe every time, while the ".ap"/".lfp" branch is guarded by <code>expectedProbe == eUnknown</code>. A profile declaring both would always be classified NP2. - Order dependency in source.npx.simadc: <code>num_channels</code> is parsed first (:173) and its value bounds the <code>sync_channel</code> / <code>grounded_channel</code> clamps (:189, :194). Fixed in code, so YAML key ordering does not matter -- but a narrow <code>num_channels</code> silently rejects an otherwise valid <code>sync_channel</code>. SCOPE NOTE: two TOP-LEVEL (not source-level) keys touch how these sources are offered in the GUI, read in src/core/Configuration.cpp -- <code>sim_variant</code> (:87-90, groups a profile under the GUI's "Simulated Data" picker; used by 12+ shipped configs) and <code>gui_hidden</code> (:107-113, same bool-as-string idiom inverted: absent or "false"/"0"/"no"/"off" =&gt; visible), which keeps a headless-only validation profile out of the Source dropdown while leaving it CLI-selectable. Exactly two shipped configs set it: SimNpx1Ripples.yaml:6 and SimNpx2Ripples.yaml:6 -- so the example given in the original schema was right. Both belong to the config-manager module, not to any source. Likewise <code>data_name</code> (Npx.cpp:23-28) is read by NpxDataInterpreter::configure and by the recorder's <code>recordings:</code> entries, not by any source node.</p>
+<hr />
+<h2 id="adding-a-key">Adding a key<a class="headerlink" href="#adding-a-key" title="Permanent link">#</a></h2>
+<ol>
+<li>Add the <code>cfg.has_child(...)</code> read in the processor's <code>configure()</code>, with a default that preserves
+   current behaviour when the key is absent. Every shipped profile predates your key.</li>
+<li>Pick a boolean idiom from the table above and say which, in a comment.</li>
+<li><code>getConfigValue&lt;int&gt;</code> is the ONLY numeric helper, and it is integer-only. Doubles go through
+   <code>std::stod</code> on the raw string; floats written as <code>6.0</code> become <code>6</code> under <code>getConfigValue&lt;int&gt;</code>
+   without complaint.</li>
+<li>A <code>configure()</code> that returns false <strong>aborts the whole graph</strong> — the source will not connect. Use
+   it only for "this profile is wrong". A missing device, a missing output, an absent optional
+   feature: return true and report degraded state instead. See <code>AudioProcessor::configure()</code>.</li>
+<li>Add the key to a shipped profile only if it changes that profile's behaviour. A key present in
+   YAML that no code reads is worse than absent — it reads as configuration and is decoration.</li>
+</ol></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/ConfigReference.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-three-rules-that-cause-the-most-lost-time">The three rules that cause the most lost time</a></li>
+<li><a href="#ripple-detector-procrippledetector">Ripple detector: proc.rippledetector</a><ul>
+<li><a href="#config-keys">Config keys</a></li>
+<li><a href="#runtime-only-not-config-keys">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#derived-bands-and-audio-proclfp-procspike-procaudio">Derived bands and audio: proc.lfp, proc.spike, proc.audio</a><ul>
+<li><a href="#config-keys_1">Config keys</a></li>
+<li><a href="#runtime-only-not-config-keys_1">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#top-level-of-a-profile-and-how-it-is-loaded">Top level of a profile, and how it is loaded</a><ul>
+<li><a href="#config-keys_2">Config keys</a></li>
+<li><a href="#runtime-only-not-config-keys_2">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#display-and-recording-procnpxdisplay-procnpxrecorder-the-ni-daq-pair">Display and recording: proc.npx.display, proc.npx.recorder, the NI-DAQ pair</a><ul>
+<li><a href="#config-keys_3">Config keys</a></li>
+<li><a href="#runtime-only-not-config-keys_3">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#sources-pxie-onebox-and-the-simulated-ones">Sources: PXIe, OneBox, and the simulated ones</a><ul>
+<li><a href="#config-keys_4">Config keys</a></li>
+<li><a href="#runtime-only-not-config-keys_4">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#adding-a-key">Adding a key</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

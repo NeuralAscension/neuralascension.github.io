@@ -359,6 +359,21 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>2026-08-21</strong></td>
 <td><strong>Configuration 4 (Windows + PXIe, no OneBox) on the original rig, and four issues worked to conclusion.</strong> PXIe NP2.0 verified end to end (connect 8.5 s, ~580 frames/12 s, record, three clean disconnect/reconnect cycles, zero warnings). Found a reproducible <strong>access violation</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/54">#54</a>): two failed OneBox connects poison the next PXIe acquisition. Fixed a <strong>hardcoded audio device</strong> that made both NI-DAQ PXIe profiles unusable off the original box (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/55">#55</a>). Made recording sidecars <strong>describe the frame</strong>, closing the de-interleaving trap behind <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>'s "anomalous" ADC statistics. <strong>Retracted <a href="https://github.com/NeuralAscension/SpikesPeak/issues/56">#56</a> as my own test error</strong> — PXIe reconnect works.</td>
 </tr>
+<tr>
+<td><strong>S53</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The derived bands belong to the probe, not to the profile.</strong> <code>proc.lfp</code> / <code>proc.spike</code> auto-provisioned on every 2.0 profile (declared, not running); the detector now enforces its own input band rather than trusting the GUI. <strong>The one that mattered:</strong> a re-enabled band served STALE samples — <code>BandFilterProcessor</code> indexed its output ring by the count of samples it had READ, not by what it had COMMITTED. Also: a refused source select reported itself as a switch, and a missing audio device could stop acquisition.</td>
+</tr>
+<tr>
+<td><strong>S54</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The test suite grows teeth, and the audio finds its way out.</strong> GUI suite extended to error paths, band dependencies, the audio panel and record flow (10 tests); one runner with a live ETA page for both suites. Audio now follows the OS default output device in real time and works on NP1.0 by reading its native AP band. The toolbar's three band buttons became a Bands dropdown plus an emoji audio button. Width floor measured, not guessed: 1080 px holds.</td>
+</tr>
+<tr>
+<td><strong>S55</strong></td>
+<td><strong>2026-08-24</strong></td>
+<td><strong>The DAC was never switched on, and the OneBox stopped streaming.</strong> <a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed: <code>arm()</code> never called <code>np_DAC_enableOutput</code>, so a correct WavePlayer drove nothing. Output measured on <strong>DAC0 → breakout BNC IO0</strong>, NOT the SMA; sync provably undisturbed; 6553.6 codes/V confirmed twice. New <code>dac_trigger</code> fires both trigger paths from one crossing. Then the OneBox stopped delivering packets — bisected to acquisition start with vendor-API-only programs (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/59">#59</a>), which blocks the latency A/B (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/60">#60</a>). New references: <code>ConfigReference.md</code>, <code>ClosedLoopDriving.md</code>.</td>
+</tr>
 </tbody>
 </table>
 <p><strong>Where the detail lives.</strong> This log records <em>what happened and when</em>. The <em>how it works</em> lives in the
@@ -4530,7 +4545,103 @@ bands on -- frames scale with active streams, and bands now default off).</p>
 <p>Found by reading the diff for what it had made reachable, not by a test. Worth saying plainly,
 because the tests added this same night would not have caught it: they all run on a machine whose
 audio device opens.</p>
-<p><strong>Green at the end of the night: 17/17 C++ suites, 10/10 GUI tests (~19 min).</strong></p></article>
+<p><strong>Green at the end of the night: 17/17 C++ suites, 10/10 GUI tests (~19 min).</strong></p>
+<hr />
+<h2 id="55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late">55. THE DAC WAS NEVER SWITCHED ON, AND THE ONEBOX STOPPED STREAMING  (2026-08-24, late)<a class="headerlink" href="#55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late" title="Permanent link">#</a></h2>
+<p>Issue #49 had been open four days on the theory that the WavePlayer output was going to the wrong
+connector. It was going nowhere, and the reason was one missing line in our own code.</p>
+<h3 id="551-arm-never-enabled-the-dac-output">55.1 <code>arm()</code> never enabled the DAC output<a class="headerlink" href="#551-arm-never-enabled-the-dac-output" title="Permanent link">#</a></h3>
+<p>A DAC channel does not drive its pin until <code>np_DAC_enableOutput(ch, true)</code> is called.
+<code>DAC_setVoltage()</code> alone changes nothing on the wire, and neither does a correctly loaded and armed
+WavePlayer buffer. So every call returned SUCCESS, <code>wavePlayerStatus()</code> reported
+<code>loaded=yes armed=yes</code>, and all twelve ADC channels recorded silence. The status was accurate. The
+box simply was not driving anything.</p>
+<p>Found by a DC sweep rather than by reasoning: a commanded level appeared on its BNC the instant
+<code>DAC_enableOutput</code> was added, and not before.</p>
+<h3 id="552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma">55.2 The output is on DAC0 → breakout BNC IO0, not the SMA<a class="headerlink" href="#552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma" title="Permanent link">#</a></h3>
+<p>Measured with DAC0 <strong>and</strong> DAC4 both output-enabled, so a routing surprise would show up somewhere.
+A 1 Hz ±2 V square, sd per channel over 3 s before vs 5 s during:</p>
+<pre><code>IO0    sd 0.0002 -&gt; 1.9894    min -1.992  max +1.998   &lt;== the waveform
+IO4    sd 0.0002 -&gt; 0.0001    held at -0.017 V         (DAC4: enabled, idle)
+IO9    sd 0.0001 -&gt; 0.0001    4.963 V, unchanged       &lt;== SMA, untouched
+</code></pre>
+<p>IO4/IO6 sitting at −0.017 V rather than the ~1.715 V float of the other idle lines is the control:
+"enabled" really does mean "driving".</p>
+<p><code>waveplayer_arm</code> is documented as <em>"routing output DAC0 to the SMA output"</em>. The first half is right;
+the SMA half does not happen on this hardware. <strong>Do not generalise into a DAC-N → IO-N map</strong> — the
+sweep found DAC4 driving IO4 <em>and</em> IO6 together, which is unexplained.</p>
+<p>Two things fell out of the same measurement:</p>
+<ul>
+<li><strong>Arming does not disturb sync.</strong> IO9 carried the 1 Hz sync clock throughout and did not move by an
+  LSB across arm, fire and stop. The teardown-ordering comment claimed a race between
+  <code>waveplayer_stop</code> and <code>setSyncAsInput</code>; they touch different pins.</li>
+<li><strong><code>kDefaultCodesPerVolt = 6553.6</code> is confirmed</strong>, twice: a DC sweep read back linear, and the
+  WavePlayer path — the one that matters, since it goes through the raw <code>int16</code> buffer — returned
+  +1.998/−1.992 for ±2.000 V commanded. "Nominal" is gone from the GUI.</li>
+</ul>
+<p>Wording corrected in <code>OneBoxWavePlayer.{hpp,cpp}</code>, <code>OneBoxSource.cpp</code> and <code>OneBoxModule.js</code>, each
+carrying the measurement inline. <strong>#49 closed.</strong></p>
+<h3 id="553-dac_trigger-both-trigger-paths-from-one-crossing">55.3 <code>dac_trigger</code>: both trigger paths from one crossing<a class="headerlink" href="#553-dac_trigger-both-trigger-paths-from-one-crossing" title="Permanent link">#</a></h3>
+<p>New detector config key (default off). When set, every detection fires the OneBox WavePlayer as well
+as the stim server, and <code>detect_to_dac_us</code> is recorded beside <code>detect_to_send_us</code>. Both come from the
+same threshold crossing, which makes it a paired comparison rather than two runs matched afterwards —
+removing the sync-alignment class of error that cost a session in §24.</p>
+<p>The meta-method index is resolved once and cached (a by-name <code>invokeMethod</code> would put a string lookup
+inside the interval being measured), the invoke is <code>DirectConnection</code> on purpose, and each stage is
+timed from the detection instant so whichever fires second is not charged for the first.</p>
+<p>Verified to initialise on the real rig — <code>DAC trigger armed</code>, <code>stim params -&gt; 60 us phase, 10 us gap,
+1 Hz, 1 ms train</code>, <code>ARM stim -&gt; 192.168.1.100:8888</code>. The measurement itself did not run, because:</p>
+<h3 id="554-the-onebox-stopped-delivering-data-and-it-is-not-our-code">55.4 The OneBox stopped delivering data, and it is not our code<a class="headerlink" href="#554-the-onebox-stopped-delivering-data-and-it-is-not-our-code" title="Permanent link">#</a></h3>
+<p>Connect succeeds completely — FTDI 1.3.10, device found by serial, headstage auto-detected on port 1,
+ADC range read back from the device. Then acquisition starts and <strong>zero samples arrive</strong>, after which
+a second <code>np_arm()</code> never returns and teardown abandons every remaining vendor call on its timeout.</p>
+<p>Bisected with three standalone programs that link only the vendor API:</p>
+<table>
+<thead>
+<tr>
+<th>exercised</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>basestation — <code>scanBS</code>/<code>mapBS</code>/<code>openBS</code>/<code>closeBS</code>/<code>unmapBS</code></td>
+<td><strong>clean</strong>, twice</td>
+</tr>
+<tr>
+<td>+ probe — <code>detectHeadStage</code>/<code>openProbe</code>/<code>init</code>/<code>closeProbe</code></td>
+<td><strong>clean</strong></td>
+</tr>
+<tr>
+<td>+ acquisition — <code>np_arm</code>/<code>np_setSWTrigger</code>/<code>np_readPackets</code></td>
+<td><strong>0 packets; box then dead</strong></td>
+</tr>
+</tbody>
+</table>
+<p><code>np_readPackets</code> returned SUCCESS on every call for three seconds and produced nothing. Tracked as
+<strong>#59</strong>; the blocked measurement is <strong>#60</strong>.</p>
+<p>Two traps came out of this and are now in <code>AgentTraps.md</code>:</p>
+<ul>
+<li><strong>A control-plane probe is not a liveness test.</strong> After the first failure the basestation-only
+  sequence came back completely clean and I reported the box as recovered. The next streaming attempt
+  reproduced the fault exactly. The control plane and the data plane fail independently here.</li>
+<li><strong>The second <code>np_arm()</code> is what hangs.</strong> Since <code>closeDataSource()</code> opens with <code>np_arm (close)</code>, a
+  dead data plane presents as a <em>teardown</em> hang — pointing the reader at shutdown code, where the bug
+  is not.</li>
+</ul>
+<p>The stall watchdog and the bounded vendor calls both did their job: acquisition reporting healthy
+while zero samples arrived was caught in 3 s, and a wedged basestation did not hang shutdown.</p>
+<h3 id="555-two-references-written-because-they-were-needed-this-session">55.5 Two references, written because they were needed this session<a class="headerlink" href="#555-two-references-written-because-they-were-needed-this-session" title="Permanent link">#</a></h3>
+<p><code>ConfigReference.md</code> — 77 config keys across every source and processor, extracted from the call
+sites and verified against every shipped profile; where they disagreed the code won. Plus the 48
+runtime-only parameters, which is the more useful half: <code>zscore_threshold</code> and <code>lockout_seconds</code> are
+<strong>not</strong> config keys, and a profile built around them produces nothing while looking correct.</p>
+<p><code>ClosedLoopDriving.md</code> — the command sequences that work. Use <code>ripple_tools/rig.py</code>; <code>retrain()</code> is
+mandatory and its absence is indistinguishable from a working detector on a quiet signal; how to tell
+"no samples" from "trained but quiet" via <code>rippleEnvelope</code>; and <code>output.log</code> lives in the backend's
+<strong>working</strong> directory. I lost a run to the missing <code>retrain()</code> this very session, after writing the
+page that says so.</p>
+<p><strong>Green at the end: 17/17 C++ suites, 10/10 GUI tests.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -4831,6 +4942,14 @@ audio device opens.</p>
 <li><a href="#544-the-gui-suite-now-catches-what-it-could-not-see">54.4 The GUI suite now catches what it could not see</a></li>
 <li><a href="#545-one-runner-one-page-an-eta">54.5 One runner, one page, an ETA</a></li>
 <li><a href="#546-a-risk-this-work-created-caught-before-it-reached-the-rig">54.6 A risk this work created, caught before it reached the rig</a></li>
+</ul>
+</li>
+<li><a href="#55-the-dac-was-never-switched-on-and-the-onebox-stopped-streaming-2026-08-24-late">55. THE DAC WAS NEVER SWITCHED ON, AND THE ONEBOX STOPPED STREAMING (2026-08-24, late)</a><ul>
+<li><a href="#551-arm-never-enabled-the-dac-output">55.1 arm() never enabled the DAC output</a></li>
+<li><a href="#552-the-output-is-on-dac0-breakout-bnc-io0-not-the-sma">55.2 The output is on DAC0 → breakout BNC IO0, not the SMA</a></li>
+<li><a href="#553-dac_trigger-both-trigger-paths-from-one-crossing">55.3 dac_trigger: both trigger paths from one crossing</a></li>
+<li><a href="#554-the-onebox-stopped-delivering-data-and-it-is-not-our-code">55.4 The OneBox stopped delivering data, and it is not our code</a></li>
+<li><a href="#555-two-references-written-because-they-were-needed-this-session">55.5 Two references, written because they were needed this session</a></li>
 </ul>
 </li>
 </ul>

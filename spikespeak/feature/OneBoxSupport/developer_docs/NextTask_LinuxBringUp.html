@@ -296,8 +296,8 @@ maintained". Low weight for "it builds today."</strong> Two reasons, and the sec
 </tr>
 <tr>
 <td><strong>Qt</strong></td>
-<td><strong>≥ 6.7</strong>. <code>find_package</code> asks for exactly <code>Core WebEngineWidgets WebSockets Network Test</code>; <code>Widgets</code>, <code>Gui</code> and <code>WebChannel</code> are never requested and arrive transitively through WebEngine — so install the full <code>gcc_64</code> set or the distro equivalent, not the four named modules</td>
-<td><code>CMakeLists.txt:13-21</code>. <strong>Ubuntu 24.04's distro Qt6 is 6.4.2 — below the floor.</strong> The July box used a Qt-installer 6.11.1 under <code>~/Qt</code>, which is exactly what <code>scripts/spikespeak.py:70-74</code> globs for. See the WebEngine note below.</td>
+<td><strong>≥ 6.7</strong>, components <code>Core Gui Widgets Network WebSockets WebChannel</code> (+ <code>Test</code>), all requested explicitly since 2026-08-26. <strong>WebEngine is no longer required</strong> — see the note below</td>
+<td><code>CMakeLists.txt:13-21</code>. <strong>Ubuntu 24.04's distro Qt6 is 6.4.2 — below the floor.</strong> The July box used a Qt-installer 6.11.1 under <code>~/Qt</code>, which is what <code>find_qt_prefix()</code> globs for.</td>
 </tr>
 <tr>
 <td><strong>HDF5 with C++ and HL</strong></td>
@@ -326,17 +326,22 @@ maintained". Low weight for "it builds today."</strong> Two reasons, and the sec
 </tr>
 </tbody>
 </table>
-<p><strong>On Qt WebEngine.</strong> <code>WebEngineWidgets</code> is a hard <code>find_package</code> requirement and is linked
-(<code>CMakeLists.txt:14-17</code>, <code>104-116</code>), but <strong>grep finds zero <code>QWebEngine*</code> symbols anywhere in <code>src/</code>.</strong>
-The GUI is an external browser; the only Qt web class used is <code>QWebChannel</code>
-(<code>WebSocketServer.cpp:46</code>). WebEngine is also what transitively supplies <code>Qt::Widgets</code> and <code>Qt::Gui</code>
-— both linked at <code>CMakeLists.txt:107-108</code> without ever being requested — <strong>and <code>Qt6::WebChannel</code>,
-which is neither requested nor linked anywhere even though <code>QWebChannel</code> is used.</strong> So on Linux you
-must install a large component (plus its NSS/X/dbus dependencies) to link a library nothing calls.
-<strong>Install it, and flag it.</strong> Dropping it would <em>remove</em> a dependency rather than add one — welcome
-under <code>CLAUDE.md</code> — but it is not a one-line delete (<code>find_package</code> must then request <code>Widgets</code>,
-<code>Gui</code> <strong>and <code>WebChannel</code></strong> explicitly, and <code>WebChannel</code> is the one that will bite, because today
-nothing names it at all) and it changes the Windows build too, so it needs re-verifying on the rig.
+<p><strong>On Qt WebEngine — REMOVED 2026-08-26. You no longer need it.</strong></p>
+<p>This section used to say WebEngine was a hard <code>find_package</code> requirement that nothing in <code>src/</code>
+called, and asked whoever hit it to install it and flag it. It was flagged, the operator approved
+dropping it, and it was removed and re-verified on the Windows rig — which is where it had to be
+done, because it changes that build too.</p>
+<p><code>grep -rn "QWebEngine" src/</code> is empty and always was; the GUI is an external browser and there has
+never been a <code>QWebEngineView</code>. The catch was that WebEngine transitively supplied <strong><code>Qt::Widgets</code>,
+<code>Qt::Gui</code> and <code>Qt::WebChannel</code></strong> — the last one genuinely used, by <code>WebSocketServer.cpp:46</code> — so
+deleting it alone produced <code>Target "SpikesPeak" links to target "Qt::Widgets" but the target was not
+found</code>, a worse error than the one it fixed.</p>
+<p>All six components are now requested explicitly:</p>
+<pre><code class="language-cmake">find_package(Qt6 6.7 REQUIRED COMPONENTS Core Gui Widgets Network WebSockets WebChannel)
+</code></pre>
+<p>Verified on Windows: <code>Qt6WebEngine*</code> appears <strong>zero</strong> times on the link line, all 20 C++ suites and
+all 10 GUI tests pass. <strong>So <code>qt6-webengine-dev</code> and its NSS/X/dbus chain are no longer a Linux
+prerequisite.</strong> If you are on a checkout older than this, the original analysis is in the commit.
 <strong>Propose it to the operator; do not slip it into a bring-up.</strong></p>
 <h3 id="required-for-the-gui-suite-only">Required for the GUI suite only<a class="headerlink" href="#required-for-the-gui-suite-only" title="Permanent link">#</a></h3>
 <table>
@@ -469,7 +474,15 @@ network fails inside FetchContent.</p>
 <p>Both were found by reading on 2026-08-26 and <strong>deliberately left alone</strong>, because each is a
 dependency question and <code>CLAUDE.md</code> makes that the operator's call, not the agent's. Expect them,
 and report which one you hit rather than quietly working around it.</p>
-<p><strong>1. <code>Could NOT find HDF5 (missing: HL)</code>.</strong> <code>CMakeLists.txt</code> asks for
+<p><strong>1. <code>Could NOT find HDF5 (missing: HL)</code>. Operator decision 2026-08-26: HDF5 STAYS.</strong> It is not
+optional -- <code>SynthRippleSource.cpp</code> reads the synthetic-ripple <strong>play files</strong> through the HDF5 C++
+API, and <code>scripts/gen_synthetic_ripples.py</code> writes them with <code>h5py</code>. Install <code>libhdf5-dev</code>, which
+supplies <code>CXX</code> and <code>HL</code> together; the Linux box found both with no help.</p>
+<p>The one precise caveat, so nobody rediscovers it: the <code>HL</code> <strong>component</strong> is never called from C++
+(<code>grep -rn "H5LT\|H5TB\|H5DS\|hdf5_hl" src/</code> is empty) and <code>HDF5::HDF5</code> wraps <code>HDF5_LIBRARIES</code>,
+not <code>HDF5_HL_LIBRARIES</code>. So if some distro ever fails configure on <code>HL</code> specifically, dropping that
+one word is safe and does not touch play-file support. Do not drop HDF5 itself.</p>
+<p>Original note: <code>CMakeLists.txt</code> asks for
 <code>find_package(HDF5 REQUIRED COMPONENTS CXX HL)</code>, but <strong>nothing in <code>src/</code> uses the high-level API</strong> —
 <code>grep -rn "H5LT\|H5TB\|H5DS\|hdf5_hl" src/</code> returns nothing, and the target links <code>HDF5::HDF5</code>,
 which wraps <code>HDF5_LIBRARIES</code> only, not <code>HDF5_HL_LIBRARIES</code>. So on a distro where FindHDF5 does not
@@ -479,7 +492,9 @@ line is a one-word change and is very likely correct — but <strong>say so in y
 committing it silently, and add
 <code>message(STATUS "HDF5 ${HDF5_VERSION} include=${HDF5_INCLUDE_DIRS} libs=${HDF5_LIBRARIES}")</code>
 so the next person can see what resolved.</p>
-<p><strong>2. Qt WebEngine is required but appears unused — and deleting it fails DIFFERENTLY.</strong>
+<p><strong>2. Qt WebEngine — RESOLVED 2026-08-26, removed. Skip this one.</strong> Kept below only so an older
+checkout still explains itself.</p>
+<p>~~Qt WebEngine is required but appears unused — and deleting it fails DIFFERENTLY.~~
 <code>find_package(Qt6 …)</code> requests <code>Core WebEngineWidgets WebSockets Network</code> (+ <code>Test</code>), yet
 <code>grep -rn "QWebEngine" src/</code> returns nothing. On a distro-Qt box you must install
 <code>qt6-webengine-dev</code> and its NSS/X/dbus chain to link a module nothing calls.</p>

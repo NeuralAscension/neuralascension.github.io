@@ -235,7 +235,7 @@ problem is gone with one copy of each directory.</p>
 <tr>
 <td>Qt</td>
 <td><strong>6.7</strong>, <code>msvc2019_64</code> kit</td>
-<td>6.7+, <code>gcc_64</code></td>
+<td>6.7+, <code>gcc_64</code>. Components: <code>Core Gui Widgets Network WebSockets WebChannel</code> (+<code>Test</code>). <strong>WebEngine is not required</strong></td>
 </tr>
 <tr>
 <td>CMake</td>
@@ -245,7 +245,7 @@ problem is gone with one copy of each directory.</p>
 <tr>
 <td>HDF5</td>
 <td>1.14 (vendored runtime DLLs are copied to <code>bin/</code>)</td>
-<td><code>libhdf5-dev</code></td>
+<td><code>libhdf5-dev</code> -- supplies both <code>CXX</code> and <code>HL</code>. Not optional: the synthetic-ripple <strong>play files</strong> are HDF5</td>
 </tr>
 <tr>
 <td>Python</td>

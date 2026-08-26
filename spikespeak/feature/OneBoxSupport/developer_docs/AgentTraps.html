@@ -476,6 +476,41 @@ and nothing is in the console, <strong>count whether your callback ran at all be
 does.</strong> Deferring <code>draw()</code> through rAF is still right — that is a paint, and it is correct for it to
 wait for one. Deferring a <em>decision</em> is not.</p>
 <hr />
+<h2 id="5g-linux-three-traps-from-the-2026-08-26-bring-up">5g. Linux: three traps from the 2026-08-26 bring-up<a class="headerlink" href="#5g-linux-three-traps-from-the-2026-08-26-bring-up" title="Permanent link">#</a></h2>
+<p><strong>A container mutated while it is being iterated is the bug, even when the null check looks careful.</strong>
+<code>CommandDispatcher::executeCallbacks</code> did a range-<code>for</code> over <code>mSubscriptions[commandId]</code> and, for any
+subscriber whose <code>QPointer</code> had gone null, called <code>removeSubscriber(...)</code> — which erases from <em>that
+same vector</em>, and, once it empties, <code>mSubscriptions.remove(commandId)</code>, destroying the container the
+loop is still walking. It reads as diligent lifetime hygiene. It is undefined behaviour, and it
+segfaulted the backend for real (four core dumps, always in
+<code>BandFilterProcessor::slBpHandleCommand</code>).</p>
+<p>What made it expensive to find is <em>when</em> it fires. It needs a <strong>stale</strong> subscriber, so it needs a
+<strong>second source session in one backend process</strong>. Every GUI test but one starts clean and never sees
+it; <code>band_dependency</code> is the only one that runs after another session, so it was the only red test —
+and it <strong>passed when run alone</strong>, which is the most misleading signal available. If a test passes in
+isolation and fails in the suite, the state that matters lives in something <em>shared</em>, not in the test.
+Reap dead entries in one pass first, then iterate a copy.</p>
+<p><strong>On Linux the browser you launched is not the process you are holding.</strong> <code>/usr/bin/brave-browser</code>
+(and <code>google-chrome</code>, and <code>chromium</code>) are <code>#!/bin/bash</code> <strong>wrapper scripts</strong> that spawn the real binary
+as a child. <code>subprocess.Popen</code> therefore holds the <em>wrapper's</em> pid, and <code>terminate()</code> reaps only the
+wrapper — the real browser is orphaned, keeps its WebSocket to the backend open, and keeps rendering.
+The GUI suite left <strong>one live browser per test, ten by the end</strong>. <code>start_new_session=True</code> plus
+<code>os.killpg</code> fixes it; the group id is our own, so it can never reach the operator's browser.</p>
+<p>That leak was also <em>load-bearing by accident</em>: the orphans held the backend's WebSocket open, which
+suppressed its 2 s "last client gone" auto-quit between tests. Expect fixing a leak to expose whatever
+the leak was silently propping up.</p>
+<p><strong><code>pkill -f &lt;pattern&gt;</code> matches the shell that is running it.</strong> <code>pkill -f spikespeak_guitest</code> kills
+your own command — the pattern is in its command line — so the script dies mid-cleanup and you get a
+bare non-zero exit with no explanation. Twice. Match narrowly and signal pids:</p>
+<pre><code class="language-bash">PIDS=$(ps -eo pid,args | grep -F &quot;user-data-dir=/tmp/spikespeak_guitest&quot; | grep -v grep | awk '{print $1}')
+kill -TERM $PIDS
+</code></pre>
+<p><strong>And one that hid all of the above:</strong> <code>scripts/run_gui_tests.py</code> captured a failing test's stdout and
+stderr <em>separately</em> and reported only stdout, so the Python traceback went in the bin. A crashed
+backend and a genuine assertion failure both printed the same single line —
+<code>[harness] reusing the backend on :1234</code>. Folding stderr into stdout turned a day of guessing into one
+readable traceback. <strong>When a failure report is uninformative, suspect the reporter before the code.</strong></p>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -505,6 +540,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half">5d. Enabling something is half a feature; disabling it is the other half</a></li>
 <li><a href="#5e-the-shape-must-not-depend-on-the-measurement">5e. The shape must not depend on the measurement</a></li>
 <li><a href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. requestAnimationFrame does not fire when nothing is being painted</a></li>
+<li><a href="#5g-linux-three-traps-from-the-2026-08-26-bring-up">5g. Linux: three traps from the 2026-08-26 bring-up</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

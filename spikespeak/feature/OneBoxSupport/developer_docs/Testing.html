@@ -307,9 +307,34 @@ made debugging a red suite guesswork.</p>
 <td>Shared constants, enums and the <code>IData</code> contract</td>
 </tr>
 <tr>
+<td><code>test_connectattemptlog</code></td>
+<td style="text-align: right;">13</td>
+<td>What a failed connect is allowed to tell the operator</td>
+</tr>
+<tr>
+<td><code>test_npx2scale</code></td>
+<td style="text-align: right;">14</td>
+<td>NP2.0 gain/scale arithmetic — microvolts, not counts</td>
+</tr>
+<tr>
+<td><code>test_recordingmetadata</code></td>
+<td style="text-align: right;">20</td>
+<td>The sidecar: <code>frame.bytes</code>, channel columns, provenance</td>
+</tr>
+<tr>
+<td><code>test_bandfilterprocessor</code></td>
+<td style="text-align: right;">4</td>
+<td>The derived bands: available, off, and enabled only on request</td>
+</tr>
+<tr>
+<td><code>test_oneboxwaveplayer</code></td>
+<td style="text-align: right;">17</td>
+<td>WavePlayer against a <strong>link-time fake</strong> of the vendor API (§4a)</td>
+</tr>
+<tr>
 <td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>316</strong></td>
-<td>~1.6 s wall clock</td>
+<td style="text-align: right;"><strong>384</strong></td>
+<td>20 suites, ~1.6 s wall clock (Linux/GCC 13.3, 2026-08-26)</td>
 </tr>
 </tbody>
 </table>
@@ -324,6 +349,93 @@ source in the codebase, and it is the single highest-leverage next step for this
 <p>A machine-readable result is written to <code>&lt;build&gt;/test_status.json</code> on every run:</p>
 <pre><code class="language-json">{ &quot;generated&quot;: &quot;...&quot;, &quot;total&quot;: 1, &quot;passed&quot;: 1, &quot;failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
 </code></pre>
+<h2 id="1a-running-both-suites-on-linux">1a. Running both suites on Linux<a class="headerlink" href="#1a-running-both-suites-on-linux" title="Permanent link">#</a></h2>
+<p><strong>Verified end to end on 2026-08-26</strong> (Linux Mint 22.1 / Ubuntu 24.04 base, GCC 13.3.0, Qt 6.11.1,
+HDF5 1.10.10): <strong>20 of 20 C++ suites, 384 cases</strong> and <strong>10 of 10 GUI tests</strong>. Before that date the
+suites had never been <em>attempted</em> on Linux — both postdate the last Linux build by six weeks — so
+treat anything older than this section as untested rather than as known-good.</p>
+<p>A Linux box with no acquisition hardware exercises <strong>everything except the vendor call layer</strong>: the
+same ring buffers, interpreters, display processor, recorder and ripple detector that real hardware
+drives. <code>NPX_HW_ENABLED</code> and <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only, so the PXIe, OneBox and real
+NI-DAQ sources are simply never registered. <strong>A green Linux run closes no hardware row.</strong></p>
+<h3 id="the-two-commands">The two commands<a class="headerlink" href="#the-two-commands" title="Permanent link">#</a></h3>
+<pre><code class="language-bash">./build.sh                                  # configures build/ on first use, then builds + runs the C++ suite
+</code></pre>
+<pre><code class="language-bash">DISPLAY=:0 python3 scripts/run_gui_tests.py --fatal
+</code></pre>
+<p>Pass <code>--fatal</code>. Without it a suite that never ran still exits 0.</p>
+<h3 id="what-linux-needs-that-windows-does-not">What Linux needs that Windows does not<a class="headerlink" href="#what-linux-needs-that-windows-does-not" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Qt ≥ 6.7 that is not the distro's</strong></td>
+<td>Ubuntu 24.04 ships Qt 6.4.2, below the floor, and it fails at <em>configure</em>, not compile. Point <code>CMAKE_PREFIX_PATH</code> at a Qt-installer kit and check the one you are pointing at: <code>$HOME/Qt/6.11.1/gcc_64/bin/qmake -query QT_VERSION</code>. A bare <code>qmake6</code> answers for the distro Qt.</td>
+</tr>
+<tr>
+<td><strong><code>libasound2-dev</code> BEFORE the first configure</strong></td>
+<td>PortAudio's ALSA host API is a <code>cmake_dependent_option</code> on <code>ALSA_FOUND</code> and does <strong>not</strong> fail without it — you silently get a PortAudio with zero host APIs and a red <code>audio_panel</code> much later. Configure prints <code>Found ALSA</code> when it is right.</td>
+</tr>
+<tr>
+<td><strong><code>libhdf5-dev</code></strong></td>
+<td><code>find_package(HDF5 REQUIRED COMPONENTS CXX HL)</code>. Debian/Ubuntu's 1.10.10 in <code>/usr/lib/x86_64-linux-gnu/hdf5/serial</code> resolves cleanly. FindHDF5 also prints <em>"HDF5 CXX compiler wrapper is unable to compile a minimal HDF5 program"</em> and then succeeds anyway — that line is noise, not a failure.</td>
+</tr>
+<tr>
+<td><strong>Outbound git at configure time</strong></td>
+<td><code>ext/</code> is git-ignored and empty in a clone; PortAudio and rapidyaml are FetchContent-cloned during <code>cmake -S . -B</code>.</td>
+</tr>
+<tr>
+<td><strong>A real display</strong></td>
+<td>The GUI harness never passes <code>--headless</code>. A real X/Wayland session is the evidenced route; <code>xvfb-run -s "-screen 0 1960x1080x24"</code> is the fallback and is <strong>untested</strong>.</td>
+</tr>
+<tr>
+<td><strong><code>requests</code> + <code>websocket-client</code></strong></td>
+<td>For <code>python/tools/cdp.py</code>. A bare <code>pip install</code> fails on Ubuntu ≥ 23.04 (PEP 668): use <code>sudo apt install python3-requests python3-websocket</code>, or a venv.</td>
+</tr>
+</tbody>
+</table>
+<p>Confirm at configure that you see <strong><code>Neuropixels hardware not enabled - only sim interface</code></strong>. If you
+do not, you are not building the Linux branch and everything after it is meaningless.</p>
+<h3 id="three-things-that-are-different-on-linux-and-are-not-bugs">Three things that are different on Linux and are not bugs<a class="headerlink" href="#three-things-that-are-different-on-linux-and-are-not-bugs" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>The source picker has only <code>Sim*</code> profiles.</strong> Selecting a hardware profile does <em>not</em> hang
+  half-connected: <code>WebSocketServer</code> broadcasts an explicit <em>"Real Neuropixels hardware (PXI/OneBox) is
+  not available in this build"</em> toast. This is a behaviour only a sim-only build can exercise —
+  Linux is the only place it is checked, so notice if it stops working.</li>
+<li><strong><code>source.nidaq.sim</code> still works.</strong> The lib-free half of the NI-DAQ module compiles on every
+  platform by design, so every <code>Sim*NiDaq</code> config is available.</li>
+<li><strong>Test stdout works.</strong> The empty-stdout problem that made <code>tests/CMakeLists.txt</code> write per-suite
+  <code>.log</code> files is Windows-specific; on Linux <code>build/tests/test_coretypes</code> prints normally. The log
+  files are still written and are still what <code>run_tests.py</code> prints on a failure.</li>
+</ul>
+<h3 id="layout_matrixs-portrait-half-is-not-tested-on-linux"><code>layout_matrix</code>'s portrait half is NOT tested on Linux<a class="headerlink" href="#layout_matrixs-portrait-half-is-not-tested-on-linux" title="Permanent link">#</a></h3>
+<p><code>monitors()</code> shells out to PowerShell, is wrapped in <code>except Exception: return []</code>, and therefore
+returns empty on Linux without raising. <code>pick_monitor()</code> then returns <code>None</code>, the harness prints
+<em>"no <which> monitor attached; using the default window"</em>, and <strong>both the landscape and the portrait
+passes run in the same 1960×1080 window</strong> — confirmed on 2026-08-26, where every one of the 16 cells
+in <code>gui_layout_matrix.json</code> reported <code>viewport 1920x996</code>. The cells pass, because the assertions are
+written in the fold rule's own live operands and hold at any size. They are still measuring a layout
+no operator uses.</p>
+<p><strong>Do not report the portrait half as passing.</strong> Closing this needs an <code>xrandr --listmonitors</code> parser
+behind the same <code>monitors()</code> contract (stdlib <code>subprocess</code>, no new dependency) <em>and</em> a portrait panel
+on the box — the 2026-08-26 machine had two landscape monitors, so the parser alone would not have
+helped it.</p>
+<h3 id="tear-down-and-mind-the-operators-browser">Tear down, and mind the operator's browser<a class="headerlink" href="#tear-down-and-mind-the-operators-browser" title="Permanent link">#</a></h3>
+<p>The suite writes into git-tracked <code>developer_docs/images/gui/</code>, so a Linux run overwrites
+Windows-rendered documentation screenshots. After every run:</p>
+<pre><code class="language-bash">git checkout -- developer_docs/images/gui
+</code></pre>
+<p><strong>That pathspec and nothing else</strong> — <code>gui_layout_matrix.json</code> and <code>gui_test_status.json</code> are
+git-ignored and untracked, so naming them makes git abort the whole command and restore nothing.</p>
+<p>Kill only the profile the harness launched. Its browsers live under <code>/tmp/spikespeak_guitest_*</code>; a
+blanket <code>pkill -f brave</code> closes the operator's real windows. Beware that <code>pkill -f spikespeak_guitest</code>
+also matches <strong>the shell running it</strong>, which kills your own command instead — match on
+<code>user-data-dir=/tmp/spikespeak_guitest</code> and signal the pids.</p>
 <h2 id="2-adding-a-test">2. Adding a test<a class="headerlink" href="#2-adding-a-test" title="Permanent link">#</a></h2>
 <ol>
 <li>Create <code>tests/test_&lt;thing&gt;.cpp</code>.</li>
@@ -675,6 +787,14 @@ setter set something.</p>
 <li><a href="#1-running-the-tests">1. Running the tests</a><ul>
 <li><a href="#reading-a-red-suite">Reading a red suite</a></li>
 <li><a href="#the-suites">The suites</a></li>
+</ul>
+</li>
+<li><a href="#1a-running-both-suites-on-linux">1a. Running both suites on Linux</a><ul>
+<li><a href="#the-two-commands">The two commands</a></li>
+<li><a href="#what-linux-needs-that-windows-does-not">What Linux needs that Windows does not</a></li>
+<li><a href="#three-things-that-are-different-on-linux-and-are-not-bugs">Three things that are different on Linux and are not bugs</a></li>
+<li><a href="#layout_matrixs-portrait-half-is-not-tested-on-linux">layout_matrix's portrait half is NOT tested on Linux</a></li>
+<li><a href="#tear-down-and-mind-the-operators-browser">Tear down, and mind the operator's browser</a></li>
 </ul>
 </li>
 <li><a href="#2-adding-a-test">2. Adding a test</a></li>

@@ -4958,7 +4958,213 @@ is not <em>"it passed"</em>), the prove-a-test-can-fail requirement, where the v
 the WebSocket command surface. It also gained a flat rule that <strong>multi-line edits go through
 Write/Edit, never a shell heredoc</strong> — violated three times in one night, the third while writing the
 rule itself, because the rule's text contained a Windows path.</p>
-<p><strong>Green at the end: 19/19 C++ suites, 10/10 GUI tests.</strong></p></article>
+<p><strong>Green at the end: 19/19 C++ suites, 10/10 GUI tests.</strong></p>
+<hr />
+<h2 id="59-both-suites-green-on-linux-and-the-crash-only-a-second-session-could-find-2026-08-26">59. BOTH SUITES GREEN ON LINUX — AND THE CRASH ONLY A SECOND SESSION COULD FIND  (2026-08-26)<a class="headerlink" href="#59-both-suites-green-on-linux-and-the-crash-only-a-second-session-could-find-2026-08-26" title="Permanent link">#</a></h2>
+<p>Configuration 1 of <a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a> — <strong>Linux, no
+hardware</strong> — run to conclusion. <strong>20/20 C++ suites (384 cases) and 10/10 GUI tests</strong>, from a clean
+clone, with no path edits. The suites had never been attempted on Linux before today: both postdate
+the last Linux build (2026-07-06) by six weeks, so "both suites pass on Linux" had been neither true
+nor false, but unasked.</p>
+<p>The build was the easy half and the tests were the hard half, which is the opposite of what the
+runbook budgeted for.</p>
+<h3 id="59a-the-machine-recorded-properly-this-time">59a. The machine, recorded properly this time<a class="headerlink" href="#59a-the-machine-recorded-properly-this-time" title="Permanent link">#</a></h3>
+<p>The July box was written up only as prose and that machine is gone. This one:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>OS</td>
+<td>Linux Mint 22.1 (Xia), Ubuntu 24.04 base, kernel 6.8.0-134</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>AMD Ryzen Threadripper 1950X, 16C/32T — <strong>AVX2 + FMA present</strong>, no AVX-512</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>NVIDIA RTX 2080, driver 535.309.01, OpenGL 4.6 — real WebGL, no SwiftShader</td>
+</tr>
+<tr>
+<td>Compiler</td>
+<td>GCC 13.3.0</td>
+</tr>
+<tr>
+<td>CMake / Ninja</td>
+<td>3.30.5 / 1.12.1, both from <code>~/Qt/Tools</code> (neither is on <code>PATH</code>)</td>
+</tr>
+<tr>
+<td>Qt</td>
+<td><strong>6.11.1</strong>, Qt online installer, <code>~/Qt/6.11.1/gcc_64</code> — the distro ships no Qt6 at all here</td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td><strong>1.10.10</strong>, distro <code>libhdf5-dev</code>, <code>/usr/lib/x86_64-linux-gnu/hdf5/serial</code>, <code>CXX</code> + <code>HL</code> both found</td>
+</tr>
+<tr>
+<td>Display</td>
+<td>X11, <code>DISPLAY=:0</code>, <strong>two landscape monitors</strong> (1920×1080 and 2560×1440). No portrait panel.</td>
+</tr>
+<tr>
+<td>Browser</td>
+<td>Brave (<code>/usr/bin/brave-browser</code>), discovered by the harness, not configured</td>
+</tr>
+</tbody>
+</table>
+<p>The configure line, verbatim:</p>
+<pre><code class="language-bash">cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$HOME/Qt/6.11.1/gcc_64
+</code></pre>
+<p><code>find_package(HDF5)</code> needed no help — worth recording, because it was flagged as a genuine unknown on
+Debian-family distros. FindHDF5 prints <em>"HDF5 CXX compiler wrapper is unable to compile a minimal HDF5
+program"</em> and then succeeds via direct library search; that line is noise. <code>Found ALSA</code> is the one to
+check for, because PortAudio's ALSA host API is silently optional and its absence surfaces much later
+as a red <code>audio_panel</code>.</p>
+<h3 id="59b-fifty-three-commits-met-gcc-for-the-first-time-and-nothing-broke">59b. Fifty-three commits met GCC for the first time and nothing broke<a class="headerlink" href="#59b-fifty-three-commits-met-gcc-for-the-first-time-and-nothing-broke" title="Permanent link">#</a></h3>
+<p><strong>Zero compile errors. Zero warnings in our own code</strong> (two, both in vendored PortAudio's ALSA
+backend, for a deprecated <code>snd_pcm_sw_params_set_xfer_align</code>). The runbook explicitly budgeted "a
+round of trivial-but-numerous compile errors" from 53 commits of MSVC-only compilation, and the
+classic MSVC→GCC failures — missing transitive <code>#include</code>s, dependent-name lookup in templates — did
+not appear at all. The platform split has been maintained honestly by people who could not test it.</p>
+<p>The one certain breaker, <code>-mavx2 -mfma</code> missing from the test targets, had already been fixed on
+2026-08-25 and needed only confirming. <code>Neuropixels hardware not enabled - only sim interface</code>
+appeared at configure, which is the line that proves the Linux branch was entered.</p>
+<p>A <strong>clean clone</strong> (<code>git clone</code>, empty <code>ext/</code>, PortAudio and rapidyaml FetchContent-cloned over the
+network at configure time) configured and built and went 20/20 with no path edits. That is #52's
+first criterion, closed for Linux.</p>
+<h3 id="59c-the-sim-path-streams-and-records-counted-at-the-socket">59c. The sim path streams and records, counted at the socket<a class="headerlink" href="#59c-the-sim-path-streams-and-records-counted-at-the-socket" title="Permanent link">#</a></h3>
+<p>Per <code>CLAUDE.md</code>'s sim-first rule, liveness measured as <strong>binary frames at the WebSocket</strong>, not pixels:</p>
+<ul>
+<li><strong>14,134 binary frames / 573.8 MB in 101.7 s = 138.95 frames/s, 5.64 MB/s</strong>, holding 138–141 frames
+  in every active second and dropping cleanly to zero on pause.</li>
+<li>Recording throughput, computed from <code>frame.bytes</code> in the sidecar and confirmed by the recorder's own
+  log: <strong>100.3 % of nominal at t+10 s, 100.0 % at t+90 s</strong>, on all three bands (ap, lfp, adc), ADC
+  stream enabled throughout.</li>
+</ul>
+<p>That second row speaks to <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a>, where the
+second Windows machine recorded at 78 % with the ADC on and decayed to ~66 % by t+90 s. <strong>Neither
+effect reproduces here.</strong> This is a simulated source rather than a OneBox, so it does not close #63 —
+but it does say the decay is not in the platform-independent record path, which narrows it usefully.</p>
+<p>Selecting a hardware profile on this build produces the explicit toast — <em>"Real Neuropixels hardware
+(PXI/OneBox) is not available in this build…"</em> — rather than hanging half-connected, for both
+<code>NPX 1.0 (OneBox)</code> and <code>NPX 1.0</code>. That behaviour can only be exercised on a sim-only build, and it has
+not rotted.</p>
+<p><code>output.log</code> was clean across every run but for one WARN, covered in 59f.</p>
+<h3 id="59d-the-gui-suite-1010-after-two-harness-defects-and-one-real-crash">59d. The GUI suite: 10/10, after two harness defects and one real crash<a class="headerlink" href="#59d-the-gui-suite-1010-after-two-harness-defects-and-one-real-crash" title="Permanent link">#</a></h3>
+<p>First full run: <strong>9/10, with <code>band_dependency</code> red</strong> — and red in the least useful way, because the
+failure report printed a single line, <code>[harness] reusing the backend on :1234</code>, and nothing else.</p>
+<p><strong>The reporter was the first bug.</strong> <code>run_gui_tests.py</code> ran a failing test with <code>capture_output=True</code>
+and then reported <code>proc.stdout</code> only. The Python traceback goes to <strong>stderr</strong>, which nothing ever
+read — so a crashed backend and a failed assertion looked identical. Folding stderr into stdout (the
+porcelain branch already did exactly this) turned it into a readable traceback immediately.</p>
+<p><strong>The second was the browser lifetime, and the user saw it before I did.</strong> On Linux
+<code>/usr/bin/brave-browser</code> is a <code>#!/bin/bash</code> wrapper that spawns the real binary as a child, so
+<code>Popen</code> holds the <em>wrapper's</em> pid and <code>terminate()</code> reaps only the wrapper. The real browser was
+orphaned every time: <strong>one live browser per test, three on screen before the first run was three tests
+old.</strong> Fixed with <code>start_new_session=True</code> + <code>os.killpg</code>, scoped to our own group so it can never
+reach the operator's own Brave. Windows is untouched — <code>chrome.exe</code> is the real binary there.</p>
+<p>That leak turned out to be <strong>load-bearing by accident</strong>: the orphans held WebSockets open, which
+suppressed the backend's 2 s "last client gone" auto-quit between tests. Fixing it changed the timing
+that had been masking the real defect.</p>
+<h3 id="59e-commanddispatcherexecutecallbacks-was-erasing-from-the-vector-it-was-iterating">59e. <code>CommandDispatcher::executeCallbacks</code> was erasing from the vector it was iterating<a class="headerlink" href="#59e-commanddispatcherexecutecallbacks-was-erasing-from-the-vector-it-was-iterating" title="Permanent link">#</a></h3>
+<p>The actual failure. <code>band_dependency</code> <strong>passed when run alone and failed inside the suite</strong>, which is
+the most misleading signal a test can give.</p>
+<pre><code>SpikesPeak[…]: segfault at 50 … in libQt6Core.so.6.11.1
+proc.lfp[…]:   segfault … in SpikesPeak
+</code></pre>
+<p>Four core dumps, every one in <code>SpikesPeak::BandFilterProcessor::slBpHandleCommand</code>. The backend log
+ended, every time, on the same line: <code>[ spike ] band ENABLED from the GUI</code>.</p>
+<p><code>executeCallbacks</code> ran a range-<code>for</code> over <code>mSubscriptions[commandId]</code> and, for each subscriber whose
+<code>QPointer</code> had gone null, called <code>removeSubscriber(...)</code> — which erases from <strong>that same vector</strong>, and,
+once it empties it, calls <code>mSubscriptions.remove(commandId)</code> and destroys the container the loop is
+still walking. Undefined behaviour dressed up as careful lifetime hygiene. The three
+<code>[CommandDispatcher] QObject is null</code> lines immediately before each crash are the erases happening.</p>
+<p>It needs a <em>stale</em> subscriber, so it needs <strong>a second source session in one backend process</strong>.
+<code>band_dependency</code> is the only GUI test that runs after another session has been torn down — which is
+why a fresh backend never showed it, and why it is the only test that ever went red.</p>
+<p>Fixed by reaping dead subscribers in one pass <strong>before</strong> anything iterates to invoke, then iterating a
+copy (a same-thread callback may itself add or remove subscribers). While there,
+<code>removeSubscriber</code>'s guard was constructed <em>inside</em> its own <code>if (lock) { … }</code> block, so it took the
+mutex and released it again at the closing brace and the erase ran unguarded — and the local shadowed
+the parameter it was testing. Split into a locked wrapper around an unlocked body.</p>
+<p><strong>This is core code shared with Windows and the hardware rig.</strong> It is a correctness fix, not a Linux
+special case, and the crash was always possible on Windows — but it wants re-verifying on the rig
+before the branch merges.</p>
+<p>Proof it was fixed, not papered over: the exact reproduction (<code>audio_panel</code> then <code>band_dependency</code>
+against one backend) crashed 4/4 before and passes 4/4 after, with no new core dumps; then the full
+suite went <strong>10/10</strong>.</p>
+<p><code>stream_options</code> was green throughout, so <a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a>
+has not regressed on Linux.</p>
+<h3 id="59f-what-this-run-did-not-close-stated-plainly">59f. What this run did NOT close, stated plainly<a class="headerlink" href="#59f-what-this-run-did-not-close-stated-plainly" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Every hardware row of #52.</strong> <code>NPX_HW_ENABLED</code> and <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only and
+  the vendored libraries are Windows import libraries. PXIe, OneBox, real NI-DAQ, DAC, WavePlayer and
+  the closed-loop latency matrix are all structurally unavailable here — not skipped, impossible.</li>
+<li><strong>Closed-loop latency.</strong> It is defined as threshold crossing → stimulus pulse <em>observed on the
+  NI-DAQ or the OneBox ADC</em>. There is no instrument on this box to observe the pulse, so the number
+  cannot be produced at all. Throughput is in 59c; latency is not, and no number should be invented
+  for it.</li>
+<li><strong><code>layout_matrix</code>'s portrait half.</strong> <code>monitors()</code> shells out to PowerShell inside
+  <code>except Exception: return []</code>, so on Linux it returns empty without raising, and <strong>both the
+  landscape and the portrait passes ran in the same window</strong> — all 16 cells in
+  <code>gui_layout_matrix.json</code> reported <code>viewport 1920x996</code>. The cells pass, because the assertions are
+  written in the fold rule's own live operands. They are measuring a layout no operator uses.
+  Reported as <strong>untested</strong>, not as passing. Note that the <code>xrandr</code> parser #52 asks for would not have
+  helped <em>this</em> box: both its monitors are landscape. Closing it needs the parser <strong>and</strong> a portrait
+  panel.</li>
+<li><strong>One WARN in <code>output.log</code></strong>, Linux-only and cosmetic: <code>[KbListenerThread] Qt has caught an
+  exception thrown from an event handler</code>. At shutdown <code>main.cpp</code> calls <code>QThread::terminate()</code> on the
+  console-input thread; on Linux that is <code>pthread_cancel</code>, which glibc implements by throwing a
+  forced-unwind exception through the thread's event loop. Qt catches it, complains, and rethrows, so
+  the unwind completes and the process still exits cleanly. Windows' <code>TerminateThread</code> does not throw,
+  which is why it has never been seen. The EOF path itself is correct — <code>KeyboardListener</code> returns
+  cleanly on a closed stdin and does not spin. Filed, not fixed: the thread's event loop outlives the
+  listener, and untangling that touches the <code>finished → QApplication::quit()</code> wiring.</li>
+</ul>
+<h3 id="59g-dependency-decisions-left-for-the-operator-per-claudemd">59g. Dependency decisions left for the operator, per <code>CLAUDE.md</code><a class="headerlink" href="#59g-dependency-decisions-left-for-the-operator-per-claudemd" title="Permanent link">#</a></h3>
+<p>None of these were taken:</p>
+<ul>
+<li><strong>Dropping Qt WebEngine.</strong> Still a hard <code>find_package</code> requirement, still zero <code>QWebEngine*</code> symbols
+  in <code>src/</code>. It transitively supplies <code>Qt::Widgets</code>, <code>Qt::Gui</code> and <code>Qt::WebChannel</code> — the last is used
+  by <code>WebSocketServer.cpp</code> and is requested nowhere — so removing it means naming all three
+  explicitly first, and it changes the Windows build.</li>
+<li><strong>Xvfb.</strong> Not needed here; a real X session was available and is the evidenced route. The Xvfb path
+  remains untested on any machine.</li>
+<li><strong>An <code>xrandr</code> monitor probe.</strong> Stdlib <code>subprocess</code>, no new dependency — but see 59f: it does not
+  close the portrait gap on its own.</li>
+<li><strong><code>libnidaqmx.so</code>.</strong> Only relevant if anyone ever wants real DAQ on Linux. Nobody has asked.</li>
+</ul>
+<h3 id="59h-files-changed">59h. Files changed<a class="headerlink" href="#59h-files-changed" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/core/CommandDispatch.hpp</code></td>
+<td>The crash fix (59e) — reap-then-copy in <code>executeCallbacks</code>, and a mutex guard that actually guards in <code>removeSubscriber</code>. Adds <code>&lt;algorithm&gt;</code>, which was arriving transitively.</td>
+</tr>
+<tr>
+<td><code>tests/gui/_harness.py</code></td>
+<td>Browser started in its own process group and killed as a group, so Linux wrapper scripts do not orphan the real browser.</td>
+</tr>
+<tr>
+<td><code>scripts/run_gui_tests.py</code></td>
+<td>A failing test's stderr is folded into stdout so the traceback survives to the report.</td>
+</tr>
+</tbody>
+</table>
+<p>All three are portability/correctness fixes rather than Linux special cases. <code>developer_docs/Testing.md</code>
+gained a Linux section (it previously contained no occurrence of the word) and its suite table, five
+suites and 68 cases out of date, now reads 20/384. <code>developer_docs/AgentTraps.md</code> gained §5g.</p>
+<p><strong>Green at the end: 20/20 C++ suites (384 cases), 10/10 GUI tests, on Linux.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -5293,6 +5499,17 @@ rule itself, because the rule's text contained a Windows path.</p>
 <li><a href="#57f-53-the-adc-verified-against-a-known-signal">57f. #53: the ADC verified against a known signal</a></li>
 <li><a href="#57g-63-and-64-and-51-narrowed">57g. #63 and #64, and #51 narrowed</a></li>
 <li><a href="#57h-rules-made-durable-because-notes-were-not-enough">57h. Rules made durable, because notes were not enough</a></li>
+</ul>
+</li>
+<li><a href="#59-both-suites-green-on-linux-and-the-crash-only-a-second-session-could-find-2026-08-26">59. BOTH SUITES GREEN ON LINUX — AND THE CRASH ONLY A SECOND SESSION COULD FIND (2026-08-26)</a><ul>
+<li><a href="#59a-the-machine-recorded-properly-this-time">59a. The machine, recorded properly this time</a></li>
+<li><a href="#59b-fifty-three-commits-met-gcc-for-the-first-time-and-nothing-broke">59b. Fifty-three commits met GCC for the first time and nothing broke</a></li>
+<li><a href="#59c-the-sim-path-streams-and-records-counted-at-the-socket">59c. The sim path streams and records, counted at the socket</a></li>
+<li><a href="#59d-the-gui-suite-1010-after-two-harness-defects-and-one-real-crash">59d. The GUI suite: 10/10, after two harness defects and one real crash</a></li>
+<li><a href="#59e-commanddispatcherexecutecallbacks-was-erasing-from-the-vector-it-was-iterating">59e. CommandDispatcher::executeCallbacks was erasing from the vector it was iterating</a></li>
+<li><a href="#59f-what-this-run-did-not-close-stated-plainly">59f. What this run did NOT close, stated plainly</a></li>
+<li><a href="#59g-dependency-decisions-left-for-the-operator-per-claudemd">59g. Dependency decisions left for the operator, per CLAUDE.md</a></li>
+<li><a href="#59h-files-changed">59h. Files changed</a></li>
 </ul>
 </li>
 </ul>

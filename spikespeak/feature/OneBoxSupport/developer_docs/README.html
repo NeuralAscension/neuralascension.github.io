@@ -145,6 +145,10 @@ compile (it needs a browser and a backend), so it is on you to run it — always
 <code>webinterface/</code>. A failing C++ suite does not stop the build, which makes red easy to walk past.
 Don't. See <a href="Testing.html"><code>Testing.md</code></a> and <a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a>, and note the
 repo root <a href="../CLAUDE.html"><code>CLAUDE.md</code></a> carries the same checklist.</p>
+<p><strong>On Linux, read <a href="Testing.html"><code>Testing.md</code> §1a</a> first.</strong> Both suites are green there as of
+2026-08-26 (20/20 C++, 10/10 GUI) but the box needs a Qt ≥ 6.7 that is <em>not</em> the distro's (Ubuntu
+24.04 ships 6.4.2, and it fails at configure), <code>libasound2-dev</code> installed <em>before</em> the first
+configure, and a real display. No hardware row can be closed there.</p>
 </blockquote>
 <ol>
 <li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one

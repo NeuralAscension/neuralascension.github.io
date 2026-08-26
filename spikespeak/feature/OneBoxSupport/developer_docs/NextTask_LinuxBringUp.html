@@ -410,8 +410,12 @@ Harmless for the backend (it is a windowless server), but <strong>do not read th
 there is no display for the GUI suite</strong> — check <code>WAYLAND_DISPLAY</code> too before you conclude you need
 Xvfb. Export <code>QT_QPA_PLATFORM=xcb</code> (or <code>wayland</code>) to override; the launcher only sets it when it is
 unset.</p>
-<h3 id="step-1-fix-the-one-certain-build-breaker">Step 1 — Fix the one certain build breaker<a class="headerlink" href="#step-1-fix-the-one-certain-build-breaker" title="Permanent link">#</a></h3>
-<p><strong>This will stop <code>cmake --build</code> on Linux, so fix it before you configure rather than after.</strong></p>
+<h3 id="step-1-the-one-certain-build-breaker-fixed-2026-08-25">Step 1 — The one certain build breaker — FIXED 2026-08-25<a class="headerlink" href="#step-1-the-one-certain-build-breaker-fixed-2026-08-25" title="Permanent link">#</a></h3>
+<p><strong>Already done; verify rather than apply.</strong> <code>tests/CMakeLists.txt:85-93</code> now carries the GCC guard,
+and its comment names this runbook as where the problem was found. Confirm it is there before you
+configure, then move on to step 2 — pasting the block below a second time is harmless but the rest of
+this section describes a tree that no longer exists.</p>
+<p>The original analysis, kept because it explains <em>why</em> the guard is needed:</p>
 <p><code>-mavx2 -mfma</code> is attached to the <code>SpikesPeak</code> target only (<code>CMakeLists.txt:90-93</code>). The
 <code>spikespeak_test()</code> function is a plain <code>add_executable</code> with <strong>no compile options at all</strong>
 (<code>tests/CMakeLists.txt:39-101</code>), and two test targets — <code>test_avx2filter</code> (<code>:130</code>) and
@@ -534,12 +538,13 @@ percent = 100.0 * (records / RECORD_SECONDS) / sidecar[&quot;sample_rate_hz&quot
 <p>Recordings go to <code>/tmp</code>, never into the repo (<code>CLAUDE.md</code>: never commit recording-test data).</p>
 <h3 id="step-7-the-gui-suite">Step 7 — The GUI suite<a class="headerlink" href="#step-7-the-gui-suite" title="Permanent link">#</a></h3>
 <p>Its own section. Go to §5.</p>
-<p><strong>On <code>scripts/run_all_tests.py</code>.</strong> <code>CLAUDE.md</code> offers it as the one command for both suites, and this
-runbook deliberately does not use it here. Two reasons, neither fatal: it shells out to
-<code>run_gui_tests.py</code> (<code>:271</code>), so it inherits the <code>.bat</code> blocker of §5.1 unchanged; and it
-<code>webbrowser.open</code>s its live progress page (<code>:340</code>) unless you pass <code>--no-browser</code>, which on a box
-whose display situation you are still establishing is one more variable. Once §5.1 is fixed,
-<code>python3 scripts/run_all_tests.py --no-browser --fatal</code> is the right way to run both.</p>
+<p><strong>On <code>scripts/run_all_tests.py</code>.</strong> <code>CLAUDE.md</code> offers it as the one command for both suites, and
+since §5.1 was fixed on 2026-08-26 it is the right way to run both:</p>
+<pre><code class="language-bash">python3 scripts/run_all_tests.py --no-browser --fatal
+</code></pre>
+<p>Pass <code>--no-browser</code>: it <code>webbrowser.open</code>s its live progress page (<code>:340</code>) otherwise, which on a box
+whose display situation you are still establishing is one more variable. Pass <code>--fatal</code> so a suite
+that never ran cannot read as a pass.</p>
 <h3 id="step-8-tear-down">Step 8 — Tear down<a class="headerlink" href="#step-8-tear-down" title="Permanent link">#</a></h3>
 <p>Shut the backend down with the WebSocket <code>quit</code> command or the GUI's Disconnect. Kill <strong>only</strong> the
 isolated debug-port browser profile the harness launched — a blanket <code>pkill chrome</code> closes the
@@ -547,19 +552,18 @@ operator's real windows. Leave nothing running: no <code>SpikesPeak</code>, no s
 free.</p>
 <hr />
 <h2 id="5-the-gui-suite-on-linux">5. The GUI suite on Linux<a class="headerlink" href="#5-the-gui-suite-on-linux" title="Permanent link">#</a></h2>
-<p><strong>This is the part most likely to block, and the honest headline is: it has never been run on Linux,
-and it cannot run today without a two-line change.</strong> Below is exactly what is known, what is a
-guess, and what to do first when it breaks.</p>
-<h3 id="51-the-hard-blocker-two-lines-that-exec-a-bat">5.1 The hard blocker: two lines that exec a <code>.bat</code><a class="headerlink" href="#51-the-hard-blocker-two-lines-that-exec-a-bat" title="Permanent link">#</a></h3>
-<p>Both entry points start the backend by <code>Popen</code>-ing <code>run_spikespeak.bat</code> through the shell:</p>
-<ul>
-<li><code>tests/gui/_harness.py:238</code></li>
-<li><code>scripts/run_gui_tests.py:117</code></li>
-</ul>
-<p>Those are the <strong>only</strong> two <code>.bat</code> references in the whole test path. On Linux the runner prints
+<p><strong>This is the part most likely to block, and the honest headline is: it has never been run on
+Linux.</strong> Below is exactly what is known, what is a guess, and what to do first when it breaks.</p>
+<h3 id="51-the-bat-blocker-fixed-2026-08-26">5.1 The <code>.bat</code> blocker — FIXED 2026-08-26<a class="headerlink" href="#51-the-bat-blocker-fixed-2026-08-26" title="Permanent link">#</a></h3>
+<p>Both entry points used to start the backend by <code>Popen</code>-ing <code>run_spikespeak.bat</code> through the shell,
+which is Windows-only, so the suite could not start a backend on Linux at all. Both now call
+<code>scripts/spikespeak.py</code> directly (<code>tests/gui/_harness.py:237-245</code>,
+<code>scripts/run_gui_tests.py:116-121</code>) — no executable bit needed, no <code>shell=True</code>, and it reuses the
+interpreter already running the tests. There are no <code>.bat</code> references left anywhere in the test path.</p>
+<p><strong>Use <code>--fatal</code> anyway.</strong> If the backend fails to come up for some <em>other</em> reason, the runner prints
 <em>"backend did not come up on :1234"</em> and — without <code>--fatal</code> — <strong>returns 0</strong>, so a suite that never
-ran can read as a non-failure. Use <code>--fatal</code> until this is fixed so a miss cannot be mistaken for
-green.</p>
+ran reads as a non-failure. That hazard is unchanged and is the one to guard against on a first
+Linux run.</p>
 <p><strong>The fix, and it is small.</strong> Branch on <code>os.name</code> and call the cross-platform launcher that already
 exists, dropping <code>shell=True</code>:</p>
 <pre><code class="language-python">[sys.executable, os.path.join(REPO, &quot;scripts&quot;, &quot;spikespeak.py&quot;), &quot;run&quot;, &quot;--no-browser&quot;]
@@ -572,7 +576,8 @@ looks like a zero-code route — but <strong>it gets you exactly one test.</stro
 subprocess (<code>run_gui_tests.py:143-155</code>), and the backend auto-quits 2000 ms after its last WebSocket
 client disconnects (<code>src/core/WebSocketServer.cpp:72-90</code>). When the harness kills its Chrome at the
 end of test one, no client remains and the backend goes away before test two starts. Pre-starting is
-useful for a single manual smoke run and nothing more. <strong>Fix the two lines.</strong></p>
+useful for a single manual smoke run and nothing more — which is fine, because §5.1 is fixed and the
+harness now starts its own backend on Linux.</p>
 <p>(One consequence worth knowing: the harness only sends <code>quit</code> on exit if <em>it</em> started the backend —
 <code>self._backend</code> is <code>None</code> otherwise — so a backend you started by hand is yours to tear down.)</p>
 <h3 id="52-is-headless-viable-unknown-and-here-is-the-first-diagnostic">5.2 Is headless viable? Unknown — and here is the first diagnostic<a class="headerlink" href="#52-is-headless-viable-unknown-and-here-is-the-first-diagnostic" title="Permanent link">#</a></h3>
@@ -945,7 +950,7 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 </li>
 <li><a href="#4-step-by-step">4. Step by step</a><ul>
 <li><a href="#step-0-before-you-configure-three-things-that-are-broken-today">Step 0 — before you configure: three things that are broken today</a></li>
-<li><a href="#step-1-fix-the-one-certain-build-breaker">Step 1 — Fix the one certain build breaker</a></li>
+<li><a href="#step-1-the-one-certain-build-breaker-fixed-2026-08-25">Step 1 — The one certain build breaker — FIXED 2026-08-25</a></li>
 <li><a href="#step-2-configure">Step 2 — Configure</a></li>
 <li><a href="#step-3-build">Step 3 — Build</a></li>
 <li><a href="#step-4-the-c-suite">Step 4 — The C++ suite</a></li>
@@ -956,7 +961,7 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 </ul>
 </li>
 <li><a href="#5-the-gui-suite-on-linux">5. The GUI suite on Linux</a><ul>
-<li><a href="#51-the-hard-blocker-two-lines-that-exec-a-bat">5.1 The hard blocker: two lines that exec a .bat</a></li>
+<li><a href="#51-the-bat-blocker-fixed-2026-08-26">5.1 The .bat blocker — FIXED 2026-08-26</a></li>
 <li><a href="#52-is-headless-viable-unknown-and-here-is-the-first-diagnostic">5.2 Is headless viable? Unknown — and here is the first diagnostic</a></li>
 <li><a href="#53-second-order-unknown-the-backend-may-not-survive-pagereload">5.3 Second-order unknown: the backend may not survive Page.reload</a></li>
 <li><a href="#54-monitor-selection-degrades-silently-and-you-must-not-let-it-pass-as-green">5.4 Monitor selection degrades silently, and you must not let it pass as green</a></li>

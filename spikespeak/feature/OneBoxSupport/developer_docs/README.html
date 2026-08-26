@@ -956,7 +956,7 @@ for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its 
 <p><strong>Linux (sim, no hardware):</strong></p>
 <pre><code class="language-bash">git clone &lt;repo&gt; &amp;&amp; cd SpikesPeak
 ./build.sh                                       # configures build/ on first use; exe -&gt; bin/
-./run_spikespeak.sh --no-browser                 # backend on :8234 (HTTP) + :1234 (WS); add --offscreen if headless
+./run_spikespeak.sh --no-browser                 # backend on :8234 (HTTP) + :1234 (WS); sets QT_QPA_PLATFORM=offscreen itself when DISPLAY is unset
 # open a Chromium browser at http://localhost:8234 → Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
 </code></pre>
 <p><strong>Windows (hardware box):</strong></p>
@@ -981,7 +981,7 @@ driving/screenshotting the browser over CDP.</p>
 <code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code> are off, so hardware sources are excluded and NeuropixAPI <strong>stubs</strong>
 compile. Full plan + gotchas in <a href="SimDataLinux.html"><code>SimDataLinux.md</code></a>.</p>
 <pre><code class="language-bash">cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release &amp;&amp; cmake --build build
-QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib ./build/bin/SpikesPeak --no-browser
+QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib ./bin/SpikesPeak --no-browser
 python python/spikespeak_cli.py --host localhost list         # source = Simulated Data
 </code></pre>
 <blockquote>

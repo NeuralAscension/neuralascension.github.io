@@ -122,15 +122,16 @@
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="building-and-running-spikespeak">Building and running SpikesPeak<a class="headerlink" href="#building-and-running-spikespeak" title="Permanent link">#</a></h1>
-<p>Everything here works from a plain terminal on Windows, Linux and macOS. Nothing needs Qt Creator,
-a "Developer Command Prompt", or any path edited into a script.</p>
+<p>Everything here works from a plain terminal on <strong>Windows and Linux</strong>. Nothing needs Qt Creator, a
+"Developer Command Prompt", or any path edited into a script. macOS is not supported yet -- see the
+note under Prerequisites for exactly what is missing.</p>
 <h2 id="the-short-version">The short version<a class="headerlink" href="#the-short-version" title="Permanent link">#</a></h2>
 <table>
 <thead>
 <tr>
 <th></th>
 <th>Windows</th>
-<th>Linux / macOS</th>
+<th>Linux</th>
 </tr>
 </thead>
 <tbody>
@@ -170,7 +171,7 @@ own name in <code>%cmdcmdline%</code> cannot tell Explorer's <code>cmd /c ""...b
 <code>cmd /c build.bat</code>, so it pauses inside automation and hangs it. A wrong pause costs a keypress; a
 wrong no-pause loses the output you opened the window to read.</p>
 <p>Every one of them is a thin wrapper around <code>scripts/spikespeak.py</code>, which is the actual
-implementation and is identical on all three platforms. If a wrapper ever misbehaves, call it
+implementation and is identical on both platforms. If a wrapper ever misbehaves, call it
 directly:</p>
 <pre><code class="language-bash">python scripts/spikespeak.py build
 python scripts/spikespeak.py run --no-browser
@@ -195,7 +196,7 @@ version while the build reported success — which silently tested old code. Tha
 problem is gone with one copy of each directory.</p>
 <h2 id="first-build-from-a-fresh-clone">First build, from a fresh clone<a class="headerlink" href="#first-build-from-a-fresh-clone" title="Permanent link">#</a></h2>
 <pre><code class="language-bash">build.bat          # Windows
-./build.sh         # Linux / macOS
+./build.sh         # Linux
 </code></pre>
 <p>That is the whole procedure. On first use it configures <code>build/</code> (Ninja, Release,
 <code>compile_commands.json</code> on) and then builds. It finds the compiler, Qt and Ninja itself.</p>
@@ -222,25 +223,21 @@ problem is gone with one copy of each directory.</p>
 <th></th>
 <th>Windows</th>
 <th>Linux</th>
-<th>macOS</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Compiler</td>
 <td>Visual Studio 2019+ (Desktop C++ workload)</td>
-<td>GCC 11+ or Clang 14+</td>
-<td>Xcode command-line tools</td>
+<td><strong>GCC</strong> 11+ — see the Clang note below</td>
 </tr>
 <tr>
 <td>Qt</td>
 <td><strong>6.7</strong>, <code>msvc2019_64</code> kit</td>
 <td>6.7+, <code>gcc_64</code></td>
-<td>6.7+, <code>macos</code></td>
 </tr>
 <tr>
 <td>CMake</td>
-<td>≥ 3.19</td>
 <td>≥ 3.19</td>
 <td>≥ 3.19</td>
 </tr>
@@ -248,23 +245,34 @@ problem is gone with one copy of each directory.</p>
 <td>HDF5</td>
 <td>1.14 (vendored runtime DLLs are copied to <code>bin/</code>)</td>
 <td><code>libhdf5-dev</code></td>
-<td><code>brew install hdf5</code></td>
 </tr>
 <tr>
 <td>Python</td>
 <td>3.9+ (for the wrappers and the test runners)</td>
-<td>3.9+</td>
 <td>3.9+</td>
 </tr>
 <tr>
 <td>Ninja</td>
 <td>optional — bundled with Qt Creator or VS</td>
 <td><code>apt install ninja-build</code></td>
-<td><code>brew install ninja</code></td>
 </tr>
 </tbody>
 </table>
-<p>Neuropixels and NI-DAQ hardware support is <strong>Windows only</strong>. Linux and macOS build the same code
+<blockquote>
+<p><strong>Clang is not wired up, and macOS is not supported yet.</strong> The AVX2 flags are applied only when the
+compiler identifies as <code>GNU</code> — <code>CMakeLists.txt:101</code> and <code>tests/CMakeLists.txt:91</code> both test
+<code>CMAKE_CXX_COMPILER_ID MATCHES "GNU"</code> — while <code>src/core/Avx2Filter.cpp</code> and
+<code>DisplayProcessor.cpp</code> use <code>_mm256_*</code> intrinsics unconditionally. Under Clang or AppleClang that
+is <code>error: inlining failed in call to 'always_inline' '_mm256_fmadd_ps': target specific option
+mismatch</code>, in the application target, not just the tests.</p>
+<p>Widening both regexes to <code>"GNU|Clang"</code> is the obvious one-line fix and <code>-mavx2 -mfma</code> are valid
+Clang flags — but it has never been compiled, so it is a change to make <strong>on</strong> a Clang box rather
+than from here. macOS needs more than that anyway: the target is declared
+<code>qt_add_executable(SpikesPeak WIN32 MACOSX_BUNDLE …)</code>, and inside a <code>.app</code> bundle
+<code>applicationDirPath()/../&lt;name&gt;</code> does not resolve to the repo root, which is the assumption the
+whole <code>bin/</code> layout rests on.</p>
+</blockquote>
+<p>Neuropixels and NI-DAQ hardware support is <strong>Windows only</strong>. Linux builds the same code
 with the vendor API stubbed out, so simulated sources, the full processing chain, the GUI and both
 test suites all work — which is what makes "run it in sim first" a real diagnostic rather than a
 gesture. See <a href="Testing.html"><code>Testing.md</code></a> §4.</p>
@@ -278,12 +286,16 @@ git update-index --chmod=+x build.sh run_spikespeak.sh   # records the bit for e
 </code></pre>
 <p>Or sidestep it entirely with <code>python3 scripts/spikespeak.py build</code>.</p>
 <h2 id="running-it">Running it<a class="headerlink" href="#running-it" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">run_spikespeak.bat                 # Windows  -- opens your default browser at the GUI
+<pre><code class="language-bash">run_spikespeak.bat                 # Windows  -- opens the GUI in a dedicated browser window
 run_spikespeak.bat --no-browser    # backend only
 </code></pre>
-<p><strong>Always pass <code>--no-browser</code> for automated work.</strong> Without it the app calls
-<code>QDesktopServices::openUrl</code> and opens a window in the operator's <em>default</em> browser, on top of
-whatever browser a test is already driving.</p>
+<p>With no flags it opens a <strong>chromeless app-window</strong> on its own profile
+(<code>~/.spikespeak/browser-profile</code>) via the first Chromium-family browser it finds -- Brave, Chrome or
+Edge -- so it is a separate session from your normal browsing, with no tab strip and remembered
+window geometry. If no Chromium is installed it falls back to a plain tab in your default browser.
+Closing that window drops the last WebSocket client, which shuts the backend down.</p>
+<p><strong>Always pass <code>--no-browser</code> for automated work</strong>, or you get a second GUI on top of whatever browser
+a test is already driving.</p>
 <p><strong>Do not run <code>bin/SpikesPeak.exe</code> directly.</strong> It exits immediately with <code>0xC0000135</code>
 (<code>STATUS_DLL_NOT_FOUND</code>): Qt's DLLs are not beside it and not on <code>PATH</code>. The launcher puts Qt,
 the Neuropixels API and HDF5 on <code>PATH</code> first — that is its whole job. The vendored Neuropixels and

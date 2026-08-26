@@ -238,7 +238,9 @@ header</strong> first (<code>[u8 idLen][idStr][u32 numCh][u32 numBins]…</code>
    needs no calibration. (Same for the Windows-only DLL copies — already guarded by <code>if(WIN32)</code>.)</li>
 <li>Confirm <code>SpikesPeak</code> launches headless on Linux and serves HTTP:8234 + WS:1234 (drive with
    <code>spikespeak_cli.py --host localhost</code>). No <code>--no-browser</code>/<code>Start-Process</code> needed; Linux launch is just
-   <code>./build/bin/SpikesPeak</code> (set <code>LD_LIBRARY_PATH</code> to the Qt/HDF5 libs if not system-installed).</li>
+   <code>./bin/SpikesPeak</code> (set <code>LD_LIBRARY_PATH</code> to the Qt/HDF5 libs if not system-installed, or just
+   use <code>./run_spikespeak.sh</code>, which does it for you). The exe moved from <code>build/bin/</code> to the repo's
+   own <code>bin/</code> on 2026-08-26.</li>
 </ol>
 <h3 id="phase-1-sim-source-produces-real-np10-data-decisions-1-2">Phase 1 — Sim source produces real NP1.0 data (decisions #1, #2)<a class="headerlink" href="#phase-1-sim-source-produces-real-np10-data-decisions-1-2" title="Permanent link">#</a></h3>
 <ol>

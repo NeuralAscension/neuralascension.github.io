@@ -451,6 +451,29 @@ fits", permanently. Drop <code>strip-collapsed</code>, read, restore, <strong>in
 <code>ChartColumn.fitStrips()</code> does. It also does it once per <strong>row</strong>, not once per column: each class
 flip is a size change the chart-area <code>ResizeObserver</code> picks up and re-enters on, and N of them per
 frame took the page down during development.</p>
+<h2 id="5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. <code>requestAnimationFrame</code> does not fire when nothing is being painted<a class="headerlink" href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted" title="Permanent link">#</a></h2>
+<p><strong>A layout decision deferred through rAF is a layout decision that may never happen.</strong> rAF runs only
+while the page is actually rendering. A minimised window, an occluded one, a background tab, or a
+browser driven over CDP with nothing on screen all suspend it indefinitely — the callback is not
+late, it is never called.</p>
+<p>This cost a full GUI-suite red on 2026-08-26. <code>live_view</code> asserted that three columns in a 1080px
+window collapse their control strips, and they did not. The measurement was fine: probing at that
+exact moment gave <code>need=446 / avail=197</code>, and calling <code>updateStripMode()</code> by hand collapsed all
+three columns immediately. The instrumented counters told the real story —</p>
+<pre><code>resize: 2      the event fired, twice
+raf:     0     the requestAnimationFrame callback ran zero times
+fitRan:  0     so the fit never happened
+err:  null     and nothing threw, because nothing ran
+</code></pre>
+<p>— and both existing paths into the fit (the chart-area <code>ResizeObserver</code>, and the one added while
+chasing this) deferred through rAF, so both were inert. The window resize handler now calls
+<code>ChartColumn.fitStrips()</code> <strong>directly</strong>, with a <code>setTimeout(..., 0)</code> backstop for a slow relayout;
+timers still fire when nothing is painted.</p>
+<p>Note the failure mode is silent twice over: the rAF never runs, <em>and</em> the usual
+<code>try { … } catch (e) {}</code> around it means there is no error either. If a class is not being applied
+and nothing is in the console, <strong>count whether your callback ran at all before you debug what it
+does.</strong> Deferring <code>draw()</code> through rAF is still right — that is a paint, and it is correct for it to
+wait for one. Deferring a <em>decision</em> is not.</p>
 <hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
@@ -480,6 +503,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5c-measuring-things-on-this-rig">5c. Measuring things on this rig</a></li>
 <li><a href="#5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half">5d. Enabling something is half a feature; disabling it is the other half</a></li>
 <li><a href="#5e-the-shape-must-not-depend-on-the-measurement">5e. The shape must not depend on the measurement</a></li>
+<li><a href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. requestAnimationFrame does not fire when nothing is being painted</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

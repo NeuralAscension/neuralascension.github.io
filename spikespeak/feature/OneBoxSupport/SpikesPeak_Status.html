@@ -201,6 +201,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>Ripple (SWR) detection validated for BOTH NP1.0 and NP2.0</strong>; config rename to <code>SimNpx&lt;N&gt;</code></td>
 </tr>
 <tr>
+<td>S56</td>
+<td>2026-08-25</td>
+<td>Fastest-protocol audio device selection; the control strip obeys one rule; #63 throughput does not reproduce here; #51 confirmed on hardware</td>
+</tr>
+<tr>
 <td><strong>S21</strong></td>
 <td><strong>2026-07-09</strong></td>
 <td><strong>Stim closed loop: ripple → UDP <code>fire</code> → ESP32 → biphasic pulse on NI-DAQ ai4</strong></td>
@@ -4642,7 +4647,108 @@ mandatory and its absence is indistinguishable from a working detector on a quie
 "no samples" from "trained but quiet" via <code>rippleEnvelope</code>; and <code>output.log</code> lives in the backend's
 <strong>working</strong> directory. I lost a run to the missing <code>retrain()</code> this very session, after writing the
 page that says so.</p>
-<p><strong>Green at the end: 17/17 C++ suites, 10/10 GUI tests.</strong></p></article>
+<p><strong>Green at the end: 17/17 C++ suites, 10/10 GUI tests.</strong></p>
+<hr />
+<h2 id="56-one-row-if-it-fits-and-a-control-that-never-ran-2026-08-25">56. ONE ROW IF IT FITS, AND A CONTROL THAT NEVER RAN  (2026-08-25)<a class="headerlink" href="#56-one-row-if-it-fits-and-a-control-that-never-ran-2026-08-25" title="Permanent link">#</a></h2>
+<p>Audio device selection, the per-column control strip, and two measurements — one of which failed in
+a way worth more than the measurement.</p>
+<h3 id="56a-the-shipped-audio-default-was-the-slowest-path-windows-offers">56a. The shipped audio default was the slowest path Windows offers<a class="headerlink" href="#56a-the-shipped-audio-default-was-the-slowest-path-windows-offers" title="Permanent link">#</a></h3>
+<p><code>Pa_GetDefaultHostApi()</code> returns MME. Measured on this rig: <strong>MME 99.9 ms of output latency against
+DirectSound's 8.7 ms on the identical speakers.</strong> Nothing chose between them, and the picker listed
+eighteen entries with no indication that most were the same four outputs reached badly.</p>
+<p><code>hostApiRank()</code> now orders the host APIs by MEASUREMENT rather than by what they advertise —
+DirectSound promises 120 ms and delivers under 19; WASAPI promises 3 ms, delivers 20, and refuses to
+open on three of this rig's four outputs. <code>physicalName()</code> groups a speaker across APIs despite MME
+truncating names to 31 characters. <code>enumerateOutputs()</code> reports <code>physical</code> / <code>api_rank</code> / <code>fastest</code>
+with an index tie-break, because a "fastest" mark that appears twice tells the operator nothing.
+<code>findDefaultFollower()</code> picks the follower endpoint by rank, so following the OS setting no longer
+means MME.</p>
+<p>The picker became a button and a themed menu rather than a <code>&lt;select&gt;</code>: a native select's popup is
+OS-drawn, so the green "fastest" rows rendered green-on-<strong>white</strong> the moment it opened, and no CSS
+reaches inside it.</p>
+<h3 id="56b-the-control-strip-had-two-faults-with-one-root">56b. The control strip had two faults with one root<a class="headerlink" href="#56b-the-control-strip-had-two-faults-with-one-root" title="Permanent link">#</a></h3>
+<p>The per-column band (stream / shank / L+R / µV / density) had three authored shapes chosen by twelve
+<code>@container</code> tiers keyed on column count. Both halves of <code>(!vertical &amp;&amp; nCols &gt; 2) || doesNotFit</code>
+were wrong, measured on the 1920×1080 display:</p>
+<table>
+<thead>
+<tr>
+<th>case</th>
+<th>one row needs / has</th>
+<th>did</th>
+<th>should</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3 columns, dock shut</td>
+<td>448 / <strong>477</strong> — fits</td>
+<td>collapsed behind a chip</td>
+<td>stay open</td>
+</tr>
+<tr>
+<td>2 columns at 1080px</td>
+<td>448 / 437 — does not fit</td>
+<td><strong>stacked to two rows</strong></td>
+<td>collapse</td>
+</tr>
+</tbody>
+</table>
+<p>The second is the interesting one. <strong>The tier chose the shape, and the fit test then measured the
+shape the tier had chosen.</strong> At 1080px the band was already stacked, so the test measured 274px,
+found it fitting in 377px, and never collapsed. A circle that settles happily on a wrong answer and
+looks green from every angle.</p>
+<p>So the in-flow band has exactly ONE shape and <code>ChartColumn.fitStrips()</code> collapses it iff 448px does
+not fit beside the depth readout. All twelve tiers deleted. Two things the change was not allowed to
+break, both found by auditing before writing:</p>
+<ul>
+<li><strong>The decision is made once per row.</strong> <code>.column-container</code> is <code>flex:1 1 0</code> and Chrome distributes
+  the remainder in 1/64px LayoutUnits while <code>clientWidth</code> rounds to an integer, so per-column
+  measurement lets siblings land on opposite sides of the threshold — two header heights in one row,
+  traces starting at different Y. The per-column version also flipped a class N times per frame to
+  measure, each flip a size change the ResizeObserver picked up, which called back in. It took the
+  page down.</li>
+<li><strong>The collapsed overlay keeps the narrow template.</strong> It is <code>position:absolute</code> and set no template,
+  so it inherited the in-flow one. <code>#view-data</code> is <code>overflow:hidden</code>, which CLIPS an absolutely
+  positioned descendant — a 448px overlay in a column too narrow for one would have lost 275px of
+  controls on the last column at 1080 with the dock open.</li>
+</ul>
+<p><code>layout_matrix</code> asserted the OLD rule as a requirement, and its one-line/header-height invariants were
+gated behind <code>if vertical:</code> — which is exactly why a two-row HORIZONTAL strip ran green for months.
+They now run on both axes, the rule is asserted in its own operands read from live layout (never a
+table of expected collapse counts: the suite runs full-screen on whichever monitors are attached), and
+two new assertions pin the uniformity the shared container query used to give for free.</p>
+<h3 id="56c-the-throughput-shortfall-does-not-reproduce-here">56c. The throughput shortfall does not reproduce here<a class="headerlink" href="#56c-the-throughput-shortfall-does-not-reproduce-here" title="Permanent link">#</a></h3>
+<h1 id="63-split-out-of-53s-comments-where-it-had-been-sitting-unowned-the-second-machine-recorded-at">63 (split out of #53's comments, where it had been sitting unowned): the second machine recorded at<a class="headerlink" href="#63-split-out-of-53s-comments-where-it-had-been-sitting-unowned-the-second-machine-recorded-at" title="Permanent link">#</a></h1>
+<p><strong>78.1 %</strong> of nominal with the ADC enabled and <strong>99.99 %</strong> without it, and decayed to <strong>65.8 %</strong> by
+t+90 s regardless. Nothing warned — zero WARN, zero CRITICAL — because the stall watchdog only fires
+on a total stop.</p>
+<p>Run here, four cells, counted from file size over the sidecar's own declared frame width:
+<strong>100.0 % on every cell</strong>, both bands, t+15 s and t+90 s. So it is specific to that machine or its
+environment, not the code, and the investigation moves to comparing hosts.</p>
+<h3 id="56d-because-the-control-never-ran-which-is-the-real-finding">56d. …because the control never ran, which is the real finding<a class="headerlink" href="#56d-because-the-control-never-ran-which-is-the-real-finding" title="Permanent link">#</a></h3>
+<p>The four cells alternated between <code>Npx2OneBox</code> and a new <code>Npx2OneBoxNoAdc</code> control. <strong>Every
+<code>selectSource</code> after the first silently failed to take effect.</strong> All four ran under the first
+profile — the cells named "no ADC" contain ADC data, and the recorder logged
+<code>recording state confirmed: true "A_noadc_t15"</code> while writing the wrong configuration under that
+name.</p>
+<p>That is #51, previously known only from sim, now confirmed on real hardware. It is worse than "a
+switch failed": the files are indistinguishable from correct ones afterwards — right name, consistent
+sidecars, every count exact. It was caught only because these two profiles differ in the NUMBER of
+bands. Two profiles differing in a filter setting, a channel list or a sample rate would have produced
+files that look perfect and are silently mislabelled.</p>
+<p>The fix is not "make the switch work" — the current behaviour already claims that. It is <strong>announce
+the source actually running</strong>, which is #18's rule ("announce CONFIRMED state, never REQUESTED") in a
+new place.</p>
+<h3 id="56e-reproducibility">56e. Reproducibility<a class="headerlink" href="#56e-reproducibility" title="Permanent link">#</a></h3>
+<p>Both latency write-ups ended with a "Reproducing" section naming a script that existed only in a
+scratchpad. <code>ripple_tools/measure_av_latency.py</code> and <code>ripple_tools/fair_ab.py</code> are now in the repo
+with paths derived from <code>__file__</code>. An audit of every <code>python &lt;path&gt;.py</code> in <code>developer_docs/</code> and
+<code>RecordingTests/</code> found two more stale paths; all eighteen now resolve. <code>Npx2OneBoxNoAdc.yaml</code> is
+committed for the same reason — a control in one machine's build tree is not a control.</p>
+<p><code>feature/SpikeAudio</code> merged into <code>feature/OneBoxSupport</code> and deleted. Issues #61, #62, #63 filed;</p>
+<h1 id="60-closed-with-its-results-363-s-n-1000-per-ordering">60 closed with its results (363 µs, n ≈ 1000 per ordering).<a class="headerlink" href="#60-closed-with-its-results-363-s-n-1000-per-ordering" title="Permanent link">#</a></h1>
+<p><strong>Green at the end: 18/18 C++ suites, 10/10 GUI tests.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -4951,6 +5057,14 @@ page that says so.</p>
 <li><a href="#553-dac_trigger-both-trigger-paths-from-one-crossing">55.3 dac_trigger: both trigger paths from one crossing</a></li>
 <li><a href="#554-the-onebox-stopped-delivering-data-and-it-is-not-our-code">55.4 The OneBox stopped delivering data, and it is not our code</a></li>
 <li><a href="#555-two-references-written-because-they-were-needed-this-session">55.5 Two references, written because they were needed this session</a></li>
+</ul>
+</li>
+<li><a href="#56-one-row-if-it-fits-and-a-control-that-never-ran-2026-08-25">56. ONE ROW IF IT FITS, AND A CONTROL THAT NEVER RAN (2026-08-25)</a><ul>
+<li><a href="#56a-the-shipped-audio-default-was-the-slowest-path-windows-offers">56a. The shipped audio default was the slowest path Windows offers</a></li>
+<li><a href="#56b-the-control-strip-had-two-faults-with-one-root">56b. The control strip had two faults with one root</a></li>
+<li><a href="#56c-the-throughput-shortfall-does-not-reproduce-here">56c. The throughput shortfall does not reproduce here</a></li>
+<li><a href="#56d-because-the-control-never-ran-which-is-the-real-finding">56d. …because the control never ran, which is the real finding</a></li>
+<li><a href="#56e-reproducibility">56e. Reproducibility</a></li>
 </ul>
 </li>
 </ul>

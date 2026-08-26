@@ -59,12 +59,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -355,6 +356,14 @@ startup and merely hidden. A retry loop guarded on <code>!!document.getElementBy
 immediately having clicked nothing, and the screenshot comes back with no panel in it -- twice, here.
 Test <code>getComputedStyle(d).display !== 'none'</code>. Same shape as the <code>.active-view</code> trap that
 <code>live_view()</code> already documents.</p>
+<p><strong>A fixed sleep after a layout change reads mid-reflow.</strong> An ad-hoc CDP probe that walked the column
+counts with <code>time.sleep(2.2)</code> between them, instead of <code>Gui.settle_until_stable()</code>, reported
+<code>#main-container</code> width <strong>0</strong> and column-header width <strong>0</strong> for every cell after the first four. That
+is indistinguishable from a page that has stopped laying out, and it was a probe reading a page that
+had not finished reflowing yet. The harness helpers (<code>Gui.columns</code>, <code>Gui.width</code>,
+<code>Gui.settle_until_stable</code>) exist for exactly this reason; a one-off script that hand-rolls its own
+clicks and sleeps inherits none of that discipline and will hand you garbage that reads as an
+application bug.</p>
 <p><strong>A control-plane probe is not a liveness test</strong> -- see section 5a. Restated here because it is the
 same error as all of the above: checking the thing that is easy to check instead of the thing you
 actually mean.</p>
@@ -376,6 +385,30 @@ because <code>mListenChannel</code> defaults to -1 and the sample loop takes a <
 no error, no warning, nothing in the panel. With the threshold at 0 and every other control correct,
 the only available conclusion was "the audio is broken". If a module cannot act without a choice
 nobody has made yet, either make the choice and announce it, or say out loud that it is waiting.</p>
+<hr />
+<h2 id="5e-the-shape-must-not-depend-on-the-measurement">5e. The shape must not depend on the measurement<a class="headerlink" href="#5e-the-shape-must-not-depend-on-the-measurement" title="Permanent link">#</a></h2>
+<p>Until 2026-08-25 the per-column control strip decided its own size twice, in two languages. Twelve
+<code>@container</code> tiers in <code>toolbar.css</code> picked one of <strong>three</strong> authored shapes for the band -- three
+rows, two rows, one row -- by column count and container width; <code>updateStripMode()</code> then <strong>measured
+the shape the tiers had just chosen</strong> and collapsed the strip if that did not fit.</p>
+<p>At two columns in a 1080px window the circle closed on itself. The tier had already dropped the band
+to its two-row shape, so the fit test measured <strong>274px</strong>, found it fitting in the <strong>377px</strong> available,
+and did not collapse. The result was a two-row strip, which is the one shape nobody wants -- and no
+individual step in that loop is wrong. (The count half of the same rule, <code>!vertical &amp;&amp; nCols &gt; 2</code>,
+was wrong in the other direction: at three columns with the dock shut one row needs 448px and 477px
+was free, so it fit, and the rule collapsed every control behind a chip anyway.)</p>
+<p>The band now has exactly <strong>one</strong> authored shape -- one row, five fixed slots,
+<code>108+80+64+84+80</code> + four 4px gaps + 7px padding a side + a 1px border = <strong>448px</strong> -- and it collapses
+if and only if 448px does not fit beside the depth readout. Column count and orientation are no
+longer inputs. <strong>If you add a responsive tier to something a fit test measures, you have rebuilt this
+bug.</strong></p>
+<p><strong>And measuring a COLLAPSED strip answers a different question.</strong> Collapsed, <code>.column-controls</code> is
+<code>position:absolute</code> <em>and</em> carries the narrow three-row reveal-overlay template, so its <code>scrollWidth</code>
+there is the overlay's width, not the in-flow band's -- read it in that state and the answer is "it
+fits", permanently. Drop <code>strip-collapsed</code>, read, restore, <strong>in the same frame</strong>, which is what
+<code>ChartColumn.fitStrips()</code> does. It also does it once per <strong>row</strong>, not once per column: each class
+flip is a size change the chart-area <code>ResizeObserver</code> picks up and re-enters on, and N of them per
+frame took the page down during development.</p>
 <hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
@@ -404,6 +437,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5b-a-green-suite-is-a-statement-about-what-it-links">5b. A green suite is a statement about what it LINKS</a></li>
 <li><a href="#5c-measuring-things-on-this-rig">5c. Measuring things on this rig</a></li>
 <li><a href="#5d-enabling-something-is-half-a-feature-disabling-it-is-the-other-half">5d. Enabling something is half a feature; disabling it is the other half</a></li>
+<li><a href="#5e-the-shape-must-not-depend-on-the-measurement">5e. The shape must not depend on the measurement</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

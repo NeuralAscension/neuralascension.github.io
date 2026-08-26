@@ -59,12 +59,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -145,7 +146,7 @@
 (<code>select → waitready → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → pause → disconnect → quit</code>),
 which drives the backend over the WebSocket; an open browser mirrors it live. See
 <a href="ControlCLI.html">ControlCLI.md</a>. To visualise a finished recording,
-<code>python examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
+<code>python python/examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
 <strong><code>channels.png</code></strong> (the recorded electrodes in µV) into the recording folder.</p>
 </blockquote>
 <p>Verify a file with <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels &lt;N&gt; --rate 30000</code>

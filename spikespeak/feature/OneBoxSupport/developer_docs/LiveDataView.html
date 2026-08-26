@@ -59,12 +59,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup" open><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a class="active" href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -292,6 +293,125 @@ spot (right column, since electrode 191 is odd; absent from the <code>Left</code
 <p>Orientation summary: <strong>deep (tip) at the bottom, shallow at the top; electrode labels increase
 upward.</strong> A previous build used an <em>inverted</em> y-axis range; this view uses an explicit <strong>normal</strong> range
 instead — if depth ever appears upside-down, flip the range/<code>slot</code> sign in <code>draw()</code>/<code>relayoutByDepth()</code>.</p>
+<h3 id="the-control-strip-one-row-if-it-fits-otherwise-collapse">The control strip: one row if it fits, otherwise collapse<a class="headerlink" href="#the-control-strip-one-row-if-it-fits-otherwise-collapse" title="Permanent link">#</a></h3>
+<p>The band above each chart — stream selector, Shank, <code>L+R</code>, the µV scale, the density count — has
+<strong>exactly one authored shape: one row.</strong> Five fixed slots, <code>108 + 80 + 64 + 84 + 80 = 416px</code>, plus
+four 4px gaps, 7px of padding a side and a 1px border = <strong>448px</strong>. It folds behind its <code>▾ controls</code>
+chip <strong>if and only if</strong> those 448px do not fit beside the depth readout:</p>
+<pre><code class="language-js">// ChartColumn.fitStrips()
+avail    = columnHeader.clientWidth - depthReadout.offsetWidth - 24;   // depthReadout = .page-info
+collapse = band.scrollWidth &gt; avail;                                   // band.scrollWidth === 448
+</code></pre>
+<p>Column count and orientation are <strong>not</strong> inputs to that decision. Header height is <strong>46px</strong> expanded,
+~36px collapsed.</p>
+<p>The rule until 2026-08-25 was <code>(!vertical &amp;&amp; nCols &gt; 2) || doesNotFit</code>, and it was wrong in <strong>both</strong>
+directions — measured on a 1920×1080 monitor:</p>
+<ul>
+<li><strong>3 columns, ripple dock shut</strong> — one row needs 448px and 477px was free, so it <em>fits</em>. The count
+  clause collapsed it anyway and every control vanished behind the chip.</li>
+<li><strong>2 columns in a 1080px window</strong> — a <code>@container</code> tier had <em>already</em> dropped the band to its
+  two-row shape, so the fit test measured <strong>that</strong> (274px), found it fitting in 377px, and never
+  collapsed. The result was a two-row strip: the one shape nobody wants.</li>
+</ul>
+<p>The second fault is why the band now has a single authored shape. <strong>The thing being measured must
+not depend on the measurement's own answer.</strong> The twelve <code>@container</code> tiers that used to pick between
+a 3-row, a 2-row and a 1-row band per column count (thresholds 622 / 1239 / 1856 / 2473px of
+<code>#main-container</code> width, header heights 124 / 102 / 74 / 46px) are deleted. Do not reintroduce a
+shape tier in <code>toolbar.css</code>.</p>
+<p><strong>The decision is made once per row and applied to every column</strong> — <code>ChartColumn.fitStrips()</code> is
+static for two reasons, both of them faults that were already paid for:</p>
+<ol>
+<li><code>.column-container</code> is <code>flex: 1 1 0</code> and Chrome distributes the flex remainder in 1/64px
+   LayoutUnits while <code>clientWidth</code> rounds to an integer, so two siblings at 601.98 and 602.02 report
+   601 and 602 and can land on <strong>opposite sides of the threshold</strong>. One column collapsed and its
+   neighbour not is two header heights in one row, and traces starting at different Y — the exact
+   thing the fixed-slot header exists to prevent.</li>
+<li>The measurement drops <code>strip-collapsed</code> to read the in-flow width. Once per <em>column</em> that is N
+   class flips per frame, each one a size change the chart-area <code>ResizeObserver</code> picks up, which
+   calls straight back in. It took the page down during development. Once per <em>row</em> it is one flip,
+   and the observers see one settled answer.</li>
+</ol>
+<p>A hidden view is not a narrow one: selecting the <code>Probe Map</code> tab sets <code>#view-data</code> to <code>display:none</code>,
+the observer then fires at 0×0 and <code>avail</code> goes negative. <code>fitStrips()</code> bails on <code>avail &lt;= 0</code> and
+keeps the last decision, rather than expanding every strip while nobody is looking and painting a
+448px band into a 378px column on the way back.</p>
+<p><strong>The collapsed reveal overlay keeps the old narrow 3-row template, deliberately.</strong> It is
+<code>position: absolute</code>, so its rows cost neither header height nor trace height — and <code>#view-data</code> is
+<code>overflow: hidden</code>, which <strong>clips an absolutely-positioned descendant</strong>. A 448px overlay in a column
+too narrow to hold one would have its right-hand controls destroyed on the last column: 275px worth
+at 1080px with the ripple dock open and four columns.</p>
+<p>Measured after the change (1920×1080 monitor, NPX 2.0 sim):</p>
+<table>
+<thead>
+<tr>
+<th>layout</th>
+<th>column width</th>
+<th>strip</th>
+<th>header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>horizontal, 1 col, dock shut</td>
+<td>1894px</td>
+<td>one row</td>
+<td>46px</td>
+</tr>
+<tr>
+<td>horizontal, 2 col, dock shut</td>
+<td>945px</td>
+<td>one row</td>
+<td>46px</td>
+</tr>
+<tr>
+<td>horizontal, 3 col, dock shut</td>
+<td>628px</td>
+<td>one row</td>
+<td>46px <em>(collapsed before)</em></td>
+</tr>
+<tr>
+<td>horizontal, 4 col, dock shut</td>
+<td>470px</td>
+<td><strong>collapsed</strong></td>
+<td>36px</td>
+</tr>
+<tr>
+<td>horizontal, 2 col, dock open</td>
+<td>763px</td>
+<td>one row</td>
+<td>46px</td>
+</tr>
+<tr>
+<td>horizontal, 3 col, dock open</td>
+<td>507px</td>
+<td><strong>collapsed</strong></td>
+<td>36px</td>
+</tr>
+<tr>
+<td>horizontal, 4 col, dock open</td>
+<td>379px</td>
+<td><strong>collapsed</strong></td>
+<td>36px</td>
+</tr>
+<tr>
+<td>vertical, every column count</td>
+<td>~1530–1894px</td>
+<td>one row</td>
+<td>46px</td>
+</tr>
+</tbody>
+</table>
+<p>Vertical never collapses because a stacked row is 1530–1894px wide and 448px always fits — the old
+orientation exemption is now a <strong>consequence</strong> of the rule, not a special case. Sweeping window width
+at 2 columns: one row at 1920 / 1600 / 1400 / 1300 / 1280, collapsed at 1200 / 1150 / 1100 / 1080 (at
+1200 one row needs 448px and only 437px is available).</p>
+<p><code>tests/gui/layout_matrix.py</code> asserts the rule <strong>in its own operands</strong> — <code>collapsed</code> must equal
+<code>not (oneRowNeed &lt;= avail)</code>, both read from live layout — plus <strong>uniformity</strong>: every column in a row
+must report the same header height and the same collapse state. The old shared-container-query design
+guaranteed uniformity structurally; a measurement does not, so it is asserted. The one-line and
+header-height invariants (<code>stripH &lt;= 40</code>, <code>headerH &lt;= 52</code>) used to sit behind an <code>if vertical:</code> gate,
+which is precisely why a two-row <strong>horizontal</strong> strip ran green for months; they now run on both axes
+for every column that is not collapsed.</p>
 <hr />
 <h2 id="5-design-notes-the-baked-offset-constraint">5. Design notes (the baked-offset constraint)<a class="headerlink" href="#5-design-notes-the-baked-offset-constraint" title="Permanent link">#</a></h2>
 <p>The yOffset is baked per series (§1), so each distinct <em>vertical ordering</em> needs its own series:</p>
@@ -335,7 +455,11 @@ governs <em>client</em> disconnect.)</p>
 </tr>
 <tr>
 <td><code>webinterface/ChartColumn.js</code></td>
-<td>one SciChart column: dropdowns, slider, <code>draw()</code> (mode select), <code>refreshFilterOptions()</code></td>
+<td>one SciChart column: dropdowns, slider, <code>draw()</code> (mode select), <code>refreshFilterOptions()</code>, <code>fitStrips()</code> (the once-per-row strip fit decision)</td>
+</tr>
+<tr>
+<td><code>webinterface/toolbar.css</code></td>
+<td>the column header's <strong>one</strong> authored shape: fixed control slots, the 46px definite header height, the collapsed reveal overlay</td>
 </tr>
 <tr>
 <td><code>webinterface/main.js</code></td>
@@ -391,7 +515,10 @@ IMRO panel; <code>NUM_CHANNELS</code> hard-coded 384.</p></article>
 <li><a href="#windowimroliveview-api-the-contract-between-imromanager-and-the-live-view">window.imroLiveView API (the contract between ImroManager and the live view)</a></li>
 </ul>
 </li>
-<li><a href="#4-chartcolumn-per-column-filters-drawing">4. ChartColumn — per-column filters + drawing</a></li>
+<li><a href="#4-chartcolumn-per-column-filters-drawing">4. ChartColumn — per-column filters + drawing</a><ul>
+<li><a href="#the-control-strip-one-row-if-it-fits-otherwise-collapse">The control strip: one row if it fits, otherwise collapse</a></li>
+</ul>
+</li>
 <li><a href="#5-design-notes-the-baked-offset-constraint">5. Design notes (the baked-offset constraint)</a></li>
 <li><a href="#6-lifecycle-backend-quits-with-the-browser">6. Lifecycle — backend quits with the browser</a></li>
 <li><a href="#7-files-in-this-subsystem">7. Files in this subsystem</a></li>

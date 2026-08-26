@@ -59,12 +59,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -113,10 +114,12 @@
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="in-progress-documentation-refresh-screenshots-prose">In progress — documentation refresh (screenshots + prose)<a class="headerlink" href="#in-progress-documentation-refresh-screenshots-prose" title="Permanent link">#</a></h1>
-<p><strong>State: partly done. This file is the handoff; it is accurate as of 2026-08-21.</strong></p>
+<p><strong>State: partly done. This file is the handoff; it is accurate as of 2026-08-25.</strong></p>
 <p>The GUI changed substantially on 2026-08-20/21 (two-row toolbar, collapsible column strips,
-<code>OneBox ADC (SDR)</code> / <code>IO0..IO11</code> labelling, vertical one-line control strips, minimum widths). Most
-documentation screenshots and a good deal of prose still described the GUI that existed before that.</p>
+<code>OneBox ADC (SDR)</code> / <code>IO0..IO11</code> labelling, one-line control strips, minimum widths). Most
+documentation screenshots and a good deal of prose still described the GUI that existed before that.
+On 2026-08-25 the strip rule changed again: a strip now collapses <strong>only when one row does not fit</strong>,
+never on column count — see <a href="LiveDataView.html"><code>LiveDataView.md</code></a> §4, and the screenshot trap below.</p>
 <p>An 8-document audit produced a per-image specification — the claim each image supports, the exact GUI
 state needed to reproduce it, and the surrounding prose that is now factually wrong. This file records
 what has been actioned and what has not.</p>
@@ -134,7 +137,7 @@ and vertical full-screen on the portrait display:</p>
 <tbody>
 <tr>
 <td><code>user_docs/images/np1_liveview.png</code></td>
-<td>3 columns: <strong>AP Band + LFP Band + OneBox ADC (SDR)</strong>, strips pinned so the band names are visible</td>
+<td>3 columns: <strong>AP Band + LFP Band + OneBox ADC (SDR)</strong>, band names visible — on the 1920 landscape display the strips are already open in flow at 3 columns, so pin nothing (see the trap below)</td>
 </tr>
 <tr>
 <td><code>user_docs/images/vertical_liveview.png</code></td>
@@ -219,9 +222,21 @@ with Gui(monitor=&quot;landscape&quot;) as g:   # &quot;portrait&quot; for verti
   <code>SimNpx1.yaml</code> is named "Simulated Data", so it shows no tab bar at all. Use an NPX-named source.</li>
 <li><strong>Play/Record have an in-flight PENDING state</strong> (dimmed, pulsing, disabled). Wait for it to settle
   or the button screenshot captures the wrong meaning.</li>
-<li><strong>Past 2 columns the strips auto-collapse</strong>, so a shot meant to show which band each column holds
-  must pin them (<code>document.querySelectorAll('.cc-pin').forEach(b =&gt; b.click())</code>).</li>
+<li><strong>A strip collapses when one row (448px) does not fit beside the depth readout — not past a
+  column count.</strong> On the 1920 landscape display 3 columns are 628px wide, which leaves 477px beside the depth
+  readout for a 448px band, so the strips are
+  <strong>already open</strong>; <code>document.querySelectorAll('.cc-pin').forEach(b =&gt; b.click())</code> there does not
+  reveal anything, it <em>toggles</em> — unpinning any column main.js re-pinned from its app-level set, and
+  arming a pin that only shows itself after the next <code>buildColumns()</code>, when the shot is already
+  taken. Pin only what is actually collapsed, and only if it is not pinned already:</li>
 </ul>
+<p><code>js
+  document.querySelectorAll('.column-container.strip-collapsed:not(.strip-pinned) .cc-pin')
+          .forEach(b =&gt; b.click());</code></p>
+<p>A pinned band is <code>position: absolute</code> and lands <strong>over the top of the traces</strong>, so prefer a state
+  where it fits in flow (fewer columns, wider window, ripple dock shut) and pin only when the shot
+  must show a band that genuinely cannot fit. The rule and its arithmetic are in
+  <a href="LiveDataView.html"><code>LiveDataView.md</code></a> §4.</p>
 <hr />
 <h2 id="2-prose">2. Prose<a class="headerlink" href="#2-prose" title="Permanent link">#</a></h2>
 <h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">#</a></h3>

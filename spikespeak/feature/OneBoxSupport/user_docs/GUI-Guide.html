@@ -59,12 +59,13 @@
 <a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
 <a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
 <a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
@@ -186,11 +187,15 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
   <code>OneBox ADC (SDR)</code> on a OneBox source, and <code>NIDAQ AI/O</code> / <code>NIDAQ DI/O</code> on an NI-DAQ one. There is
   no control captioned <em>Scale</em> -- the unit beside the input names it, and it follows the band: <code>µV</code>
   for a probe band, <code>V/row</code> for the OneBox ADC, <code>×</code> for NI-DAQ.</li>
-<li><strong>Past two columns the control strip folds</strong> to a <code>▾ controls</code> chip, to give the traces the width.
-  Hover it to peek, click it or press <code>Ctrl+Shift+&lt;n&gt;</code> to pin it open. The depth readout
-  (<code>e19 ↕ e0</code>, or <code>IO11 ↕ IO0</code> for the ADC) stays visible either way. In <strong>vertical</strong> layout the
-  strips never fold -- a stacked row is full-width, so folding would reclaim space that was never
-  scarce.</li>
+<li><strong>The control strip stays fully visible as long as it fits.</strong> It folds to a <code>▾ controls</code> chip
+  only when the column is genuinely too narrow to hold it -- the row of controls needs 448 px
+  beside the depth readout, and below that the traces get the width instead. On a 1920-px screen
+  that means the strip stays open at one, two and three columns and folds at four. Opening the
+  <strong>ripple dock</strong> takes ~380 px off the live view, which is enough to push three columns over the
+  line. Hover the chip to peek, click it or press <code>Ctrl+Shift+&lt;n&gt;</code> to pin it open. The depth
+  readout (<code>e19 ↕ e0</code>, or <code>IO11 ↕ IO0</code> for the ADC) stays visible either way. In <strong>vertical</strong>
+  layout a stacked row is the full width of the window, so 448 px always fits and the strips stay
+  open at every row count.</li>
 <li><strong>Layout — <code>Horizontal ⬌</code> / <code>Vertical ⬍</code></strong> (toolbar toggle, beside <strong>Columns/Rows</strong>): <em>Horizontal</em> tiles
   the strips side-by-side as <strong>columns</strong> (20 channels each) — best on a landscape monitor. <em>Vertical</em> stacks
   them as full-width <strong>rows</strong> (40 channels each) — ideal for a <strong>portrait / rotated monitor</strong> and laminar

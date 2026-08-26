@@ -91,6 +91,16 @@ footer code{color:var(--sp-green);font-size:.95em}
     <path id="spTrace" fill="none" stroke="url(#spSpike)" stroke-width="3"
           stroke-linecap="round" stroke-linejoin="round" filter="url(#spGlow)" d=""/>
     <circle id="spDot" r="3.4" fill="#eafaff" opacity="0"/>
+    <!-- The gag only works while it IS a mountain, so the whole group fades out with the morph. -->
+    <g id="spNote" fill="#8a8f9a" opacity="1">
+      <path d="M300,44 C272,36 254,36 240,42" fill="none" stroke="#8a8f9a"
+            stroke-width="1.4" stroke-linecap="round" opacity=".75"/>
+      <path d="M240,42 l9,-4.6 l-1.2,4.2 l3.4,2.9 Z" stroke="none" opacity=".75"/>
+      <text x="306" y="41" font-family="Georgia,'Times New Roman',serif" font-style="italic"
+            font-size="15">this is actually</text>
+      <text x="306" y="59" font-family="Georgia,'Times New Roman',serif" font-style="italic"
+            font-size="15">Pikes Peak!</text>
+    </g>
   </svg>
 </button>
 
@@ -146,6 +156,7 @@ moment you are reading it. Start at the developer docs index, which is the map t
     ROUGH[i]=rockNoise(u)*2.8*(0.34+0.66*h);
   }
 
+  const note=document.getElementById('spNote');
   const trace=document.getElementById('spTrace');
   const massif=document.getElementById('spMassif');
   const dot=document.getElementById('spDot');
@@ -175,6 +186,9 @@ moment you are reading it. Start at the developer docs index, which is the map t
     trace.setAttribute('d',d);
     massif.setAttribute('d',d+`L${X1},${H+6}L${X0},${H+6}Z`);
     massif.setAttribute('opacity',((1-e)*0.9).toFixed(3));
+    // Faster than the morph (1-2e clamped) so the label is gone well before the spike forms --
+    // holding a "this is a mountain" caption over an action potential would undercut the joke.
+    if(note) note.setAttribute('opacity',Math.max(0,1-e*2).toFixed(3));
 
     if(now===undefined){ trace.setAttribute('stroke-width','3'); dot.setAttribute('opacity','0'); return; }
 

@@ -89,9 +89,10 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -99,7 +100,8 @@
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
+<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 </details>
 <h3>Architecture</h3>
@@ -159,8 +161,8 @@ sources (and <code>scripts/docs_style.css</code> for styling) and re-run the gen
 <td><strong>generated</strong> output (git-ignored; open <code>docs_site/index.html</code>)</td>
 </tr>
 <tr>
-<td><code>images/architecture.txt</code>, <code>images/plantuml_export.txt</code></td>
-<td>PlantUML diagram sources</td>
+<td><code>scripts/make_architecture.py</code></td>
+<td>generates the architecture SVGs from the code; run by the build</td>
 </tr>
 <tr>
 <td><code>images/architecture_overview.md</code></td>
@@ -246,18 +248,22 @@ the check existed. Headings made only of words, digits and adjacent punctuation 
 <li>Reference them <strong>relatively</strong> from the doc, e.g. <code>![A caption](images/ripple/np2_detecting.png)</code>.</li>
 <li>Supported extensions: <code>png, svg, jpg, jpeg, gif, webp, ico</code>.</li>
 </ul>
-<h2 id="architecture-diagrams-plantuml">Architecture diagrams (PlantUML)<a class="headerlink" href="#architecture-diagrams-plantuml" title="Permanent link">#</a></h2>
-<ul>
-<li>Sources: <strong><code>images/architecture.txt</code></strong> (high-level data/command flow) and
-  <strong><code>images/plantuml_export.txt</code></strong> (detailed class diagram). Edit these text files to update the
-  architecture as the code evolves.</li>
-<li>Render them to SVG — paste into <a href="https://www.planttext.com/">planttext.com</a>, or run
-  <code>plantuml -tsvg images/architecture.txt images/plantuml_export.txt</code> — and drop the resulting
-  <code>architecture.svg</code> + <code>plantuml_export.svg</code> into <code>images/</code>.</li>
-<li><code>images/architecture_overview.md</code> already contains the <code>![...](architecture.svg)</code> <strong>placeholders</strong>;
-  once the SVGs exist and you re-run the generator, they render on the Architecture page (and copy into
-  the book, since <code>.svg</code> is a supported image type).</li>
-</ul>
+<h2 id="architecture-diagrams-generated-not-authored">Architecture diagrams (generated, not authored)<a class="headerlink" href="#architecture-diagrams-generated-not-authored" title="Permanent link">#</a></h2>
+<p><code>scripts/build_docs.py</code> regenerates them on every build by calling <code>scripts/make_architecture.py</code>,
+which parses <strong><code>src/core/Utils.cpp</code></strong> (the processor/source registry) and <strong><code>config/*.yaml</code></strong>. The
+diagram therefore cannot drift from the wiring it depicts. It takes about 0.15 s; <code>--check</code> reports
+whether what is on disk matches what the code would produce.</p>
+<p><strong>Do not commit the SVGs</strong> -- <code>developer_docs/images/architecture*.svg</code> is git-ignored. They are
+derived, and the repo's rule is not to record what can be recomputed. Track the generator instead.</p>
+<blockquote>
+<p>This replaced a hand-maintained PlantUML pair (<code>images/architecture.txt</code> +
+<code>plantuml_export.txt</code>) whose sources are gone. That approach had two faults worth remembering: the
+text drifted from the code as modules were added, and because nothing rendered it during the build
+it <strong>shipped invisible</strong> -- the book referenced an SVG that was never produced. For a while
+afterwards the opposite held: 29 generated SVGs sat untracked in one working tree while the single
+one the book uses was missing from a clean clone, so anybody else's docs build produced a book with
+no architecture diagram and no error saying so.</p>
+</blockquote>
 <h2 id="theme-and-styling-dark-light">Theme and styling (dark / light)<a class="headerlink" href="#theme-and-styling-dark-light" title="Permanent link">#</a></h2>
 <ul>
 <li>The book has a <strong>theme toggle</strong> (&#9790; / &#9728;, top-right). It persists per-browser
@@ -323,7 +329,7 @@ the check existed. Headings made only of words, digits and adjacent punctuation 
 </ul>
 </li>
 <li><a href="#images">Images</a></li>
-<li><a href="#architecture-diagrams-plantuml">Architecture diagrams (PlantUML)</a></li>
+<li><a href="#architecture-diagrams-generated-not-authored">Architecture diagrams (generated, not authored)</a></li>
 <li><a href="#theme-and-styling-dark-light">Theme and styling (dark / light)</a></li>
 <li><a href="#the-logo-watermark">The logo watermark</a></li>
 <li><a href="#how-the-generator-works-for-agents-modifying-it">How the generator works (for agents modifying it)</a></li>

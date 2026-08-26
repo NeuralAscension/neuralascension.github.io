@@ -89,9 +89,10 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -99,7 +100,8 @@
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
+<a href="../developer_docs/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="../developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 </details>
 <h3>Architecture</h3>
@@ -119,25 +121,36 @@
 <a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-architecture-overview">SpikesPeak — Architecture Overview<a class="headerlink" href="#spikespeak-architecture-overview" title="Permanent link">#</a></h1>
-<p>A narrative companion to the diagrams in this folder:
-- <strong><code>architecture.txt</code></strong> — high-level data/command flow (render at <a href="https://www.planttext.com/">planttext.com</a>).
-- <strong><code>plantuml_export.txt</code></strong> — detailed class diagram (interfaces, control, management, data/processing).</p>
+<p>The pipeline diagrams here are <strong>generated from the code</strong>, not drawn. <code>scripts/make_architecture.py</code>
+parses the processor/source registry in <code>src/core/Utils.cpp</code> and every <code>config/*.yaml</code>, and
+<code>scripts/build_docs.py</code> re-runs it on each build (~0.15 s). Add a source, a processor or a config and
+the pictures follow on the next <code>python scripts/build_docs.py</code> — they cannot drift from the wiring
+they depict.</p>
+<p>That is the point. The predecessor was a hand-maintained PlantUML description which drifted as
+modules were added and, because nothing rendered it during the build, <strong>shipped invisible</strong> — the
+book referenced an SVG that was never produced. The class diagram below is still PlantUML, because it
+describes C++ <em>types</em> rather than runtime wiring and nothing generates it.</p>
 <blockquote>
-<p><strong>Rendered diagrams</strong> &mdash; generate SVGs from the <code>.txt</code> PlantUML sources above (paste into
-<a href="https://www.planttext.com/">planttext.com</a>, or run <code>plantuml -tsvg architecture.txt plantuml_export.txt</code>),
-then drop <code>architecture.svg</code> + <code>plantuml_export.svg</code> here in <code>images/</code>. They appear below and in the
-generated HTML book after re-running <code>scripts/build_docs.py</code>.</p>
+<p>The generated SVGs are <strong>not committed</strong>: they are derived, and this repo does not record what can
+be recomputed. <code>developer_docs/images/architecture*.svg</code> is git-ignored; the generator is tracked.
+<code>python scripts/make_architecture.py --check</code> reports drift without writing anything.</p>
 </blockquote>
-<h3 id="high-level-architecture-data-flow">High-level architecture &amp; data flow<a class="headerlink" href="#high-level-architecture-data-flow" title="Permanent link">#</a></h3>
-<p><img alt="High-level architecture and data flow" src="architecture.svg" /></p>
+<h3 id="the-whole-system-generated">The whole system, generated<a class="headerlink" href="#the-whole-system-generated" title="Permanent link">#</a></h3>
+<p>Every profile the backend can load, in one graph — dense on purpose. It is the map for <em>what exists</em>;
+for a single experiment use the per-profile diagrams further down.</p>
+<p><img alt="Full SpikesPeak architecture: every config, source, band, interpreter, processor and sink" src="../developer_docs/images/architecture.svg" /></p>
+<p>Each diagram is a left-to-right pipeline: <strong>Config</strong> (the YAML profile, labelled with its internal
+<code>name:</code> — the string the GUI and CLI actually select) → <strong>DataSource</strong> → <strong>Data</strong> (the named bands it
+publishes) → <strong>DataInterpreter</strong> → <strong>Processor</strong> → <strong>Sink</strong> (the files a recording writes). A config's
+identity is that <code>name:</code> field, never the filename; see [<code>../developer_docs/ConfigReference.md</code>].</p>
 <h3 id="detailed-class-diagram">Detailed class diagram<a class="headerlink" href="#detailed-class-diagram" title="Permanent link">#</a></h3>
 <p><img alt="Detailed class diagram: interfaces, control, management, data and processing" src="plantuml_export.svg" /></p>
 <blockquote>
-<p><strong>Rendered images:</strong> regenerated 2026-07-22 from the corrected <code>.txt</code> PlantUML sources above, so they now
-reflect the current architecture — the stim server is the <strong>Raspberry Pi 3B+ / AM Systems 2300</strong> (with the
-ESP32-S3 as an interchangeable twin), recording rides the per-module QWebChannel <code>Q_INVOKABLE</code>, and the UI
-is served on <strong>:8234</strong>. The narrative below and
-<a href="../developer_docs/SpikesPeak_Architecture_Review.html">architecture review §11</a> remain authoritative.</p>
+<p>The class diagram above is rendered from <code>plantuml_export.txt</code> by hand (last regenerated
+2026-07-22). It is accurate on the points that matter — the stim server is the <strong>Raspberry Pi 3B+ /
+AM Systems 2300</strong> with the ESP32-S3 as an interchangeable twin, recording rides the per-module
+QWebChannel <code>Q_INVOKABLE</code>, and the UI is served on <strong>:8234</strong> — but unlike the pipeline diagrams it
+is not regenerated by the build, so treat it as a snapshot.</p>
 </blockquote>
 <p>For <em>design rationale</em> (why an external browser, the Option-A command decision, the file-I/O rule) see
 [<code>../developer_docs/SpikesPeak_Architecture_Review.md</code>]; for the live waveform view see
@@ -337,12 +350,88 @@ ordering/bands over QWebChannel) · <code>Config</code> (constants). See <code>d
   (2.5 kHz)</strong> ring buffers (12 AP + 1 LFP sample per superframe).</li>
 <li><strong>Sinks:</strong> <code>DisplayProcessor</code> decimates both bands to the browser; <code>RecordProcessor</code> writes them to
   disk. Full NP1.0 inventory: [<code>../SpikesPeak_Status.md</code>].</li>
-</ul></article>
+</ul>
+<hr />
+<h2 id="per-profile-pipelines">Per-profile pipelines<a class="headerlink" href="#per-profile-pipelines" title="Permanent link">#</a></h2>
+<p>One diagram per <code>config/*.yaml</code>, generated with the rest. These are the useful ones day to day: they
+answer "what does <em>this</em> profile actually wire up" without reading the YAML.</p>
+<details>
+<summary><b>Neuropixels 1.0 — hardware</b></summary>
+<p><code>Asap</code> variants set the low-latency source flag ([<code>../developer_docs/LatencyProfiling.md</code>]) and are
+otherwise identical to their siblings. They <strong>are</strong> selectable in the GUI, so picking one by accident
+is possible.</p>
+<p><strong>PXIe</strong></p>
+<p><img alt="Npx1Pxi" src="../developer_docs/images/architecture_Npx1Pxi.svg" />
+<img alt="Npx1PxiNiDaq" src="../developer_docs/images/architecture_Npx1PxiNiDaq.svg" />
+<img alt="Npx1PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx1PxiNiDaqAsap.svg" /></p>
+<p><strong>OneBox</strong></p>
+<p><img alt="Npx1OneBox" src="../developer_docs/images/architecture_Npx1OneBox.svg" />
+<img alt="Npx1OneBoxAsap" src="../developer_docs/images/architecture_Npx1OneBoxAsap.svg" /></p>
+</details>
+<details>
+<summary><b>Neuropixels 2.0 — hardware</b></summary>
+<p><strong>PXIe</strong></p>
+<p><img alt="Npx2Pxi" src="../developer_docs/images/architecture_Npx2Pxi.svg" />
+<img alt="NpxPxiNiDaq" src="../developer_docs/images/architecture_NpxPxiNiDaq.svg" />
+<img alt="Npx2PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx2PxiNiDaqAsap.svg" /></p>
+<p><strong>OneBox</strong> — <code>Npx2OneBox</code> is what the current rig runs.</p>
+<p><code>Npx2OneBoxNoAdc</code> is a <strong>measurement control, not an operational profile</strong>: it differs from
+<code>Npx2OneBox</code> in exactly one variable — whether the 12-channel ADC band exists — which is what makes
+it usable as the control arm of a recording-throughput measurement. A session recorded with it has no
+stimulus channel at all, because the closed-loop stimulus is captured through that ADC.</p>
+<p><img alt="Npx2OneBox" src="../developer_docs/images/architecture_Npx2OneBox.svg" />
+<img alt="Npx2OneBoxAsap" src="../developer_docs/images/architecture_Npx2OneBoxAsap.svg" />
+<img alt="Npx2OneBoxNoAdc" src="../developer_docs/images/architecture_Npx2OneBoxNoAdc.svg" /></p>
+</details>
+<details>
+<summary><b>NI-DAQ only</b></summary>
+<p>No probe: the PXI-6133 analog/digital inputs alone. Useful for exercising the DAQ half of a rig
+independently of a probe.</p>
+<p><img alt="NiDaqOnly" src="../developer_docs/images/architecture_NiDaqOnly.svg" /></p>
+</details>
+<details>
+<summary><b>Play-file (synthetic ripple) profiles</b></summary>
+<p>Replay a recorded or synthesised HDF5 file through the <em>same</em> pipeline as hardware — which is why a
+detector tuned on a play file behaves the same on a probe. See
+[<code>../developer_docs/SyntheticSources.md</code>].</p>
+<p><img alt="Npx1SynthRipples" src="../developer_docs/images/architecture_Npx1SynthRipples.svg" />
+<img alt="NpxSynthRipples" src="../developer_docs/images/architecture_NpxSynthRipples.svg" /></p>
+</details>
+<details>
+<summary><b>Simulated — NPX 1.0</b></summary>
+<p>No hardware at all, but the same display processor, ring buffers, WebSocket and GUI as a real probe.
+That is what makes "run it in sim first" a diagnostic rather than a gesture: if sim streams and
+hardware does not, it is the rig and not the code ([<code>../developer_docs/Testing.md</code>] §4).</p>
+<p><img alt="SimNpx1" src="../developer_docs/images/architecture_SimNpx1.svg" />
+<img alt="SimNpx1OneBox" src="../developer_docs/images/architecture_SimNpx1OneBox.svg" />
+<img alt="SimNpx1NiDaq" src="../developer_docs/images/architecture_SimNpx1NiDaq.svg" />
+<img alt="SimNpx1Ripples" src="../developer_docs/images/architecture_SimNpx1Ripples.svg" />
+<img alt="SimNpx1NiDaqRipples" src="../developer_docs/images/architecture_SimNpx1NiDaqRipples.svg" />
+<img alt="SimNpx1RippleModule" src="../developer_docs/images/architecture_SimNpx1RippleModule.svg" /></p>
+<p>The latency A/B pair, identical but for the low-latency flag — which is the entire point of them:</p>
+<p><img alt="SimNpx1LatencyBaseline" src="../developer_docs/images/architecture_SimNpx1LatencyBaseline.svg" />
+<img alt="SimNpx1LatencyAsap" src="../developer_docs/images/architecture_SimNpx1LatencyAsap.svg" /></p>
+</details>
+<details>
+<summary><b>Simulated — NPX 2.0</b></summary>
+<p><img alt="SimNpx2" src="../developer_docs/images/architecture_SimNpx2.svg" />
+<img alt="SimNpx2OneBox" src="../developer_docs/images/architecture_SimNpx2OneBox.svg" />
+<img alt="SimNpx2NiDaq" src="../developer_docs/images/architecture_SimNpx2NiDaq.svg" />
+<img alt="SimNpx2Ripples" src="../developer_docs/images/architecture_SimNpx2Ripples.svg" />
+<img alt="SimNpx2NiDaqRipples" src="../developer_docs/images/architecture_SimNpx2NiDaqRipples.svg" />
+<img alt="SimNpx2RippleModule" src="../developer_docs/images/architecture_SimNpx2RippleModule.svg" />
+<img alt="SimNpx2RealNiDaqRipples" src="../developer_docs/images/architecture_SimNpx2RealNiDaqRipples.svg" /></p>
+</details>
+<blockquote>
+<p>A new <code>config/*.yaml</code> produces a new SVG automatically, but will not appear on this page until it is
+listed above. The build prints each file it generates, so the omission is visible rather than
+silent.</p>
+</blockquote></article>
     <footer class="pagefoot">Generated from <code>images/architecture_overview.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#high-level-architecture-data-flow">High-level architecture &amp; data flow</a></li>
+<li><a href="#the-whole-system-generated">The whole system, generated</a></li>
 <li><a href="#detailed-class-diagram">Detailed class diagram</a></li>
 <li><a href="#what-spikespeak-is">What SpikesPeak is</a></li>
 <li><a href="#layered-structure-see-plantuml_exporttxt">Layered structure (see plantuml_export.txt)</a></li>
@@ -352,6 +441,7 @@ ordering/bands over QWebChannel) · <code>Config</code> (constants). See <code>d
 <li><a href="#transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp">Transport: one WebSocket, triple-multiplexed (main.cpp, WebSocketServer.cpp)</a></li>
 <li><a href="#frontend-webinterface">Frontend (webinterface/)</a></li>
 <li><a href="#where-neuropixels-10-lives-in-all-this">Where Neuropixels 1.0 lives in all this</a></li>
+<li><a href="#per-profile-pipelines">Per-profile pipelines</a></li>
 </ul>
 </div>
 </aside>

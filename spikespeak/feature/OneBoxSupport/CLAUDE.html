@@ -84,7 +84,8 @@
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="developer_docs/Building.html">Building and running SpikesPeak</a>
 <a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
@@ -133,9 +134,13 @@ until Play). Every entry cost somebody real time. Add to it when something costs
 <h2 id="the-definition-of-green">THE DEFINITION OF GREEN<a class="headerlink" href="#the-definition-of-green" title="Permanent link">#</a></h2>
 <p><strong>Do not report a build as working, passing, or green until BOTH suites pass.</strong> A compile that
 produced a binary is not a green build.</p>
-<pre><code class="language-bash">cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+<pre><code class="language-bash">build.bat
 </code></pre>
-<p>Runs the <strong>C++ suite automatically</strong> and prints a per-suite ✅/❌ banner. ~1.6 s, 316 cases.</p>
+<p>(<code>./build.sh</code> on Linux/macOS.) Configures <code>build/</code> on first use, builds into <code>bin/</code>, and runs the
+<strong>C++ suite automatically</strong> with a per-suite ✅/❌ banner. ~1.6 s, 316 cases.</p>
+<p>Do not call <code>cmake --build</code> directly on Windows: without the MSVC environment it dies on
+<code>Cannot open include file: 'type_traits'</code>. Full detail, and the Linux/macOS instructions, in
+<a href="developer_docs/Building.html"><code>developer_docs/Building.md</code></a>.</p>
 <pre><code class="language-bash">python scripts/run_gui_tests.py
 </code></pre>
 <p>Runs the <strong>GUI suite</strong>. ~5 min. It is NOT part of the compile (it needs a browser and a backend), so
@@ -157,7 +162,7 @@ a failure a non-zero exit.</p>
 red suite for everyone who pulls.</p>
 <h3 id="before-you-hand-back">Before you hand back<a class="headerlink" href="#before-you-hand-back" title="Permanent link">#</a></h3>
 <ul>
-<li>[ ] <code>cmake --build …</code> → <strong>ALL N SUITES PASSED</strong></li>
+<li>[ ] <code>build.bat</code> (or <code>./build.sh</code>) → <strong>ALL N SUITES PASSED</strong></li>
 <li>[ ] <code>python scripts/run_gui_tests.py</code> → <strong>ALL N GUI TESTS PASSED</strong></li>
 <li>[ ] If you added a test, you <strong>proved it can fail</strong> — inject a regression, watch it go red, revert.
       An always-green test is worthless and worse than none, because it buys false confidence.</li>

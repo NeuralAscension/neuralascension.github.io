@@ -84,7 +84,8 @@
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
@@ -240,8 +241,11 @@ and screenshotted <strong>in Brave over CDP on Linux/:0</strong>.</p>
   That header is included by a dozen always-compiled translation units, so without those guards
   <strong>nothing builds at all</strong>.</li>
 <li>The non-Windows branch still compiles the Neuropixels stubs (<code>CMakeLists.txt:193-198</code>).</li>
-<li>The <code>CalibrationInfo/</code> and <code>data/</code> POST_BUILD copies are still <code>if(EXISTS)</code>-guarded — those are the
-  two directories a fresh clone will not have.</li>
+<li><code>CalibrationInfo/</code> and <code>data/</code> — the two directories a fresh clone will not have — are no longer
+  copied anywhere at all (2026-08-26). The exe builds into <code>&lt;repo&gt;/bin</code> and resolves them as
+  <code>&lt;exe&gt;/../&lt;name&gt;</code>, which is the repo root, so their absence is simply nothing found rather than a
+  build step that fails. The <code>if(EXISTS)</code> guards that used to protect a clone are gone with the
+  copies they guarded.</li>
 </ul>
 <p><strong>So: high weight for "no porting work is needed; the platform split is real and has been
 maintained". Low weight for "it builds today."</strong> Two reasons, and the second is decisive:</p>
@@ -373,22 +377,27 @@ nothing names it at all) and it changes the Windows build too, so it needs re-ve
 <h2 id="4-step-by-step">4. Step by step<a class="headerlink" href="#4-step-by-step" title="Permanent link">#</a></h2>
 <p>Work from a <strong>clean clone</strong>, in a <strong>flat <code>build/</code> directory</strong>. Both matter — see step 0.</p>
 <h3 id="step-0-before-you-configure-three-things-that-are-broken-today">Step 0 — before you configure: three things that are broken today<a class="headerlink" href="#step-0-before-you-configure-three-things-that-are-broken-today" title="Permanent link">#</a></h3>
-<p><strong>4.0.a — The <code>.sh</code> launchers are committed non-executable.</strong> <code>git ls-files -s run_spikespeak.sh
-_dobuild.sh</code> reports mode <code>100644</code> for both, so <code>./run_spikespeak.sh</code> gives <em>Permission denied</em> on a
-fresh clone while its <code>.bat</code> sibling works by extension. Fix it once — <strong>both halves</strong>, because
-<code>git update-index</code> writes the <em>index</em> and leaves the file on disk exactly as unexecutable as it was:</p>
-<pre><code class="language-bash">chmod +x run_spikespeak.sh _dobuild.sh              # makes it run NOW
-git update-index --chmod=+x run_spikespeak.sh _dobuild.sh   # records the bit for everyone else
+<p><strong>4.0.a — FIXED 2026-08-26. The <code>.sh</code> launchers are executable in the index now.</strong>
+<code>git ls-files -s build.sh run_spikespeak.sh _dobuild.sh</code> reports mode <code>100755</code> for all three, so a
+fresh clone can run them directly.</p>
+<p>They were <code>100644</code> for a long time, which gave <em>Permission denied</em> on a fresh clone while the <code>.bat</code>
+siblings worked by extension — the first thing a Linux user hit. If you ever need to fix this again
+for a new script, note that it takes <strong>both halves</strong>: <code>git update-index</code> writes the <em>index</em> and
+leaves the file on disk exactly as unexecutable as it was.</p>
+<pre><code class="language-bash">chmod +x &lt;script&gt;.sh                     # makes it run NOW
+git update-index --chmod=+x &lt;script&gt;.sh  # records the bit for everyone else
 </code></pre>
 <p>Or sidestep it entirely by always invoking <code>python3 scripts/spikespeak.py run …</code>, which is what the
 wrapper does anyway.</p>
-<p><strong>4.0.b — Use a flat <code>build/</code>, because there are two launchers that glob differently.</strong>
-<code>run_spikespeak.{bat,sh}</code> call <code>scripts/spikespeak.py</code>, whose <code>find_exe()</code> globs only
-<code>&lt;repo&gt;/build*/bin</code> (<code>scripts/spikespeak.py:147-155</code>). The root <code>run_spikespeak.py</code> globs nested trees
-(<code>build*/*/bin</code>). A Qt-Creator-shaped tree — <code>build/Desktop_Qt_6_11_1_Release/bin/SpikesPeak</code>, the
-exact layout <code>GuiTesting.md</code> documents — is found by one and <strong>not</strong> by the other. Configure a flat
-<code>build/</code> (which is what <code>_dobuild.sh</code> already does) or export <code>SPIKESPEAK_EXE</code>. Note in your report
-that two launchers doing one job with different globbing is how the next person loses an hour.</p>
+<p><strong>4.0.b — Mostly fixed on 2026-08-26; read this only if you are on an older checkout.</strong>
+The build now writes the app to <strong><code>&lt;repo&gt;/bin</code></strong>, and <code>find_exe()</code> looks there first
+(<code>scripts/spikespeak.py</code>), so the exe is found regardless of how the build tree is shaped. <code>build/</code>
+is the one build tree and <code>./build.sh</code> configures it for you.</p>
+<p>The historical hazard, for an older clone: <code>find_exe()</code> globbed only <code>&lt;repo&gt;/build*/bin</code> while the
+root <code>run_spikespeak.py</code> globbed nested trees (<code>build*/*/bin</code>), so a Qt-Creator-shaped
+<code>build/Desktop_Qt_6_11_1_Release/bin/SpikesPeak</code> was visible to one launcher and not the other.
+<code>SPIKESPEAK_EXE</code> still overrides everything if you need it. Two launchers doing one job with
+different globbing is how the next person loses an hour — worth collapsing if you touch this.</p>
 <p><strong>4.0.c — <code>--offscreen</code> is a documented flag that this launcher does not have.</strong> Only
 <code>run_spikespeak.py</code> strips it; <code>scripts/spikespeak.py:187</code> passes unrecognised args straight to the
 exe, where <code>QCommandLineParser::process()</code> rejects unknown options and exits. <strong>Use the environment
@@ -428,6 +437,16 @@ compile flags were missed.</p>
 <pre><code class="language-bash">cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
       -DCMAKE_PREFIX_PATH=$HOME/Qt/6.11.1/gcc_64
 </code></pre>
+<p>Since 2026-08-26 <code>./build.sh</code> (i.e. <code>python3 scripts/spikespeak.py build</code>) <strong>configures <code>build/</code> on
+first use</strong> with Ninja + Release + <code>compile_commands.json</code>, discovering Qt and Ninja itself, and then
+builds. On a box with one suitable Qt that is the whole of steps 2 and 3:</p>
+<pre><code class="language-bash">./build.sh
+</code></pre>
+<p>Configure by hand, as above, when you want to watch the configure output or when the Qt it picks is
+not the one you meant. <code>find_qt_prefix()</code> scans <code>/opt/Qt</code>, <code>~/Qt</code>, <code>/usr/lib/qt6</code> and
+<code>/usr/local/opt/qt6</code> and takes the newest version that has a <code>gcc_64</code> / <code>macos</code> / <code>clang</code> kit — but
+it cannot know your distro Qt is too old, and it has no opinion about HDF5. Setting <code>Qt6_DIR</code> or
+<code>CMAKE_PREFIX_PATH</code> in the environment overrides it entirely.</p>
 <p>Point <code>CMAKE_PREFIX_PATH</code> at a Qt that actually clears 6.7 — and check <strong>the one you are pointing
 at</strong>, not whatever is first on <code>PATH</code>: <code>$HOME/Qt/6.11.1/gcc_64/bin/qmake -query QT_VERSION</code>. A bare
 <code>qmake6 -query QT_VERSION</code> answers for the <em>distro</em> Qt, which is exactly the Qt you are trying to
@@ -442,18 +461,19 @@ branch and everything after this is meaningless.</p>
 failure. A missing WebEngine fails with a bare <em>"Could not find a package configuration file"</em>. No
 network fails inside FetchContent.</p>
 <h3 id="step-3-build">Step 3 — Build<a class="headerlink" href="#step-3-build" title="Permanent link">#</a></h3>
-<pre><code class="language-bash">cmake --build build
+<pre><code class="language-bash">cmake --build build          # or ./build.sh, which does configure + build in one
 </code></pre>
-<p><strong>Success looks like:</strong> a binary at <code>build/bin/SpikesPeak</code>, <strong>and</strong> the per-suite ✅/❌ banner from
+<p><strong>Success looks like:</strong> a binary at <strong><code>bin/SpikesPeak</code></strong> — the repo's own <code>bin/</code>, not the build tree;
+this moved on 2026-08-26 — <strong>and</strong> the per-suite ✅/❌ banner from
 <code>scripts/run_tests.py</code>, which runs as an <code>ALL</code> target on every build. Per <code>CLAUDE.md</code>: <em>a compile that
 produced a binary is not a green build.</em> A red C++ suite does not stop the build by default — it is
 easy to walk past, so do not. Add <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> if you want red to be fatal.</p>
-<p><strong>Build with <code>cmake --build</code>, not <code>./_dobuild.sh</code>, at least until it is green.</strong> The wrapper calls
-<code>scripts/spikespeak.py build</code>, which redirects the entire build into <code>_build.log</code> <strong>in the repo root</strong>
-and prints only its last 10 lines (<code>scripts/spikespeak.py:115,137-140</code>). On the one build where you
-expect a page of GCC errors and where the ✅/❌ banner is the whole point, that hides both. It also
-drops a scratch file in the repo — gitignored, so <code>git status</code> stays clean while the folder does not,
-which is exactly the mess <code>CLAUDE.md</code> bans. (It is genuinely useful later, once the build is quiet.)</p>
+<p><strong>On the FIRST build use <code>cmake --build build</code> directly, not <code>./build.sh</code>.</strong> The wrapper redirects the
+entire build into <code>_build.log</code> <strong>in the repo root</strong> and prints only its last 10 lines. On the one
+build where you expect a page of GCC errors and where the ✅/❌ banner is the whole point, that hides
+both. It also drops a scratch file in the repo — gitignored, so <code>git status</code> stays clean while the
+folder does not, which is exactly the mess <code>CLAUDE.md</code> bans. Use the wrapper once the build is quiet,
+which is what it is for.</p>
 <p><strong>Expect a first-build fix pass.</strong> See §2. Every fix should be a small, well-commented commit
 referenced on #52, and every fix that is a <em>portability</em> fix rather than a Linux special case is the
 most valuable output of this whole task.</p>
@@ -763,9 +783,9 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 </thead>
 <tbody>
 <tr>
-<td><code>./run_spikespeak.sh: Permission denied</code></td>
-<td>Committed mode <code>100644</code>. §4.0.a.</td>
-<td><code>chmod +x run_spikespeak.sh _dobuild.sh</code> (then <code>git update-index --chmod=+x</code> to record it — that command alone does <strong>not</strong> touch the working tree), or call <code>python3 scripts/spikespeak.py run</code>.</td>
+<td><code>./build.sh</code> / <code>./run_spikespeak.sh: Permission denied</code></td>
+<td>Pre-2026-08-26 checkout: committed mode <code>100644</code>. §4.0.a.</td>
+<td><code>chmod +x build.sh run_spikespeak.sh _dobuild.sh</code> (then <code>git update-index --chmod=+x</code> to record it — that command alone does <strong>not</strong> touch the working tree), or call <code>python3 scripts/spikespeak.py run</code>.</td>
 </tr>
 <tr>
 <td>Configure fails: <em>Could not find a configuration file for package "Qt6"</em> / version too low</td>
@@ -824,8 +844,8 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 </tr>
 <tr>
 <td>Launcher says <em>SpikesPeak binary not found</em></td>
-<td>Two launchers glob differently; a nested Qt-Creator build tree is invisible to this one. §4.0.b.</td>
-<td>Use a flat <code>build/</code>, or export <code>SPIKESPEAK_EXE</code>.</td>
+<td>Nothing was built, or you are on a pre-2026-08-26 checkout where the launchers globbed build trees differently. §4.0.b.</td>
+<td>Check <code>bin/SpikesPeak</code> exists (that is where the build puts it now); otherwise export <code>SPIKESPEAK_EXE</code>.</td>
 </tr>
 <tr>
 <td>Build fails with the binary busy / cannot be written</td>
@@ -885,7 +905,7 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 <tr>
 <td><code>cmake --install</code> fails on missing <code>data/</code></td>
 <td>The install rule for <code>data/</code> is <strong>not</strong> <code>if(EXISTS)</code>-guarded, and <code>data/</code> is git-ignored.</td>
-<td>Do not use <code>cmake --install</code>. Build and run from the build tree (<code>build/bin/SpikesPeak</code>); nothing in this runbook needs it.</td>
+<td>Do not use <code>cmake --install</code> -- nothing in this runbook needs it. The build already produces the runnable app at <code>bin/SpikesPeak</code>; install only stages a copy to <code>dist/</code> to take elsewhere.</td>
 </tr>
 </tbody>
 </table>

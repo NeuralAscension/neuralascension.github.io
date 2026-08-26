@@ -84,7 +84,8 @@
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
@@ -137,7 +138,7 @@ milestone is <strong>in-vivo recording under anesthesia</strong>, run by the use
 <h3 id="before-you-call-anything-green">Before you call anything green<a class="headerlink" href="#before-you-call-anything-green" title="Permanent link">#</a></h3>
 <p><strong>Both</strong> suites must pass. A compile that produced a binary is not a green build.
 <code>bash
-cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release   # C++ suite runs automatically
+build.bat            # or ./build.sh -- C++ suite runs automatically; output goes to bin/
 python scripts/run_gui_tests.py                                # GUI suite — you must run it</code>
 The C++ suite runs on every build and prints ✅/❌ per suite. The GUI suite is <strong>not</strong> part of the
 compile (it needs a browser and a backend), so it is on you to run it — always after touching
@@ -632,16 +633,22 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
   markdown, and read its last line — <code>… N links, 0 broken</code>, with no <code>WARNING:</code> above it.</li>
 </ul>
 <h2 id="operating-this-repo-gotchas-that-cost-agents-time-read-first">Operating this repo: gotchas that cost agents time (read first)<a class="headerlink" href="#operating-this-repo-gotchas-that-cost-agents-time-read-first" title="Permanent link">#</a></h2>
-<p><strong>Rebuilding:</strong> <code>rebuild.bat</code> in the repo root. Double-click it (the window stays open so you can read
-the result) or run it from a terminal. It finds Visual Studio via <code>vswhere</code> and the <code>build-*Release</code>
-tree itself, and <strong>exits with the build's real status</strong> so a script can branch on it -- pass
-<code>--no-pause</code> (or set <code>SP_NO_PAUSE=1</code>) for automation. <code>--target &lt;name&gt;</code> builds one target;
-<code>--clean</code> re-runs the CMake configure first.</p>
+<p><strong>Building:</strong> <code>build.bat</code> (Windows) / <code>./build.sh</code> (Linux, macOS) in the repo root. Double-click it
+or run it from a terminal -- it holds the window open when launched from Explorer and exits with the
+build's real status when launched from a shell. It configures <code>build/</code> on first use and finds Visual
+Studio, Qt and Ninja itself, so a fresh clone needs no setup. Output goes to <strong><code>bin/</code></strong>.
+<code>rebuild.bat</code> remains for incremental Windows rebuilds with <code>--target</code> / <code>--clean</code>.</p>
+<p><strong>Do not call <code>cmake --build</code> directly on Windows</strong> -- without the MSVC environment it fails on
+<code>Cannot open include file: 'type_traits'</code>, which looks like a broken toolchain rather than a missing
+<code>vcvars64</code> call. Full instructions for all three platforms:
+<a href="Building.html"><code>Building.md</code></a>.</p>
 <ul>
-<li><strong>Frontend edits are served from the BUILD tree.</strong> The backend serves
-  <code>build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/webinterface/</code>, not the source <code>webinterface/</code>. After
-  editing a <code>webinterface/*.js|css|html</code>, copy it into that build-tree folder (or rebuild), then
-  <strong>hard-reload the browser</strong> (Ctrl+Shift+R, or CDP <code>Page.reload</code> with <code>ignoreCache</code>) — Chrome caches JS.</li>
+<li><strong>Frontend edits need no build</strong> (since 2026-08-26). The exe lives in <code>bin/</code> and resolves its web
+  root as <code>&lt;exe&gt;/../webinterface</code>, which is the repo's own <code>webinterface/</code> -- there is exactly ONE
+  copy, so nothing can go stale behind you. Edit the file and <strong>hard-reload the browser</strong>
+  (Ctrl+Shift+R, or CDP <code>Page.reload</code> with <code>ignoreCache</code>) — Chrome caches JS. The same is now true of
+  <code>config/*.yaml</code>. Previously each was copied into the build tree and the app read the copy, so an
+  un-rebuilt edit silently served the old version; that trap is gone.</li>
 <li><strong>Backend logs go to <code>output.log</code>.</strong> The exe is a windowless GUI-subsystem process, so qDebug/qWarning
   never reach a pipe. They are flushed per-line to <strong><code>output.log</code></strong> in the backend working directory —
   read its tail to see the last line before a crash.</li>
@@ -656,11 +663,13 @@ tree itself, and <strong>exits with the build's real status</strong> so a script
   puts Qt + HDF5 + the vendored Neuropixels DLLs on the loader path. Without them the exe exits
   <code>0xC0000135</code> on Windows. <code>--no-browser</code> = headless. Overrides: env <code>QT_RUNTIME_DIR</code>, <code>HDF5_BIN_DIR</code>,
   <code>SPIKESPEAK_EXE</code>, <code>SP_BUILD_DIR</code>.</li>
-<li><strong>Build (cross-platform):</strong> <code>_dobuild.bat</code> (Windows) / <code>_dobuild.sh</code> (Linux) call
-  <code>scripts/spikespeak.py build</code>. Windows: locates MSVC via <code>vswhere</code> and builds the existing Qt-Creator
-  tree (<code>build-*Release*</code>) -- configure it once in Qt Creator, or <code>cmake -S . -B build -G Ninja
-  -DCMAKE_BUILD_TYPE=Release</code>. Linux: auto-configures <code>build/</code> (Ninja, Release) if missing, then builds.
-  Logs to <code>_build.log</code>; exe at <code>&lt;build&gt;/bin/SpikesPeak(.exe)</code>.</li>
+<li><strong>Build (cross-platform):</strong> <code>build.bat</code> (Windows) / <code>./build.sh</code> (Linux, macOS) call
+  <code>scripts/spikespeak.py build</code>. Both <strong>configure <code>build/</code> on first use</strong> (Ninja, Release,
+  <code>compile_commands.json</code> on) and then build, so a fresh clone needs no setup step. The script finds
+  Visual Studio via <code>vswhere</code>, Ninja via Qt Creator's or VS's bundled copy, and Qt by matching the
+  compiler ABI first and the version second -- on a machine with several Qt installs the newest is
+  often the wrong one. Logs to <code>_build.log</code>; <strong>exe at <code>bin/SpikesPeak(.exe)</code></strong>. <code>_dobuild.*</code> still
+  work and do the same thing. Full instructions: <a href="Building.html"><code>Building.md</code></a>.</li>
 <li><strong>Drive it headlessly:</strong> <code>python/spikespeak_cli.py</code> over the WebSocket
   (<code>list</code>/<code>select</code>/<code>play</code>/<code>record</code>/<code>stop</code>/<code>disconnect</code>/<code>quit</code>). Select a config by its internal
   <strong><code>name:</code></strong> field (see <code>list</code>), NOT its filename. <code>python/tools/cdp.py</code> drives the browser. Launch a
@@ -813,7 +822,7 @@ only if present, so a clone without it still builds (sim needs no calibration).<
 <tr>
 <td>CMake / generator</td>
 <td><strong>≥ 3.19</strong> / <strong>Ninja</strong></td>
-<td><code>_dobuild.sh</code> auto-configures <code>build/</code> (Ninja, Release) if missing</td>
+<td><code>./build.sh</code> auto-configures <code>build/</code> (Ninja, Release) if missing</td>
 </tr>
 <tr>
 <td>Qt</td>
@@ -946,14 +955,12 @@ for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its 
 <h2 id="quick-start-clone-first-streaming-traces">Quick start (clone → first streaming traces)<a class="headerlink" href="#quick-start-clone-first-streaming-traces" title="Permanent link">#</a></h2>
 <p><strong>Linux (sim, no hardware):</strong></p>
 <pre><code class="language-bash">git clone &lt;repo&gt; &amp;&amp; cd SpikesPeak
-cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release &amp;&amp; cmake --build build   # or: ./_dobuild.sh
-python run_spikespeak.py --no-browser            # backend on :8234 (HTTP) + :1234 (WS); add --offscreen if headless
+./build.sh                                       # configures build/ on first use; exe -&gt; bin/
+./run_spikespeak.sh --no-browser                 # backend on :8234 (HTTP) + :1234 (WS); add --offscreen if headless
 # open a Chromium browser at http://localhost:8234 → Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
 </code></pre>
 <p><strong>Windows (hardware box):</strong></p>
-<pre><code class="language-bat">:: configure once in Qt Creator (or: cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release)
-_dobuild.bat                                      :: vcvars64 + cmake --build the build-*Release tree
-run_spikespeak.bat                                :: puts Qt + Neuropix + HDF5 on PATH, opens the browser
+<pre><code class="language-bat">build.bat                                         :: configures build/ on first use; exe -&gt; binrun_spikespeak.bat                                :: puts Qt + Neuropix + HDF5 on PATH, opens the browser
 :: in the browser: Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
 </code></pre>
 <p>You should see <strong>streaming traces</strong> in the Live Data view — for the sim source, a clean sine identical on
@@ -978,17 +985,19 @@ QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib ./build/bin/Spi
 python python/spikespeak_cli.py --host localhost list         # source = Simulated Data
 </code></pre>
 <blockquote>
-<p>Fresh-clone gotcha: <code>CalibrationInfo/</code> is <strong>intentionally git-untracked</strong> (per-probe/per-lab CSVs);
-its POST_BUILD copy is conditional so a clone without it still builds. Sim needs no calibration.</p>
+<p>Fresh-clone gotcha: <code>CalibrationInfo/</code> is <strong>intentionally git-untracked</strong> (per-probe/per-lab CSVs).
+It sits at the repo root where the app already looks, so a clone without it simply finds nothing.
+Sim needs no calibration.</p>
 </blockquote>
-<p><strong>Windows (hardware box):</strong> MSVC 2019 + Qt 6.7.3; live tree
-<code>build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/</code>. Incremental compile via <code>_dobuild.bat</code> (wraps
-<code>vcvars64</code> + <code>cmake --build</code>). Launch the backend with <strong><code>run_spikespeak.bat</code></strong> (puts Qt + Neuropix +
-HDF5 on PATH, otherwise it exits <code>0xC0000135</code>). A POST_BUILD step copies <code>config/</code>, <code>data/</code>,
-<code>webinterface/</code>, <code>CalibrationInfo/</code>, <code>imro_maps/</code> next to the exe.</p>
+<p><strong>Windows (hardware box):</strong> MSVC 2019 + Qt 6.7.3. Build with <strong><code>build.bat</code></strong> (configures <code>build/</code> on
+first use, then compiles inside the MSVC environment); the exe lands in <strong><code>bin/</code></strong>. Launch with
+<strong><code>run_spikespeak.bat</code></strong> (puts Qt + Neuropix + HDF5 on PATH, otherwise it exits <code>0xC0000135</code>).</p>
 <blockquote>
-<p>Editing <code>webinterface/</code> will not show until you copy it into the <strong>build</strong> tree <code>webinterface/</code>
-(the backend serves the build copy) or rebuild.
+<p>Since 2026-08-26 nothing is copied next to the exe except the vendored Neuropixels/HDF5 DLLs. The
+app resolves <code>config/</code>, <code>data/</code>, <code>webinterface/</code>, <code>imro_maps/</code> and <code>CalibrationInfo/</code> as
+<code>&lt;exe&gt;/../&lt;name&gt;</code>, which from <code>bin/</code> is the repo root — so it reads the <strong>source</strong> directories.
+Editing a <code>.yaml</code> or a <code>.js</code> therefore needs no build at all; just relaunch, or hard-reload the
+browser for frontend files.
 Hardware sources (<code>source.npx.pxi</code>, <code>source.nidaq</code>) are gated by <code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code>
 (Windows only). Without a probe, use a probe-independent NI-DAQ or sim profile — see <a href="NiDaq.html"><code>NiDaq.md</code></a>.</p>
 </blockquote>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Building and running SpikesPeak - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Working on this repo / Building and running SpikesPeak</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">4</span></summary>
+<a class="active" href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
+<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="building-and-running-spikespeak">Building and running SpikesPeak<a class="headerlink" href="#building-and-running-spikespeak" title="Permanent link">#</a></h1>
+<p>Everything here works from a plain terminal on Windows, Linux and macOS. Nothing needs Qt Creator,
+a "Developer Command Prompt", or any path edited into a script.</p>
+<h2 id="the-short-version">The short version<a class="headerlink" href="#the-short-version" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Windows</th>
+<th>Linux / macOS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Build</strong></td>
+<td><code>build.bat</code></td>
+<td><code>./build.sh</code></td>
+</tr>
+<tr>
+<td><strong>Run</strong></td>
+<td><code>run_spikespeak.bat</code></td>
+<td><code>./run_spikespeak.sh</code></td>
+</tr>
+<tr>
+<td><strong>Run without opening a browser</strong></td>
+<td><code>run_spikespeak.bat --no-browser</code></td>
+<td><code>./run_spikespeak.sh --no-browser</code></td>
+</tr>
+<tr>
+<td><strong>C++ tests</strong></td>
+<td>run automatically on every build</td>
+<td>run automatically on every build</td>
+</tr>
+<tr>
+<td><strong>GUI tests</strong></td>
+<td><code>python scripts/run_gui_tests.py</code></td>
+<td><code>python3 scripts/run_gui_tests.py</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>build.bat</code> and <code>rebuild.bat</code> <strong>hold the window open by default</strong> so a double-click does not close
+before you can read the result. Pass <code>--no-pause</code> (or set <code>SP_NO_PAUSE=1</code>) for scripts and CI:</p>
+<pre><code class="language-bat">build.bat --no-pause &amp;&amp; run_spikespeak.bat --no-browser
+</code></pre>
+<p>That is a switch rather than auto-detection on purpose. The usual trick of looking for the script's
+own name in <code>%cmdcmdline%</code> cannot tell Explorer's <code>cmd /c ""...build.bat" "</code> apart from a scripted
+<code>cmd /c build.bat</code>, so it pauses inside automation and hangs it. A wrong pause costs a keypress; a
+wrong no-pause loses the output you opened the window to read.</p>
+<p>Every one of them is a thin wrapper around <code>scripts/spikespeak.py</code>, which is the actual
+implementation and is identical on all three platforms. If a wrapper ever misbehaves, call it
+directly:</p>
+<pre><code class="language-bash">python scripts/spikespeak.py build
+python scripts/spikespeak.py run --no-browser
+</code></pre>
+<h2 id="where-things-end-up">Where things end up<a class="headerlink" href="#where-things-end-up" title="Permanent link">#</a></h2>
+<pre><code>bin/          the runnable app        &lt;- build output, git-ignored, safe to delete
+build/        object files, cache     &lt;- git-ignored, safe to delete
+dist/         cmake --install output  &lt;- only if you ask for it
+</code></pre>
+<p><strong>The app runs from <code>bin/</code> and reads everything else straight out of the repo.</strong> It resolves
+<code>config/</code>, <code>data/</code>, <code>webinterface/</code>, <code>imro_maps/</code> and <code>CalibrationInfo/</code> as
+<code>applicationDirPath()/../&lt;name&gt;</code>, and from <code>bin/</code> that is the repo root.</p>
+<p>That has a consequence worth knowing, because it is the opposite of how this used to work:</p>
+<blockquote>
+<p><strong>Editing <code>config/*.yaml</code> or <code>webinterface/*.js</code> needs no build at all.</strong> Save the file, relaunch
+(or just reload the browser, for frontend files). There is exactly one copy of each of those
+directories, so there is nothing that can go stale behind you.</p>
+</blockquote>
+<p>Until 2026-08-26 the build copied five directories next to the exe in the build tree, and the app
+read <em>those</em>. A frontend edit that was not followed by a build left the browser serving the previous
+version while the build reported success — which silently tested old code. That whole class of
+problem is gone with one copy of each directory.</p>
+<h2 id="first-build-from-a-fresh-clone">First build, from a fresh clone<a class="headerlink" href="#first-build-from-a-fresh-clone" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">build.bat          # Windows
+./build.sh         # Linux / macOS
+</code></pre>
+<p>That is the whole procedure. On first use it configures <code>build/</code> (Ninja, Release,
+<code>compile_commands.json</code> on) and then builds. It finds the compiler, Qt and Ninja itself.</p>
+<p><strong>What it is finding for you, and why that matters on Windows:</strong></p>
+<ul>
+<li><strong>The MSVC environment.</strong> A bare <code>cmake --build</code> in an ordinary terminal fails with
+  <code>Cannot open include file: 'type_traits'</code> — the compiler runs but has no standard library on its
+  include path, because <code>vcvars64.bat</code> has not run. <code>spikespeak.py</code> locates Visual Studio with
+  <code>vswhere</code> and runs CMake inside that environment.</li>
+<li><strong>Ninja.</strong> Not on <code>PATH</code> on a normal Windows box. It arrives bundled with Qt Creator
+  (<code>C:\Qt\Tools\Ninja</code>) or Visual Studio's CMake component, and the script checks both. If it finds
+  neither it falls back to the default generator rather than failing.</li>
+<li><strong>Qt.</strong> Picked by <em>matching ABI first, version second</em>. With several Qt versions installed, the
+  newest is often the wrong one: on this machine 6.10.0, 6.9.1, 6.9.0 and 6.8.3 are all present but
+  only 6.7.3 ships an <code>msvc2019_64</code> kit, so that is the one selected. A newer Qt with a MinGW-only
+  kit would get part-way through <code>find_package(Qt6)</code> and fail on a component, which reads like a
+  broken Qt install rather than the wrong one.</li>
+</ul>
+<p>Set <code>Qt6_DIR</code> or <code>CMAKE_PREFIX_PATH</code> in your environment to override any of that.</p>
+<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Windows</th>
+<th>Linux</th>
+<th>macOS</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Compiler</td>
+<td>Visual Studio 2019+ (Desktop C++ workload)</td>
+<td>GCC 11+ or Clang 14+</td>
+<td>Xcode command-line tools</td>
+</tr>
+<tr>
+<td>Qt</td>
+<td><strong>6.7</strong>, <code>msvc2019_64</code> kit</td>
+<td>6.7+, <code>gcc_64</code></td>
+<td>6.7+, <code>macos</code></td>
+</tr>
+<tr>
+<td>CMake</td>
+<td>≥ 3.19</td>
+<td>≥ 3.19</td>
+<td>≥ 3.19</td>
+</tr>
+<tr>
+<td>HDF5</td>
+<td>1.14 (vendored runtime DLLs are copied to <code>bin/</code>)</td>
+<td><code>libhdf5-dev</code></td>
+<td><code>brew install hdf5</code></td>
+</tr>
+<tr>
+<td>Python</td>
+<td>3.9+ (for the wrappers and the test runners)</td>
+<td>3.9+</td>
+<td>3.9+</td>
+</tr>
+<tr>
+<td>Ninja</td>
+<td>optional — bundled with Qt Creator or VS</td>
+<td><code>apt install ninja-build</code></td>
+<td><code>brew install ninja</code></td>
+</tr>
+</tbody>
+</table>
+<p>Neuropixels and NI-DAQ hardware support is <strong>Windows only</strong>. Linux and macOS build the same code
+with the vendor API stubbed out, so simulated sources, the full processing chain, the GUI and both
+test suites all work — which is what makes "run it in sim first" a real diagnostic rather than a
+gesture. See <a href="Testing.html"><code>Testing.md</code></a> §4.</p>
+<h3 id="if-buildsh-says-permission-denied">If <code>./build.sh</code> says <em>Permission denied</em><a class="headerlink" href="#if-buildsh-says-permission-denied" title="Permanent link">#</a></h3>
+<p>Shouldn't happen since 2026-08-26 -- <code>build.sh</code>, <code>run_spikespeak.sh</code> and <code>_dobuild.sh</code> are all mode
+<code>100755</code> in the index. On an older checkout, or for a script you add yourself, it takes <strong>both</strong>
+halves, because <code>git update-index</code> writes the index and leaves the file on disk exactly as
+unexecutable as it was:</p>
+<pre><code class="language-bash">chmod +x build.sh run_spikespeak.sh                      # makes them run NOW
+git update-index --chmod=+x build.sh run_spikespeak.sh   # records the bit for everyone else
+</code></pre>
+<p>Or sidestep it entirely with <code>python3 scripts/spikespeak.py build</code>.</p>
+<h2 id="running-it">Running it<a class="headerlink" href="#running-it" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">run_spikespeak.bat                 # Windows  -- opens your default browser at the GUI
+run_spikespeak.bat --no-browser    # backend only
+</code></pre>
+<p><strong>Always pass <code>--no-browser</code> for automated work.</strong> Without it the app calls
+<code>QDesktopServices::openUrl</code> and opens a window in the operator's <em>default</em> browser, on top of
+whatever browser a test is already driving.</p>
+<p><strong>Do not run <code>bin/SpikesPeak.exe</code> directly.</strong> It exits immediately with <code>0xC0000135</code>
+(<code>STATUS_DLL_NOT_FOUND</code>): Qt's DLLs are not beside it and not on <code>PATH</code>. The launcher puts Qt,
+the Neuropixels API and HDF5 on <code>PATH</code> first — that is its whole job. The vendored Neuropixels and
+HDF5 DLLs <em>are</em> copied into <code>bin/</code>; Qt's are not, because they belong to your Qt installation.</p>
+<p>The backend <strong>auto-quits about 2 s after the last WebSocket client disconnects</strong>, so closing the GUI
+tab shuts it down. Launched by double-click it keeps its console, and you can type <code>connect</code>,
+<code>play</code>, <code>pause</code>, <code>disconnect</code>, <code>quit</code> into it.</p>
+<blockquote>
+<p><strong>Hardware safety.</strong> Never force-kill the backend while a real probe or OneBox is connected — the
+FT601 USB handle is released only on a clean exit, and a kill costs a physical power-cycle. Shut
+down with <code>quit</code>, or the GUI's Disconnect. See <a href="README.html"><code>README.md</code></a>.</p>
+</blockquote>
+<h2 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">#</a></h2>
+<p>The <strong>C++ suite runs automatically on every build</strong> and prints a per-suite pass/fail banner (~2 s).
+It does not fail the build by default, so a red suite is easy to walk past — configure with
+<code>-DSPIKESPEAK_TESTS_FATAL=ON</code> to make it fatal.</p>
+<p>The <strong>GUI suite is not part of the build</strong> — it needs a browser and a running backend, so you have
+to run it yourself:</p>
+<pre><code class="language-bash">python scripts/run_gui_tests.py            # ~10 min
+python scripts/run_all_tests.py            # C++ then GUI, behind a live progress page
+</code></pre>
+<p>Run the GUI suite whenever you touch <code>webinterface/</code>, the toolbar, the live view or the ripple dock,
+<strong>and before you push</strong> — a red suite that reaches the remote is red for everyone who pulls. Full
+detail in <a href="Testing.html"><code>Testing.md</code></a>.</p>
+<h2 id="vs-code">VS Code<a class="headerlink" href="#vs-code" title="Permanent link">#</a></h2>
+<p><code>.vscode/tasks.json</code> and <code>.vscode/settings.json</code> are set up for this workflow:</p>
+<ul>
+<li><strong>Ctrl+Shift+B</strong> builds. Tasks also exist for <em>Run (no browser)</em>, <em>Test: C++ suite</em>,
+  <em>Test: GUI suite</em> and <em>Test: everything</em>.</li>
+<li>The tasks go through <code>scripts/spikespeak.py</code> rather than the CMake Tools extension, because on
+  Windows CMake Tools configures <em>outside</em> the MSVC environment and fails. This way one task file
+  works on all three platforms.</li>
+<li>IntelliSense reads <code>build/compile_commands.json</code>, generated on first configure. It appears after
+  the first build; before that every Qt include shows red while the build itself is fine.</li>
+</ul>
+<p>Recommended extensions: <strong>C/C++</strong> (ms-vscode.cpptools) and <strong>Python</strong>. CMake Tools is optional and
+deliberately configured not to auto-configure on open.</p>
+<h2 id="making-a-distributable-copy">Making a distributable copy<a class="headerlink" href="#making-a-distributable-copy" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">cmake --install build --prefix /where/you/want/it
+</code></pre>
+<p>Defaults to <code>dist/</code> if you omit <code>--prefix</code>. This is <em>not</em> how you run the repo — it stages a
+self-contained copy to take elsewhere, with its own <code>config/</code>, <code>data/</code> and <code>webinterface/</code>. Keep it
+out of the way of <code>bin/</code>: a second, ageing copy of the app that someone can launch by accident is
+exactly the trap this layout removed.</p>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Cannot open include file: 'type_traits'</code></td>
+<td>building outside the MSVC environment</td>
+<td>use <code>build.bat</code>, not a bare <code>cmake --build</code></td>
+</tr>
+<tr>
+<td><code>CMake was unable to find a build program corresponding to "Ninja"</code></td>
+<td>Ninja not on <code>PATH</code> and not found</td>
+<td>install it, or let the fallback generator run</td>
+</tr>
+<tr>
+<td><code>Could not find a package configuration file provided by "Qt6"</code></td>
+<td>no Qt found, or none with a matching ABI</td>
+<td>install the <code>msvc2019_64</code> kit, or set <code>Qt6_DIR</code></td>
+</tr>
+<tr>
+<td><code>Generator: execution of make failed. Make command was:</code> <em>(empty)</em></td>
+<td>a Windows path reached CMake with its backslashes eaten</td>
+<td>paths passed as <code>-D</code> values need forward slashes</td>
+</tr>
+<tr>
+<td>App exits instantly, <code>0xC0000135</code></td>
+<td>launched <code>bin/SpikesPeak.exe</code> directly</td>
+<td>use <code>run_spikespeak.bat</code></td>
+</tr>
+<tr>
+<td><code>LNK1104: cannot open file 'SpikesPeak.exe'</code></td>
+<td>a running backend holds the binary</td>
+<td>quit it first — <strong>do not</strong> force-kill it with hardware attached</td>
+</tr>
+<tr>
+<td>A frontend edit seems to do nothing</td>
+<td>browser cache, not a stale copy</td>
+<td>hard-reload the page; there is only one <code>webinterface/</code> now</td>
+</tr>
+<tr>
+<td><code>./build.sh: Permission denied</code></td>
+<td>executable bit not recorded in git</td>
+<td><code>chmod +x build.sh</code></td>
+</tr>
+</tbody>
+</table></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/Building.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-short-version">The short version</a></li>
+<li><a href="#where-things-end-up">Where things end up</a></li>
+<li><a href="#first-build-from-a-fresh-clone">First build, from a fresh clone</a><ul>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#if-buildsh-says-permission-denied">If ./build.sh says Permission denied</a></li>
+</ul>
+</li>
+<li><a href="#running-it">Running it</a></li>
+<li><a href="#testing">Testing</a></li>
+<li><a href="#vs-code">VS Code</a></li>
+<li><a href="#making-a-distributable-copy">Making a distributable copy</a></li>
+<li><a href="#troubleshooting">Troubleshooting</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

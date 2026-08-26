@@ -2,25 +2,216 @@
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SpikesPeak documentation</title>
+<!--
+  The mark is the application's own logo, ported from webinterface/LogoSplash.js rather than
+  redrawn: the same Pikes Peak ridge control points, the same rock noise, the same action-potential
+  curve, and the same two-stop vertical gradient. In the app the morph is a STATE (it tracks whether
+  a source is connected). Here it is an interaction: hover, focus or tap the mark and the mountain
+  becomes an action potential; leave and it settles back.
+-->
 <style>
-:root{color-scheme:dark}
-body{margin:0;background:#00171A;color:#E8EDEE;font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:48px 24px}
+:root{
+  color-scheme:dark;
+  /* SpikesPeak's palette, not the site default. --sp-green and --sp-cyan are the two wordmark
+     colours sampled from the rendered trace (LogoSplash.js): green along the baseline, cyan at the
+     apex. Everything else is the application's own chrome. */
+  --bg:#1c1c1c;
+  --panel:#232528;
+  --panel-hi:#2b2f34;
+  --ink:#e8eaee;
+  --muted:#8a8f9a;
+  --sp-green:#82ba64;
+  --sp-cyan:#5fd0f0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding:48px 24px}
 main{max-width:640px;margin:0 auto}
+
+/* ---- the mark -------------------------------------------------------------------------------- */
+.mark{
+  display:block;width:100%;max-width:480px;margin:0 auto 4px;
+  background:none;border:0;padding:0;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.mark svg{display:block;width:100%;height:auto}
+.mark:focus-visible{outline:2px solid var(--sp-cyan);outline-offset:6px;border-radius:8px}
+.wordmark{
+  display:flex;justify-content:center;align-items:baseline;gap:0;
+  font-size:clamp(28px,7vw,44px);line-height:1;margin:0 0 .15em;letter-spacing:-.01em;
+}
+.wordmark .s{font-weight:500;color:var(--sp-green);letter-spacing:-.025em}
+.wordmark .p{font-weight:800;color:var(--sp-cyan);letter-spacing:.09em}
+.hint{
+  text-align:center;color:var(--muted);font-size:.78rem;letter-spacing:.16em;
+  text-transform:uppercase;margin:0 0 28px;min-height:1.2em;
+  transition:opacity .3s ease;
+}
+
+/* ---- the page -------------------------------------------------------------------------------- */
 h1{font-size:1.6rem;margin:0 0 .4em}
-p{color:#9FB3B6}
-a.v{display:block;padding:14px 18px;margin:10px 0;border-radius:8px;background:#00252A;color:#A8E1E6;text-decoration:none;font-weight:600}
-a.v:hover{background:rgba(168,225,230,.13)}
-a.v span{display:block;font-weight:400;color:#9FB3B6;font-size:.87rem}
-footer{margin-top:32px;font-size:.85rem;color:#6E8387}
-footer a{color:#A8E1E6}
+p{color:var(--muted)}
+a.v{
+  display:block;padding:14px 18px;margin:10px 0;border-radius:8px;
+  background:var(--panel);color:var(--sp-cyan);text-decoration:none;font-weight:600;
+  border:1px solid transparent;transition:background .18s ease,border-color .18s ease;
+}
+a.v:hover,a.v:focus-visible{background:var(--panel-hi);border-color:rgba(95,208,240,.35);outline:none}
+a.v span{display:block;font-weight:400;color:var(--muted);font-size:.87rem}
+footer{margin-top:32px;font-size:.85rem;color:#6e737c}
+footer a{color:var(--sp-cyan)}
+footer code{color:var(--sp-green);font-size:.95em}
+
+@media (prefers-reduced-motion:reduce){
+  .hint{display:none}
+}
 </style></head><body><main>
+
+<button class="mark" id="mark" type="button"
+        aria-label="SpikesPeak logo — activate to morph the mountain into an action potential">
+  <svg viewBox="0 0 480 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <linearGradient id="spRock" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#2b2f34" stop-opacity="0.7"/>
+        <stop offset="72%" stop-color="#232528" stop-opacity="0.35"/>
+        <stop offset="100%" stop-color="#1c1c1c" stop-opacity="0"/>
+      </linearGradient>
+      <!-- Vertical on purpose: offset is HEIGHT, so the colour change IS the depolarisation.
+           0% = apex (cyan), 78-100% = the baseline flat (green). -->
+      <linearGradient id="spSpike" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#5fd0f0"/><stop offset="35%" stop-color="#5fd0f0"/>
+        <stop offset="78%" stop-color="#82ba64"/><stop offset="100%" stop-color="#82ba64"/>
+      </linearGradient>
+      <filter id="spGlow" x="-30%" y="-60%" width="160%" height="260%">
+        <feGaussianBlur stdDeviation="2.4" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    <path id="spMassif" fill="url(#spRock)" d="" opacity="0.9"/>
+    <path id="spTrace" fill="none" stroke="url(#spSpike)" stroke-width="3"
+          stroke-linecap="round" stroke-linejoin="round" filter="url(#spGlow)" d=""/>
+    <circle id="spDot" r="3.4" fill="#eafaff" opacity="0"/>
+  </svg>
+</button>
+
+<div class="wordmark"><span class="s">Spikes</span><span class="p">Peak</span></div>
+<p class="hint" id="hint">hover the ridge</p>
+
 <h1>SpikesPeak documentation</h1>
 <p>Real-time Neuropixels acquisition with online sharp-wave-ripple detection and closed-loop
 stimulation. Neuropixels 1.0 and 2.0 over a PXIe basestation or a OneBox, a Qt/C++ backend, and a
 browser front end.</p>
+
 <a class="v" href="develop/">develop<span>integration branch</span></a>
 <a class="v" href="feature/OneBoxSupport/">feature/OneBoxSupport<span>active working branch &mdash; OneBox acquisition, the audio monitor, and the closed-loop trigger work</span></a>
+
 <footer>Published from the SpikesPeak repository. Each set is built from that branch by
 <code>scripts/build_docs.py</code>, so it reflects the branch at its last build rather than the
 moment you are reading it. Start at the developer docs index, which is the map to everything else.</footer>
-</main></body></html>
+
+</main>
+<script>
+(() => {
+  "use strict";
+  // ---- geometry, ported verbatim from webinterface/LogoSplash.js ---------------------------------
+  const N=300, X0=24, X1=432, BASE_Y=150, APEX_Y=26, SPAN=BASE_Y-APEX_Y, H=210, PEAK_U=0.50;
+  const RIDGE=[[0,.02],[.06,.07],[.12,.05],[.18,.15],[.24,.23],[.30,.31],[.355,.50],[.40,.71],
+    [.44,.90],[.47,1.0],[.50,.955],[.54,.83],[.58,.71],[.63,.60],[.68,.50],[.73,.445],[.78,.34],
+    [.84,.26],[.90,.16],[.95,.10],[1,.06]];
+
+  function catmull(u,pts){
+    if(u<=pts[0][0])return pts[0][1];
+    if(u>=pts[pts.length-1][0])return pts[pts.length-1][1];
+    let i=0; while(i<pts.length-2 && pts[i+1][0]<u) i++;
+    const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(pts.length-1,i+2)];
+    const t=(u-p1[0])/(p2[0]-p1[0]),t2=t*t,t3=t2*t;
+    return .5*((2*p1[1])+(-p0[1]+p2[1])*t+(2*p0[1]-5*p1[1]+4*p2[1]-p3[1])*t2
+              +(-p0[1]+3*p1[1]-3*p2[1]+p3[1])*t3);
+  }
+  const rockNoise=u=>.52*Math.sin(u*61.7+1.3)+.30*Math.sin(u*127.3+2.7)
+                    +.20*Math.sin(u*233.1+.4)+.13*Math.sin(u*389.7+5.1);
+  function apY(u){
+    const d=u-PEAK_U,sR=.0155,sF=.0295,s=d<0?sR:sF,spike=Math.exp(-(d*d)/(2*s*s));
+    const fd=u-(PEAK_U-.055),foot=.075*Math.exp(-(fd*fd)/(2*.0016));
+    const ad=u-(PEAK_U+.115),ahp=.62*Math.exp(-(ad*ad)/(2*Math.pow(.075,2)));
+    return BASE_Y-(spike+foot-.16*ahp)*SPAN;
+  }
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v, smoother=t=>{t=clamp(t,0,1);return t*t*t*(t*(t*6-15)+10);};
+
+  const XS=new Float32Array(N),US=new Float32Array(N),RIDGE_Y=new Float32Array(N),ROUGH=new Float32Array(N);
+  for(let i=0;i<N;i++){
+    const u=i/(N-1); US[i]=u; XS[i]=X0+(X1-X0)*u;
+    const h=Math.max(0,catmull(u,RIDGE));
+    RIDGE_Y[i]=BASE_Y-h*SPAN;
+    ROUGH[i]=rockNoise(u)*2.8*(0.34+0.66*h);
+  }
+
+  const trace=document.getElementById('spTrace');
+  const massif=document.getElementById('spMassif');
+  const dot=document.getElementById('spDot');
+  const mark=document.getElementById('mark');
+  const hint=document.getElementById('hint');
+
+  // Hover/focus is the trigger. Touch has no hover, so a tap toggles instead -- otherwise the
+  // animation would be unreachable on a phone, which is where a link like this often gets opened.
+  let want=false, e0=0;
+  const set=on=>{ want=on; if(hint) hint.style.opacity = on ? '0' : '1'; };
+  mark.addEventListener('mouseenter',()=>set(true));
+  mark.addEventListener('mouseleave',()=>set(false));
+  mark.addEventListener('focus',()=>set(true));
+  mark.addEventListener('blur',()=>set(false));
+  mark.addEventListener('click',ev=>{ ev.preventDefault(); set(!want); });
+
+  // Respect the setting rather than ignoring it: no rAF loop at all, just the two end states.
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function render(e, now){
+    const rk=Math.pow(1-e,1.7);
+    let d='M';
+    for(let i=0;i<N;i++){
+      const y=RIDGE_Y[i]+(apY(US[i])-RIDGE_Y[i])*e+ROUGH[i]*rk;
+      d+=(i?'L':'')+XS[i].toFixed(1)+','+y.toFixed(1);
+    }
+    trace.setAttribute('d',d);
+    massif.setAttribute('d',d+`L${X1},${H+6}L${X0},${H+6}Z`);
+    massif.setAttribute('opacity',((1-e)*0.9).toFixed(3));
+
+    if(now===undefined){ trace.setAttribute('stroke-width','3'); dot.setAttribute('opacity','0'); return; }
+
+    // Breathing glow, and once the spike has formed a scan dot sweeps it -- the "live signal" cue
+    // the application uses while a source is connected.
+    const breathe=0.5+0.5*Math.sin(now/1000*2*Math.PI*0.35);
+    trace.setAttribute('stroke-width',(2.4+1.1*breathe*e).toFixed(2));
+    if(e>0.98){
+      const period=2000, ph=(now%period)/period;
+      const i=Math.min(N-1,Math.round(ph*(N-1)));
+      const y=RIDGE_Y[i]+(apY(US[i])-RIDGE_Y[i])*e;
+      dot.setAttribute('cx',XS[i].toFixed(1)); dot.setAttribute('cy',y.toFixed(1));
+      dot.setAttribute('opacity',(Math.sin(Math.PI*ph)*0.9).toFixed(3));
+    } else {
+      dot.setAttribute('opacity','0');
+    }
+  }
+
+  if(reduce){
+    render(0);
+    mark.addEventListener('mouseenter',()=>render(1));
+    mark.addEventListener('mouseleave',()=>render(0));
+    mark.addEventListener('focus',()=>render(1));
+    mark.addEventListener('blur',()=>render(0));
+    mark.addEventListener('click',()=>render(want?1:0));
+    return;
+  }
+
+  // ~1.2 s each way at 60 fps, and symmetric, so the return reads as a deliberate animation rather
+  // than a snap. The app uses 0.003/frame because there the morph marks a connection, not a hover.
+  const RATE=0.014;
+  function loop(now){
+    e0 = want ? Math.min(1,e0+RATE) : Math.max(0,e0-RATE);
+    render(smoother(e0), now);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body></html>

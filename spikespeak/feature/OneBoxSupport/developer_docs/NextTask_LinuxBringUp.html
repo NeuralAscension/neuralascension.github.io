@@ -464,6 +464,41 @@ branch and everything after this is meaningless.</p>
 <p><strong>Failure modes:</strong> a Qt below 6.7 fails here, not at compile — it is the single most likely first
 failure. A missing WebEngine fails with a bare <em>"Could not find a package configuration file"</em>. No
 network fails inside FetchContent.</p>
+<h4 id="two-configure-aborts-that-are-not-your-machines-fault">Two configure aborts that are NOT your machine's fault<a class="headerlink" href="#two-configure-aborts-that-are-not-your-machines-fault" title="Permanent link">#</a></h4>
+<p>Both were found by reading on 2026-08-26 and <strong>deliberately left alone</strong>, because each is a
+dependency question and <code>CLAUDE.md</code> makes that the operator's call, not the agent's. Expect them,
+and report which one you hit rather than quietly working around it.</p>
+<p><strong>1. <code>Could NOT find HDF5 (missing: HL)</code>.</strong> <code>CMakeLists.txt</code> asks for
+<code>find_package(HDF5 REQUIRED COMPONENTS CXX HL)</code>, but <strong>nothing in <code>src/</code> uses the high-level API</strong> —
+<code>grep -rn "H5LT\|H5TB\|H5DS\|hdf5_hl" src/</code> returns nothing, and the target links <code>HDF5::HDF5</code>,
+which wraps <code>HDF5_LIBRARIES</code> only, not <code>HDF5_HL_LIBRARIES</code>. So on a distro where FindHDF5 does not
+turn up <code>libhdf5_hl</code>, configure aborts over a component that would contribute nothing to the link.</p>
+<p>Install <code>libhdf5-dev</code> (which normally supplies it) first. If it still fails, dropping <code>HL</code> from that
+line is a one-word change and is very likely correct — but <strong>say so in your report</strong> rather than
+committing it silently, and add
+<code>message(STATUS "HDF5 ${HDF5_VERSION} include=${HDF5_INCLUDE_DIRS} libs=${HDF5_LIBRARIES}")</code>
+so the next person can see what resolved.</p>
+<p><strong>2. Qt WebEngine is required but appears unused — and deleting it fails DIFFERENTLY.</strong>
+<code>find_package(Qt6 …)</code> requests <code>Core WebEngineWidgets WebSockets Network</code> (+ <code>Test</code>), yet
+<code>grep -rn "QWebEngine" src/</code> returns nothing. On a distro-Qt box you must install
+<code>qt6-webengine-dev</code> and its NSS/X/dbus chain to link a module nothing calls.</p>
+<p>The trap: <code>Qt::Widgets</code> and <code>Qt::Gui</code> are linked by the target but <strong>never requested</strong> — they arrive
+only transitively through <code>WebEngineWidgets</code>. So the obvious fix, deleting that component, turns one
+configure error into
+<code>Target "SpikesPeak" links to target "Qt::Widgets" but the target was not found</code>. If you go that
+way, request them explicitly first:</p>
+<pre><code class="language-cmake">find_package(Qt6 6.7 REQUIRED COMPONENTS Core Gui Widgets WebSockets WebChannel Network WebEngineWidgets)
+</code></pre>
+<p>then removing <code>WebEngineWidgets</code> becomes a one-line change that works. (<code>QWebChannel</code> is used by
+<code>WebSocketServer.cpp</code> and is also only arriving transitively today.) <strong>Do not drop WebEngine without
+asking</strong> — it is a dependency decision.</p>
+<h4 id="if-configure-fails-the-tree-is-not-left-poisoned-any-more">If configure fails, the tree is NOT left poisoned any more<a class="headerlink" href="#if-configure-fails-the-tree-is-not-left-poisoned-any-more" title="Permanent link">#</a></h4>
+<p>CMake writes <code>CMakeCache.txt</code> <em>before</em> <code>find_package</code> runs, so a configure that dies on Qt or HDF5
+used to leave a cache behind — and every later <code>./build.sh</code> then saw it, decided the tree was
+configured, skipped configure and died on a missing <code>build.ninja</code> with no mention of Qt at all.
+Since 2026-08-26 <code>scripts/spikespeak.py</code> checks the configure exit code, deletes the partial cache
+and stops, so the next run re-configures and prints the real reason. If you ever see a build failure
+that names <code>build.ninja</code> and nothing else, delete <code>build/CMakeCache.txt</code> by hand and re-run.</p>
 <h3 id="step-3-build">Step 3 — Build<a class="headerlink" href="#step-3-build" title="Permanent link">#</a></h3>
 <pre><code class="language-bash">cmake --build build          # or ./build.sh, which does configure + build in one
 </code></pre>
@@ -560,10 +595,58 @@ which is Windows-only, so the suite could not start a backend on Linux at all. B
 <code>scripts/spikespeak.py</code> directly (<code>tests/gui/_harness.py:237-245</code>,
 <code>scripts/run_gui_tests.py:116-121</code>) — no executable bit needed, no <code>shell=True</code>, and it reuses the
 interpreter already running the tests. There are no <code>.bat</code> references left anywhere in the test path.</p>
-<p><strong>Use <code>--fatal</code> anyway.</strong> If the backend fails to come up for some <em>other</em> reason, the runner prints
-<em>"backend did not come up on :1234"</em> and — without <code>--fatal</code> — <strong>returns 0</strong>, so a suite that never
-ran reads as a non-failure. That hazard is unchanged and is the one to guard against on a first
-Linux run.</p>
+<h3 id="51a-when-the-backend-does-not-come-up-read-the-log-do-not-guess">5.1a When the backend does not come up — read the log, do not guess<a class="headerlink" href="#51a-when-the-backend-does-not-come-up-read-the-log-do-not-guess" title="Permanent link">#</a></h3>
+<p>Fixed 2026-08-26, and it is the difference between a five-minute diagnosis and an afternoon. Both
+runners used to send the backend's stdout <strong>and stderr</strong> to <code>DEVNULL</code>, so every distinct Linux
+failure — no exe, no Qt runtime, no platform plugin — collapsed into the same 30-second wait and one
+line saying the backend did not come up.</p>
+<p>The child's output now goes to <strong><code>_gui_backend.log</code></strong> in the repo root (git-ignored), the last 25
+lines are printed inline on failure, and the path is named in the error. On this box, with a
+deliberately broken exe, that reads:</p>
+<pre><code>❌ backend did not come up on :1234
+  its output (…/_gui_backend.log):
+    [spikespeak] ERROR: SpikesPeak binary not found. Build first (python scripts/spikespeak.py build) or set SPIKESPEAK_EXE.
+</code></pre>
+<p>The three you are most likely to see on Linux, all of which now appear in that log:</p>
+<table>
+<thead>
+<tr>
+<th>In <code>_gui_backend.log</code></th>
+<th>Means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[spikespeak] ERROR: SpikesPeak binary not found</code></td>
+<td>nothing built, or it went somewhere unexpected — check <code>bin/SpikesPeak</code></td>
+</tr>
+<tr>
+<td><code>libQt6Core.so.6: cannot open shared object file</code></td>
+<td>Qt runtime not on <code>LD_LIBRARY_PATH</code>; the launcher sets it from the build cache, so the cache may name a Qt you have since moved</td>
+</tr>
+<tr>
+<td><code>qt.qpa.plugin: Could not load the Qt platform plugin "xcb"</code></td>
+<td>no display, or the xcb platform plugin's own deps are missing. <code>scripts/spikespeak.py</code> sets <code>QT_QPA_PLATFORM=offscreen</code> when <code>DISPLAY</code> is unset — if <code>DISPLAY</code> is set but broken it will not, so unset it or export the variable yourself</td>
+</tr>
+</tbody>
+</table>
+<h3 id="51b-a-suite-that-never-ran-can-no-longer-report-green">5.1b A suite that never ran can no longer report green<a class="headerlink" href="#51b-a-suite-that-never-ran-can-no-longer-report-green" title="Permanent link">#</a></h3>
+<p>Also fixed 2026-08-26, and it mattered most on exactly this machine. Three defects lined up so that a
+completely failed Linux run printed <strong>ALL SUITES PASSED</strong>:</p>
+<ul>
+<li><code>run_all_tests.py</code> never forwarded <code>--fatal</code> to either child, and both children return 0 on failure
+  unless they get it — so a red C++ suite exited 0 and was judged on that exit code;</li>
+<li><code>run_gui()</code> initialised <code>ok = True</code> and only ever lowered it on a <code>test_end</code> event, so <strong>zero
+  events meant a pass</strong>;</li>
+<li><code>run_gui_tests.py</code> returned 0 when the backend never appeared, unless <code>--fatal</code> was passed.</li>
+</ul>
+<p>All three are closed: <code>--fatal</code> is forwarded to both children, a run that reports no test results is
+treated as a failure with an explicit message, and a missing backend always exits non-zero.
+Verified by simulating a broken backend — <code>run_all_tests.py --no-browser --fatal</code> now prints
+<code>SOMETHING FAILED</code> and exits 1 where it used to print green.</p>
+<p><strong>You should still pass <code>--fatal</code> yourself</strong>, and you should still be suspicious of a green run that
+finished suspiciously fast. The rule from <code>CLAUDE.md</code> stands: a compile that produced a binary is not
+a green build, and neither is a suite that printed a banner without running anything.</p>
 <p><strong>The fix, and it is small.</strong> Branch on <code>os.name</code> and call the cross-platform launcher that already
 exists, dropping <code>shell=True</code>:</p>
 <pre><code class="language-python">[sys.executable, os.path.join(REPO, &quot;scripts&quot;, &quot;spikespeak.py&quot;), &quot;run&quot;, &quot;--no-browser&quot;]
@@ -951,7 +1034,11 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 <li><a href="#4-step-by-step">4. Step by step</a><ul>
 <li><a href="#step-0-before-you-configure-three-things-that-are-broken-today">Step 0 — before you configure: three things that are broken today</a></li>
 <li><a href="#step-1-the-one-certain-build-breaker-fixed-2026-08-25">Step 1 — The one certain build breaker — FIXED 2026-08-25</a></li>
-<li><a href="#step-2-configure">Step 2 — Configure</a></li>
+<li><a href="#step-2-configure">Step 2 — Configure</a><ul>
+<li><a href="#two-configure-aborts-that-are-not-your-machines-fault">Two configure aborts that are NOT your machine's fault</a></li>
+<li><a href="#if-configure-fails-the-tree-is-not-left-poisoned-any-more">If configure fails, the tree is NOT left poisoned any more</a></li>
+</ul>
+</li>
 <li><a href="#step-3-build">Step 3 — Build</a></li>
 <li><a href="#step-4-the-c-suite">Step 4 — The C++ suite</a></li>
 <li><a href="#step-5-run-the-backend">Step 5 — Run the backend</a></li>
@@ -962,6 +1049,8 @@ occurrence of the word "linux"</strong>; closing that gap is part of the deliver
 </li>
 <li><a href="#5-the-gui-suite-on-linux">5. The GUI suite on Linux</a><ul>
 <li><a href="#51-the-bat-blocker-fixed-2026-08-26">5.1 The .bat blocker — FIXED 2026-08-26</a></li>
+<li><a href="#51a-when-the-backend-does-not-come-up-read-the-log-do-not-guess">5.1a When the backend does not come up — read the log, do not guess</a></li>
+<li><a href="#51b-a-suite-that-never-ran-can-no-longer-report-green">5.1b A suite that never ran can no longer report green</a></li>
 <li><a href="#52-is-headless-viable-unknown-and-here-is-the-first-diagnostic">5.2 Is headless viable? Unknown — and here is the first diagnostic</a></li>
 <li><a href="#53-second-order-unknown-the-backend-may-not-survive-pagereload">5.3 Second-order unknown: the backend may not survive Page.reload</a></li>
 <li><a href="#54-monitor-selection-degrades-silently-and-you-must-not-let-it-pass-as-green">5.4 Monitor selection degrades silently, and you must not let it pass as green</a></li>

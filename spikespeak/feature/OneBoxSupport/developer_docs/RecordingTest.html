@@ -171,7 +171,7 @@ moved to a <strong>Linux box with no hardware</strong> (2026-07-06). The equival
 <ol>
 <li><strong>Launch headless</strong> (no browser tab left open):
    <code>powershell
-   $bin = "...\build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release\bin"
+   $bin = "&lt;repo&gt;\bin"          # build output moved to the repo's own bin\ on 2026-08-26
    $env:PATH = "C:\Qt\6.7.3\msvc2019_64\bin;...\external\neuropixels\api\lib64\v4;" + $env:PATH
    Start-Process -FilePath "$bin\SpikesPeak.exe" -WorkingDirectory $bin -ArgumentList "--no-browser" `
        -RedirectStandardOutput "$bin\t_out.log" -RedirectStandardError "$bin\t_err.log" -WindowStyle Hidden

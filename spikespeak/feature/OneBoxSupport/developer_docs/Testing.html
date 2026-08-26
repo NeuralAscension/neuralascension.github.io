@@ -169,7 +169,7 @@ power-cycle of the hardware.</p>
 <hr />
 <h2 id="1-running-the-tests">1. Running the tests<a class="headerlink" href="#1-running-the-tests" title="Permanent link">#</a></h2>
 <p>The suite runs <strong>on every build</strong> and prints a pass/fail banner. You do not have to ask for it:</p>
-<pre><code class="language-bash">cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+<pre><code class="language-bash">build.bat            # Windows;  ./build.sh on Linux
 </code></pre>
 <pre><code>──────────────────────────────────────────────────────────────────────────
  SpikesPeak unit tests
@@ -193,13 +193,13 @@ power-cycle of the hardware.</p>
 still want the binary so you can run it and debug. The build goes red on screen and still produces
 <code>SpikesPeak.exe</code>. For CI, configure with <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> and red stops the build.</p>
 <p>Other entry points:</p>
-<pre><code class="language-bash">ctest --test-dir build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release -C Release --output-on-failure
+<pre><code class="language-bash">ctest --test-dir build -C Release --output-on-failure
 </code></pre>
-<pre><code class="language-bash">ctest --test-dir build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release -C Release -R test_boundedcall --output-on-failure
+<pre><code class="language-bash">ctest --test-dir build -C Release -R test_boundedcall --output-on-failure
 </code></pre>
 <p>Run one suite's binary directly for the most detail — Qt Test takes <code>-v2</code> for per-assertion output,
 and a bare function name to run a single case:</p>
-<pre><code class="language-bash">build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/tests/test_boundedcall.exe -v2
+<pre><code class="language-bash">build/tests/test_boundedcall.exe -v2      # Linux: build/tests/test_boundedcall -v2
 </code></pre>
 <blockquote>
 <p>The test binaries need Qt on <code>PATH</code> when run this way (<code>C:\Qt\6.7.3\msvc2019_64\bin</code>), and their

@@ -230,12 +230,171 @@ PNGs. Robust: if there's no shared sync pulse train, <code>sync.png</code> still
 </table>
 <p><code>N</code> = number of channels in the recording's <code>channels:</code> list. <strong>Microvolt conversion assumes the
 default IMEC gains</strong> (AP 500 / LFP 250); if you change the gain in the IMRO panel, scale accordingly.</p>
+<h2 id="export-to-open-ephys-binary-convert_to_openephyspy">Export to Open Ephys binary — <code>convert_to_openephys.py</code><a class="headerlink" href="#export-to-open-ephys-binary-convert_to_openephyspy" title="Permanent link">#</a></h2>
+<p>Offline converter to the Open Ephys <strong>"Binary"</strong> record-engine format (the tree the Open Ephys GUI,
+<code>open-ephys-python-tools</code> and SpikeInterface open). Nothing touches the acquisition path; numpy only.</p>
+<pre><code class="language-bash"># ALWAYS scan first: it reconstructs the sample index and reports dropped samples. Writes nothing.
+python python/convert_to_openephys.py scan  RecordingTests/2026-08-25_throughput_repro/A_withadc_t15
+python python/convert_to_openephys.py openephys &lt;recording_dir&gt; &lt;out_dir&gt;
+python python/convert_to_openephys.py openephys &lt;in&gt; &lt;out&gt; --adc-range 2.5      # ADC not at ±5 V
+python python/convert_to_openephys.py openephys &lt;in&gt; &lt;out&gt; --bit-volts ap=0.195 # gain not default
+</code></pre>
+<pre><code class="language-python">from spikespeak_postprocess import openephys
+openephys.scan(src)                 # gap report, no writes
+openephys.export(src, out_dir)      # -&gt; &lt;out&gt;/Record Node 101/experiment1/recording1/
+</code></pre>
+<p>Every <code>(recording_name, timestamp)</code> session in the directory becomes its own <code>recording&lt;M&gt;</code>, and
+every band becomes a <code>continuous/SpikesPeak-101.&lt;band&gt;/</code> stream. The per-frame <code>sync</code> word is
+decoded to a TTL event channel when it actually has edges.</p>
+<p><strong>Dropped samples survive.</strong> Open Ephys carries an explicit <code>sample_numbers.npy</code>, and a gap lives in
+the <em>divergence</em> between the row index in <code>continuous.dat</code> and the value there — <code>continuous.dat</code> is
+never padded, exactly as the Open Ephys writer behaves. So
+<code>sample_numbers[-1] - sample_numbers[0] + 1 &gt; len(sample_numbers)</code> precisely when samples were lost,
+and <code>scan</code> prints where and how many. (The GUI's own File Reader <em>ignores</em> interior gaps — it reads
+<code>sample_numbers[0]</code> and treats the rest as contiguous — so a replay inside the GUI slides post-gap
+data earlier. The gap is in the file and numpy readers see it; that is their reader, not a reason to
+pad.)</p>
+<p>Reconstructing the index is the whole job, because <strong>the NPX frame timestamp is 100 kHz hardware
+ticks, not samples</strong> (<code>kHeadstageSamplingRate</code>): at 30 kHz consecutive frames differ by 3 or 4 and
+never by 1, so <code>diff != 1</code> is not a gap test. The rule is per-frame,
+<code>advance = max(1, round(Δticks / (100000/fs)))</code> then <code>cumsum</code>, with the uint32 wrap corrected first.
+NI-DAQ is different again — its float64 timestamp already <em>is</em> a sample index.</p>
+<p><strong>A fabricated gap is refused too.</strong> The mirror of the rule above: the converter must not <em>invent</em>
+sample numbers either. Where a frame's timestamp does not advance, the reconstruction has to force
+<code>+1</code> to keep the index increasing — fine for one damaged frame, catastrophic when it is systematic.
+<strong>Real NP1.0 <code>ap</code> bands are systematic</strong>: inside each 12-sample IMEC packet the stamps run ahead at
+~4.36 ticks/sample and then step back by 8 (netting exactly 40 ticks = 12 samples), so one frame in
+twelve goes backwards. Reconstructed naively that band comes out <strong>1.3055× too long with 5 671 337
+invented single-sample gaps</strong> — measured on <code>RecordingTests/np1_2ch_q2_asap</code>, a recording that lost
+nothing (its <code>lfp</code> band is exactly uniform and the <code>ap</code> tick span matches the frame count). So the
+band is <strong>refused</strong>, with the measured inflation in the message; convert <code>--bands lfp</code> instead.
+<code>scan</code> reports it as <code>timestamps_usable: false</code> + <code>index_inflation</code> without raising, so the dry run
+still tells you everything. The check is a <strong>pre-flight over every band before a byte is written</strong>,
+so a refusal never leaves a half-written tree.</p>
+<p>⚠️ <strong>The two converters disagree about NP2.0 microvolts, by 3.81×.</strong> Both pass the int16 counts
+through untouched; only the declared scale differs. SpikesPeak's own constant (backend, live view,
+<code>developer_docs/Recording.md</code>) is <code>1.0 V / 84 / 4096 = 2.9064 µV/count</code>; SpikeGLX/IMEC describe the
+same probe as <code>0.5 / 8192 / 80 = 0.7629 µV/count</code>. For NP1.0 the two agree <em>exactly</em> (2.34375),
+which is what shows the arithmetic is right and the NP2.0 constant is the outlier. Nothing in a v1
+sidecar settles it — the <code>metadata_version: 2</code> <code>scale</code> block will. Until then it is an operator
+decision; pass <code>bit_volts</code> explicitly if you know the answer. A test pins the ratio so the two
+cannot drift further apart silently.</p>
+<p><strong>Scaling is a pass-through and says so.</strong> int16 counts in, the same int16 counts out, with only
+<code>bit_volts</code> declared — exact and reversible, unlike Open Ephys's native <code>round(µV/bit_volts)</code> path.
+But <code>bit_volts</code> is <em>not</em> in the SpikesPeak sidecar (it records <code>units: "adc_int16"</code> and no more), so
+the defaults below come from the backend's own display constants and each carries its assumption
+into <code>structure.oebin</code> → <code>spikespeak</code> and into every channel's <code>description</code>.</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>bit_volts</th>
+<th>units</th>
+<th>assumes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ap</code></td>
+<td>1.2e6/1024/500 = 2.34375</td>
+<td>µV</td>
+<td>IMEC AP gain 500</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td>1.2e6/1024/250 = 4.6875</td>
+<td>µV</td>
+<td>IMEC LFP gain 250</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td>1e6/84/4096 = 2.9064</td>
+<td>µV</td>
+<td>NP2.0 fixed 84× gain</td>
+</tr>
+<tr>
+<td><code>adc</code></td>
+<td><code>--adc-range</code>/32768</td>
+<td>V</td>
+<td>OneBox ADC range, default ±5 V — <strong>not</strong> recorded in the sidecar</td>
+</tr>
+<tr>
+<td><code>nidaq</code></td>
+<td><code>--nidaq-range</code>/32768</td>
+<td>V</td>
+<td>float64 volts → int16 is <strong>lossy</strong>; refused unless you opt in</td>
+</tr>
+</tbody>
+</table>
+<p>A band with no known factor is <strong>refused</strong>, not guessed — a wrong <code>bit_volts</code> silently misscales
+every trace and nothing in the output would reveal it. The same goes for a sidecar that contradicts
+itself, an unknown <code>record_format</code>, or a channel list that disagrees with the frame width.</p>
+<p>Tests: <code>python python/tests/test_openephys_export.py</code> (stdlib <code>unittest</code> + numpy, no hardware).</p>
 <h2 id="sibling-tool-spikespeak_clipy-headless-control">Sibling tool: <code>spikespeak_cli.py</code> (headless control)<a class="headerlink" href="#sibling-tool-spikespeak_clipy-headless-control" title="Permanent link">#</a></h2>
 <p><code>python/spikespeak_cli.py</code> drives a <em>running</em> SpikesPeak backend over its WebSocket with no GUI clicking
 — <code>select → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → quit</code> — so you can script a whole acquire +
 record run and then load it back with this package. Zero dependencies (stdlib only). It's how the
 recording pipeline is regression-tested end-to-end. See
-<a href="../developer_docs/ControlCLI.html"><code>developer_docs/ControlCLI.md</code></a>.</p></article>
+<a href="../developer_docs/ControlCLI.html"><code>developer_docs/ControlCLI.md</code></a>.</p>
+<h2 id="sibling-tool-convert_to_spikeglxpy-export-to-spikeglx">Sibling tool: <code>convert_to_spikeglx.py</code> (export to SpikeGLX)<a class="headerlink" href="#sibling-tool-convert_to_spikeglxpy-export-to-spikeglx" title="Permanent link">#</a></h2>
+<p><code>python/convert_to_spikeglx.py</code> converts a finished recording into <strong>SpikeGLX 3.0</strong> <code>.bin</code>/<code>.meta</code>
+pairs so it can be read by SpikeGLX's own FileViewer, CatGT, TPrime and SpikeInterface. Offline, numpy
+only, nothing on the acquisition path.</p>
+<pre><code class="language-bash">python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np2-4shank
+python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np1 --band raw --dry-run
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>SpikesPeak band</th>
+<th>SpikeGLX stream</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>raw</code>, <code>ap</code></td>
+<td><code>&lt;run&gt;_g0_t0.imec0.ap</code></td>
+<td>needs <code>--probe</code>; carries a synthesised default <code>~imroTbl</code></td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td><code>&lt;run&gt;_g0_t0.imec0.lf</code></td>
+<td>acquisition indices 384..767</td>
+</tr>
+<tr>
+<td><code>adc</code></td>
+<td><code>&lt;run&gt;_g0_t0.obx0.obx</code></td>
+<td>OneBox ADC; <code>--adc-range</code> (default 5 V)</td>
+</tr>
+<tr>
+<td><code>nidaq</code></td>
+<td><code>&lt;run&gt;_g0_t0.nidq</code></td>
+<td>float64 volts → int16 is <strong>lossy</strong>, so it needs <code>--nidaq-range</code></td>
+</tr>
+<tr>
+<td><code>nidaq_di</code></td>
+<td><code>&lt;run&gt;_g0_t0.nidq</code></td>
+<td>0/1 lines packed losslessly into one XD word</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A gapped recording is REFUSED, never padded.</strong> A SpikeGLX <code>.bin</code> is a dense int16 matrix whose
+<code>.meta</code> holds exactly one time anchor (<code>firstSample</code>), so a dropped-sample gap is inexpressible;
+padding it would make a fault look like clean data. The converter audits the recorded per-frame
+timestamps first and, on any gap, rollover or off-grid step, prints where and how much and exits
+non-zero <strong>without writing anything</strong>. There is deliberately no <code>--pad</code> and no <code>--force</code>. (The
+timestamp is a <strong>100 kHz tick counter</strong>, not a sample index — consecutive deltas legitimately
+alternate 3 and 4 at 30 kHz — so the test is <code>rint(Δ / (100000/fs)) == 1</code>.)</p>
+<p>The samples themselves are copied <strong>bit-for-bit</strong>: SpikeGLX's <code>V = i·imAiRangeMax/imMaxInt/gain</code> is
+numerically identical to this package's µV/LSB, so the conversion lives entirely in the <code>.meta</code>.
+<code>--probe</code> is required for a neural band because the sidecar does not record the probe and the probe
+is what sets that scale. Assumptions that cannot be read from the recording (probe, ADC range,
+default Bank-0 map, synthesised IMRO) are written into <code>userNotes</code>.</p>
+<pre><code class="language-python">from spikespeak_convert import convert_to_spikeglx, ConversionRefused
+convert_to_spikeglx(r&quot;C:/Data/mouse42&quot;, r&quot;C:/Export&quot;, probe=&quot;np1&quot;)
+</code></pre>
+<p>Tests: <code>python tests/test_spikeglx_convert.py</code> (stdlib <code>unittest</code> + numpy).</p></article>
     <footer class="pagefoot">Generated from <code>python/README.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -247,7 +406,9 @@ recording pipeline is regression-tested end-to-end. See
 <li><a href="#example-plot-a-channel">Example — plot a channel</a></li>
 <li><a href="#example-save-the-two-standard-plots-into-a-recording-folder">Example — save the two standard plots into a recording folder</a></li>
 <li><a href="#record-layouts-from-the-sidecar-record_format">Record layouts (from the sidecar record_format)</a></li>
+<li><a href="#export-to-open-ephys-binary-convert_to_openephyspy">Export to Open Ephys binary — convert_to_openephys.py</a></li>
 <li><a href="#sibling-tool-spikespeak_clipy-headless-control">Sibling tool: spikespeak_cli.py (headless control)</a></li>
+<li><a href="#sibling-tool-convert_to_spikeglxpy-export-to-spikeglx">Sibling tool: convert_to_spikeglx.py (export to SpikeGLX)</a></li>
 </ul>
 </div>
 </aside>

@@ -217,9 +217,11 @@ moment you are reading it. Start at the developer docs index, which is the map t
     return;
   }
 
-  // ~1.2 s each way at 60 fps, and symmetric, so the return reads as a deliberate animation rather
-  // than a snap. The app uses 0.003/frame because there the morph marks a connection, not a hover.
-  const RATE=0.014;
+  // ~1.9 s each way at 60 fps, and symmetric, so the return reads as a deliberate animation rather
+  // than a snap. At 1.2 s the shape changed faster than the eye could follow the ridge turning into
+  // the spike, which is the whole point of the thing. The app uses 0.003/frame -- slower still --
+  // because there the morph marks a connection rather than answering a hover.
+  const RATE=0.009;
   function loop(now){
     e0 = want ? Math.min(1,e0+RATE) : Math.max(0,e0-RATE);
     render(smoother(e0), now);

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Neuropixels 2.0 Multishank on a OneBox - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">User Guide / Neuropixels 2.0 Multishank on a OneBox</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="README.html">SpikesPeak — User Guide</a>
+<a href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a class="active" href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">3</span></summary>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">8</span></summary>
+<a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="neuropixels-20-multishank-on-a-onebox">Neuropixels 2.0 Multishank on a OneBox<a class="headerlink" href="#neuropixels-20-multishank-on-a-onebox" title="Permanent link">#</a></h1>
+<p>Start to finish with the hardware that is on the rig right now: a <strong>Neuropixels 2.0 multishank probe</strong>
+on a <strong>Neuropixels OneBox</strong> (the USB basestation), including the OneBox's own <strong>12-channel ADC</strong>.</p>
+<p>Connect, set the probe map, watch the signal, record it, and shut down without costing yourself a
+power-cycle. For the toolbar reference see <a href="README.html"><code>README.md</code></a>; for the illustrated generic
+walkthrough see <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a>; the 1.0-on-PXIe equivalent of this page is
+<a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a>.</p>
+<blockquote>
+<p>📷 <em>Screenshots to be added — placeholders are marked <code>📷</code>. A missing capture is a missing
+screenshot, not a missing feature.</em></p>
+</blockquote>
+<p><strong>What is different about a OneBox, in one paragraph.</strong> To SpikesPeak the probe is the same probe: the
+same channel map, the same live view, the same recorder, the same ripple detector. Two things change.
+It opens over <strong>USB 3 through an FTDI driver</strong> instead of a PXIe chassis, which is the only step that
+can fail in a OneBox-specific way; and it brings a <strong>12-channel analog input</strong> of its own, which
+streams as an extra band beside the probe the way the NI-DAQ does on a PXIe rig. There is no NI-DAQ on
+this rig — the OneBox ADC is where a sync line or a stimulus monitor gets captured.</p>
+<hr />
+<h2 id="1-before-you-start">1. Before you start<a class="headerlink" href="#1-before-you-start" title="Permanent link">#</a></h2>
+<h3 id="what-must-be-connected">What must be connected<a class="headerlink" href="#what-must-be-connected" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Check</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OneBox power</strong></td>
+<td>Its own supply, plugged in and on. USB alone does not power it.</td>
+</tr>
+<tr>
+<td><strong>USB 3 cable</strong></td>
+<td>To a <strong>USB 3</strong> port on the SpikesPeak machine (blue port / SS mark). A USB 2 port enumerates the box and then starves the data stream.</td>
+</tr>
+<tr>
+<td><strong>Headstage cable</strong></td>
+<td>From a OneBox probe port to the headstage. SpikesPeak finds the port itself — you do not tell it which one.</td>
+</tr>
+<tr>
+<td><strong>Probe</strong></td>
+<td>Seated firmly in the headstage dock.</td>
+</tr>
+<tr>
+<td><strong>SDR breakout</strong></td>
+<td>The imec <strong>NPOB_SDR_02</strong> board on the <strong>SDR</strong> connector, if you want the ADC channels on BNCs (§7).</td>
+</tr>
+<tr>
+<td><strong>Reference / ground</strong></td>
+<td>Wired as your prep requires, before the probe goes anywhere near saline or tissue.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-ftdi-driver-one-time-and-version-critical">The FTDI driver — one-time, and version-critical<a class="headerlink" href="#the-ftdi-driver-one-time-and-version-critical" title="Permanent link">#</a></h3>
+<p>The OneBox is an FTDI <strong>FT601</strong> USB-3 bridge. The Neuropixels API will not talk to it without the
+right <strong>D3XX</strong> driver, and it is fussy about which one:</p>
+<ul>
+<li>Install <strong>FTD3XXDriver_WHQLCertified_1.3.0.10</strong> (from <a href="https://ftdichip.com/drivers/d3xx-drivers/">ftdichip.com</a>).</li>
+<li><strong>Do not install 1.4.0.x.</strong> The newest driver does not work with the OneBox. If it is already there,
+  uninstall the device in Device Manager first, then install 1.3.0.10.</li>
+<li><strong>What you should see:</strong> with the OneBox powered and plugged in, Device Manager lists
+  <strong>FT601 USB 3.0 Bridge Device</strong> under <em>Universal Serial Bus controllers</em>.</li>
+</ul>
+<p>SpikesPeak checks the driver when you select a OneBox source and tells you in plain words if it is
+wrong. It never installs anything — driver installation is yours, and needs admin rights.</p>
+<h3 id="the-one-rule-that-has-a-real-cost-attached">⚠️ The one rule that has a real cost attached<a class="headerlink" href="#the-one-rule-that-has-a-real-cost-attached" title="Permanent link">#</a></h3>
+<p><strong>Never force-kill the backend while the OneBox is connected.</strong> No Task Manager <em>End task</em>, no
+<code>taskkill /F</code>, and do not close the black console window with its ✕ while a box is open.</p>
+<p>The FT601 USB handle is released <strong>only on a clean exit</strong>. Kill the process and the handle stays
+claimed: the next connect either fails to find the box or maps it and then delivers no data — and the
+only fix is to walk to the rig and <strong>physically power-cycle the OneBox</strong> (or press the back-panel
+RESET). Shut down the way §9 describes; it takes ten seconds.</p>
+<p>Two more habits worth having:</p>
+<ul>
+<li><strong>Bring the rig up for a measurement, take it, bring it down.</strong> Do not leave it connected or
+  streaming while you do something else. A probe streaming into nothing is a probe nobody is watching,
+  and long idle streams have caused trouble on this rig before.</li>
+<li><strong>Do not change or apply a probe map while a recording is running.</strong></li>
+</ul>
+<hr />
+<h2 id="2-launch-and-reach-the-gui">2. Launch, and reach the GUI<a class="headerlink" href="#2-launch-and-reach-the-gui" title="Permanent link">#</a></h2>
+<ol>
+<li>Run <strong><code>run_spikespeak.bat</code></strong> (in the repo root). A console window opens with the log, and your
+   default browser opens at <strong><code>http://localhost:8234</code></strong>.
+   - Run the launcher, <strong>not</strong> <code>bin/SpikesPeak.exe</code> directly. The exe on its own exits with
+     <code>0xC0000135</code> — it needs Qt, the Neuropixels API and HDF5 on <code>PATH</code>, which the launcher supplies.
+   - If you would rather open the browser yourself, run <code>run_spikespeak.bat --no-browser</code> and browse to
+     <code>http://localhost:8234</code>.</li>
+<li><strong>What you should see:</strong> a toolbar with <strong>Source: None</strong>, a status box reading <strong>Ready</strong>, and a
+   greyed-out <strong>▶</strong> Play button.</li>
+<li>Any browser works, and you can open the page on a second monitor. <strong>Closing the last browser tab
+   quits the backend</strong> after a ~2-second grace, so a refresh is safe — but the deliberate shutdown
+   order in §9 is the one to use with hardware attached.</li>
+</ol>
+<hr />
+<h2 id="3-select-the-onebox-source">3. Select the OneBox source<a class="headerlink" href="#3-select-the-onebox-source" title="Permanent link">#</a></h2>
+<ol>
+<li>Open the <strong>Source</strong> dropdown and pick <strong><code>NPX 2.0 Multishank (OneBox)</code></strong>.</li>
+</ol>
+<p>📷 <em>Source dropdown with the OneBox profiles</em></p>
+<p>The list is built from the profiles the backend actually has, and each entry is the profile's own
+   name — not its filename. The OneBox entries are:</p>
+<table>
+<thead>
+<tr>
+<th>Entry</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NPX 2.0 Multishank (OneBox)</strong></td>
+<td>Probe <strong>+ the 12-channel ADC</strong>. This is the one to use.</td>
+</tr>
+<tr>
+<td>NPX 2.0 Multishank (OneBox, no ADC)</td>
+<td>Probe only. A control profile for measurements; the ADC band will not appear.</td>
+</tr>
+<tr>
+<td>NPX 1.0 (OneBox)</td>
+<td>For a 1.0 probe on the same box.</td>
+</tr>
+<tr>
+<td>NPX 2.0 Multishank (OneBox, ASAP) · NPX 1.0 (OneBox, ASAP)</td>
+<td><strong>Latency-benchmark variants — do not pick these for an experiment.</strong> Identical to the two above except that the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. They exist so an ASAP-vs-default comparison can differ by that one setting. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
+</tr>
+</tbody>
+</table>
+<p>The ASAP entries <strong>are listed in the dropdown</strong> — they are ordinary profiles, sitting right beside
+   the ones you want, and nothing stops you selecting one by accident. Read the name before you
+   connect.</p>
+<ol start="2">
+<li><strong>What you should see, in this order</strong> (watch the status box on the left of the second row):
+   - <code>Connecting to NPX 2.0 Multishank (OneBox)…</code>
+   - green: <strong><code>Found Neuropixels 2.0 Multishank probe</code></strong>
+   - green: <strong><code>Connected — device ready</code></strong>
+   - the <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and a <strong>▣ OneBox</strong> tab appears beside them
+   - <strong>▶ Play</strong> and <strong>Disconnect</strong> become enabled</li>
+</ol>
+<p>📷 <em>Connected — toolbar with the ▣ OneBox tab</em></p>
+<p>The <strong>▣ OneBox</strong> tab is the giveaway that you really are on the box and not on a PXIe profile: it
+   only appears when the connected source can actually do OneBox things.</p>
+<ol start="3">
+<li>
+<p><strong>The ADC does not announce itself.</strong> The probe gets a green line; the ADC gets nothing. You will
+   know it came up when <strong><code>OneBox ADC (SDR)</code></strong> appears in a column's band dropdown once you press Play
+   (§5). If it never appears, see §10.</p>
+</li>
+<li>
+<p>If the status box goes <strong>red</strong>, read it — the OneBox messages name the fix (power, driver, another
+   program holding the box). §10 has them all.</p>
+</li>
+</ol>
+<hr />
+<h2 id="4-the-probe-map-choosing-which-electrodes-record">4. The probe map — choosing which electrodes record<a class="headerlink" href="#4-the-probe-map-choosing-which-electrodes-record" title="Permanent link">#</a></h2>
+<h3 id="a-60-second-primer-on-the-20-multishank">A 60-second primer on the 2.0 multishank<a class="headerlink" href="#a-60-second-primer-on-the-20-multishank" title="Permanent link">#</a></h3>
+<p>A Neuropixels 2.0 multishank probe has <strong>4 shanks × 1280 electrodes = 5120 sites</strong>, and the probe reads
+out <strong>384 channels total</strong> — shared across all four shanks. So a full map is a <em>partition</em>: every one
+of the 384 channels is routed to exactly one electrode, somewhere on some shank.</p>
+<ul>
+<li>Each shank is divided into <strong>banks</strong> of 384 electrodes by depth: <strong>Bank 0</strong> (deepest, at the tip),
+  <strong>1</strong>, <strong>2</strong>, and <strong>Bank 3</strong>, which is a <strong>partial bank — only 128 electrodes</strong>.</li>
+<li>The electrode → read-out-channel wiring is a <strong>block permutation</strong>, not identity. Electrode 100 on
+  shank 0 is channel 196; electrode 200 is channel 248. You never have to compute this, but it is why
+  a channel number and an electrode number disagree on screen, and why the ripple dock shows you both
+  (<code>e100 → ch196</code>).</li>
+<li>Unlike a 1.0, the 2.0 has <strong>no reserved reference channel</strong> — nothing is greyed out for that reason.</li>
+</ul>
+<p>The editor enforces all of it. What you are doing is: <strong>choose 384 electrodes, apply them to the
+probe, then stream.</strong></p>
+<h3 id="editing-the-map">Editing the map<a class="headerlink" href="#editing-the-map" title="Permanent link">#</a></h3>
+<ol>
+<li>Click the <strong>Probe Map</strong> tab. The mode radio must be on <strong>Edit Map</strong>.</li>
+<li>All four shanks are drawn side by side, labelled <strong>0, 1, 2, 3 left → right</strong> (matching the imec
+   manual), each with its shaft and tip. <strong>Green</strong> = this electrode's channel is active and will
+   stream; <strong>grey</strong> = available, not selected.</li>
+</ol>
+<p>📷 <em>NP2 4-shank map editor on the OneBox</em></p>
+<ol start="3">
+<li>Choose electrodes, three ways:
+   - <strong>Shank + Bank buttons</strong> — pick a shank in the <strong>Shank</strong> dropdown, then <strong>Bank 0 / 1 / 2 / 3</strong>.
+     This fills <strong>all 384 channels</strong> from that one shank and bank. Fastest way to a valid map.
+   - <strong>Click an electrode</strong> — routes that electrode's channel to that electrode. Use it to hand-tune.
+   - <strong>Drag a vertical box</strong> on one shank — assigns that run of electrodes.
+   Mixing shanks is the normal case: fill shank 0 bank 0, then drag a run on shank 2, and the channels
+   move with you.</li>
+<li><strong>Save .imro</strong> downloads the current map; <strong>Load .imro</strong> reads one back in. Loading only <em>displays</em>
+   the map — it is not on the probe until you Apply.</li>
+</ol>
+<blockquote>
+<p><strong>Designing a complicated multishank map?</strong> Do it in a dedicated tool — <strong>neurocarto</strong> or similar —
+export a <code>.imro</code>, then <strong>Load .imro</strong> here and Apply. That is genuinely easier than any acquisition
+GUI's editor, this one included.</p>
+</blockquote>
+<h3 id="tip-referencing">Tip referencing<a class="headerlink" href="#tip-referencing" title="Permanent link">#</a></h3>
+<p>The <strong>Tip referencing</strong> checkbox under the map buttons flips every channel between the <strong>external
+reference</strong> (default, unchecked) and the <strong>probe tip</strong>. On a multishank probe each channel references
+<strong>its own shank's tip</strong>.</p>
+<ul>
+<li>It is written to hardware <strong>immediately</strong> — there is no Apply step for it.</li>
+<li><strong>What you should see:</strong> <code>Tip referencing enabled (referencing to probe tip)</code> in green. If the write
+  fails, the checkbox <strong>flips itself back</strong> and the status goes red, so the box always shows what the
+  probe is actually doing.</li>
+</ul>
+<h3 id="applying-the-map-to-the-probe">Applying the map to the probe<a class="headerlink" href="#applying-the-map-to-the-probe" title="Permanent link">#</a></h3>
+<p>Click <strong>Apply Map to Hardware</strong>. SpikesPeak does the safe sequence for you: pause streaming if it is
+running → write the map → <strong>read it back and verify</strong> → resume streaming.</p>
+<p><strong>What you should see when it took:</strong></p>
+<ul>
+<li>green status: <strong><code>Applied updated probe map successfully</code></strong></li>
+<li>in <strong>Live Data</strong>, the traces <strong>re-order and re-label</strong> — they are sorted by depth (deepest at the
+  bottom) and labelled by electrode, e.g. <code>100L</code>, so a map change visibly moves them</li>
+<li>the column depth readout in each header changes to the new electrode range (e.g. <code>e383 ↕ e0</code>)</li>
+</ul>
+<p><strong>Until you press Apply, the probe keeps its previous map.</strong> Edits live in the editor only. A green
+electrode is a <em>request</em> until Apply says otherwise.</p>
+<hr />
+<h2 id="5-the-live-view">5. The live view<a class="headerlink" href="#5-the-live-view" title="Permanent link">#</a></h2>
+<p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) and click <strong>Live Data</strong>.</p>
+<ul>
+<li><strong>The Play button tells you the state by colour:</strong> green <strong>▶</strong> when paused ("press to play"), and a
+  white <strong>⏸</strong> inside a <strong>green pulsing ring</strong> while streaming.</li>
+</ul>
+<p>📷 <em>Live view — probe RAW beside the OneBox ADC</em></p>
+<h3 id="columns-rows-and-density">Columns, rows and density<a class="headerlink" href="#columns-rows-and-density" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Control (toolbar)</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Columns / Rows</strong></td>
+<td>How many strips, 1–4.</td>
+</tr>
+<tr>
+<td><strong>Horizontal ⬌ / Vertical ⬍</strong></td>
+<td><em>Horizontal</em> = side-by-side columns (20 channels each by default) for a landscape monitor. <em>Vertical</em> = full-width stacked rows (40 each), for a portrait monitor.</td>
+</tr>
+<tr>
+<td><strong>Ch</strong></td>
+<td>Channels per strip: <code>Auto / 20 / 40 / 60 / 80 / 120</code>.</td>
+</tr>
+<tr>
+<td><strong>Window (sec)</strong></td>
+<td>Time width of the view: 1 / 2 / 5 / 10 s.</td>
+</tr>
+</tbody>
+</table>
+<p>Each strip also has a <strong>vertical slider</strong> (plus ▲/▼) to scroll through depth, and its header shows the
+<strong>depth readout</strong> — the deepest and shallowest thing currently on screen.</p>
+<h3 id="per-column-band-selection">Per-column band selection<a class="headerlink" href="#per-column-band-selection" title="Permanent link">#</a></h3>
+<p>Every column picks its own band from its own dropdown, so you can watch the probe and the ADC side by
+side. On this rig the choices are:</p>
+<table>
+<thead>
+<tr>
+<th>Band in the picker</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>RAW Band</code></strong></td>
+<td>The probe's real stream: 30 kHz, all 384 channels. A 2.0 probe has no hardware AP/LFP split — this is the only band that comes off the probe.</td>
+</tr>
+<tr>
+<td><strong><code>LFP Band</code></strong></td>
+<td><strong>Derived</strong> by SpikesPeak: 2nd-order Bessel low-pass at 400 Hz. This is where ripples live.</td>
+</tr>
+<tr>
+<td><strong><code>Spike Band</code></strong></td>
+<td><strong>Derived</strong>: 2nd-order Bessel band-pass, 300–6000 Hz.</td>
+</tr>
+<tr>
+<td><strong><code>OneBox ADC (SDR)</code></strong></td>
+<td>The box's own 12 analog inputs (§7).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The two derived bands ship OFF and must be switched on.</strong> They filter all 384 channels in software,
+which costs real CPU, so nothing runs them until you ask. Use the <strong>Bands ▼</strong> button in the second
+toolbar row: the menu lists <strong>LFP band</strong> and <strong>Spike band</strong> with an <strong>ON/OFF</strong> state each, and the
+button carries a count of how many are running.</p>
+<p>📷 <em>The Bands menu — LFP on, Spike off</em></p>
+<ul>
+<li>Turning a band <strong>on</strong> makes it <em>available</em>; each column then selects it (or not) in its own dropdown.
+  Turning it <strong>off</strong> removes it from those dropdowns, because a stream that has stopped arriving is not
+  something you should be able to select.</li>
+<li><strong>Starting the ripple detector turns the LFP band on for you</strong> — it needs it, so it enables it and
+  the button goes green because the backend did it, not because the GUI guessed.</li>
+<li>Trying to turn the LFP band <strong>off while detection is running</strong> raises a blocking dialog that names
+  both consequences; confirming stops detection first.</li>
+</ul>
+<h3 id="scale-labels-and-the-depth-readout">Scale, labels and the depth readout<a class="headerlink" href="#scale-labels-and-the-depth-readout" title="Permanent link">#</a></h3>
+<p>The scale box beside the band dropdown <strong>changes unit with the band</strong> — the unit label next to it is
+the caption; there is no control captioned <em>Scale</em>:</p>
+<ul>
+<li><strong>Probe bands (<code>RAW</code> / <code>LFP</code> / <code>Spike</code>)</strong> → <strong><code>µV</code></strong>: the peak-to-peak microvolts that fill one trace
+  row. Smaller number = zoomed in.</li>
+<li><strong><code>OneBox ADC (SDR)</code></strong> → <strong><code>V/row</code></strong>: real volts per trace row. A 3.3 V logic pulse needs at least
+  ~3.3 V/row to fit on screen.</li>
+</ul>
+<p>Labels and the readout follow the same logic:</p>
+<table>
+<thead>
+<tr>
+<th>Band</th>
+<th>Trace labels</th>
+<th>Depth readout</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Probe</td>
+<td><code>100L</code> — electrode + left/right column. Hover for shank / read-out channel.</td>
+<td><code>e383 ↕ e0</code> (shallowest ↕ deepest)</td>
+</tr>
+<tr>
+<td>OneBox ADC</td>
+<td><code>IO0</code> … <code>IO11</code> — named after the BNC on the breakout</td>
+<td><code>IO11 ↕ IO0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Click a trace label to <strong>select</strong> that channel, then use the <strong>scroll wheel</strong> over the chart to zoom
+just that one. Click again to deselect.</p>
+<h3 id="the-control-strip-changed-2026-08-25-this-is-the-current-behaviour">The control strip (changed 2026-08-25 — this is the current behaviour)<a class="headerlink" href="#the-control-strip-changed-2026-08-25-this-is-the-current-behaviour" title="Permanent link">#</a></h3>
+<p>The per-column strip of controls (band, shank, L+R, scale, density) <strong>stays fully visible whenever it
+fits.</strong> It folds away to a small <strong><code>▾ controls</code></strong> chip only when the column is genuinely too narrow —
+the row needs 448 px beside the depth readout.</p>
+<p>On the 1920-px screen on this rig, in practice:</p>
+<table>
+<thead>
+<tr>
+<th>Layout</th>
+<th>Strip</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1, 2 or 3 columns, ripple dock closed</td>
+<td><strong>open</strong></td>
+</tr>
+<tr>
+<td>4 columns</td>
+<td><strong>folded to the chip</strong></td>
+</tr>
+<tr>
+<td>3 columns <strong>with the ripple dock open</strong></td>
+<td><strong>folded</strong> — the dock costs about 380 px, which is enough to push three columns over the line</td>
+</tr>
+<tr>
+<td><strong>Vertical</strong> (rows), any number of rows</td>
+<td><strong>always open</strong> — a stacked row is the full window width</td>
+</tr>
+</tbody>
+</table>
+<p>When it is folded: <strong>hover</strong> the chip to peek at the controls, and <strong>click it</strong> — or press
+<strong><code>Ctrl+Shift+&lt;n&gt;</code></strong> for column <em>n</em> — to pin it open. There is also a <strong>◉</strong> pin button inside the
+revealed strip. The <strong>depth readout never hides</strong>, in either state: it is the only thing telling you
+which electrodes a column is showing.</p>
+<p>📷 <em>Four columns — the controls folded to a chip</em></p>
+<hr />
+<h2 id="6-recording">6. Recording<a class="headerlink" href="#6-recording" title="Permanent link">#</a></h2>
+<h3 id="first-choose-which-channels-to-record">First: choose which channels to record<a class="headerlink" href="#first-choose-which-channels-to-record" title="Permanent link">#</a></h3>
+<p><strong>The default for this profile is three probe channels, not all of them.</strong> The
+<code>NPX 2.0 Multishank (OneBox)</code> profile ships with <code>channels: [1, 192, 196]</code> for the probe band — deliberate,
+because a full 384-channel raw stream is a lot of disk. If you want more (or fewer), set it here before
+you record.</p>
+<ol>
+<li><strong>Probe Map</strong> tab → switch the radio to <strong>Select Recording Channels</strong>. This works any time, before
+   or during Play.</li>
+<li>Only the <strong>applied map's</strong> electrodes are shown: <strong>green</strong> = will record, <strong>blue</strong> = applied but not
+   recording.</li>
+<li><strong>Click</strong> an electrode to toggle it, or <strong>drag a vertical box</strong> to add a run. <strong>Record all</strong> and
+   <strong>Unselect all</strong> are the bulk buttons.</li>
+<li>Press <strong>Set recording channels</strong> to commit. <strong>What you should see:</strong> the status line under the
+   buttons confirms the count.</li>
+</ol>
+<blockquote>
+<p><strong>The OneBox ADC is not affected by this picker, on purpose.</strong> It always records the 12 channels its
+profile configures. A probe read-out index means nothing to an analog input, and on a OneBox rig the
+ADC band is where your stim monitor and sync line are captured — silently dropping it would make the
+recording unanalysable. There is no ADC channel grid in the GUI; to change what the ADC records, edit
+the profile's <code>channels:</code> list (see <a href="../developer_docs/ConfigReference.html"><code>../developer_docs/ConfigReference.md</code></a>).</p>
+</blockquote>
+<h3 id="then-record">Then: record<a class="headerlink" href="#then-record" title="Permanent link">#</a></h3>
+<p>Recording is a deliberate two-step, so you never start writing by surprise.</p>
+<ol>
+<li>Make sure you are <strong>playing</strong> — Record is disabled when paused.</li>
+<li>Press <strong>● Record</strong>. A dialog asks for a <strong>recording name</strong> (animal / id) and an <strong>output directory</strong>
+   <em>on the SpikesPeak machine</em> — <strong>Browse…</strong> opens a folder picker on that machine. Click
+   <strong>Set Location</strong>.
+   <strong>What you should see:</strong> a <strong>muted-red ring</strong> on the Record button (armed), and a status line
+   <code>Armed — click ● Record to start "&lt;name&gt;" → &lt;dir&gt;/&lt;name&gt;/</code>. Nothing is on disk yet.</li>
+<li>Press <strong>● Record again to START.</strong>
+   <strong>What you should see:</strong> the Record button goes <strong>solid red</strong>, and a <strong>● REC → name</strong> badge appears
+   beside the status (the dot blinks; the name does not, so you can read it). Hover the badge for the
+   full path.</li>
+<li>Press <strong>● Record again to STOP.</strong> Files close. <strong>Streaming keeps going</strong> — only <strong>⏸ Pause</strong> stops
+   the stream. You can start a new recording without pausing; it gets its own folder and timestamp.</li>
+</ol>
+<h3 id="what-appears-on-disk">What appears on disk<a class="headerlink" href="#what-appears-on-disk" title="Permanent link">#</a></h3>
+<p>Everything for one recording lands in <strong><code>&lt;directory&gt;/&lt;name&gt;/</code></strong>:</p>
+<p>📷 <em>The recording folder — raw + adc + sidecars + log</em></p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;name&gt;_raw_&lt;timestamp&gt;.bin</code></td>
+<td>The probe band.</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_raw_&lt;timestamp&gt;.bin.json</code></td>
+<td>Its sidecar (below).</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_adc_&lt;timestamp&gt;.bin</code></td>
+<td>The OneBox ADC, 12 channels.</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_adc_&lt;timestamp&gt;.bin.json</code></td>
+<td>Its sidecar.</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_&lt;timestamp&gt;.log</code></td>
+<td>A copy of the backend log for the life of this recording — what the rig was doing when the file was written.</td>
+</tr>
+</tbody>
+</table>
+<p>All the files in one recording share <strong>one timestamp</strong>, so a set always groups.</p>
+<h3 id="what-the-sidecar-tells-you">What the sidecar tells you<a class="headerlink" href="#what-the-sidecar-tells-you" title="Permanent link">#</a></h3>
+<p>Each <code>.bin</code> is self-describing. Open the <code>.json</code> in any text editor:</p>
+<ul>
+<li><strong><code>band</code></strong> — <code>raw</code> or <code>adc</code>; <strong><code>sample_rate_hz</code></strong> — 30000 for the probe, 30300 for the ADC.</li>
+<li><strong><code>channels</code></strong> — the list actually written, <strong>in file column order</strong>. For the probe these are
+  electrode numbers as shown on screen; for the ADC they are ADC channel numbers (<code>IO</code><em>n</em>).</li>
+<li><strong><code>num_channels</code></strong> — how many <em>payload</em> channels. <strong>This is not the frame stride.</strong></li>
+<li><strong><code>frame</code></strong> — the part that saves you: <code>header</code> (<code>uint32 timestamp</code>, <code>uint16 sync</code>), <code>header_bytes</code>
+  (6), <code>payload_dtype</code> (<code>int16</code>), <code>payload_channels</code>, total <code>bytes</code>, and a literal <code>layout</code> string
+  <code>[uint32 timestamp][uint16 sync][int16 x num_channels]</code>.
+  Read <code>num_channels</code> as the stride and every sample de-interleaves wrong — that mistake once produced
+  "anomalous" ADC statistics that were investigated as a hardware fault. Use <code>frame.bytes</code>.</li>
+<li><strong><code>units</code></strong> — <code>adc_int16</code> for both bands: the file holds <strong>raw counts</strong>, not volts. For the OneBox
+  ADC at the <strong>±5 V</strong> range the device reports one count = <strong>0.000152588 V</strong>, i.e. <strong>6553.6 counts per
+  volt</strong> — divide by that offline. (The live view already does this for you, which is why it can show
+  real volts.) If you change the ADC range, the conversion changes with it.</li>
+</ul>
+<p>To load a recording in Python, use <code>python/spikespeak_postprocess</code> — see
+<a href="../python/README.html"><code>../python/README.md</code></a>. If you drove the recording from the <strong>control CLI</strong>
+(<a href="CommandLineControl.html"><code>CommandLineControl.md</code></a>) with the ripple detector running, you also get a
+<strong><code>&lt;name&gt;_ripple.json</code></strong> carrying the online thresholds and detection channels.</p>
+<hr />
+<h2 id="7-the-onebox-adc-band">7. The OneBox ADC band<a class="headerlink" href="#7-the-onebox-adc-band" title="Permanent link">#</a></h2>
+<p><strong>What it is for.</strong> Twelve analog inputs, ~30.3 kHz, sampled by the same box as the probe. It is the
+OneBox's answer to the NI-DAQ AI/O stream on a PXIe rig, and on this rig there is no NI-DAQ — so this
+is where you capture:</p>
+<ul>
+<li>a <strong>stimulus monitor</strong> (the stimulator's own trigger or monitor output, fed back in, so the pulse is
+  in the recording),</li>
+<li>a <strong>sync line</strong> from another instrument, so two systems can be aligned offline,</li>
+<li>any <strong>behaviour / TTL</strong> signal you want on the same clock as the neural data.</li>
+</ul>
+<p>Because the ADC and the probe are two streams from <strong>one device</strong>, they need no cross-device sync
+alignment — which is the single biggest reason to prefer it over a second acquisition card.</p>
+<h3 id="which-connector-is-which-channel">Which connector is which channel<a class="headerlink" href="#which-connector-is-which-channel" title="Permanent link">#</a></h3>
+<p>SpikesPeak numbers the twelve channels <strong>0–11</strong> and labels the traces <strong><code>IO0</code> … <code>IO11</code></strong>, after the
+BNCs on the imec <strong>NPOB_SDR_02</strong> breakout that plugs into the <strong>SDR</strong> connector. imec's documentation
+describes <strong>ADC0</strong> as the standalone <strong>"ADC" SMA</strong> connector on the box and ADC1–11 as reaching the
+breakout.</p>
+<p><strong>On this rig the wiring is:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Line</th>
+<th>Patched to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>IO0</strong></td>
+<td><strong>The WavePlayer / DAC0 output</strong> — this is an <em>output</em>, not a free input. Do not drive anything into it.</td>
+</tr>
+<tr>
+<td><strong>IO2</strong></td>
+<td>The Raspberry Pi stimulator's trigger pin — so the stim pulse is captured in the recording.</td>
+</tr>
+<tr>
+<td><strong>IO6 → IO4</strong></td>
+<td>A loopback, for checking the ADC path with a known signal.</td>
+</tr>
+<tr>
+<td><strong>IO9</strong></td>
+<td>A cable from the OneBox <strong>SMA</strong>, which makes the SMA signal readable as an ADC channel.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Be honest with yourself about the mapping before you trust it.</strong> The channel-to-connector
+correspondence has <strong>not</strong> been verified end-to-end on this rig — with nothing patched in, all twelve
+channels sit at a common mid-scale level (measured ~1.37 V on 2026-08-21, ~1.7 V on 2026-08-24) and
+several behave oddly, and that is recorded as an open question, not a known-good setup
+(<a href="../SpikesPeak_Status.html"><code>../SpikesPeak_Status.md</code></a> §51.5). Before you rely on a
+channel number, <strong>patch a known signal in</strong> (a 1 Hz, 1 V sine, or the IO6 → IO4 loopback) and confirm
+the amplitude, the frequency, and which trace it lands on.</p>
+</blockquote>
+<h3 id="the-onebox-panel">The ▣ OneBox panel<a class="headerlink" href="#the-onebox-panel" title="Permanent link">#</a></h3>
+<p>Click the <strong>▣ OneBox</strong> tab. The panel is draggable by its header (it will otherwise sit over the trace
+you opened it to look at).</p>
+<p>📷 <em>The ▣ OneBox panel</em></p>
+<ul>
+<li><strong>Input voltage range</strong> — <strong>±2.5 V</strong>, <strong>±5 V</strong> (default) or <strong>±10 V</strong>. Changing it changes what one
+  count is worth; the backend re-reads the true volts-per-count <strong>from the device</strong> and republishes it,
+  so the live view keeps reading correct volts at every range. <strong>What you should see:</strong> the status line
+  in the panel confirms <code>ADC range set to ±N V — live view rescaled…</code>. Pick the smallest range your
+  signal fits in.</li>
+<li><strong>Ground unused inputs</strong> — a grid of <code>IO0…IO11</code>. An <strong>unconnected</strong> input floats at a mid-scale
+  voltage — the panel's own note says ~1.7 V — and picks up whatever is switching next to it
+  (measured: IO1 and IO3 rose from 0.0001 to 0.019 / 0.064 V
+  sd while the DAC played). Clicking a channel here holds it at 0 V instead, and the button goes green
+  <strong>only when the backend confirms it</strong>.
+  <strong>Only do this for a BNC with nothing plugged into it</strong> — driving a line something else is also
+  driving is contention, not grounding. <strong>IO0 is disabled</strong>: it is the WavePlayer output.</li>
+<li><strong>Analog output (WavePlayer → DAC0 / BNC IO0)</strong> — <strong>Pulse width</strong>, <strong>Gap</strong>, <strong>Pulses</strong>,
+  <strong>Amplitude</strong>, <strong>Playback rate</strong>, a <strong>Repeat</strong> tick-box, and
+  <strong>Load / Arm / ⚡ Fire / Stop</strong>. This drives another instrument's <strong>trigger</strong> input, so it emits
+  <em>positive</em> pulses, not a biphasic stimulus waveform. Amplitude is calibrated at <strong>6553.6 codes/V</strong>
+  (confirmed twice by measurement).</li>
+<li><strong>Checking the shape on a scope?</strong> Tick <strong>Repeat</strong> before Arm — a single 60 µs pulse fired once is
+    invisible on a free-running scope.</li>
+<li><strong>The ADC cannot verify this output.</strong> At 30.3 kHz one ADC sample is 33 µs, and the WavePlayer's
+    resolution at 100 kHz is 10 µs. Use an oscilloscope to check pulse width.</li>
+<li>The output really is on <strong>DAC0 → breakout BNC IO0</strong>, <em>not</em> the back-panel SMA, whatever the vendor
+    documentation for arming implies. That was measured, and arming provably does not disturb the sync
+    line.</li>
+</ul>
+<hr />
+<h2 id="8-ripple-detection-and-closed-loop-stimulation">8. Ripple detection and closed-loop stimulation<a class="headerlink" href="#8-ripple-detection-and-closed-loop-stimulation" title="Permanent link">#</a></h2>
+<p>This works on the OneBox exactly as it does on PXIe, and it has the same operating manual:
+<strong><a href="RippleDetection.html"><code>RippleDetection.md</code></a></strong> — read that one for picking channels, thresholds,
+quorum, training, and live z-tuning. Only the OneBox-specific parts are here.</p>
+<ul>
+<li>The <code>NPX 2.0 Multishank (OneBox)</code> profile already carries the detector and the derived LFP band. Both
+  are <strong>inert until you start them</strong> from the GUI — carrying them costs nothing when unused.</li>
+<li>Open the dock with <strong>◉ Ripple Detection</strong> in the second toolbar row (the same row that carries
+  <strong>Bands ▼</strong> and the <strong>▣ OneBox</strong> tab). Opening it takes about 380 px off the live view, which is what
+  folds a three-column control strip (§5).</li>
+<li><strong>A 2.0 probe has no hardware LFP band</strong>, so the detector reads the <strong>derived</strong> one. Pressing
+  <strong>▶ Start</strong> enables it for you; you do not have to remember.</li>
+<li><strong>Stimulation is opt-in, twice.</strong> The dock's <strong><code>enable stimulation</code></strong> master switch is <strong>off</strong> by
+  default (off = detection only; no datagram can leave this host), and the stim server must be armed.
+  A detection transmits nothing until both are true. The red <strong>STIM LED</strong> lights only on a <em>confirmed</em>
+  fire, not on detection.</li>
+<li><strong>Trigger</strong> dropdown — where a detection goes:
+  | Option | Path |
+  |---|---|
+  | <strong>Pi → AM 2300</strong> | The validated UDP → Raspberry Pi → AM Systems 2300 path. The Pi drives a constant-current stimulator; amplitude is set on the instrument, not in the GUI. |
+  | <strong>OneBox DAC0 (IO0)</strong> | The box's own WavePlayer, out of breakout BNC IO0. No network hop. Amplitude in volts, here. |
+  | <strong>both (for an A/B)</strong> | Fires both from the same threshold crossing — a paired comparison, not two runs matched afterwards. |</li>
+<li><strong>Latency, measured on this rig:</strong> the closed loop runs at <strong>0.55 ms</strong> on NP2.0 over the OneBox with
+  ASAP delivery (<strong>0.92 ms</strong> on NP1.0) — see
+  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The
+  <strong>OneBox-DAC-versus-Pi comparison has not been measured yet</strong>; do not assume one is faster.</li>
+</ul>
+<p>Algorithm and data path: <a href="../developer_docs/RippleDetection.html"><code>../developer_docs/RippleDetection.md</code></a>.
+Stim server setup: <a href="../raspberrypi_pulsegenerator/README.html"><code>../raspberrypi_pulsegenerator/README.md</code></a>.</p>
+<hr />
+<h2 id="9-shutting-down-properly">9. Shutting down properly<a class="headerlink" href="#9-shutting-down-properly" title="Permanent link">#</a></h2>
+<p><strong>This is the step with a real cost attached.</strong> Do it in this order every time.</p>
+<ol>
+<li><strong>Stop the recording</strong>, if one is running — press <strong>● Record</strong> so the button stops being solid red
+   and the <strong>● REC</strong> badge disappears. Files are closed only when you do this.</li>
+<li><strong>Pause the ripple module</strong>, if it is running — <strong>⏸ Pause</strong> in the dock, so nothing can fire during
+   teardown.</li>
+<li><strong>⏸ Pause</strong> the stream on the toolbar. <strong>What you should see:</strong> the Play button returns to a
+   <strong>green ▶</strong>, status <code>Streaming paused</code>.</li>
+<li><strong>Disconnect.</strong> <strong>What you should see:</strong> status <strong><code>Source disconnected</code></strong>, Source back to <strong>None</strong>,
+   the <strong>Probe Map / Live Data / ▣ OneBox</strong> tabs disappear, Play greys out.
+   Behind that one click the backend stops the WavePlayer, puts the SMA back to input, closes the
+   probe, closes the basestation and <strong>releases the OneBox's virtual slot</strong> — that release is what lets
+   the next connect succeed.</li>
+<li><strong>Quit the backend.</strong> Either close the browser tab (the backend exits about 2 seconds after the last
+   client disconnects) or type <strong><code>quit</code></strong> at the backend console. The console window closes on its own.</li>
+<li><strong>Confirm nothing is left running</strong> — no <code>SpikesPeak.exe</code> in Task Manager, and no stray browser tab
+   holding a WebSocket open.</li>
+</ol>
+<p><strong>Never</strong> shortcut this with <em>End task</em>, <code>taskkill /F</code>, or the console window's ✕ while the box is
+connected. See §1 for what that costs.</p>
+<p><strong>If you see this message on the way out —</strong>
+<code>The OneBox stopped responding while the connection was being closed… power-cycle it (or press the
+back-panel RESET) before connecting again.</code> — then the box wedged during teardown. The app still exits
+cleanly, but the box is in an unknown state: <strong>power-cycle it before the next connect.</strong> SpikesPeak
+bounds every teardown call for exactly this reason, so a wedged box no longer hangs shutdown.</p>
+<hr />
+<h2 id="10-troubleshooting">10. Troubleshooting<a class="headerlink" href="#10-troubleshooting" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>What you see</th>
+<th>What it means / what to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>No Neuropixels OneBox was detected over USB</code></td>
+<td>The box is off, the USB cable is out or in a USB 2 port, or the FTDI driver is missing. Check Device Manager for <strong>FT601 USB 3.0 Bridge Device</strong>, then reconnect.</td>
+</tr>
+<tr>
+<td><code>The installed FTDI driver (1.4.x) is not compatible with the OneBox…</code></td>
+<td>Exactly what it says. Uninstall it in Device Manager and install <strong>D3XX 1.3.0.10</strong> (§1).</td>
+</tr>
+<tr>
+<td><code>A OneBox was found but could not be mapped to a slot</code></td>
+<td>Press <strong>Disconnect</strong>, reconnect. If it persists, power-cycle the OneBox.</td>
+</tr>
+<tr>
+<td><code>A OneBox was detected but could not be opened. Check that it is not in use by another program</code></td>
+<td>Another acquisition program (Open Ephys, SpikeGLX) has the box — close it. <strong>Or</strong> a previous SpikesPeak was force-killed and never released the USB handle: power-cycle the box.</td>
+</tr>
+<tr>
+<td><code>A Neuropixels basestation was found, but no headstage was detected on any port</code></td>
+<td>The headstage cable. Re-seat both ends and reconnect.</td>
+</tr>
+<tr>
+<td><code>Headstage found, but no Neuropixels probe was detected</code></td>
+<td>The probe is not firmly seated in the headstage dock.</td>
+</tr>
+<tr>
+<td><strong>Connect succeeds, Play works, the clock runs — but no traces and no data</strong></td>
+<td>The known OneBox fault where the box accepts everything and then delivers zero packets. SpikesPeak's watchdog reports it within a few seconds; teardown may also stall. <strong>Power-cycle the OneBox and reconnect.</strong> If it repeats, report it — it is tracked as issue #59 and it is not in SpikesPeak's code.</td>
+</tr>
+<tr>
+<td><strong>A dialog appears that will not close, offering only <em>Restart SpikesPeak<em> or </em>Close SpikesPeak</em></strong></td>
+<td>Two hardware connects have failed in this process, and the <strong>third acquisition crashes the backend with no teardown</strong> — the one outcome the safety rules exist to prevent. So SpikesPeak stops the session first, on purpose: there is no ✕, no Escape, no clicking past it. Press <strong>Restart SpikesPeak</strong> (a fresh process clears the condition), then fix what made the connects fail before trying again. Detail: <a href="../developer_docs/HardwareFaultGuard.html"><code>../developer_docs/HardwareFaultGuard.md</code></a>.</td>
+</tr>
+<tr>
+<td><strong>▶ Play is greyed out</strong></td>
+<td>No source connected, or the probe is not ready yet. Watch the status box.</td>
+</tr>
+<tr>
+<td><strong>● Record is greyed out</strong></td>
+<td>You have to be <strong>playing</strong> first.</td>
+</tr>
+<tr>
+<td><strong>Only 3 channels in the recording</strong></td>
+<td>That is this profile's default. <strong>Probe Map → Select Recording Channels → Record all → Set recording channels</strong> before you record (§6).</td>
+</tr>
+<tr>
+<td><strong><code>OneBox ADC (SDR)</code> is not in the band dropdown</strong></td>
+<td>You selected <strong>(OneBox, no ADC)</strong>, or the ADC failed to enable. Check the backend console / <code>output.log</code> (in the backend's working directory).</td>
+</tr>
+<tr>
+<td><strong>ADC traces are flat, or all sit at the same mid-scale voltage</strong></td>
+<td>Nothing is patched into those BNCs. A floating input does not idle at 0 V — it sits somewhere around 1.4–1.7 V on this rig and picks up crosstalk. Use <strong>▣ OneBox → Ground unused inputs</strong> for the BNCs with nothing plugged in, and never for one that is connected.</td>
+</tr>
+<tr>
+<td><strong>The WavePlayer fires but nothing appears on the scope</strong></td>
+<td>You are on the wrong connector: the output is <strong>DAC0 → breakout BNC IO0</strong>, not the SMA. And a single 60 µs shot is invisible on a free-running scope — tick <strong>Repeat</strong> before Arm.</td>
+</tr>
+<tr>
+<td><strong>A column's controls have collapsed to a <code>▾ controls</code> chip</strong></td>
+<td>The column is narrower than 448 px. Hover to peek, click or <strong><code>Ctrl+Shift+&lt;n&gt;</code></strong> to pin — or use fewer columns, close the ripple dock, or switch to <strong>Vertical ⬍</strong>, where the strips are always open.</td>
+</tr>
+<tr>
+<td><strong><code>LFP Band</code> / <code>Spike Band</code> are missing from a column's dropdown</strong></td>
+<td>They are derived bands and ship <strong>off</strong>. Turn them on in <strong>Bands ▼</strong>.</td>
+</tr>
+<tr>
+<td><strong>The live view does not match the map you just drew</strong></td>
+<td>You did not press <strong>Apply Map to Hardware</strong>. Edits stay in the editor until you do.</td>
+</tr>
+<tr>
+<td><strong>You switched profiles and the data looks like the old one</strong></td>
+<td>Known: a source switch after the first one can silently fail to take effect, and the resulting files look perfectly normal. <strong>Disconnect first, then select the new profile</strong>, and confirm the bands you expect are actually present before you record anything you care about.</td>
+</tr>
+<tr>
+<td><strong>The app exits immediately with <code>0xC0000135</code></strong></td>
+<td>You ran <code>bin/SpikesPeak.exe</code> directly. Use <strong><code>run_spikespeak.bat</code></strong>.</td>
+</tr>
+<tr>
+<td><strong><code>http://localhost:8234</code> shows nothing</strong></td>
+<td>The backend is not running, or it auto-quit ~2 s after the last browser tab closed. Relaunch.</td>
+</tr>
+<tr>
+<td><strong>Anything red in the status box</strong></td>
+<td>Hover it for the full message and time, then read the backend console — <code>output.log</code> in the backend's working directory carries the underlying error.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="see-also">See also<a class="headerlink" href="#see-also" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="README.html"><code>README.md</code></a> — launching, and every toolbar control.</li>
+<li><a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> — the illustrated generic walkthrough.</li>
+<li><a href="RippleDetection.html"><code>RippleDetection.md</code></a> — operating the ripple module.</li>
+<li><a href="CommandLineControl.html"><code>CommandLineControl.md</code></a> — driving all of this with no clicking.</li>
+<li><a href="SimulatedData.html"><code>SimulatedData.md</code></a> — the Simulated Data picker's
+  <strong><code>Neuropixels 2.0 Multishank (OneBox + ADC)</code></strong> reproduces this whole walkthrough, ADC band included,
+  with no hardware attached. Practise there first.</li>
+<li>Developer detail: <a href="../developer_docs/NextTask_OneBoxSupport.html"><code>../developer_docs/NextTask_OneBoxSupport.md</code></a>
+  (design + the imec API surface), <a href="../developer_docs/Recording.html"><code>../developer_docs/Recording.md</code></a>
+  (file formats), <a href="../developer_docs/ConfigReference.html"><code>../developer_docs/ConfigReference.md</code></a>
+  (every config key).</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>user_docs/OneBox-NPX2.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-before-you-start">1. Before you start</a><ul>
+<li><a href="#what-must-be-connected">What must be connected</a></li>
+<li><a href="#the-ftdi-driver-one-time-and-version-critical">The FTDI driver — one-time, and version-critical</a></li>
+<li><a href="#the-one-rule-that-has-a-real-cost-attached">⚠️ The one rule that has a real cost attached</a></li>
+</ul>
+</li>
+<li><a href="#2-launch-and-reach-the-gui">2. Launch, and reach the GUI</a></li>
+<li><a href="#3-select-the-onebox-source">3. Select the OneBox source</a></li>
+<li><a href="#4-the-probe-map-choosing-which-electrodes-record">4. The probe map — choosing which electrodes record</a><ul>
+<li><a href="#a-60-second-primer-on-the-20-multishank">A 60-second primer on the 2.0 multishank</a></li>
+<li><a href="#editing-the-map">Editing the map</a></li>
+<li><a href="#tip-referencing">Tip referencing</a></li>
+<li><a href="#applying-the-map-to-the-probe">Applying the map to the probe</a></li>
+</ul>
+</li>
+<li><a href="#5-the-live-view">5. The live view</a><ul>
+<li><a href="#columns-rows-and-density">Columns, rows and density</a></li>
+<li><a href="#per-column-band-selection">Per-column band selection</a></li>
+<li><a href="#scale-labels-and-the-depth-readout">Scale, labels and the depth readout</a></li>
+<li><a href="#the-control-strip-changed-2026-08-25-this-is-the-current-behaviour">The control strip (changed 2026-08-25 — this is the current behaviour)</a></li>
+</ul>
+</li>
+<li><a href="#6-recording">6. Recording</a><ul>
+<li><a href="#first-choose-which-channels-to-record">First: choose which channels to record</a></li>
+<li><a href="#then-record">Then: record</a></li>
+<li><a href="#what-appears-on-disk">What appears on disk</a></li>
+<li><a href="#what-the-sidecar-tells-you">What the sidecar tells you</a></li>
+</ul>
+</li>
+<li><a href="#7-the-onebox-adc-band">7. The OneBox ADC band</a><ul>
+<li><a href="#which-connector-is-which-channel">Which connector is which channel</a></li>
+<li><a href="#the-onebox-panel">The ▣ OneBox panel</a></li>
+</ul>
+</li>
+<li><a href="#8-ripple-detection-and-closed-loop-stimulation">8. Ripple detection and closed-loop stimulation</a></li>
+<li><a href="#9-shutting-down-properly">9. Shutting down properly</a></li>
+<li><a href="#10-troubleshooting">10. Troubleshooting</a></li>
+<li><a href="#see-also">See also</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

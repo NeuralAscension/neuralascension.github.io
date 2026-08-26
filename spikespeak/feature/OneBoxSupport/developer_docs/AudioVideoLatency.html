@@ -29,6 +29,8 @@
 <a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -142,9 +144,22 @@ settings choice, not a law of physics. On an NP2.0 probe on a OneBox:</p>
 </tr>
 </tbody>
 </table>
-<p>So a spike is on screen roughly <strong>97 ms before</strong> you hear it — on the shipped default device.
-Changing the audio device cuts that to about 28 ms (see §2), which is the single largest
-latency win available anywhere in this document. That is not a small offset — it is
+<p>So a spike was on screen roughly <strong>97 ms before</strong> you heard it — <em>as measured</em>, on what was then the
+shipped default device.</p>
+<blockquote>
+<p><strong>This measurement is what made the default change, so the "116 ms" row is now historical.</strong> The
+ear figure above was taken when <code>Pa_GetDefaultHostApi()</code> chose the device, which on Windows means
+MME. Since 2026-08-25 <code>AudioWorker::findDefaultFollower()</code> ranks the follower endpoints by
+<code>hostApiRank()</code> and takes the fastest — DirectSound's <em>Primary Sound Driver</em> (rank 0) rather than
+MME's <em>Sound Mapper</em> (rank 9). Following the system default should therefore now land near the
+<strong>~37 ms</strong> row of §2 rather than the ~116 ms one, and a realistic figure on real speakers is
+<strong>~47 ms</strong>.</p>
+<p>The eye/ear numbers here have <strong>not</strong> been re-measured against the new default. Re-running
+<code>python ripple_tools/measure_av_latency.py</code> is what would replace this row; until then, treat 116 ms
+as the cost of MME and not as the cost of the shipped configuration.</p>
+</blockquote>
+<p>Changing the audio device is still the single largest latency win available anywhere in this
+document — it is now simply made for you by default rather than left to the operator. That is not a small offset — it is
 about four display frames — and it matters whenever the two are being compared by eye and ear at
 once, which is exactly what a spike monitor is for.</p>
 <blockquote>
@@ -328,6 +343,10 @@ control, not a convenience.</p>
 <p><strong>Refused to open</strong>: WASAPI on indices 10, 11, 12 and WDM-KS on 19, 20. That includes
 <strong>WASAPI → ASUS VE278</strong>, the entry for the actual monitor speakers.</p>
 <h3 id="three-things-this-overturns">Three things this overturns<a class="headerlink" href="#three-things-this-overturns" title="Permanent link">#</a></h3>
+<p><strong>0. The default now follows this table.</strong> These measurements are no longer only advice: the
+ranking in <code>AudioWorker::hostApiRank()</code> is derived from this table, and the device picker lights a
+dot on the fastest route to each speaker. What follows is therefore the justification for a shipped
+behaviour, not a suggestion the operator has to act on.</p>
 <p><strong>1. "Use WASAPI" is wrong on this machine.</strong> It is the usual advice and it fails here: WASAPI
 refuses to open every real output except a virtual NoMachine device. The advice that survives
 measurement is <strong>DirectSound → ASUS VE278</strong>: same physical speakers as the MME default, and

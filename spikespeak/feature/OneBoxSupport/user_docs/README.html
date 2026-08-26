@@ -29,6 +29,8 @@
 <a href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -142,12 +144,20 @@ configure its channel map, and watch / record the live signal.</p>
 <td>Step-by-step: connect a Neuropixels 1.0 probe, set the channel map, and stream.</td>
 </tr>
 <tr>
+<td><a href="OneBox-NPX2.html"><strong><code>OneBox-NPX2.md</code></strong></a></td>
+<td><strong>Start to finish on the OneBox with an NPX 2.0 multishank probe — the hardware on the rig now: FTDI driver, connect, 4-shank map, live view, recording, the 12-channel OneBox ADC, and how to shut down without costing a power-cycle.</strong></td>
+</tr>
+<tr>
 <td><a href="SimulatedData.html"><strong><code>SimulatedData.md</code></strong></a></td>
 <td><strong>Every hardware-free simulated source and every way to operate it — the picker, all NP1/NP2/NI-DAQ/ripple/play-file variants, config knobs, recording, and CLI/WebSocket control.</strong></td>
 </tr>
 <tr>
 <td><a href="RippleDetection.html"><strong><code>RippleDetection.md</code></strong></a></td>
 <td><strong>Using the Ripple Detection module (illustrated): pick channels, set thresholds/quorum, Start/Pause/Edit, live z-tuning, and HDF5 "play file" replay.</strong></td>
+</tr>
+<tr>
+<td><a href="SpikeAudio.html"><strong><code>SpikeAudio.md</code></strong></a></td>
+<td><strong>Listening to a channel through the speakers: the ♪ dock, picking a channel from the live view, Thresh/Volume/Boost, the in/out meter as a diagnostic, and choosing an output device (worth up to 90 ms of delay).</strong></td>
 </tr>
 <tr>
 <td><a href="CommandLineControl.html"><strong><code>CommandLineControl.md</code></strong></a></td>
@@ -238,6 +248,10 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 <td>Switch between the channel-map editor and the live waveforms. Appears only for Neuropixels sources.</td>
 </tr>
 <tr>
+<td><strong>♪</strong> <em>(second row)</em></td>
+<td>Opens the <strong>spike audio monitor</strong> — listen to one channel through the speakers. Appears only for probe sources. See <a href="SpikeAudio.html"><code>SpikeAudio.md</code></a>.</td>
+</tr>
+<tr>
 <td><strong>Status box</strong> <em>(far right)</em></td>
 <td>The latest action, color-coded: <strong>green</strong> = success, <strong>amber (pulsing)</strong> = working, <strong>red</strong> = error, gray = info. Hover for the full message + time.</td>
 </tr>
@@ -323,7 +337,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Neuropixels OneBox</strong></td>
-<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output is implemented but not yet validated (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a>).</td>
+<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output works and is measured on <strong>DAC0 → breakout BNC IO0</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed 2026-08-24); its latency has not yet been compared against the Pi path. <strong>Operator walkthrough: <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a>.</strong></td>
 </tr>
 </tbody>
 </table></article>

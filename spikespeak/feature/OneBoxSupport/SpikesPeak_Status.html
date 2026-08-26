@@ -213,6 +213,16 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>Fastest-protocol audio device selection; the control strip obeys one rule; #63 throughput does not reproduce here; a misdiagnosis retracted</td>
 </tr>
 <tr>
+<td>S57</td>
+<td>2026-08-25</td>
+<td><strong>The recording can be turned back into microvolts</strong>: gains, the applied IMRO, probe identity and provenance now ship in the sidecar (#28, #40)</td>
+</tr>
+<tr>
+<td>S58</td>
+<td>2026-08-25</td>
+<td><strong>NP2.0 microvolts were 19% high (#65)</strong>; two tests were green without testing; the C++ suite could not build on Linux; the ADC verified against a known signal (#53)</td>
+</tr>
+<tr>
 <td><strong>S21</strong></td>
 <td><strong>2026-07-09</strong></td>
 <td><strong>Stim closed loop: ripple → UDP <code>fire</code> → ESP32 → biphasic pulse on NI-DAQ ai4</strong></td>
@@ -4766,7 +4776,188 @@ with paths derived from <code>__file__</code>. An audit of every <code>python &l
 committed for the same reason — a control in one machine's build tree is not a control.</p>
 <p><code>feature/SpikeAudio</code> merged into <code>feature/OneBoxSupport</code> and deleted. Issues #61, #62, #63 filed;</p>
 <h1 id="60-closed-with-its-results-363-s-n-1000-per-ordering">60 closed with its results (363 µs, n ≈ 1000 per ordering).<a class="headerlink" href="#60-closed-with-its-results-363-s-n-1000-per-ordering" title="Permanent link">#</a></h1>
-<p><strong>Green at the end: 18/18 C++ suites, 10/10 GUI tests.</strong></p></article>
+<p><strong>Green at the end: 18/18 C++ suites, 10/10 GUI tests.</strong></p>
+<hr />
+<h2 id="57-a-recording-that-cannot-be-turned-back-into-microvolts-2026-08-25">57. A RECORDING THAT CANNOT BE TURNED BACK INTO MICROVOLTS  (2026-08-25)<a class="headerlink" href="#57-a-recording-that-cannot-be-turned-back-into-microvolts-2026-08-25" title="Permanent link">#</a></h2>
+<p>Issues <a href="https://github.com/NeuralAscension/SpikesPeak/issues/28">#28</a> and <a href="https://github.com/NeuralAscension/SpikesPeak/issues/40">#40</a>. The requirement is that every bit of the signal be reconstructible from the
+recorded data. A sidecar written the night before contained, in full:</p>
+<pre><code>band, channels, data_name, filename, frame{...}, interpreter, num_channels,
+record_format, recording_name, sample_rate_hz, timestamp, units: &quot;adc_int16&quot;
+</code></pre>
+<p>It declares the samples are ADC counts and offers <strong>no way to turn them into volts</strong>. The
+per-channel gain that sets the microvolt scale is fixed by the applied IMRO and lives in the probe
+amplifiers; it is not recomputable from anything on disk. So a session recorded with a non-default
+map had a microvolt scale that could not be recovered from the files at all.</p>
+<p>Nothing errors in that failure. The traces are real neural data, the file is the right length, the
+sync is clean, and every microvolt figure derived from it is wrong by the gain ratio. Both consumers
+assumed the default anyway -- <code>DisplayProcessor.cpp</code>'s hardcoded 500/250 and
+<code>python/spikespeak_postprocess/reader.py</code>'s <code>_UV_PER_BIT</code>, the latter of which simply raises for any
+band that is not NP1 ap/lfp. The next milestone is in-vivo under anesthesia, which is the most
+expensive data there is to reacquire.</p>
+<h3 id="57a-the-structural-reason-it-was-missing">57a. The structural reason it was missing<a class="headerlink" href="#57a-the-structural-reason-it-was-missing" title="Permanent link">#</a></h3>
+<p><code>RecordProcessor</code> holds no reference to any source, probe or basestation. <code>RecordingInfo</code> is nine
+fields, every one of them from YAML or the GUI channel override. That is not an oversight in the JSON
+assembly -- the recorder has nothing to ask.</p>
+<p>And it must not acquire one: <code>SourceRegistry::getSourceByName</code> <strong>constructs</strong> a source that is absent
+(AgentTraps.md), so reaching for the probe from the recorder would instantiate a second one.</p>
+<p>So the dependency is inverted. <code>src/core/RecordingMetadata.hpp</code> is a blackboard modelled directly on
+<code>ChannelMapService</code>: sources <strong>publish</strong> an immutable snapshot, the recorder <strong>reads</strong> it. Same
+threading contract -- a mutex-guarded <code>shared_ptr</code>, snapshots immutable after publish -- so the
+recorder's worker thread can read while the GUI mutates the IMRO on the main thread. Keyed by
+producer rather than single-slot, because a PXIe rig runs a probe <em>and</em> an NI-DAQ at once and each
+recording has to find its own publisher.</p>
+<p>Publishing happens <strong>inside <code>publishChannelMap()</code></strong>, so the channel map and the gains can never
+describe different maps: there is exactly one place a new map becomes current. Built once per map
+change, read once per record press. Nothing per sample, nothing on the 30 kHz path, no new
+dependency, and no value the hardware was not already asked for at connect -- four things were being
+read and thrown away (probe serial and part number, the calibration CSV paths, the OneBox serial, the
+ADC bit depth), all of them function locals that went to a log line and nowhere else.</p>
+<p>A source <strong>withdraws</strong> on close. A snapshot left standing after a disconnect stamps the <em>next</em>
+recording with a probe that is gone, which is worse than no metadata because it looks like evidence.</p>
+<h3 id="57b-what-the-file-now-says">57b. What the file now says<a class="headerlink" href="#57b-what-the-file-now-says" title="Permanent link">#</a></h3>
+<p><code>metadata_version: 2</code>. Every v1 key keeps its name and meaning -- purely additive, so <code>ripple_tools/</code>,
+<code>python/spikespeak_postprocess</code> and the offline exporters being built in parallel keep parsing these
+files unchanged.</p>
+<ul>
+<li><strong><code>scale</code></strong> -- <code>volts_per_count</code>, <code>microvolts_per_count</code>, <code>gain</code>, <code>uniform</code>, the <code>formula</code> it was
+  derived by, and its <code>provenance</code>.</li>
+<li><strong><code>columns</code></strong> -- parallel arrays in file column order: <code>channel</code>, <code>electrode</code>, <code>shank</code>,
+  <code>reference</code>, <code>gain</code>, <code>volts_per_count</code>. <code>index_space: "readout_channel"</code> finally states what
+  <code>channels</code> indexes; the old comments said electrodes, which is true only on NP1 bank 0.</li>
+<li><strong><code>acquisition</code></strong> -- probe type/serial/part number, the applied <strong>IMRO verbatim</strong>, reference
+  selection, basestation, calibration state, ADC range and bit depth, <code>frame_timestamp_hz</code>.</li>
+<li><strong><code>frame.timestamp_hz: 100000</code></strong> -- the frame timestamp is a hardware TICK counter, not a sample
+  index. Read as samples it is 3.33x wrong, which is row 1 of AgentTraps.md.</li>
+</ul>
+<p><strong>Provenance is written beside every number</strong>, because "the device told us this" and "we assumed the
+usual default" are not the same evidence and a future reader must be able to tell which one they
+hold: <code>device-readback</code>, <code>applied-map</code>, <code>compiled-constant</code>, <code>simulated-constant</code>, <code>derived</code>.</p>
+<p><strong>A value that is not knowable is an explicit null with a reason</strong>, never a plausible default. No
+publisher, an unrecognised probe type, a OneBox whose ADC range was never applied -- each says so, in
+its own words, in the file.</p>
+<p>Two traps closed on the way:</p>
+<ul>
+<li><strong>NP1's two bands run at different gains</strong> (500 and 250). Writing the AP factor into the LFP
+  sidecar scales every LFP microvolt by exactly 2 -- large enough to matter, small enough to look
+  plausible. Each band carries its own.</li>
+<li><strong>A mixed-gain map gets no scalar at all.</strong> If the recorded columns disagree, <code>volts_per_count</code> is
+  null and <code>columns.volts_per_count</code> carries the truth, so there is no number a reader can pick up
+  that is wrong for some of its columns.</li>
+<li><strong>The OneBox ADC shares a publisher with the probe and gets no probe geometry.</strong> ADC channel 3 is
+  BNC IO3, not the electrode the probe's channel 3 reads. The electrode table is sitting right there
+  when that sidecar is written; attaching it would put a specific, plausible, completely wrong
+  electrode number on every ADC column.</li>
+</ul>
+<h3 id="57c-sim-publishes-too">57c. Sim publishes too<a class="headerlink" href="#57c-sim-publishes-too" title="Permanent link">#</a></h3>
+<p>Every simulated source publishes the same blocks, marked <code>simulated-constant</code>. The GUI suite records
+through sim on every run, so a missing scale block is caught there rather than on in-vivo data -- and
+the exporters are developed against the shape hardware actually produces. The provenance is what
+keeps a generated file from ever being mistaken for an acquired one.</p>
+<h3 id="57d-still-assumed-elsewhere">57d. Still assumed elsewhere<a class="headerlink" href="#57d-still-assumed-elsewhere" title="Permanent link">#</a></h3>
+<p><code>DisplayProcessor.cpp:182-189</code> still hardcodes 500/250 for the <strong>live</strong> NP1 microvolt scale, and
+<code>reader.py</code> still carries <code>_UV_PER_BIT</code>. Neither affects what reaches disk any more, but both are
+wrong for a non-default map. Left alone deliberately: the exporters are being built in parallel and
+the display change is a behaviour change, not a metadata one.</p>
+<p><code>tests/test_recordingmetadata.cpp</code>, 18 cases, links the real assembler. Falsified three times before
+being believed: removing the mixed-gain check turns 1 case red, reinstating the "assume gain 500" bug
+turns 5 red, and dropping the probe-geometry guard turns the ADC case red.</p>
+<hr />
+<h2 id="58-the-numbers-were-wrong-and-the-tests-said-nothing-2026-08-25-overnight">58. THE NUMBERS WERE WRONG AND THE TESTS SAID NOTHING  (2026-08-25, overnight)<a class="headerlink" href="#58-the-numbers-were-wrong-and-the-tests-said-nothing-2026-08-25-overnight" title="Permanent link">#</a></h2>
+<p>Continues §56, after the operator's demo. Four defects, all of one kind: something that looked
+correct and was not, with no signal that anything was amiss.</p>
+<h3 id="57a-np20-microvolts-were-19-too-high-and-both-manuals-were-in-the-repo">57a. NP2.0 microvolts were 19 % too high — and both manuals were in the repo<a class="headerlink" href="#57a-np20-microvolts-were-19-too-high-and-both-manuals-were-in-the-repo" title="Permanent link">#</a></h3>
+<p>Found while validating the new recording converters against ground truth, not by looking for it.
+SpikesPeak converted NP2.0 counts with <code>1.0 V / 84 / 4096</code> = 2.9064 uV/count. imec's own documents —
+the <strong>Neuropixels 2.0 User Manual V1.0.6 p.15</strong> and the <strong>NP2.0 probe spec sheet p.3</strong>, copies of
+both sitting in <code>manuals/</code> the whole time — state:</p>
+<pre><code>GAIN 100        INPUT VOLTAGE RANGE 10 mVpp        ADC RESOLUTION 12 bits
+</code></pre>
+<p>So the correct step is <code>10 000 uV / 4096</code> = <strong>2.4414 uV/count</strong>. The full scale (10 mV x gain 100 =
+1.0 V at the ADC) and the code count were already right; <strong>only the gain was wrong</strong>, and every
+NP2.0 microvolt figure we have ever produced is <code>100/84</code> = <strong>1.190x too large</strong>.</p>
+<p>It is a <em>constant</em> factor, which is exactly why it survived: relative comparisons, detections,
+quorum, and every latency figure are untouched. Only absolute microvolts — including the live view's
+scale, i.e. the number an operator reads and sets a ripple threshold against. <strong>The counts were
+never affected</strong>, so recorded data is fully recoverable: divide published NP2.0 microvolt figures by
+1.190. NP1.0 is unaffected; the two conventions agree there exactly.</p>
+<p>One term the manuals could not settle was decided empirically rather than assumed: whether the
+12-bit code sits left-shifted inside the int16, which would make the divisor 8192. Across 300 027
+real frames the low bits vary at 0.56 / 0.30 / 0.16 against the 0.50 / 0.25 / 0.125 expected of an
+unshifted code — a shift would leave them identically zero. <strong>4096 is right.</strong></p>
+<p>Issue #65. The constant now has one definition with the citation attached, instead of a bare <code>84.0f</code>
+at two sites.</p>
+<h3 id="57b-two-tests-were-green-without-testing-anything">57b. Two tests were green without testing anything<a class="headerlink" href="#57b-two-tests-were-green-without-testing-anything" title="Permanent link">#</a></h3>
+<p><strong>The GUI suite's only "is anything actually drawn" assertion.</strong> <code>tests/gui/live_view.py</code> read
+<code>c.sciChartSurface</code>; <code>ChartColumn</code> stores <code>this.surface</code>. That property has never existed, so every
+column returned <code>null</code> — and the assertion accepted <code>null</code>. <strong>A renderer that drew nothing would
+have gone 10/10 green.</strong> It now requires a real count, and its failure message names the likelier
+cause, because "nothing is drawn" and "the probe lost track of the renderer" want different
+responses. Proved able to fail: restoring the old property name turns it red in all three layouts.</p>
+<p><strong>And a correction to a claim made earlier in the session.</strong> <code>tests/test_recordingmetadata.cpp</code> was
+described as always-green because it passed with the provenance work stashed. That was <strong>wrong</strong>:
+<code>RecordingMetadata.cpp/.hpp</code> are <em>untracked</em>, and <code>git stash push -- src/</code> stashes only <em>tracked</em>
+modifications, so the code under test was never stashed — only its integration. The test is real; a
+one-byte error in the frame width turns it red.</p>
+<h3 id="57c-the-c-suite-could-not-build-on-linux-at-all">57c. The C++ suite could not build on Linux at all<a class="headerlink" href="#57c-the-c-suite-could-not-build-on-linux-at-all" title="Permanent link">#</a></h3>
+<p><code>-mavx2;-mfma</code> were attached to the <code>SpikesPeak</code> target only, while <code>test_avx2filter</code> and
+<code>test_bandfilterprocessor</code> compile <code>src/core/Avx2Filter.cpp</code> directly and <code>spikespeak_test()</code> set no
+compile options. MSVC accepts AVX2 intrinsics without an architecture flag, so this was invisible
+here; GCC does not, and it is a hard compile error. <strong>"Both suites pass" was therefore unreachable on
+Linux</strong> — the outstanding row of #52, and the main thing gating the merge to <code>develop</code>. Found while
+writing the Linux runbook, verified against the target definitions, fixed for every test target.</p>
+<h3 id="57d-a-recording-now-carries-the-numbers-it-was-taken-with">57d. A recording now carries the numbers it was taken with<a class="headerlink" href="#57d-a-recording-now-carries-the-numbers-it-was-taken-with" title="Permanent link">#</a></h3>
+<p>Sidecars are <code>metadata_version: 2</code> and carry per band a <strong><code>scale</code></strong> block (volts_per_count, gain, the
+formula in words, and the <em>provenance</em> of the number — device-readback / applied-map / config /
+compiled-constant / simulated-constant) and a <strong><code>columns</code></strong> block (per channel: readout channel,
+electrode, shank, reference, gain, volts_per_count).</p>
+<p><code>columns.index_space</code> closes a real trap: <code>channels</code> has always been <strong>read-out channel indices</strong>
+while the comments and <code>Recording.md</code> called them electrode numbers. On NP1 bank 0 the two coincide,
+so it read correctly for years; on NP2 the map is a silicon permutation and they differ for nearly
+every column — a recording that looks perfect, with real data, the right length and clean sync, in
+which <strong>only the depth is a lie</strong>.</p>
+<p>Additive by contract: every previous key is still written with the same meaning, so <code>ripple_tools/</code>,
+<code>python/spikespeak_postprocess</code> and both exporters keep parsing unchanged.</p>
+<h3 id="57e-offline-converters-and-what-validating-them-found">57e. Offline converters, and what validating them found<a class="headerlink" href="#57e-offline-converters-and-what-validating-them-found" title="Permanent link">#</a></h3>
+<p>Open Ephys binary and SpikeGLX exporters (#28, #40), numpy-only, formats read from each tool's own
+source on this machine and checked against real recordings from both. Gaps <strong>survive</strong> into Open
+Ephys <code>sample_numbers</code>; SpikeGLX has no per-sample timestamp, so that converter <strong>verifies uniformity
+and refuses</strong> rather than padding — padding would launder a dropped-samples fault into clean-looking
+data. Both behaviours proved able to fail.</p>
+<p>The trap they had to survive: the recorded timestamp is a <strong>100 kHz tick counter, not a sample
+index</strong> — consecutive frames differ by 3 or 4 ticks in a 2:1 ratio, so a uniformity test written as
+<code>diff == 1</code> rejects every healthy file.</p>
+<h3 id="57f-53-the-adc-verified-against-a-known-signal">57f. #53: the ADC verified against a known signal<a class="headerlink" href="#57f-53-the-adc-verified-against-a-known-signal" title="Permanent link">#</a></h3>
+<p>Using the loopback already wired (DAC0 → IO0 → cable → IO11), eight commanded DC levels across
+±2.5 V:</p>
+<pre><code>FIT   counts = 6531.2 * volts + 28.2      max |residual| = 1.9 counts
+device-reported (np_ADC_getStreamConversionFactor): 6553.6 counts/V   -&gt; 0.34 % agreement
+</code></pre>
+<p>IO0 and IO11 both respond with spans matching to 0.2 counts; <strong>all ten other channels move under one
+count</strong>, which is the part that matters — nothing bleeds across the map, so <code>--stim-channel N</code> in the
+closed-loop analyses addresses the input it claims to. Idle inputs sit at ~11266 counts ≈ 1.72 V,
+matching the documented float. A small real offset: +28 counts ≈ 4.3 mV at 0 V, reproduced at both
+zero points.</p>
+<h3 id="57g-63-and-64-and-51-narrowed">57g. #63 and #64, and #51 narrowed<a class="headerlink" href="#57g-63-and-64-and-51-narrowed" title="Permanent link">#</a></h3>
+<p><code>RecordProcessor</code> now compares records written against elapsed × nominal at record stop, per band,
+and warns below 95 %. The measured shortfall never reproduced on either rig — the second machine ran
+old and new code on one box, which is the arm that actually exonerated the code, and corrected a
+confounded inference of mine in the process — but the <strong>blind spot</strong> was real: a band at 66 % of
+nominal logged zero WARN and zero CRITICAL, because the stall watchdog fires on total silence, not a
+partial deficit.</p>
+<p>An unrecognised WebSocket command now logs at WARN instead of vanishing. It vanished before, and a
+<code>{"command":"disconnect"}</code> where the handler wants <code>Disconnect</code> with a <code>value</code> silently failed to
+release a source, which cost a four-cell hardware run whose files looked perfect afterwards.</p>
+<h1 id="51-was-re-run-and-narrowed-not-closed-the-steady-state-is-correct-but-a-refused-switch-still">51 was re-run and <strong>narrowed, not closed</strong>: the steady state is correct, but a refused switch still<a class="headerlink" href="#51-was-re-run-and-narrowed-not-closed-the-steady-state-is-correct-but-a-refused-switch-still" title="Permanent link">#</a></h1>
+<p>broadcasts the <em>requested</em> source before restoring — a transient the GUI never sees because it reads
+the latest value, and which a change-driven client would act on.</p>
+<h3 id="57h-rules-made-durable-because-notes-were-not-enough">57h. Rules made durable, because notes were not enough<a class="headerlink" href="#57h-rules-made-durable-because-notes-were-not-enough" title="Permanent link">#</a></h3>
+<p><code>.claude/skills/spikespeak</code> gained the two suites and the push gate, the <code>python -u</code> / never-<code>--hold</code>
+rule (buffered stdout plus a killed process lost a whole ~20-minute suite result, and <em>"it finished"</em>
+is not <em>"it passed"</em>), the prove-a-test-can-fail requirement, where the vendor datasheets live, and
+the WebSocket command surface. It also gained a flat rule that <strong>multi-line edits go through
+Write/Edit, never a shell heredoc</strong> — violated three times in one night, the third while writing the
+rule itself, because the rule's text contained a Windows path.</p>
+<p><strong>Green at the end: 19/19 C++ suites, 10/10 GUI tests.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -5083,6 +5274,24 @@ committed for the same reason — a control in one machine's build tree is not a
 <li><a href="#56c-the-throughput-shortfall-does-not-reproduce-here">56c. The throughput shortfall does not reproduce here</a></li>
 <li><a href="#56d-because-the-control-never-ran-and-i-misdiagnosed-why">56d. …because the control never ran — and I misdiagnosed why</a></li>
 <li><a href="#56e-reproducibility">56e. Reproducibility</a></li>
+</ul>
+</li>
+<li><a href="#57-a-recording-that-cannot-be-turned-back-into-microvolts-2026-08-25">57. A RECORDING THAT CANNOT BE TURNED BACK INTO MICROVOLTS (2026-08-25)</a><ul>
+<li><a href="#57a-the-structural-reason-it-was-missing">57a. The structural reason it was missing</a></li>
+<li><a href="#57b-what-the-file-now-says">57b. What the file now says</a></li>
+<li><a href="#57c-sim-publishes-too">57c. Sim publishes too</a></li>
+<li><a href="#57d-still-assumed-elsewhere">57d. Still assumed elsewhere</a></li>
+</ul>
+</li>
+<li><a href="#58-the-numbers-were-wrong-and-the-tests-said-nothing-2026-08-25-overnight">58. THE NUMBERS WERE WRONG AND THE TESTS SAID NOTHING (2026-08-25, overnight)</a><ul>
+<li><a href="#57a-np20-microvolts-were-19-too-high-and-both-manuals-were-in-the-repo">57a. NP2.0 microvolts were 19 % too high — and both manuals were in the repo</a></li>
+<li><a href="#57b-two-tests-were-green-without-testing-anything">57b. Two tests were green without testing anything</a></li>
+<li><a href="#57c-the-c-suite-could-not-build-on-linux-at-all">57c. The C++ suite could not build on Linux at all</a></li>
+<li><a href="#57d-a-recording-now-carries-the-numbers-it-was-taken-with">57d. A recording now carries the numbers it was taken with</a></li>
+<li><a href="#57e-offline-converters-and-what-validating-them-found">57e. Offline converters, and what validating them found</a></li>
+<li><a href="#57f-53-the-adc-verified-against-a-known-signal">57f. #53: the ADC verified against a known signal</a></li>
+<li><a href="#57g-63-and-64-and-51-narrowed">57g. #63 and #64, and #51 narrowed</a></li>
+<li><a href="#57h-rules-made-durable-because-notes-were-not-enough">57h. Rules made durable, because notes were not enough</a></li>
 </ul>
 </li>
 </ul>

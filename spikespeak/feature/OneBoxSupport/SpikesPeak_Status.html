@@ -97,6 +97,9 @@
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+</details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -203,7 +206,7 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <tr>
 <td>S56</td>
 <td>2026-08-25</td>
-<td>Fastest-protocol audio device selection; the control strip obeys one rule; #63 throughput does not reproduce here; #51 confirmed on hardware</td>
+<td>Fastest-protocol audio device selection; the control strip obeys one rule; #63 throughput does not reproduce here; a misdiagnosis retracted</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -4726,20 +4729,31 @@ on a total stop.</p>
 <p>Run here, four cells, counted from file size over the sidecar's own declared frame width:
 <strong>100.0 % on every cell</strong>, both bands, t+15 s and t+90 s. So it is specific to that machine or its
 environment, not the code, and the investigation moves to comparing hosts.</p>
-<h3 id="56d-because-the-control-never-ran-which-is-the-real-finding">56d. …because the control never ran, which is the real finding<a class="headerlink" href="#56d-because-the-control-never-ran-which-is-the-real-finding" title="Permanent link">#</a></h3>
-<p>The four cells alternated between <code>Npx2OneBox</code> and a new <code>Npx2OneBoxNoAdc</code> control. <strong>Every
-<code>selectSource</code> after the first silently failed to take effect.</strong> All four ran under the first
-profile — the cells named "no ADC" contain ADC data, and the recorder logged
-<code>recording state confirmed: true "A_noadc_t15"</code> while writing the wrong configuration under that
-name.</p>
-<p>That is #51, previously known only from sim, now confirmed on real hardware. It is worse than "a
-switch failed": the files are indistinguishable from correct ones afterwards — right name, consistent
-sidecars, every count exact. It was caught only because these two profiles differ in the NUMBER of
-bands. Two profiles differing in a filter setting, a channel list or a sample rate would have produced
-files that look perfect and are silently mislabelled.</p>
-<p>The fix is not "make the switch work" — the current behaviour already claims that. It is <strong>announce
-the source actually running</strong>, which is #18's rule ("announce CONFIRMED state, never REQUESTED") in a
-new place.</p>
+<h3 id="56d-because-the-control-never-ran-and-i-misdiagnosed-why">56d. …because the control never ran — and I misdiagnosed why<a class="headerlink" href="#56d-because-the-control-never-ran-and-i-misdiagnosed-why" title="Permanent link">#</a></h3>
+<p>The four cells alternated between <code>Npx2OneBox</code> and a new <code>Npx2OneBoxNoAdc</code> control. Every profile
+switch after the first failed to take effect, so all four ran under the first profile: the cells named
+"no ADC" contain ADC data.</p>
+<p><strong>I first attributed this to #51 (source switch fails while the backend announces success) and posted
+it as a hardware reproduction. That was wrong, and it is retracted on the issue.</strong> The backend
+behaved correctly. My script sent <code>{"command": "disconnect"}</code>; the handler is
+<code>command == "Disconnect" &amp;&amp; obj.contains("value")</code> — capital D, <code>value</code> required — so the message
+matched nothing and the source was never released. The backend then refused the switch and said why:</p>
+<pre><code>19:11:31.028 [MainController]  Error: You must disconnect from a source before attempting to set a new one
+19:11:31.029 [WebSocketServer] select &quot;NPX 2.0 Multishank (OneBox, no ADC)&quot; REFUSED
+                               -- &quot;NPX 2.0 Multishank (OneBox)&quot; is still connected; state restored
+</code></pre>
+<p>Refused, reason given, state restored — the opposite of #51's signature. #51 stands where it did:
+reproducible in sim, not observed on hardware.</p>
+<p><strong>The lesson is the diagnosis, not the bug.</strong> I matched a symptom — "the new profile didn't take and
+the recording looks normal" — to a known issue, and did not read <code>output.log</code>, which was in the
+backend's working directory the whole time and answered it in one line. The recorder log I cited was
+real but described the recorder correctly recording the profile that was correctly still loaded; it
+said nothing about the cause. <strong>Read the backend's own log before attributing a symptom to a filed
+issue.</strong></p>
+<p>The one real finding, and it is small: <strong>an unrecognised WebSocket text command produces no
+diagnostic at all</strong> — no warning, no log, no reply. A one-character case error in a command name is
+silent, and cost a hardware run. Same family as "text frames on a module channel are dropped
+silently", already in AgentTraps.</p>
 <h3 id="56e-reproducibility">56e. Reproducibility<a class="headerlink" href="#56e-reproducibility" title="Permanent link">#</a></h3>
 <p>Both latency write-ups ended with a "Reproducing" section naming a script that existed only in a
 scratchpad. <code>ripple_tools/measure_av_latency.py</code> and <code>ripple_tools/fair_ab.py</code> are now in the repo
@@ -5063,7 +5077,7 @@ committed for the same reason — a control in one machine's build tree is not a
 <li><a href="#56a-the-shipped-audio-default-was-the-slowest-path-windows-offers">56a. The shipped audio default was the slowest path Windows offers</a></li>
 <li><a href="#56b-the-control-strip-had-two-faults-with-one-root">56b. The control strip had two faults with one root</a></li>
 <li><a href="#56c-the-throughput-shortfall-does-not-reproduce-here">56c. The throughput shortfall does not reproduce here</a></li>
-<li><a href="#56d-because-the-control-never-ran-which-is-the-real-finding">56d. …because the control never ran, which is the real finding</a></li>
+<li><a href="#56d-because-the-control-never-ran-and-i-misdiagnosed-why">56d. …because the control never ran — and I misdiagnosed why</a></li>
 <li><a href="#56e-reproducibility">56e. Reproducibility</a></li>
 </ul>
 </li>

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Next task — re-verify the Linux changes on Windows, and finish #52 - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Unsorted / Next task — re-verify the Linux changes on Windows, and finish #52</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+</details>
+<details class="navgroup" open><summary>Unsorted<span class="navcount">3</span></summary>
+<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a class="active" href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-re-verify-the-linux-changes-on-windows-and-finish-52">Next task — re-verify the Linux changes on Windows, and finish #52<a class="headerlink" href="#next-task-re-verify-the-linux-changes-on-windows-and-finish-52" title="Permanent link">#</a></h1>
+<p><strong>You are on Windows. The Linux configuration of <a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a> is done</strong>
+(2026-08-26: both suites green, clean clone, no path edits — <code>SpikesPeak_Status.md</code> §59). It closed
+five checklist rows and left <strong>four Windows configurations</strong> and <strong>one core-code change that has only
+ever run on Linux</strong>.</p>
+<p>This file is the brief. <a href="README.html"><code>README.md</code></a> is the doc map and the repo-root
+<a href="../CLAUDE.html"><code>CLAUDE.md</code></a> is the standing rules; read both first. For configuration 5 specifically,
+<a href="NextSession_SecondMachine_OneBox.html"><code>NextSession_SecondMachine_OneBox.md</code></a> is still the detailed
+runbook and this file does not replace it.</p>
+<hr />
+<h2 id="1-the-one-thing-that-actually-needs-you-commit-7e2b2fa">1. The one thing that actually needs you: commit <code>7e2b2fa</code><a class="headerlink" href="#1-the-one-thing-that-actually-needs-you-commit-7e2b2fa" title="Permanent link">#</a></h2>
+<p><code>CommandDispatcher::executeCallbacks</code> was erasing from the vector it was iterating. It segfaulted the
+backend on Linux — four core dumps, all <code>SIGSEGV</code> in <code>BandFilterProcessor::slBpHandleCommand</code>. Fixed
+by reaping dead subscribers in one pass before iterating a copy. The same commit also fixes
+<code>removeSubscriber</code>, whose <code>QMutexLocker</code> was constructed <em>inside</em> its own <code>if (lock) { … }</code> block and
+so released the mutex before the erase it was meant to guard.</p>
+<p><strong>The bug was never Linux-specific.</strong> Linux was just where the trigger finally lined up.</p>
+<h3 id="why-you-may-never-have-hit-it">Why you may never have hit it<a class="headerlink" href="#why-you-may-never-have-hit-it" title="Permanent link">#</a></h3>
+<p>The crash needs a <strong>stale</strong> subscriber, which needs <strong>a second source session in one backend
+process</strong>. Processors subscribe in <code>configure()</code> and are destroyed on source teardown; nothing
+unsubscribes (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/66">#66</a>), so their entries stay
+behind and go null.</p>
+<p><code>band_dependency</code> is the only GUI test that runs a session after another has been torn down. On Linux
+one backend served <code>audio_panel</code> and then <code>band_dependency</code>, so its <em>first</em> session was already a
+second session. <strong>Whether the Windows suite shares a backend across tests the same way is a
+hypothesis I could not test — check it rather than assume it.</strong> If Windows gives each test a fresh
+backend, then Windows has <em>never</em> exercised the two-session dispatch path, before or after the fix,
+and the run below is the first time it is tried anywhere on hardware.</p>
+<p>Note <code>band_dependency</code>'s own second <code>Gui</code> context (the NP1.0 one) only <em>reads</em> state — it asserts no
+band buttons appear — so it never sends a band command and never triggers the dispatch.</p>
+<h3 id="the-reproduction-do-this-by-hand-it-takes-two-minutes">The reproduction — do this by hand, it takes two minutes<a class="headerlink" href="#the-reproduction-do-this-by-hand-it-takes-two-minutes" title="Permanent link">#</a></h3>
+<p>Operator actions, no test harness needed:</p>
+<ol>
+<li>Connect a source that has <strong>derived bands</strong> (any NP2.0 profile — derived <code>lfp</code>/<code>spike</code>).</li>
+<li><strong>Disconnect.</strong></li>
+<li>Connect again.</li>
+<li>Enable a derived band from the Bands toolbar button.</li>
+</ol>
+<p>Pre-fix that is a segfault. Post-fix <code>output.log</code> should show, once, on the first band command of the
+second session:</p>
+<pre><code>[CommandDispatcher] Dropping N destroyed subscriber(s) for 537
+</code></pre>
+<p><code>537</code> is <code>0x219</code>, <code>kBandCommandId</code>. Linux reported <code>Dropping 4</code>. Then the band enables normally and
+the backend stays up.</p>
+<h3 id="blast-radius-narrower-than-it-first-looks">Blast radius — narrower than it first looks<a class="headerlink" href="#blast-radius-narrower-than-it-first-looks" title="Permanent link">#</a></h3>
+<p>Only <strong>two</strong> command ids go through this dispatcher:</p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>subscriber</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0x218</code> (536)</td>
+<td><code>AudioProcessor</code> — the audio panel</td>
+</tr>
+<tr>
+<td><code>0x219</code> (537)</td>
+<td><code>BandFilterProcessor</code> — the derived band buttons</td>
+</tr>
+</tbody>
+</table>
+<p>Ripple commands do <strong>not</strong> use it; they go through <code>onTextMessageReceived</code> as
+<code>{"command":"ripple", …}</code>. So what you are regression-testing is the <strong>audio panel and the derived
+band buttons</strong>, not the whole command surface. <code>audio_panel</code> and <code>band_dependency</code> in the GUI suite
+cover both, which is most of the job — the hand reproduction above is for the two-session case the
+suite may not reach on Windows.</p>
+<p><strong>This is the only commit of the three that touches code the rig runs.</strong> The other two are test-side.</p>
+<hr />
+<h2 id="2-the-other-two-commits-and-what-they-need-from-you">2. The other two commits, and what they need from you<a class="headerlink" href="#2-the-other-two-commits-and-what-they-need-from-you" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Commit</th>
+<th>What</th>
+<th>Windows exposure</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/NeuralAscension/SpikesPeak/commit/68a97c7"><code>68a97c7</code></a></td>
+<td>GUI harness: browser started in its own process group and killed as a group; a failing test's stderr folded into the report</td>
+<td>The process-group half is behind <code>if os.name == "nt"</code> and Windows keeps the old <code>terminate()</code>. <strong>Confirm the suite still tears its browser down cleanly</strong> — that is the whole risk.</td>
+</tr>
+<tr>
+<td><a href="https://github.com/NeuralAscension/SpikesPeak/commit/921f00f"><code>921f00f</code></a></td>
+<td>Comments only, no behaviour change</td>
+<td>None.</td>
+</tr>
+</tbody>
+</table>
+<p>The stderr change applies on Windows too and is an improvement there: a failing GUI test used to
+report its last stdout line and throw the Python traceback away.</p>
+<hr />
+<h2 id="3-baseline-numbers-to-compare-against">3. Baseline numbers to compare against<a class="headerlink" href="#3-baseline-numbers-to-compare-against" title="Permanent link">#</a></h2>
+<p>From Linux, 2026-08-26. The suite numbers should be <strong>identical</strong> on Windows — same tests.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Linux</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C++ suites</td>
+<td><strong>20</strong>, <strong>384 cases</strong>, ~1.6 s</td>
+</tr>
+<tr>
+<td>GUI tests</td>
+<td><strong>10 / 10</strong>, ~18.7 min wall clock</td>
+</tr>
+<tr>
+<td>Recording throughput</td>
+<td>100.3 % of nominal at t+10 s, 100.0 % at t+90 s, ADC on</td>
+</tr>
+<tr>
+<td>WebSocket delivery</td>
+<td>138.95 frames/s, 5.64 MB/s, steady</td>
+</tr>
+</tbody>
+</table>
+<p>If Windows still reports <strong>15 suites / 316 cases</strong> you are on a stale checkout —
+<code>developer_docs/Testing.md</code>'s table was that far out of date until 2026-08-26 and has been corrected
+to 20/384.</p>
+<hr />
+<h2 id="4-what-linux-could-not-close-and-you-can">4. What Linux could not close, and you can<a class="headerlink" href="#4-what-linux-could-not-close-and-you-can" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Every hardware row.</strong> <code>NPX_HW_ENABLED</code> / <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only and the
+  vendored libraries are Windows import libraries. PXIe, OneBox, real NI-DAQ, DAC, WavePlayer and the
+  closed-loop latency matrix are structurally unavailable on Linux — not skipped, impossible.</li>
+<li><strong><code>layout_matrix</code>'s portrait half.</strong> On Linux <code>monitors()</code> shells out to PowerShell inside
+  <code>except Exception: return []</code>, so it returns empty <em>without raising</em> and both the landscape and
+  portrait passes ran in the same window — all 16 cells reported <code>viewport 1920x996</code>. They passed,
+  which is the problem. <strong>Windows is the only place this can be tested at all</strong>, and only on a box
+  with a portrait panel (the original rig's is 1080×2560, per #52). If your box has one, this is the
+  one run that makes those eight cells mean something. If it does not, say so rather than letting
+  them pass.</li>
+<li><strong>Closed-loop latency.</strong> Defined as threshold crossing → stimulus pulse <em>observed on the NI-DAQ or
+  the OneBox ADC</em>. Linux has no instrument to observe the pulse, so no number exists and none was
+  invented. Everything in <code>LatencyProfiling.md</code> is yours.</li>
+<li><strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a>, the recording shortfall.</strong>
+  Neither the ~22 % ADC cost nor the decay to ~66 % at t+90 s reproduces on Linux sim. That does not
+  close #63 — simulated source, not a OneBox — but it says the decay is <strong>not in the
+  platform-independent record path</strong>, which points at the transport or the machine. Worth knowing
+  before you spend a day in <code>RecordProcessor</code>.</li>
+</ul>
+<hr />
+<h2 id="5-the-remaining-configurations-in-the-order-52-recommends">5. The remaining configurations, in the order #52 recommends<a class="headerlink" href="#5-the-remaining-configurations-in-the-order-52-recommends" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>configuration</th>
+<th>why now</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>2</strong></td>
+<td>Windows, no hardware</td>
+<td>Should be cheapest. Confirms the Windows build and both suites are reproducible off the original box, and that hardware profiles <strong>degrade honestly</strong> with nothing attached (related to <a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a>).</td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td>Windows + PXIe, no OneBox</td>
+<td>The regression risk to already-working functionality. The bounded-teardown and liveness work in <code>d9620fd</code> touched <code>NeuropixelsSource</code>, which PXIe shares with the OneBox, and <strong>no PXIe rig has been run since</strong>.</td>
+</tr>
+<tr>
+<td><strong>5</strong></td>
+<td>Windows + OneBox, no PXIe</td>
+<td>This rig's configuration. Runbook: <a href="NextSession_SecondMachine_OneBox.html"><code>NextSession_SecondMachine_OneBox.md</code></a>.</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td>Windows + OneBox + PXIe</td>
+<td>Fullest case, needs both transports present. Enumeration stability (<code>scanBS</code>/<code>getDeviceList</code>), that a profile picks the <em>intended</em> basestation and not the first found, and that closing one does not disturb the other. Never exercised.</td>
+</tr>
+</tbody>
+</table>
+<p>Do the §1 reproduction on whichever of these you run first — it needs no PXIe and no OneBox, only a
+sim source with derived bands, so configuration 2 is enough for it.</p>
+<hr />
+<h2 id="6-traps">6. Traps<a class="headerlink" href="#6-traps" title="Permanent link">#</a></h2>
+<ul>
+<li><strong><code>--fatal</code>, always.</strong> Without it a suite that never ran still exits 0. <code>run_all_tests.py</code> forwards
+  it to both children since 2026-08-26.</li>
+<li><strong>The GUI suite overwrites git-tracked doc screenshots</strong> in <code>developer_docs/images/gui/</code>. The nine
+  committed PNGs are currently the <strong>Windows-rendered</strong> ones (a Linux run clobbered them and they
+  were restored), so a Windows run regenerating them is consistent rather than a clobber — but check
+  the diff before committing, and never commit Linux-rendered ones.</li>
+<li><strong>Never blanket-kill Chrome</strong> — only the isolated debug-port profile the harness launched. And note
+  <code>pkill</code>/<code>Get-Process</code> filters can match the shell running them; on Linux <code>pkill -f
+  spikespeak_guitest</code> killed its own command twice. Match narrowly.</li>
+<li><strong>Hardware safety is unchanged and non-negotiable:</strong> never force-kill the backend while a probe or
+  OneBox is connected. Shut down via the WebSocket <code>quit</code> or the GUI's Disconnect.</li>
+</ul>
+<hr />
+<h2 id="7-what-to-report">7. What to report<a class="headerlink" href="#7-what-to-report" title="Permanent link">#</a></h2>
+<p>Same shape as §59 of <code>SpikesPeak_Status.md</code>, and into that file rather than a new one:</p>
+<ol>
+<li>Which #52 configuration(s) you ran, and the machine, recorded properly.</li>
+<li><strong>The §1 reproduction: did the two-session band enable crash before your build, and does it pass
+   now?</strong> If your checkout already has <code>7e2b2fa</code> you cannot see the "before" — say so rather than
+   implying you verified a fix you only saw pass.</li>
+<li>Whether the Windows GUI suite shares one backend across tests or starts a fresh one per test (§1).
+   This is genuinely unknown and it determines whether Windows has ever exercised that path.</li>
+<li>C++ suites N of N and M cases, GUI N of 10, from your run.</li>
+<li><strong>Whether <code>layout_matrix</code>'s portrait half genuinely ran in portrait</strong>, and on what panel.</li>
+<li>Any hardware row you closed, named explicitly.</li>
+<li>Numbers, per <code>CLAUDE.md</code>: latency and samples-not-dropped.</li>
+</ol>
+<p>Then add whatever cost you time to <a href="AgentTraps.html"><code>AgentTraps.md</code></a>.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_WindowsReverify.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-one-thing-that-actually-needs-you-commit-7e2b2fa">1. The one thing that actually needs you: commit 7e2b2fa</a><ul>
+<li><a href="#why-you-may-never-have-hit-it">Why you may never have hit it</a></li>
+<li><a href="#the-reproduction-do-this-by-hand-it-takes-two-minutes">The reproduction — do this by hand, it takes two minutes</a></li>
+<li><a href="#blast-radius-narrower-than-it-first-looks">Blast radius — narrower than it first looks</a></li>
+</ul>
+</li>
+<li><a href="#2-the-other-two-commits-and-what-they-need-from-you">2. The other two commits, and what they need from you</a></li>
+<li><a href="#3-baseline-numbers-to-compare-against">3. Baseline numbers to compare against</a></li>
+<li><a href="#4-what-linux-could-not-close-and-you-can">4. What Linux could not close, and you can</a></li>
+<li><a href="#5-the-remaining-configurations-in-the-order-52-recommends">5. The remaining configurations, in the order #52 recommends</a></li>
+<li><a href="#6-traps">6. Traps</a></li>
+<li><a href="#7-what-to-report">7. What to report</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

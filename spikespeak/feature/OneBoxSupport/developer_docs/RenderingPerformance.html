@@ -142,6 +142,137 @@ paths to go faster if we ever need to. Raw benchmark numbers live in
   WebGL drawing off the main thread — which means a <em>different</em> renderer (SciChart can't). Keep the density
   ≲ 160–200 for now (the per-column channel dropdown lets users dial it).</li>
 </ul>
+<h2 id="re-measured-2026-08-27-and-the-architecture-question-is-now-answered">RE-MEASURED 2026-08-27 — and the architecture question is now answered<a class="headerlink" href="#re-measured-2026-08-27-and-the-architecture-question-is-now-answered" title="Permanent link">#</a></h2>
+<p>Everything below this section predates the source-selection refactor. Two things changed:</p>
+<p><strong>The benchmark had stopped connecting.</strong> <code>cdp_bench.py</code> selected the sim by clicking a button
+inside <code>#sim-picker-card</code>, which stopped existing when the source picker became an anchored menu.
+The click was guarded <code>if(b)b.click()</code>, so it did nothing, raised nothing, and the sweep measured an
+<strong>idle, unconnected view</strong> at a beautiful 60 fps in all twelve cells. Fixed: it drives the backend
+over the WebSocket and now <em>aborts</em> when the view is not streaming. Anything measured between the
+picker change and 2026-08-27 is void.</p>
+<p><strong>The frozen table below is a historical reference, not a control arm.</strong> Fresh control, same
+machine, <code>bound_pts = 2400</code> on every cell (so every cell really was streaming):</p>
+<table>
+<thead>
+<tr>
+<th>cell</th>
+<th>series</th>
+<th>fps</th>
+<th>frame mean / p95 (ms)</th>
+<th>main-thread busy</th>
+<th>heap MB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 × 20</td>
+<td>20</td>
+<td>56</td>
+<td>17.91 / 18.1</td>
+<td>0.194</td>
+<td>21.2</td>
+</tr>
+<tr>
+<td>2 × 40</td>
+<td>80</td>
+<td>56</td>
+<td>17.91 / 18.1</td>
+<td>0.329</td>
+<td>16.4</td>
+</tr>
+<tr>
+<td>4 × 40</td>
+<td>160</td>
+<td>56</td>
+<td>17.93 / 18.1</td>
+<td>0.658</td>
+<td>46.7</td>
+</tr>
+<tr>
+<td>4 × 60</td>
+<td>240</td>
+<td>56</td>
+<td>17.89 / 18.1</td>
+<td>0.877</td>
+<td>50.9</td>
+</tr>
+<tr>
+<td><strong>4 × 80</strong></td>
+<td><strong>320</strong></td>
+<td><strong>44</strong></td>
+<td><strong>23.04 / 36.0</strong></td>
+<td><strong>0.999</strong></td>
+<td>58.7</td>
+</tr>
+</tbody>
+</table>
+<p><code>main_thread_busy</code> tracks the old numbers closely (0.194/0.658/0.877/0.999 vs 0.154/0.627/0.859/
+0.999) and <strong>the 320-series cliff reproduces exactly</strong>. The fps column sits at 56 rather than 60 in
+every unsaturated cell — flat at 17.9 ms regardless of load, which is a fixed cap, not a cost. The
+display is 60 Hz (<code>Win32_VideoController.CurrentRefreshRate</code>), so this is a compositing/presentation
+artifact of the benchmark window, not the renderer. <strong>Compare <code>main_thread_busy</code> across sessions;
+compare <code>fps</code> only within one.</strong></p>
+<h3 id="the-cost-is-per-series-by-a-factor-of-9">The cost is PER-SERIES, by a factor of 9<a class="headerlink" href="#the-cost-is-per-series-by-a-factor-of-9" title="Permanent link">#</a></h3>
+<p><code>benchmarks/cdp_window_sweep.py</code> (new) sweeps the time window at a <strong>fixed</strong> series count — 10× the
+points per series with <strong>no change in draw-call count</strong>. That is the one knob that separates the two
+candidate costs, and nobody had turned it.</p>
+<table>
+<thead>
+<tr>
+<th>window</th>
+<th>pts/series</th>
+<th>fps</th>
+<th>main-thread busy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 s</td>
+<td>2,400</td>
+<td>56</td>
+<td>0.677</td>
+</tr>
+<tr>
+<td>2 s</td>
+<td>4,800</td>
+<td>56</td>
+<td>0.721</td>
+</tr>
+<tr>
+<td>5 s</td>
+<td>12,000</td>
+<td>56</td>
+<td>0.870</td>
+</tr>
+<tr>
+<td>10 s</td>
+<td>24,000</td>
+<td>45</td>
+<td>0.999</td>
+</tr>
+</tbody>
+</table>
+<p>The naive reading — "busy moved when the window grew, so it is vertex-bound" — is <strong>wrong</strong>, and the
+script printed exactly that verdict on its first run before the arithmetic was done properly. Both
+knobs add vertices; they add wildly different numbers of them. Normalise:</p>
+<pre><code>via SERIES  160 -&gt; 240 @ 1 s :   +192,000 vertices   busy +0.219  =&gt;  1.14e-06 per vertex
+via POINTS  1 s -&gt; 5 s @ 160 : +1,536,000 vertices   busy +0.193  =&gt;  1.26e-07 per vertex
+</code></pre>
+<p><strong>A vertex costs 9.1× more when it arrives as a new series than as a new point.</strong> So per-series
+overhead dominates, and the primary win for any replacement renderer is <strong>collapsing N series into
+one draw call / one vertex buffer</strong> — which is exactly what a custom WebGL2-in-a-worker renderer is
+for, and what the SubCharts stopgap below only partly buys. Decimating to pixel columns is a real
+but secondary win: points are not free (10× the window still drove busy 0.677 → 0.999), they are
+just an order of magnitude cheaper than series.</p>
+<h3 id="why-the-web-worker-decode-experiment-measured-nothing-now-with-the-number">Why the Web Worker decode experiment measured nothing (now with the number)<a class="headerlink" href="#why-the-web-worker-decode-experiment-measured-nothing-now-with-the-number" title="Permanent link">#</a></h3>
+<p><code>NetworkClient</code> has been computing decode metrics and logging them to the console for months without
+anyone writing them down. Captured at 4 × 40, sim NP2 raw @ 30 kHz:</p>
+<pre><code>batches 41   avgParseMs 1.422   maxParseMs 1.90   maxGapMs 39.7   kB/s 2464
+</code></pre>
+<p><strong>1.4 ms of decode per batch against a ~18 ms frame.</strong> Attempt A below moved exactly that to a
+worker and measured no gain, which is what you would predict from this number. It is not the
+bottleneck and moving it is not worth a worker round-trip.</p>
+<hr />
 <h2 id="measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)<a class="headerlink" href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz" title="Permanent link">#</a></h2>
 <p>On-screen series = columns × channels-per-strip. Cost scales ≈ linearly with series count; FPS holds 60 until
 the main thread saturates, then collapses.</p>
@@ -300,6 +431,11 @@ and the <code>spikespeak-vertical-display</code> memory for the code map.</li>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#tldr">TL;DR</a></li>
+<li><a href="#re-measured-2026-08-27-and-the-architecture-question-is-now-answered">RE-MEASURED 2026-08-27 — and the architecture question is now answered</a><ul>
+<li><a href="#the-cost-is-per-series-by-a-factor-of-9">The cost is PER-SERIES, by a factor of 9</a></li>
+<li><a href="#why-the-web-worker-decode-experiment-measured-nothing-now-with-the-number">Why the Web Worker decode experiment measured nothing (now with the number)</a></li>
+</ul>
+</li>
 <li><a href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)</a></li>
 <li><a href="#what-we-tried-and-the-measured-result">What we tried (and the measured result)</a></li>
 <li><a href="#optimizations-that-dont-apply-are-already-done">Optimizations that DON'T apply / are already done</a></li>

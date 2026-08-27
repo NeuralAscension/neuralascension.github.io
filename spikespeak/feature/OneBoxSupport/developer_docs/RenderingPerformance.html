@@ -364,13 +364,97 @@ GPU in <strong>0.076 ms</strong>, a fifth of a percent of the budget. So the wal
 is not the vertex count either. It is the chart library's own per-series CPU work — its scene graph,
 its coordinate transforms, its JS↔WASM crossings — which a renderer with no per-series objects does
 not have. The replacement is not a marginal win; it removes the bottleneck rather than shrinking it.</p>
-<h3 id="what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion">What this measurement does NOT cover, and it is the one real threat to the conclusion<a class="headerlink" href="#what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion" title="Permanent link">#</a></h3>
-<p>The lab draws <strong>static</strong> buffers. The live view must push new samples every frame — the equivalent of
-<code>appendRange</code>, i.e. <code>bufferSubData</code> into a ring. That upload cost is <strong>not measured here</strong>, and it is
-the obvious candidate for where a naive replacement would give the win back. Measure it before
-committing to an architecture: the next experiment is the same page with a per-frame
-<code>bufferSubData</code> of one update's worth of samples (50 Hz × 20 bins × 2 × N series) layered on top.</p>
-<p>Decode is already known not to be the problem — 1.4 ms per batch against a ~18 ms frame (below).</p>
+<h3 id="phase-2-the-upload-which-was-the-one-real-threat-is-a-non-issue">Phase 2 — the upload, which was the one real threat, is a non-issue<a class="headerlink" href="#phase-2-the-upload-which-was-the-one-real-threat-is-a-non-issue" title="Permanent link">#</a></h3>
+<p>Phase 1 drew <strong>static</strong> buffers, so it was an upper bound. The live view must ingest ~40 new points
+per channel every frame (<code>POINTS_PER_UPDATE</code> 20 bins, min <strong>and</strong> max) — 100 kB at 320 series — write
+them into a ring, and draw. That is the irreducible work any renderer has, and the obvious place a
+naive replacement gives the win back.</p>
+<p>It is also an <strong>architecture fork</strong>, because the buffer layout decides the upload:</p>
+<ul>
+<li><strong>series-major</strong> <code>[s0 p0..pN][s1 p0..pN]…</code> — each channel's new samples land at its own offset, so
+  the frame costs <strong>N <code>bufferSubData</code> calls</strong>. Draws as a plain <code>LINE_STRIP</code>; memory order is already
+  strip order.</li>
+<li><strong>time-major</strong> <code>[t0 s0..sN][t1 s0..sN]…</code> — one frame's samples are <strong>contiguous</strong>, so the frame is
+  <strong>one <code>bufferSubData</code></strong>. But consecutive memory is now different channels, so the strip must be
+  gathered through a <strong>strided index buffer</strong> — built once, never re-uploaded. That trades upload
+  cost for vertex-fetch locality, which is why draw is measured in both.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>series</th>
+<th>s-major, N calls</th>
+<th>t-major, 1 call</th>
+<th>upload ratio</th>
+<th>draw delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>80</td>
+<td>0.168 ms</td>
+<td>0.048 ms</td>
+<td>6.3×</td>
+<td>+0.003 ms</td>
+</tr>
+<tr>
+<td>160</td>
+<td>0.232 ms</td>
+<td>0.049 ms</td>
+<td>8.6×</td>
+<td>+0.006 ms</td>
+</tr>
+<tr>
+<td><strong>320</strong></td>
+<td><strong>0.411 ms</strong></td>
+<td><strong>0.050 ms</strong></td>
+<td><strong>11.8×</strong></td>
+<td>−0.003 ms</td>
+</tr>
+<tr>
+<td>640</td>
+<td>0.477 ms</td>
+<td>0.053 ms</td>
+<td>12.2×</td>
+<td>±0.000 ms</td>
+</tr>
+<tr>
+<td>1280</td>
+<td>0.516 ms</td>
+<td>0.048 ms</td>
+<td>12.3×</td>
+<td>−0.004 ms</td>
+</tr>
+</tbody>
+</table>
+<p>(Renderer cost = upload + draw.)</p>
+<p><strong>Time-major wins outright, and the strided index buffer costs nothing.</strong> The draw deltas are within
+±0.008 ms — noise — and at the highest densities time-major is <em>faster</em>. Upload is 12× cheaper and,
+unlike series-major, <strong>flat in series count</strong>.</p>
+<p>So at today's wall of 320 series the whole renderer costs <strong>0.050 ms, or 0.3 % of the frame</strong>, and it
+is still 0.048 ms at 1280 series — four times the density that currently collapses the view. The
+phase-1 result survives contact with real ingestion.</p>
+<p><strong>The architecture is therefore settled:</strong> one time-major vertex buffer per column, one contiguous
+<code>bufferSubData</code> per frame, a strided index buffer built once, one <code>drawElements(LINE_STRIP)</code> with
+primitive restart. No worker, no OffscreenCanvas — at 0.3 % of a frame there is nothing to move off
+the main thread.</p>
+<blockquote>
+<p><strong><code>fill</code> is excluded from these totals, and must be.</strong> The harness <em>generates</em> synthetic samples
+(3×<code>Math.sin</code> + <code>Math.random</code> each), which the app does not do — it copies decoded floats out of a
+socket buffer. Reading the harness's <code>fill</code> as a renderer cost would be measuring the test.
+The app's real equivalent is <code>NetworkClient</code>'s decode, already measured at 1.4 ms per batch, and
+already paid today by SciChart too. An earlier version of the harness also called the generator
+<em>twice</em> per point in the time-major path, which made that layout look ~50 % worse for a reason that
+had nothing to do with layout; fixed before the numbers above were taken.</p>
+</blockquote>
+<h3 id="what-is-still-unmeasured">What is still unmeasured<a class="headerlink" href="#what-is-still-unmeasured" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Everything that is not the traces.</strong> Per-channel DOM labels, the depth readout, the strip
+  controls and the resize path are the live view's other main-thread work, and none of it is in the
+  harness.</li>
+<li><strong>The integrated article.</strong> These are isolated numbers. The claim that they survive integration is
+  a prediction until an actual renderer is measured against the SciChart control with §4's protocol.</li>
+</ul>
 <hr />
 <h2 id="measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)<a class="headerlink" href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz" title="Permanent link">#</a></h2>
 <p>On-screen series = columns × channels-per-strip. Cost scales ≈ linearly with series count; FPS holds 60 until
@@ -536,7 +620,8 @@ and the <code>spikespeak-vertical-display</code> memory for the code map.</li>
 </ul>
 </li>
 <li><a href="#the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in">The GL drawing is not the cost — it is ~200x cheaper than the frame it sits in</a><ul>
-<li><a href="#what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion">What this measurement does NOT cover, and it is the one real threat to the conclusion</a></li>
+<li><a href="#phase-2-the-upload-which-was-the-one-real-threat-is-a-non-issue">Phase 2 — the upload, which was the one real threat, is a non-issue</a></li>
+<li><a href="#what-is-still-unmeasured">What is still unmeasured</a></li>
 </ul>
 </li>
 <li><a href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)</a></li>

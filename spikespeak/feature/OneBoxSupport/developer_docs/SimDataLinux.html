@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a class="active" href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="simulated-np10-source-fully-working-on-linux-spec-plan-approved-2026-07-06">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)<a class="headerlink" href="#simulated-np10-source-fully-working-on-linux-spec-plan-approved-2026-07-06" title="Permanent link">#</a></h1>
 <p><strong>Goal:</strong> on a <strong>Linux</strong> dev machine with <strong>no Neuropixels/NI-DAQ hardware</strong>, get the <em>simulated</em> NP1.0
@@ -161,9 +161,9 @@ where connecting sim while real hardware was attached was the wrong path). See [
   is stubbed. The <strong>sim source is your only data path</strong> — making it "fully working" (this task) is what
   unblocks all further Linux dev.</li>
 <li><strong>Two tasks live here.</strong> (1) This sim task (below). (2) Once sim streams, the <strong>NPX 1.0 display /
-  recording-channel selection UI (Status §10 "parts 4+5")</strong> — frontend SciChart work — is also expected to
+  recording-channel selection UI (Status §10 "parts 4+5")</strong> — frontend work — is also expected to
   be done on this Linux box against the sim source. Frontend facts you'll need are in
-  <a href="#frontend-and-scichart-notes-for-the-display-selection-work">Frontend / SciChart notes</a>.</li>
+  <a href="#frontend-notes-for-the-display-selection-work">Frontend notes</a>.</li>
 <li><strong>Build recipe + the one known build-breaker</strong> (<code>CalibrationInfo/</code> copy) are in Phase 0. Do Phase 0
   first and confirm a green build + a served page before touching sim internals.</li>
 <li><strong>Commit discipline:</strong> the previous user's standing rule is <em>commit/push only when explicitly asked.</em>
@@ -316,23 +316,23 @@ a leaky abstraction. So:</p>
   so the module is testable hardware-free (this is now the standing rule — see AddingASourceModule.md).</li>
 </ul>
 <hr />
-<h2 id="frontend-and-scichart-notes-for-the-display-selection-work">Frontend and SciChart notes (for the display-selection work)<a class="headerlink" href="#frontend-and-scichart-notes-for-the-display-selection-work" title="Permanent link">#</a></h2>
-<p>The NPX 1.0 <strong>recording-channel selection UI</strong> (Status §10 "parts 4+5") is frontend SciChart work expected
+<h2 id="frontend-notes-for-the-display-selection-work">Frontend notes (for the display-selection work)<a class="headerlink" href="#frontend-notes-for-the-display-selection-work" title="Permanent link">#</a></h2>
+<p>The NPX 1.0 <strong>recording-channel selection UI</strong> (Status §10 "parts 4+5") is frontend work expected
 on this Linux box once sim streams. Facts carried over from the prior machine's notes (they weren't in the
 repo before):</p>
 <ul>
 <li>The web UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — <strong>not</strong> an embedded
   <code>QWebEngineView</code>. Native Qt dialogs are valid and land on the SpikesPeak machine. See
   [[spikespeak-web-architecture]] / the architecture review.</li>
-<li><strong>SciChart.js v5.2.35</strong> (local UMD bundle in <code>webinterface/</code>). Its enums are <strong>E-prefixed</strong> —
-  <code>EAnnotationLayer</code>, not <code>AnnotationLayer</code>; <code>EAutoRange</code>, etc. <code>PaletteProvider</code>,
-  <code>UniformHeatmapDataSeries</code>, <code>HeatmapColorMap</code>, <code>GradientColorPalette</code> are all present in this bundle
-  (verified) — relevant to both the selection overlay and the proposed activity heatmap
-  (<a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a>).</li>
-<li>The live-view <strong>depth model</strong> (how traces are ordered/labeled by shank/column/row, and the "baked-yOffset
-  in shared data" constraint) is documented in <a href="LiveDataView.html"><code>LiveDataView.md</code></a>.</li>
+<li><strong>There is no charting library in the tree.</strong> The vendored SciChart bundle was deleted on
+  2026-08-27. The probe / electrode map is plain <strong>canvas 2D</strong> (<code>webinterface/ProbeMap.js</code>) and the
+  live-view traces are <strong>WebGL2</strong> (<code>webinterface/GlRenderer.js</code>), both written here. So anything new
+  draws itself: the proposed activity heatmap rested on library features that no longer exist, and
+  says so at the top of <a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a>.</li>
+<li>The live-view <strong>depth model</strong> (how traces are ordered/labeled by shank/column/row, and the
+  baked-yOffset constraint) is documented in <a href="LiveDataView.html"><code>LiveDataView.md</code></a>.</li>
 <li>The <strong>parts 4+5 design</strong> (probe view flips to a recording-selection mode: Record-all / Custom-select /
-  Unselect-all / Set; click+drag+toggle over the SciChart scatter; NI-DAQ selection tab; restore on stop)
+  Unselect-all / Set; click+drag+toggle over the probe map; NI-DAQ selection tab; restore on stop)
   is in <a href="Recording.html"><code>Recording.md</code></a> §7 and Status §10. Against sim, the "NI-DAQ tab" has no NI-DAQ on
   Linux — build the probe side first.</li>
 </ul></article>
@@ -353,7 +353,7 @@ repo before):</p>
 </ul>
 </li>
 <li><a href="#simulated-sources-are-per-module-design-corrected-2026-07-06">Simulated sources are PER-MODULE (design corrected 2026-07-06)</a></li>
-<li><a href="#frontend-and-scichart-notes-for-the-display-selection-work">Frontend and SciChart notes (for the display-selection work)</a></li>
+<li><a href="#frontend-notes-for-the-display-selection-work">Frontend notes (for the display-selection work)</a></li>
 </ul>
 </div>
 </aside>

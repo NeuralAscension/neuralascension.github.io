@@ -92,10 +92,9 @@
 <a href="../UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="../NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="archive-retired-task-briefs-and-superseded-status-snapshots">Archive — retired task briefs and superseded status snapshots<a class="headerlink" href="#archive-retired-task-briefs-and-superseded-status-snapshots" title="Permanent link">#</a></h1>
 <p>Documents here are <strong>historical</strong>. They were accurate when written and are kept so a collaborator (or a new
@@ -183,7 +183,7 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 </tr>
 <tr>
 <td><code>NextTask_WindowsReverify.md</code></td>
-<td>Re-verify on Windows the behaviour changed during the Linux bring-up.</td>
+<td>Re-verify on Windows the behavior changed during the Linux bring-up.</td>
 <td>2026-08-26</td>
 <td><strong>Executed</strong>, with before/after evidence that Windows runs the <code>CommandDispatch</code> path without crashing. <code>SpikesPeak_Status.md</code> §59.</td>
 </tr>
@@ -204,6 +204,12 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 <td>Guard-rail for the off-by-one sync-pulse alignment bug.</td>
 <td>2026-08-26</td>
 <td><strong>Done</strong> -- the file's own "Done -- do NOT redo" section records it: <code>align_timestamps</code> warns on a count mismatch and defaults to nearest-edge pairing. Living reference → <a href="../RippleClosedLoopAnalysis.html"><code>../RippleClosedLoopAnalysis.md</code></a>.</td>
+</tr>
+<tr>
+<td><code>NextTask_WasmFrontend.md</code></td>
+<td>An open runbook for a feature branch that would replace the SciChart live view in five flag-gated phases, moving the draw into a Web Worker via <code>OffscreenCanvas</code> with SciChart kept as the default until each gate passed. Never started.</td>
+<td>2026-08-27</td>
+<td><strong>Overtaken by the actual removal, which was simpler than any phase it prescribes.</strong> SciChart is gone; <code>webinterface/GlRenderer.js</code> draws the traces in WebGL2 on the <strong>main thread</strong> and <code>webinterface/ProbeMap.js</code> draws the probe map in canvas 2D. Its central premise -- that the draw must leave the main thread -- was falsified by measurement: the drawing costs ~0.08 ms of a 17.4 ms frame, and the real cost was the chart library's per-series CPU work. Living reference → <a href="../RendererExperiment.html"><code>../RendererExperiment.md</code></a> (the measured comparison) and <a href="../RendererContract.html"><code>../RendererContract.md</code></a> (the interface the replacement satisfies); the narrative of how the bottleneck was found stays in <a href="../RenderingPerformance.html"><code>../RenderingPerformance.md</code></a>.</td>
 </tr>
 </tbody>
 </table>

@@ -92,10 +92,9 @@
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-running-status-log">SpikesPeak — Running Status Log<a class="headerlink" href="#spikespeak-running-status-log" title="Permanent link">#</a></h1>
 <blockquote>
@@ -241,6 +241,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S61</td>
 <td>2026-08-26</td>
 <td><strong>The rig names itself</strong>: basestation auto-detected (OneBox/PXIe), ambiguity and multi-probe prompted rather than guessed; Source becomes an anchored menu; the benchmark harness was silently measuring an idle view</td>
+</tr>
+<tr>
+<td>S62</td>
+<td>2026-08-27</td>
+<td><strong>The chart library is gone</strong>: SciChart removed entirely — live traces on a hand-written WebGL2 renderer, probe map on canvas 2D; 3.5 MB of vendored bundle deleted; 4.28x less main-thread CPU at 480 traces with the GPU at parity; four defects the removal exposed</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -5513,7 +5518,154 @@ re-measured on today's tree with the corrected harness before any replacement is
 <p>Six briefs whose work is done: <code>NextTask_OneBoxSupport</code>, <code>NextSession_SecondMachine_OneBox</code>,
 <code>NextTask_WindowsReverify</code>, <code>NextTask_ThroughputOnSecondMachine</code>, <code>NextTask_LinuxBringUp</code>,
 <code>NextTask_SyncPulseCountCheck</code> -- each with a row in <code>developer_docs/archive/README.md</code> saying what
-superseded it. Links repointed in both directions; docs book rebuilds with 0 broken links.</p></article>
+superseded it. Links repointed in both directions; docs book rebuilds with 0 broken links.</p>
+<hr />
+<h2 id="62-the-chart-library-is-gone-2026-08-27">62. THE CHART LIBRARY IS GONE  (2026-08-27)<a class="headerlink" href="#62-the-chart-library-is-gone-2026-08-27" title="Permanent link">#</a></h2>
+<p>SciChart.js v5.2.35 is removed from SpikesPeak. The live traces are drawn by a hand-written WebGL2
+renderer and the probe map by plain canvas 2D. <code>webinterface/lib/</code> went from 3.5 MB to 16 kB — one
+file, <code>qwebchannel.js</code>.</p>
+<p>This closes the rule in <code>CLAUDE.md</code> that had said, since 2026-08-24, that the GUI was "on notice".</p>
+<h3 id="62a-what-replaced-what">62a. What replaced what<a class="headerlink" href="#62a-what-replaced-what" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>was</th>
+<th>is</th>
+<th>file</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>FastLineRenderableSeries</code> x N per column</td>
+<td>one vertex buffer, one <code>drawArrays</code> per column, primitive restart between traces</td>
+<td><code>webinterface/GlRenderer.js</code></td>
+</tr>
+<tr>
+<td><code>XyScatterRenderableSeries</code> x 7 + box/custom/text annotations + 2 chart modifiers</td>
+<td>canvas 2D: circles, rectangles, triangles, text</td>
+<td><code>webinterface/ProbeMap.js</code></td>
+</tr>
+<tr>
+<td>two <code>XyDataSeries</code> FIFOs per channel, in <code>DataStore</code></td>
+<td>nothing — the renderer holds the only copy of the samples</td>
+<td><code>webinterface/DataStore.js</code></td>
+</tr>
+<tr>
+<td><code>SciChartSurface.create()</code> per column</td>
+<td><code>new GlColumnRenderer(chartAreaDiv)</code></td>
+<td><code>webinterface/ChartColumn.js</code></td>
+</tr>
+<tr>
+<td><code>initImroSciChart()</code></td>
+<td><code>initProbeMap()</code></td>
+<td><code>webinterface/ImroManager.js</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The probe map was the larger half of the work, not the live view.</strong> The live view had already been
+proven on the WebGL renderer; the map was still a full scatter chart with drag-selection, wheel-zoom
+and per-point text labels. What made it tractable was that <code>renderElectrodeMap()</code> and
+<code>renderRecordSelection()</code> — about 700 lines of electrode, bank and shank logic — only ever called
+<code>clear()</code> and <code>appendRange(xs, ys, metas)</code> on their series. <code>ProbeMap</code> keeps exactly that API, so
+none of that logic was touched. <strong>A rewrite that had to re-derive which electrode maps to which
+channel would have been a different and much worse proposition</strong>, and the shim was worth the
+slightly old-fashioned API to avoid it.</p>
+<h3 id="62b-what-it-cost-measured-on-the-rig">62b. What it cost, measured on the rig<a class="headerlink" href="#62b-what-it-cost-measured-on-the-rig" title="Permanent link">#</a></h3>
+<p>OneBox + Neuropixels 2.0, four columns of 120 = <strong>480 on-screen traces</strong>, n=4 interleaved repeats:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>SciChart</th>
+<th>WebGL2</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>renderer main thread</td>
+<td>0.964 ± 0.004</td>
+<td><strong>0.225 ± 0.006</strong></td>
+<td><strong>4.28x less</strong></td>
+</tr>
+<tr>
+<td>all browser processes</td>
+<td>1.327 ± 0.030 cores</td>
+<td><strong>0.541 ± 0.052</strong></td>
+<td><strong>2.45x less</strong></td>
+</tr>
+<tr>
+<td>GPU utilization</td>
+<td>38.0 ± 0.4 %</td>
+<td>35.9 ± 0.2 %</td>
+<td>1.06x — parity</td>
+</tr>
+<tr>
+<td>GPU power</td>
+<td>19.8 W</td>
+<td>19.6 W</td>
+<td>1.01x — parity</td>
+</tr>
+<tr>
+<td>frame rate</td>
+<td>42 ± 5 fps</td>
+<td><strong>60 ± 0</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The GPU is at parity and that is the point.</strong> The saving is CPU, and it is not displaced onto the
+GPU. The old library kept a live object per trace and walked all 480 every frame — scene graph,
+per-series coordinate transform, JS/WASM crossings. That per-series bookkeeping was the cost. The
+replacement has no per-series objects, so the per-frame work is O(1) draw calls with the arithmetic
+on hardware that was already idle. Full write-up, including the claim that did NOT survive contact
+with hardware, in <code>developer_docs/RendererExperiment.md</code>.</p>
+<h3 id="62c-four-defects-the-removal-exposed">62c. Four defects the removal exposed<a class="headerlink" href="#62c-four-defects-the-removal-exposed" title="Permanent link">#</a></h3>
+<p>Each of these was live before the removal, or would have shipped with it.</p>
+<ol>
+<li>
+<p><strong>The channel labels were pinned to the wrong box.</strong> The label overlay was positioned from the
+   library's <code>seriesViewRect</code>, which the (invisible, label-less) x-axis inset by <strong>exactly 5 px</strong> at
+   the bottom — while the WebGL canvas is <code>inset:0</code> and drew into the <em>full</em> div. So under WebGL
+   every label sat progressively high of its trace: 13 % of a row at 20 rows, <strong>about 80 % of a row
+   at 120</strong>. With the library gone the plot area <em>is</em> the div and they align by construction.</p>
+</li>
+<li>
+<p><strong>A deliberate teardown reported itself as a fault.</strong> <code>GlColumnRenderer.destroy()</code> calls
+   <code>loseContext()</code>, which fires <code>webglcontextlost</code> <em>synchronously</em> — so the new "context lost" handler
+   fired on every column rebuild (orientation flip, column count, density change) and told the
+   operator the live view had broken. The listener now ignores a loss it caused.</p>
+</li>
+<li>
+<p><strong>Two guards became permanently false, silently.</strong> <code>handleNewStream()</code> and <code>handleWindowResize()</code>
+   both tested <code>columns[0].wasmContext</code> — the library's handle, used as a proxy for "the view is
+   ready". Removing the library made both tests always-false with no error anywhere: no stream was
+   ever registered and the live view sat on "Waiting for data..." forever. <strong>This is the failure mode
+   this repo keeps meeting</strong> — a proxy for a condition, rather than the condition. The guards now
+   test what they mean (<code>columns.length &gt; 0</code>).</p>
+</li>
+<li>
+<p><strong>The plot background lived only inside the bundle.</strong> The radial gradient behind every column came
+   from <code>SciChartSurfaceBase.DEFAULT_THEME</code> and appeared in no stylesheet, so deleting the bundle
+   deleted it. It is now explicit in <code>style.css</code> on <code>.chart-container-wrapper</code>, and the trace canvas
+   clears to transparent so it shows through. <code>developer_docs/RendererContract.md</code> had recorded the
+   exact values, which is the only reason it was recoverable.</p>
+</li>
+</ol>
+<p>A fifth, caught by review before it shipped: the chart div was a containing block only because the
+library set <code>position:relative</code> on it <em>inline</em>. The absolutely-positioned trace canvas then resolved
+against the wrapper instead — the same box today, by coincidence of the current layout. Now stated
+in CSS.</p>
+<h3 id="62d-testing">62d. Testing<a class="headerlink" href="#62d-testing" title="Permanent link">#</a></h3>
+<p>The suite no longer selects a renderer: <code>SPIKESPEAK_GUI_RENDERER</code>, <code>window.__setGl</code> and
+<code>window.__useGl</code> are gone. Instead <code>_harness.py</code> <strong>asserts</strong> that a column has a live renderer and
+refuses to run otherwise — because an empty canvas and a rig sending nothing look identical, and the
+suite has already been caught passing vacuously once (2026-08-25, <code>c.sciChartSurface</code>). The
+draws-anything probe in <code>live_view.py</code> now asks the renderer for its allocated row count.</p>
+<p>Before the removal, the full GUI suite was run green under <strong>both</strong> renderers — 11/11 on SciChart and
+11/11 on WebGL2 — which is the evidence that the swap changed nothing an operator can see. Four tests
+that previously left no visual evidence (<code>sim_picker</code>, <code>shrink_window</code>, <code>record_flow</code>, <code>error_paths</code>)
+now each save a screenshot, so every test in the suite is inspectable.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -5879,6 +6031,13 @@ superseded it. Links repointed in both directions; docs book rebuilds with 0 bro
 <li><a href="#61e-tests">61e. Tests</a></li>
 <li><a href="#61f-groundwork-for-the-renderer-swap">61f. Groundwork for the renderer swap</a></li>
 <li><a href="#61g-archived">61g. Archived</a></li>
+</ul>
+</li>
+<li><a href="#62-the-chart-library-is-gone-2026-08-27">62. THE CHART LIBRARY IS GONE (2026-08-27)</a><ul>
+<li><a href="#62a-what-replaced-what">62a. What replaced what</a></li>
+<li><a href="#62b-what-it-cost-measured-on-the-rig">62b. What it cost, measured on the rig</a></li>
+<li><a href="#62c-four-defects-the-removal-exposed">62c. Four defects the removal exposed</a></li>
+<li><a href="#62d-testing">62d. Testing</a></li>
 </ul>
 </li>
 </ul>

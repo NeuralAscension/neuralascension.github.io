@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-developer-docs">SpikesPeak — Developer Docs<a class="headerlink" href="#spikespeak-developer-docs" title="Permanent link">#</a></h1>
 <p>Onboarding + reference for the SpikesPeak acquisition stack (Qt/C++ backend, external-browser UI,
@@ -250,7 +250,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="RendererExperiment.html"><code>RendererExperiment.md</code></a></td>
-<td><strong>Replacing SciChart in the live view, measured.</strong> The repeated-measures experiment (2 renderers x 5 densities x 5 interleaved repeats, CPU <em>and</em> GPU, idle control), the data and figures, and -- the part worth reading even if you never touch the renderer -- WHY it is faster: the live view needs almost none of what a charting library does, and SciChart re-establishes all of it per series per frame. Also the two mistakes that each produced confident wrong numbers.</td>
+<td><strong>Why SciChart was removed, measured — and what draws the live view now.</strong> The repeated-measures experiment (2 renderers x 5 densities x 5 interleaved repeats, CPU <em>and</em> GPU, idle control) and its hardware validation at 480 real traces: <strong>4.28x</strong> less renderer main-thread CPU, <strong>2.45x</strong> less browser CPU, 42 -&gt; 60 fps, and the <strong>GPU at parity</strong> — the win is CPU, so do not quote a GPU saving. Then §9, the removal itself on 2026-08-27: the bundle deleted, <code>GlRenderer.js</code> (WebGL2) for the traces, <code>ProbeMap.js</code> (plain canvas 2D) for the probe map, the globals that went with them, and the label-alignment bug it fixed. The part worth reading even if you never touch the renderer is WHY it is faster: the live view needs almost none of what a charting library does, and SciChart re-established all of it per series per frame. Also the two mistakes that each produced confident wrong numbers.</td>
 </tr>
 <tr>
 <td><a href="SourceSelection.html"><code>SourceSelection.md</code></a></td>
@@ -366,7 +366,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
-<td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modelled on Trodes.</td>
+<td><strong>Listening to a channel's AP band through the speakers</strong> — the 300–6000 Hz Bessel band-pass, the digital-diode threshold, click-a-label channel selection, and the <code>0x218</code> / <code>audioState</code> control surface. Modeled on Trodes.</td>
 </tr>
 </tbody>
 </table>
@@ -424,8 +424,12 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td>Work on the waveform display: data plane, depth/shank/electrode-column model, per-column filters, orientation.</td>
 </tr>
 <tr>
+<td><a href="RendererContract.html"><code>RendererContract.md</code></a></td>
+<td><strong>The normative spec a live-view renderer must satisfy</strong> — written with the SciChart implementation as its baseline and now satisfied by <code>webinterface/GlRenderer.js</code>, the only renderer since 2026-08-27. Read it before changing anything about how a sample reaches the screen: Y values arrive <strong>already in absolute plot coordinates</strong> (nothing may re-offset, re-scale or auto-fit them), each timebin contributes a MIN and a MAX at the <em>same</em> x so x is not strictly increasing, and painting is coalesced rather than synchronous with append. Where it and the code disagree, the code is right and the doc is the bug.</td>
+</tr>
+<tr>
 <td><a href="RenderingPerformance.html"><code>RenderingPerformance.md</code></a></td>
-<td>SciChart trace budget + main-thread cost measurements and the knobs.</td>
+<td><strong>How the bottleneck was found, and the SciChart-era trace budget.</strong> The ~320-series wall on this box, the optimizations that moved nothing (the parse in a worker moved <em>nothing</em>), the benchmark that silently measured an idle, unconnected view at a beautiful 60 fps, and the 2026-08-27 re-measurement that isolated the cost as <strong>per-series, by a factor of 9</strong>. <strong>Historical in its conclusion:</strong> its density advice is about a renderer that no longer exists — SciChart was removed on 2026-08-27, and <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a> is the current record. One rule from it still binds: compare <code>main_thread_busy</code> across sessions, <code>fps</code> only within one.</td>
 </tr>
 <tr>
 <td><a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a></td>
@@ -518,11 +522,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="NextTask_OneBoxLatencyMatrix.html"><code>NextTask_OneBoxLatencyMatrix.md</code></a></td>
-<td><strong>Ready to run</strong> — the five remaining closed-loop latency cells for NP2.0 on the OneBox (then NP1.0): exact commands, the OneBox-specific analyser flags, and the stim ARM-vs-GATE fix that a first attempt tripped over.</td>
-</tr>
-<tr>
-<td><a href="NextTask_WasmFrontend.html"><code>NextTask_WasmFrontend.md</code></a></td>
-<td><strong>Open runbook — the branch that replaces the SciChart live view.</strong> The operator asked for "move the front end to WASM"; the measured bottleneck is the main-thread <strong>draw</strong>, and moving the parse to a worker was already tried and reverted, so the runbook orders the work draw-first (OffscreenCanvas + WebGL2 in a plain-JS worker) and gates WASM on a profile. Separates the build-time toolchain / runtime library / browser capability asks, phases 0-5 each ending GUI-suite green, the parity problem (the trace assertion is currently dead), the numbers to beat, and kill criteria.</td>
+<td><strong>Ready to run</strong> — the five remaining closed-loop latency cells for NP2.0 on the OneBox (then NP1.0): exact commands, the OneBox-specific analyzer flags, and the stim ARM-vs-GATE fix that a first attempt tripped over.</td>
 </tr>
 <tr>
 <td><a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a></td>
@@ -547,6 +547,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="archive/NextSession_SecondMachine_OneBox.html"><code>archive/NextSession_SecondMachine_OneBox.md</code></a></td>
 <td><strong>Brief for an agent standing this up on a SECOND Windows machine with a OneBox and no PXIe</strong> — prerequisites and every known hardcoded path, the build recipe, the definition of green, which test is expected to be red and why, and the OneBox verification order. Tracking issue #52.</td>
+</tr>
+<tr>
+<td><a href="archive/NextTask_WasmFrontend.html"><code>archive/NextTask_WasmFrontend.md</code></a></td>
+<td><strong>Archived 2026-08-27 — done.</strong> The runbook for the branch that replaced the SciChart live view. The operator asked to "move the front end to WASM"; the runbook ordered the work <strong>draw-first</strong> instead, because the measured bottleneck was the main-thread draw and moving the parse to a worker had already been tried and reverted — and that ordering is what settled it. What shipped is a hand-written WebGL2 renderer in plain JS on the main thread (<code>webinterface/GlRenderer.js</code>): no WASM, no worker and no OffscreenCanvas were needed. Superseded by <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a> §9.</td>
 </tr>
 </tbody>
 </table>

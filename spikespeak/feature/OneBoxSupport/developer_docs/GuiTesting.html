@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,13 +123,14 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci">Driving &amp; screenshotting the SpikesPeak GUI headlessly (for agents / CI)<a class="headerlink" href="#driving-screenshotting-the-spikespeak-gui-headlessly-for-agents-ci" title="Permanent link">#</a></h1>
-<p>The UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — SciChart renders in the
-<em>browser</em>, not the backend. So to verify frontend work (probe map, record-channel selection, the sim
-picker, live view, NP2.0 editor) <strong>without a human at the mouse</strong>, you drive a real browser
-programmatically and screenshot <em>it</em>. This was used heavily to build/verify the 2026-07-06 work and is the
-recommended way to check any GUI change.</p>
+<p>The UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — the traces are drawn in the
+<em>browser</em> (WebGL2, <code>webinterface/GlRenderer.js</code>), not the backend. So to verify frontend work (probe
+map, record-channel selection, the sim picker, live view, NP2.0 editor) <strong>without a human at the
+mouse</strong>, you drive a real browser programmatically and screenshot <em>it</em>. This was used heavily to
+build/verify the 2026-07-06 work and is the recommended way to check any GUI change.</p>
 <hr />
 <h2 id="0-start-here-you-almost-certainly-want-gui-not-raw-cdp">0. START HERE — you almost certainly want <code>Gui</code>, not raw CDP<a class="headerlink" href="#0-start-here-you-almost-certainly-want-gui-not-raw-cdp" title="Permanent link">#</a></h2>
 <p><strong>Do not hand-roll a browser launch.</strong> <code>tests/gui/_harness.py</code> already starts the backend, launches a
@@ -171,7 +171,7 @@ reports nonsense that reads as an application bug. Both of these cost time on 20
   <code>#main-container</code> width <strong>0</strong> and header width <strong>0</strong> for every cell after the first four — which
   looks exactly like a page that has fallen over. The same sweep rewritten with <code>g.columns(n)</code> and
   <code>g.settle_until_stable(PROBE)</code> returned clean numbers on the first run. <code>settle_until_stable</code>
-  exists because "wait a bit" is not a synchronisation primitive.</li>
+  exists because "wait a bit" is not a synchronization primitive.</li>
 <li><strong><code>ripple-tab-btn</code> is a TOGGLE, so hand-rolling the click inverts your loop.</strong> A probe that
   iterates <code>[closed, open]</code> and clicks the button each time is correct only if the dock starts
   closed. <code>g.ripple_dock(True/False)</code> is idempotent and returns the state it reached. The dock
@@ -327,8 +327,8 @@ python python/tools/gui_scenarios.py mismatch_check   # select &quot;NPX 2.0&quo
 <td><code>#nidaq-channel-grid .nidaq-ch</code> (label = 0-indexed, matching ChartColumn's trace labels) · <code>#btn-nidaq-all</code> · <code>#btn-nidaq-none</code></td>
 </tr>
 <tr>
-<td>Probe scatter (for <code>click</code>/<code>drag</code>)</td>
-<td><code>#scichart-imro-root</code> — use <code>getBoundingClientRect()</code> to map data rows to pixels</td>
+<td>Probe map (for <code>click</code>/<code>drag</code>)</td>
+<td><code>#probe-map-root</code> — use <code>getBoundingClientRect()</code> to map data rows to pixels</td>
 </tr>
 </tbody>
 </table>
@@ -413,13 +413,13 @@ white/gray):</p>
 </tbody>
 </table>
 <p>Applied by <code>setPlayingUI()</code> / <code>handleDeviceReady()</code> / <code>reflectRecording()</code> / <code>toggleRecord()</code> in <code>main.js</code>.
-The play rules are scoped <code>:enabled</code> so a disabled (no-source) button stays grey, never green. The green
+The play rules are scoped <code>:enabled</code> so a disabled (no-source) button stays gray, never green. The green
 streaming ring is the <code>@keyframes play-stream-pulse</code> animation (the green twin of <code>rec-arm-pulse</code>).</p>
 <p><strong>One-shot smoke test (CDP, no human).</strong> With a sim source connected on the port-9222 Chrome, these
 9 checks ran and <strong>all PASS</strong> on 2026-07-12 (shots in <code>benchmarks/shots/</code>):</p>
 <ol>
 <li>play → streaming (frame count + bytes climb); play button = <strong>white ⏸ in a green ring</strong> while streaming, <strong>green ▶</strong> when paused</li>
-<li><strong>traces render</strong> — every column's SciChart series have points &gt;0 (guards the blank-traces regression)</li>
+<li><strong>traces render</strong> — every column's traces have points &gt;0 (guards the blank-traces regression)</li>
 <li>Vertical⇄Horizontal orientation toggle, traces persist</li>
 <li><strong>per-column DIFFERENT counts</strong>: <code>col0.setTracesPerColumn(20)</code> vs <code>col1(60)</code> → 20 vs 60 series, both render
 5–8. record: Set Location <strong>arms</strong> (<code>record-armed</code>) → start = <strong>solid red</strong> → stop clean → <code>.bin</code>+<code>.json</code> on disk</li>
@@ -428,7 +428,12 @@ streaming ring is the <code>@keyframes play-stream-pulse</code> animation (the g
 <p>Recipe: <code>app.togglePlay()</code>, <code>app.toggleOrientation()</code>, <code>app.columns[i].setTracesPerColumn(n)</code>,
 <code>app.toggleRecord()</code> (opens the in-page <code>#record-modal</code>; set <code>#rec-name</code> + <code>#rec-dir</code> then click
 <code>#rec-start</code> to arm — do <strong>not</strong> click <code>#rec-browse</code>, that fires the native Qt directory picker).
-Read a column's series count via <code>col.sciChartSurface.renderableSeries.get(0).dataSeries.count()</code>.</p>
+Ask the renderer how full it is with <strong><code>window.__benchPointCount(i)</code></strong> — the WebGL2 renderer's own
+buffer occupancy, which a renderer that draws nothing cannot fake. It returns <code>-1</code> for no such column
+or a column whose GL context was lost, and it saturates at the column's capacity, so it proves
+"streaming and bound" and nothing finer. The trace count is <code>app.columns[i].gl.rows</code>. Do not go
+looking for a per-trace object to count: there is none — a column is one vertex buffer and one draw
+call.</p>
 <h2 id="browser-lifecycle-closing-on-backend-disconnect-2026-07-14">Browser lifecycle — closing on backend disconnect (2026-07-14)<a class="headerlink" href="#browser-lifecycle-closing-on-backend-disconnect-2026-07-14" title="Permanent link">#</a></h2>
 <p>The UI runs in an <strong>external</strong> browser (the backend opens a Chromium <code>--app=</code> window via <code>main.cpp</code>;
 <code>--tab</code> opens a normal tab; <code>--no-browser</code> opens nothing). Because it is a separate process, a stale

@@ -92,10 +92,9 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,9 +123,17 @@
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="scichart-channel-density-benchmark-how-many-traces-can-the-live-view-show">SciChart channel-density benchmark — how many traces can the live view show?<a class="headerlink" href="#scichart-channel-density-benchmark-how-many-traces-can-the-live-view-show" title="Permanent link">#</a></h1>
 <blockquote>
+<p><strong>Superseded (2026-08-27).</strong> This is the <strong>SciChart-era</strong> measurement, kept as the record of what the
+live view did when SciChart.js v5.2.35 drew the traces. SciChart has since been removed and the traces
+are drawn by <code>webinterface/GlRenderer.js</code>, so the ceilings below no longer describe the shipping
+renderer — they describe the thing it replaced, and are the baseline it was measured against. The
+replacement and its measured comparison are in
+<a href="../developer_docs/RendererExperiment.html"><code>developer_docs/RendererExperiment.md</code></a>. Everything below
+this banner is the original report, unedited.</p>
 <p><strong>Correction (2026-07-12):</strong> an earlier version of this report accidentally measured <strong>empty surfaces</strong>
 (a <code>buildColumns()</code> bug blanked the traces during the sweep — now fixed). The numbers below are the
 <strong>real</strong> measurement with <strong>live traces rendering</strong> (verified: 2400 points bound on every config).</p>

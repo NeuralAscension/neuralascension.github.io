@@ -92,10 +92,9 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-architecture-overview">SpikesPeak — Architecture Overview<a class="headerlink" href="#spikespeak-architecture-overview" title="Permanent link">#</a></h1>
 <p>The pipeline diagrams here are <strong>generated from the code</strong>, not drawn. <code>scripts/make_architecture.py</code>
@@ -144,7 +144,7 @@ be recomputed. <code>developer_docs/images/architecture*.svg</code> is git-ignor
 <p>Every profile the backend can load, in one graph — dense on purpose. It is the map for <em>what exists</em>;
 for a single experiment use the per-profile diagrams further down.</p>
 <p><img alt="Full SpikesPeak architecture: every config, source, band, interpreter, processor and sink" src="../developer_docs/images/architecture.svg" /></p>
-<p>Each diagram is a left-to-right pipeline: <strong>Config</strong> (the YAML profile, labelled with its internal
+<p>Each diagram is a left-to-right pipeline: <strong>Config</strong> (the YAML profile, labeled with its internal
 <code>name:</code> — the string the GUI and CLI actually select) → <strong>DataSource</strong> → <strong>Data</strong> (the named bands it
 publishes) → <strong>DataInterpreter</strong> → <strong>Processor</strong> → <strong>Sink</strong> (the files a recording writes). A config's
 identity is that <code>name:</code> field, never the filename; see [<code>../developer_docs/ConfigReference.md</code>].</p>
@@ -342,10 +342,13 @@ derives a new stream (e.g. LFP) is itself a producer into a downstream buffer.</
 </ul>
 <hr />
 <h2 id="frontend-webinterface">Frontend (<code>webinterface/</code>)<a class="headerlink" href="#frontend-webinterface" title="Permanent link">#</a></h2>
-<p><code>main.js</code> <strong>AppController</strong> (toolbar, columns, status, play/record) · <code>NetworkClient</code> (WebSocket parse +
-append) · <code>DataStore</code> (per-stream channel objects, two data series each) · <code>ChartColumn</code> (one SciChart
-column: filters, slider, depth-sorted draw) · <code>ImroManager</code> (probe-map editor + the live-view
-ordering/bands over QWebChannel) · <code>Config</code> (constants). See <code>developer_docs/LiveDataView.md</code>.</p>
+<p><code>main.js</code> <strong>AppController</strong> (toolbar, columns, status, play/record) · <code>NetworkClient</code> (WebSocket parse,
+bake, append) · <code>DataStore</code> (per-stream channel objects: display state only, no samples) ·
+<code>ChartColumn</code> (one live-view column: filters, slider, depth-sorted draw, and its <code>GlColumnRenderer</code>) ·
+<code>GlRenderer</code> (WebGL2 — one vertex buffer and one draw call per column; it holds the only copy of the
+samples) · <code>ProbeMap</code> (the probe / electrode map, canvas 2D) · <code>ImroManager</code> (probe-map editor + the
+live-view ordering/bands over QWebChannel) · <code>Config</code> (constants). See
+<code>developer_docs/LiveDataView.md</code>.</p>
 <hr />
 <h2 id="where-neuropixels-10-lives-in-all-this">Where Neuropixels 1.0 lives in all this<a class="headerlink" href="#where-neuropixels-10-lives-in-all-this" title="Permanent link">#</a></h2>
 <ul>

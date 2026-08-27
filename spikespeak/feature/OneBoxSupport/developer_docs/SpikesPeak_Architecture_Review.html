@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,11 +123,12 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-architectural-review-audit">SpikesPeak — Architectural Review &amp; Audit<a class="headerlink" href="#spikespeak-architectural-review-audit" title="Permanent link">#</a></h1>
-<p><strong>Scope:</strong> Qt/C++ acquisition backend + JavaScript (SciChart) web frontend
+<p><strong>Scope:</strong> Qt/C++ acquisition backend + JavaScript web frontend
 <strong>Core review date:</strong> 2026-06-23 · <strong>Completion pass:</strong> 2026-07-21 (§11)
-<strong>Frontend rendering lib:</strong> SciChart.js v5.2.35 (local UMD bundle, <code>webinterface/lib/index.min.js</code>)
+<strong>Frontend rendering:</strong> hand-written WebGL2 traces (<code>GlRenderer.js</code>) + a canvas-2D probe map (<code>ProbeMap.js</code>); no charting library
 <strong>Build:</strong> CMake (Ninja) + MSVC 2019 + Qt 6.7.3, C++20, Release <code>/Ox</code> (Windows hardware box); GCC + Qt 6.7+ (Linux sim box)</p>
 <blockquote>
 <p><strong>State note.</strong> §1–§10 are the original 2026-06-23 architecture review (hosting, threading, data plane,
@@ -137,7 +137,9 @@ grew a second probe, a full ripple→stimulation closed loop, an NI-DAQ source, 
 instrumentation, and was validated end-to-end on real hardware. <strong>§11 is the 2026-07-21 completion pass</strong>
 that brings the review up to date and records the current status: <strong>both probes validated end-to-end in
 saline; ready for in-vivo testing under anesthesia.</strong> Read §1–§10 for how the core works, then §11 for
-everything built on top.</p>
+everything built on top. <strong>Changed since:</strong> the vendored SciChart.js bundle was removed on
+2026-08-27 and the live view is now drawn by <code>webinterface/GlRenderer.js</code>; the measurement that
+justified that is <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
 <p><strong>Companion guides:</strong> <a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a>,
 <a href="AddingASinkModule.html"><code>AddingASinkModule.md</code></a>, and <a href="README.html"><code>README.md</code></a> (onboarding +
 parallel-work map). Read those to <em>extend</em> the system; read this to <em>understand</em> it.</p>
@@ -155,7 +157,8 @@ browser</strong> via <code>QDesktopServices::openUrl</code> (<code>main.cpp:266<
 its UI lives in an external browser. This matters for file I/O (§9).</p>
 <p>The WebSocket is <strong>triple-multiplexed</strong>:</p>
 <ol>
-<li><strong>Binary frames</strong> — decimated min/max waveform batches (C++ → JS), rendered by SciChart.</li>
+<li><strong>Binary frames</strong> — decimated min/max waveform batches (C++ → JS), drawn by the WebGL2 renderer
+   (<code>GlRenderer.js</code>).</li>
 <li><strong>Application commands/events</strong> — small JSON control messages (<code>selectSource</code>, <code>setPlaying</code>,
    <code>deviceReady</code>, …) framed inside a 4-byte binary header.</li>
 <li><strong>QWebChannel RPC</strong> — Qt's object-bridge protocol, letting JS call C++ <code>Q_INVOKABLE</code>
@@ -187,8 +190,8 @@ its UI lives in an external browser. This matters for file I/O (§9).</p>
                  │                                                             │
    ┌─────────────┴─────────────────── JS FRONTEND (external browser) ─────────┴───────────────────────┐
    │  NetworkClient  — socket, binary parse, QWebChannel transport, deviceReady→bind                  │
-   │  DisplayProcessor frames ─► DataStore ─► SciChart (ChartColumn live waveforms)                    │
-   │  ImroManager    — SciChart probe-map editor, drives window.activeNpxModule (QWebChannel proxy)    │
+   │  DisplayProcessor frames ─► NetworkClient ─► ChartColumn.gl (GlColumnRenderer, WebGL2)            │
+   │  ImroManager    — probe-map editor on ProbeMap (canvas 2D), drives window.activeNpxModule         │
    │  main.js        — AppController: UI wiring, source/play/record/columns/window                     │
    └───────────────────────────────────────────────────────────────────────────────────────────────────┘
 </code></pre>
@@ -457,7 +460,7 @@ IMRO panel is inert for <code>Simulated Data</code> etc.</p>
 <li><strong>JS binds by substring.</strong> After <code>deviceReady === true</code> <strong>and</strong> the source name contains
   <code>"NPX"</code>, <code>NetworkClient</code> builds a <code>QWebChannel</code> and binds
   <code>window.activeNpxModule = channel.objects[key.includes("npx")]</code>, then calls
-  <code>initImroSciChart(activeNpxModule)</code> (<code>NetworkClient.js:128-157</code>).</li>
+  <code>initProbeMap(activeNpxModule)</code> (<code>NetworkClient.js:385-417</code>).</li>
 </ul>
 <h3 id="73-frontend-cross-reference-via-the-qwebchannel-proxy">7.3 Frontend cross-reference (via the QWebChannel proxy)<a class="headerlink" href="#73-frontend-cross-reference-via-the-qwebchannel-proxy" title="Permanent link">#</a></h3>
 <table>
@@ -589,9 +592,10 @@ loop (modal dialogs, long hardware ops) is deferred or moved off the dispatch.</
 <h2 id="8-frontend-state-rendering-summary">8. Frontend State &amp; Rendering (summary)<a class="headerlink" href="#8-frontend-state-rendering-summary" title="Permanent link">#</a></h2>
 <ul>
 <li><code>main.js</code> <code>AppController</code> owns UI wiring + the <code>NetworkClient</code>; columns/window/play/record.</li>
-<li>Live waveforms: <code>NetworkClient</code> → <code>DataStore</code> (per-stream channel series) → <code>ChartColumn</code>
-  SciChart surfaces in <code>#view-data</code>.</li>
-<li>Probe map: <code>ImroManager.initImroSciChart(npxBackend)</code> builds a SciChart scatter of probe
+<li>Live waveforms: <code>NetworkClient</code> parses and bakes y, then hands each batch to <code>ChartColumn.gl</code> — a
+  <code>GlColumnRenderer</code> (WebGL2) per column in <code>#view-data</code>, which holds the only copy of the samples.
+  <code>DataStore</code> keeps per-channel <em>display state</em> (offsets, zoom, color), not samples.</li>
+<li>Probe map: <code>ImroManager.initProbeMap(npxBackend)</code> builds a canvas-2D <code>ProbeMap</code> of probe
   geometry in <code>#view-map</code>, fetches IMRO via <code>getImroAsJson</code>, supports <strong>click-select / drag-window /
   bank presets</strong> (modulo-384 rules; reserved channel 191 drawn amber) that push back via
   <code>updateImroFromJson</code>, and <strong>Apply / Save / Load</strong> via the invokables above (Load reads the file
@@ -755,7 +759,7 @@ standard across <em>multiple</em> modules — the NPX sources, <code>RecordProce
 detector's sidecar invokables all register their own object at select time
 (<code>WebSocketServer::onSourceSelection</code>), so adding a module needs no central-router edit. Alongside it:</p>
 <ul>
-<li><strong>Data-plane "subscription" is config-driven</strong> and is the only subscription initialised from YAML: a
+<li><strong>Data-plane "subscription" is config-driven</strong> and is the only subscription initialized from YAML: a
   processor's <code>configure()</code> reads its <code>input(s):</code> names and registers as a <code>CircularBuffer</code> consumer
   (<code>addWaitingConsumer</code>/polling); sources <code>addProducer</code>. The YAML wires who-consumes-what by registry name.</li>
 <li><strong>Inter-module events are plain Qt signals/slots</strong> (<code>sigIpStarted/Stopped/DataReady/ErrorOccurred</code>,
@@ -766,7 +770,7 @@ detector's sidecar invokables all register their own object at select time
   has exactly one subscriber</strong> (<code>AudioProcessor.cpp:491</code>, hard-coded id <code>0x218</code>); it is being superseded by
   <code>Q_INVOKABLE</code>.</li>
 </ul>
-<p><strong>So the long-standing goal "processors subscribe to any commands/events, config-initialised +
+<p><strong>So the long-standing goal "processors subscribe to any commands/events, config-initialized +
 runtime-modifiable" (<code>todo.txt:5–6</code>) is NOT yet a unified mechanism.</strong> It is approximated by the four
 paths above (config-wired data plane + Qt signals + <code>Q_INVOKABLE</code> web commands + the single-use
 <code>CommandDispatcher</code>). A true generic event/command bus, declarable in YAML and mutable at runtime, remains

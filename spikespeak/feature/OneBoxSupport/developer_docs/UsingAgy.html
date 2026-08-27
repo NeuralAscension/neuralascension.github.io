@@ -92,10 +92,9 @@
 <a class="active" href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="using-agy-antigravity-gemini-on-spikespeak">Using <code>agy</code> (Antigravity / Gemini) on SpikesPeak<a class="headerlink" href="#using-agy-antigravity-gemini-on-spikespeak" title="Permanent link">#</a></h1>
 <p>A SpikesPeak-specific companion to the plugin's own guide
@@ -153,14 +153,14 @@ environment to force a pass. Never ship agy output you haven't independently che
 </ul>
 <h2 id="when-to-delegate-on-spikespeak-and-when-not">When to delegate on SpikesPeak (and when NOT)<a class="headerlink" href="#when-to-delegate-on-spikespeak-and-when-not" title="Permanent link">#</a></h2>
 <p><strong>Delegate (above break-even):</strong>
-- <strong>Web / deep research</strong> — SciChart internals, hardware datasheets, library capabilities. agy has Google
+- <strong>Web / deep research</strong> — hardware datasheets, vendor-API behavior, browser/library capabilities. agy has Google
   search; Claude does not. Always <code>--digest</code>, and re-verify load-bearing claims.
 - <strong>Bulk, well-specified code</strong> — exhaustive test/eval generation, a mechanical migration across many files,
   scaffolding a new module from a spec Claude wrote.
 - <strong>Long-context reads that distill to a digest</strong> — "summarize how X works across these 12 files → digest".</p>
 <p><strong>Do NOT delegate (do it yourself):</strong>
 - Small one-off edits, renames, single-function tweaks (delegation overhead &gt; the work).
-- Judgement/architecture-bearing changes — <em>unless</em> you hand agy a very tight spec AND verify hard. (This
+- Judgment/architecture-bearing changes — <em>unless</em> you hand agy a very tight spec AND verify hard. (This
   session's Option A worker refactor was delegated to Opus with a 5.7 KB spec, precisely because the
   integration is delicate — and it was verified line-by-line + in the GUI afterward.)
 - Anything touching the <strong>C++ backend / real hardware paths</strong> — keep those on Claude.</p>

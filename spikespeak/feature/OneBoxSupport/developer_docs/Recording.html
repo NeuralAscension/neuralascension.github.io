@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-recording-task-2-runbook">SpikesPeak — Recording (Task 2 runbook)<a class="headerlink" href="#spikespeak-recording-task-2-runbook" title="Permanent link">#</a></h1>
 <p>How disk recording works, how to verify it for NP1.0, and the known sharp edges. Goal of Task 2:
@@ -157,7 +157,7 @@
 <p><strong>Headless / scripted:</strong> the same flow runs with <strong>no clicking</strong> via <code>python/spikespeak_cli.py</code>
 (<code>select → waitready → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → pause → disconnect → quit</code>),
 which drives the backend over the WebSocket; an open browser mirrors it live. See
-<a href="ControlCLI.html">ControlCLI.md</a>. To visualise a finished recording,
+<a href="ControlCLI.html">ControlCLI.md</a>. To visualize a finished recording,
 <code>python python/examples/plot_recording.py &lt;dir&gt;</code> writes <strong><code>sync.png</code></strong> (NI-DAQ↔NPX timestamp sync) and
 <strong><code>channels.png</code></strong> (the recorded electrodes in µV) into the recording folder.</p>
 </blockquote>
@@ -269,7 +269,7 @@ probes, the value the demux actually stores. <strong>Use N = 384</strong> in any
   preceded by <code>timestamp + sync</code>. With <strong>no</strong> filter, the whole <code>N</code>-wide block is written.
 <em>(Superseded.)</em> Each <code>.bin</code> DOES carry a self-describing <code>&lt;file&gt;.bin.json</code> sidecar -- band,
 record layout, sample rate, units and the electrode/channel list -- written by
-<code>RecordProcessor.cpp</code>. <code>python/spikespeak_postprocess</code> and every <code>ripple_tools</code> analyser rely
+<code>RecordProcessor.cpp</code>. <code>python/spikespeak_postprocess</code> and every <code>ripple_tools</code> analyzer rely
 on it; a reader does NOT need to know N and the rate out-of-band.</li>
 </ul>
 <hr />
@@ -370,7 +370,7 @@ future reader disputing a scale factor must be able to tell which one they are h
 <p><strong>Where the numbers come from.</strong> <code>RecordProcessor</code> holds no reference to any source and must not
 acquire one -- <code>SourceRegistry::getSourceByName</code> <em>constructs</em> a source that is absent
 (<a href="AgentTraps.html">AgentTraps.md</a>). So sources <strong>publish</strong> an immutable snapshot to
-<code>RecordingMetadataService</code> (<code>src/core/RecordingMetadata.hpp</code>), modelled on <code>ChannelMapService</code>, and
+<code>RecordingMetadataService</code> (<code>src/core/RecordingMetadata.hpp</code>), modeled on <code>ChannelMapService</code>, and
 the recorder reads it. Publishing happens inside <code>publishChannelMap()</code>, so the two snapshots can never
 describe different maps, and again on a OneBox ADC range change. It is <strong>built once per map change and
 read once per record press</strong> -- nothing per sample, nothing on the 30 kHz path, no new dependency, and
@@ -497,11 +497,11 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 time, <em>including before you Play</em> (it doesn't touch hardware). The full IMRO editor returns when you
 switch the radio back. (This decoupled radio approach was chosen over auto-flipping on Record, so it
 works independent of streaming state.)</p>
-<p><strong>Probe recording-selection mode</strong> (reuses the ImroManager SciChart scatter + its click / drag-box
+<p><strong>Probe recording-selection mode</strong> (reuses the ImroManager probe map + its click / drag-box
 selection; <code>webinterface/ImroManager.js</code> <code>renderRecordSelection</code> + the <code>probeMode === 'record'</code> branch):
 - Shows <strong>only the electrodes in the applied probe map</strong> (<code>appliedImroData</code>) — the channels actually
   streaming; non-applied electrodes are not drawn. A note in the panel states this.
-- <strong>Colour legend</strong> (dark-mode, colourblind-safe by luminance): <strong>green = will record</strong>, <strong>blue =
+- <strong>Color legend</strong> (dark-mode, colorblind-safe by luminance): <strong>green = will record</strong>, <strong>blue =
   applied, not recording</strong>, <strong>amber = reference (ch 191, excluded)</strong>.
 - <strong>Default = record all</strong>: on entering the mode every applied, non-reference channel is selected.
 - <strong>Custom select</strong>: click an electrode toggles it; <strong>click-drag</strong> a vertical box <strong>adds</strong> the applied
@@ -522,7 +522,7 @@ correctly excluded) → Set → Record → both <code>ap</code> and <code>lfp</c
 (sidecar + <code>spikespeak_postprocess</code> confirm); Record-all → 383; toggle back to Edit Map restores the editor.</p>
 <p><strong>NI-DAQ record-channel selection (BUILT 2026-07-06).</strong> With a NI-DAQ recorder present, the "Select
 Recording Channels" mode also shows a <strong>NI-DAQ channel grid</strong> below the probe (<code>#nidaq-record-section</code>):
-a button per channel (green = will record) + <strong>All / None</strong>. Buttons are labelled <strong>0-indexed</strong> to match
+a button per channel (green = will record) + <strong>All / None</strong>. Buttons are labeled <strong>0-indexed</strong> to match
 the live view's NI-DAQ channel labels (<code>ChartColumn.js ${ch+1}</code>); the stored/committed index stays 0-based
 (what the recorder filters on), so displayed "1,4,6" records read-out channels <code>[0,3,5]</code>. The channel count
 is discovered from the live NI-DAQ display stream, so the grid <strong>auto-appears the moment you press ▶ Play</strong>
@@ -542,7 +542,7 @@ the timestamp of the data files:</p>
     logdemo_adc_20260819_231117.bin        + .bin.json
 </code></pre>
 <p>It exists because <code>output.log</code> is truncated on every start and so cannot answer "what was this rig
-doing when this file was written?" for data analysed later. It covers the <strong>recording</strong>, not the
+doing when this file was written?" for data analyzed later. It covers the <strong>recording</strong>, not the
 session -- only the source connected while recording, nothing before Record was pressed or after it
 stopped. That scope is deliberate: everything in the file pertains to the data beside it. Full
 rationale and the format of a line: <a href="Logging.html"><code>Logging.md</code></a>.</p></article>

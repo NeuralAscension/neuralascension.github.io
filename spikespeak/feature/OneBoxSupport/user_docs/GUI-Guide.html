@@ -92,10 +92,9 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-gui-guide-with-screenshots">SpikesPeak — GUI Guide (with screenshots)<a class="headerlink" href="#spikespeak-gui-guide-with-screenshots" title="Permanent link">#</a></h1>
 <p>An illustrated, end-to-end walkthrough of the SpikesPeak browser UI: connect a probe (or a simulated
@@ -206,7 +206,7 @@ the channel map) and <strong>Select Recording Channels</strong> (§4).</p>
 </ul>
 <h3 id="neuropixels-20-multishank">Neuropixels 2.0 multishank<a class="headerlink" href="#neuropixels-20-multishank" title="Permanent link">#</a></h3>
 <p><img alt="NP2 4-shank editor" src="images/np2_editor.png" /></p>
-<p>All <strong>4 shanks</strong> are drawn side by side (labelled <strong>0–3</strong> left→right, matching the manual), each with its
+<p>All <strong>4 shanks</strong> are drawn side by side (labeled <strong>0–3</strong> left→right, matching the manual), each with its
 own shaft + tip. A <strong>Shank</strong> dropdown + <strong>Bank 0–3</strong> buttons fill all 384 channels from the selected shank
 &amp; bank. Because 384 channels are shared across 5120 electrodes, a full map partitions the channels among
 the shanks — click/drag on any shank to route those channels there.</p>
@@ -221,10 +221,10 @@ than in SpikesPeak — or, frankly, in any current Neuropixels acquisition GUI.<
 <hr />
 <h2 id="3-live-data-watch-the-signal">3. Live Data (watch the signal)<a class="headerlink" href="#3-live-data-watch-the-signal" title="Permanent link">#</a></h2>
 <p>Press <strong>▶ Play</strong>, then the <strong>Live Data</strong> tab. Traces are <strong>depth-sorted</strong> (deepest/tip at the bottom) and
-labelled by electrode + side.</p>
-<p>The <strong>▶ / ⏸ Play button</strong> shows its state by colour: <strong>green ▶ when paused</strong> (ready — "press to play"), and
+labeled by electrode + side.</p>
+<p>The <strong>▶ / ⏸ Play button</strong> shows its state by color: <strong>green ▶ when paused</strong> (ready — "press to play"), and
 a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (the green ring is the unmistakable "live" cue —
-it mirrors the Record button's armed ring, but green). A disabled button (no source selected) stays grey.</p>
+it mirrors the Record button's armed ring, but green). A disabled button (no source selected) stays gray.</p>
 <p><img alt="Play paused = green ▶" src="images/play_button_green.png" /></p>
 <p><img alt="Streaming = white ⏸ inside a green pulsing ring" src="images/play_button_streaming.png" /></p>
 <p><img alt="NP1 live view" src="images/np1_liveview.png" /></p>
@@ -250,6 +250,9 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
   them as full-width <strong>rows</strong> (40 channels each) — ideal for a <strong>portrait / rotated monitor</strong> and laminar
   probes. The <strong>Columns/Rows</strong> selector sets how many strips (up to 4); the choice persists across reloads.</li>
 </ul>
+<blockquote>
+<p><strong>Density costs frame rate, and only frame rate.</strong> Columns × Ch is what the browser has to draw. Up to roughly 160–200 traces the view holds a full 60 fps; four columns of 120 — 480 traces on screen — runs at about 42 fps on this rig. Nothing is dropped from the data: acquisition, recording and ripple detection are untouched, and it is the <em>display</em> refresh that slows. (A faster renderer that holds 60 fps at that density exists and is opt-in — see <a href="../developer_docs/RendererExperiment.html"><code>RendererExperiment.md</code></a>.)</p>
+</blockquote>
 <p><img alt="Vertical (rows) live view on a portrait monitor" src="images/vertical_liveview.png" />
 - With <strong>NI-DAQ</strong>, one column can show the analog channels (a TTL sync pulse is visible on ch 0).
 - On a real probe the traces look like <strong>neural activity</strong> (irregular, noisy). The simulated sources show

@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,10 +123,11 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="gui-test-coverage-what-is-checked-and-what-is-not">GUI test coverage — what is checked, and what is not<a class="headerlink" href="#gui-test-coverage-what-is-checked-and-what-is-not" title="Permanent link">#</a></h1>
 <p>The GUI is a unit and it gets tested. This page is the inventory: every aspect currently covered,
-the behaviour the tests recorded, and — kept deliberately prominent — the aspects that are <strong>not</strong>
+the behavior the tests recorded, and — kept deliberately prominent — the aspects that are <strong>not</strong>
 covered yet, so nobody mistakes a green run for complete coverage.</p>
 <p>Run them:</p>
 <pre><code class="language-bash">python scripts/run_gui_tests.py
@@ -167,7 +167,7 @@ coverage itself.</p>
 </tr>
 <tr>
 <td><code>live_view</code></td>
-<td>Traces render, streams labelled, strips collapse/pin, pin survives rebuild, vertical</td>
+<td>Traces render, streams labeled, strips collapse/pin, pin survives rebuild, vertical</td>
 <td>~20 checks</td>
 </tr>
 <tr>
@@ -192,10 +192,21 @@ coverage itself.</p>
 </tr>
 </tbody>
 </table>
+<p>| <code>record_flow</code> | The recording state machine from the buttons an operator presses: idle -&gt; armed -&gt; recording, that ARMED writes nothing, and what actually reached the disk | 20 checks |
+| <code>shrink_window</code> | Every supported width x dock open/closed: never &gt;2 toolbar rows, nothing folded without a reachable chip, and the below-minimum refusal | 7 widths x 2 |
+| <code>probe_map</code> | The probe channel map DRAWS, on a 1.0 and on a 4-shank 2.0: shank shafts, routed vs available electrodes, and the electrode-number labels -- asserted by reading the canvas pixels back, because a canvas has no DOM to check and an empty one photographs perfectly | 2 probes x 8 checks |</p>
 <p>All drive a <strong>real browser</strong> over CDP against a <strong>real backend</strong> on a simulated source. No hardware.</p>
+<p>All twelve drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is now the
+only one, so there is no renderer to select. During the transition off SciChart the whole suite was
+run under <strong>both</strong> renderers and was green under both; that is the evidence that removing SciChart
+changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+<p>The harness refuses to run at all unless a column has a live WebGL2 context (<code>tests/gui/_harness.py</code>,
+after play). That check is coverage in its own right: a renderer whose context failed to create draws
+a blank box, which is indistinguishable from a rig sending nothing, and every assertion below would
+then be measuring an empty canvas and passing.</p>
 <p>Every suite writes its own screenshots into <code>developer_docs/images/gui/</code> as it runs, so the images on
 this page are produced by the same run that made the assertions — they cannot drift from the
-behaviour being claimed. Only the frames <strong>embedded below</strong> are tracked in git; the rest (all 16
+behavior being claimed. Only the frames <strong>embedded below</strong> are tracked in git; the rest (all 16
 matrix cells, the 820px toolbar, the live-view frames) are regenerated by any run of
 <code>python scripts/run_gui_tests.py</code>, and are gitignored so a run does not add ~14 MB of churn.</p>
 <table>
@@ -234,6 +245,26 @@ matrix cells, the 820px toolbar, the live-view frames) are regenerated by any ru
 <td><code>audio_panel</code></td>
 <td><code>audio_panel.png</code></td>
 </tr>
+<tr>
+<td><code>sim_picker</code></td>
+<td><code>picker_source_menu.png</code></td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td><code>record_recording_toolbar.png</code> (cropped to the bar)</td>
+</tr>
+<tr>
+<td><code>shrink_window</code></td>
+<td><code>shrink_min_width.png</code></td>
+</tr>
+<tr>
+<td><code>error_paths</code></td>
+<td><code>error_refused_select.png</code> (cropped to the bar)</td>
+</tr>
+<tr>
+<td><code>probe_map</code></td>
+<td><code>probe_map_np1.png</code>, <code>probe_map_np2.png</code></td>
+</tr>
 </tbody>
 </table>
 <h3 id="the-toolbar-folding">The toolbar, folding<a class="headerlink" href="#the-toolbar-folding" title="Permanent link">#</a></h3>
@@ -270,6 +301,26 @@ matrix cells, the 820px toolbar, the live-view frames) are regenerated by any ru
 </table>
 <h3 id="the-ripple-dock-after-every-parameter-has-been-driven">The ripple dock, after every parameter has been driven<a class="headerlink" href="#the-ripple-dock-after-every-parameter-has-been-driven" title="Permanent link">#</a></h3>
 <p><img alt="ripple dock" src="images/gui/ripple_dock_params.png" /></p>
+<hr />
+<h3 id="the-source-picker-open">The source picker, open<a class="headerlink" href="#the-source-picker-open" title="Permanent link">#</a></h3>
+<p><img alt="source menu" src="images/gui/picker_source_menu.png" /></p>
+<h3 id="what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right">What the operator sees when it goes wrong, and when it goes right<a class="headerlink" href="#what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>a refused select — the bar stays truthful</th>
+<th>a confirmed recording — solid, not pulsing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="refused select" src="images/gui/error_refused_select.png" /></td>
+<td><img alt="recording" src="images/gui/record_recording_toolbar.png" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-narrowest-supported-width-dock-open">The narrowest supported width, dock open<a class="headerlink" href="#the-narrowest-supported-width-dock-open" title="Permanent link">#</a></h3>
+<p><img alt="minimum width" src="images/gui/shrink_min_width.png" /></p>
 <hr />
 <h2 id="2-the-layout-matrix-14-columns-dock-orientation">2. The layout matrix — 1–4 columns × dock × orientation<a class="headerlink" href="#2-the-layout-matrix-14-columns-dock-orientation" title="Permanent link">#</a></h2>
 <p>The combinatorial case hand-testing misses. Every cell asserts: the requested column count exists,
@@ -709,7 +760,7 @@ connection</strong>, so the assertion cannot be satisfied by frontend state alon
 <code>3.00</code>, because <code>parseFloat("0") || DEFAULTS.z</code> is <code>3.0</code> and <code>0</code> is falsy. Zero is the natural value
 to reach for when deliberately provoking detections, and it was unreachable through the GUI.</p>
 <p><strong>Quorum needs two channels.</strong> Setting quorum to 2 with one detection channel is clamped to 1 — that
-is correct behaviour, not a bug, and the test adds two electrodes before asking. The first version of
+is correct behavior, not a bug, and the test adds two electrodes before asking. The first version of
 this test did not, and reported the clamp as a defect.</p>
 <hr />
 <h2 id="4a-fixed-a-refused-source-select-reported-itself-as-a-switch">4a. FIXED — a REFUSED source select reported itself as a switch<a class="headerlink" href="#4a-fixed-a-refused-source-select-reported-itself-as-a-switch" title="Permanent link">#</a></h2>
@@ -877,6 +928,9 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
 <li><a href="#the-toolbar-folding">The toolbar, folding</a></li>
 <li><a href="#the-bands">The bands</a></li>
 <li><a href="#the-ripple-dock-after-every-parameter-has-been-driven">The ripple dock, after every parameter has been driven</a></li>
+<li><a href="#the-source-picker-open">The source picker, open</a></li>
+<li><a href="#what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right">What the operator sees when it goes wrong, and when it goes right</a></li>
+<li><a href="#the-narrowest-supported-width-dock-open">The narrowest supported width, dock open</a></li>
 </ul>
 </li>
 <li><a href="#2-the-layout-matrix-14-columns-dock-orientation">2. The layout matrix — 1–4 columns × dock × orientation</a><ul>

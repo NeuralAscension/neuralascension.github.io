@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,12 +123,23 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="live-view-rendering-performance-scichart-limits-what-we-tried-and-the-off-ramps">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps<a class="headerlink" href="#live-view-rendering-performance-scichart-limits-what-we-tried-and-the-off-ramps" title="Permanent link">#</a></h1>
 <p>Everything we measured about rendering hundreds of streaming channels in the SpikesPeak browser live view
 (SciChart.js v5.2.35), what optimizations moved the needle (spoiler: almost none), <em>why</em>, and the concrete
 paths to go faster if we ever need to. Raw benchmark numbers live in
 <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html"><code>benchmarks/CHANNEL_DENSITY_REPORT.md</code></a>; this doc is the narrative.</p>
+<blockquote>
+<p><strong>SciChart was removed from SpikesPeak on 2026-08-27.</strong> <code>webinterface/GlRenderer.js</code> is the only
+live-view renderer, <code>webinterface/ProbeMap.js</code> draws the probe map in canvas 2D, and the vendored
+bundle is gone from <code>webinterface/lib/</code>. Read this document as <strong>the evidence trail that located the
+bottleneck</strong>: every measurement below was true of the code at the time it was taken and is left
+exactly as recorded. The <em>advice</em> has been corrected in place — a reader following the old density
+guidance would now throttle a renderer that does not need it. The finished comparison is
+<a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>; the interface the replacement satisfies is
+<a href="RendererContract.html"><code>RendererContract.md</code></a>.</p>
+</blockquote>
 <h2 id="tldr">TL;DR<a class="headerlink" href="#tldr" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>SciChart renders on ONE main thread.</strong> It has no OffscreenCanvas/Web-Worker mode, and its <code>.wasm</code> is
@@ -139,9 +149,14 @@ paths to go faster if we ever need to. Raw benchmark numbers live in
 <li><strong>The bottleneck is the DRAW of many series, not data ingestion.</strong> We moved the parse to a Web Worker and
   it changed <em>nothing</em> — because <code>appendRange</code> + SciChart's draw dominate, and both must stay on the main
   thread with SciChart.</li>
-<li><strong>There is no SciChart-side software fix that recovers 60 fps at 320 series.</strong> The real fix is to move the
-  WebGL drawing off the main thread — which means a <em>different</em> renderer (SciChart can't). Keep the density
-  ≲ 160–200 for now (the per-column channel dropdown lets users dial it).</li>
+<li><strong>There is no SciChart-side software fix that recovers 60 fps at 320 series.</strong> The fix was a <em>different</em>
+  renderer — though not for the reason this line originally gave. "Move the WebGL drawing off the main
+  thread" was the hypothesis of the day and it was wrong; see the harness section below. What had to go
+  was the <strong>per-series CPU bookkeeping</strong>, and the replacement draws on the main thread quite happily.</li>
+<li><strong>The ≲ 160–200 density ceiling this document used to prescribe no longer applies.</strong> It was a SciChart
+  limit and SciChart is gone. On the OneBox + NP2.0 rig the current renderer holds a solid 60 fps at
+  <strong>480 on-screen traces</strong> (four columns of 120), where SciChart managed 42 ± 5. Set the per-column
+  channel dropdowns for the science you want to see, not for a frame-rate budget.</li>
 </ul>
 <h2 id="re-measured-2026-08-27-and-the-architecture-question-is-now-answered">RE-MEASURED 2026-08-27 — and the architecture question is now answered<a class="headerlink" href="#re-measured-2026-08-27-and-the-architecture-question-is-now-answered" title="Permanent link">#</a></h2>
 <p>Everything below this section predates the source-selection refactor. Two things changed:</p>
@@ -255,7 +270,7 @@ candidate costs, and nobody had turned it.</p>
 </table>
 <p>The naive reading — "busy moved when the window grew, so it is vertex-bound" — is <strong>wrong</strong>, and the
 script printed exactly that verdict on its first run before the arithmetic was done properly. Both
-knobs add vertices; they add wildly different numbers of them. Normalise:</p>
+knobs add vertices; they add wildly different numbers of them. Normalize:</p>
 <pre><code>via SERIES  160 -&gt; 240 @ 1 s :   +192,000 vertices   busy +0.219  =&gt;  1.14e-06 per vertex
 via POINTS  1 s -&gt; 5 s @ 160 : +1,536,000 vertices   busy +0.193  =&gt;  1.26e-07 per vertex
 </code></pre>
@@ -280,9 +295,12 @@ bottleneck and moving it is not worth a worker round-trip.</p>
 figures, the mechanism and the limits -- is in
 <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>. This section is the summary.</p>
 </blockquote>
-<p><code>webinterface/GlRenderer.js</code> is a WebGL2 trace renderer wired into the live view behind
-<code>window.__useGl</code>. SciChart remains the default and the suite still gates on it; <code>window.__setGl(true)</code>
-switches every column live, without a reload.</p>
+<p><code>webinterface/GlRenderer.js</code> is a WebGL2 trace renderer wired into the live view. <strong>For the duration of
+this A/B it sat behind <code>window.__useGl</code>, with SciChart as the default and <code>window.__setGl(true)</code>
+switching every column live without a reload</strong> — that is how the two arms below were measured in one
+session. Those globals were removed on 2026-08-27 along with SciChart itself; there is no renderer to
+select any more. <code>window.__benchPointCount(colIndex)</code> survives and now answers only from the GL
+renderer, returning <code>-1</code> for no such column or a lost context.</p>
 <p><strong>Same protocol, same session, one variable.</strong></p>
 <table>
 <thead>
@@ -341,8 +359,8 @@ ordering and labels.</p>
 <p><strong>The first A/B showed no gain at all</strong> — 41 fps vs 44, both saturated. The GL canvas was layered
 <em>over</em> the SciChart surface, so it looked like a swap, but SciChart was still bound, still being fed
 by <code>appendRange</code>, and still drawing. The app was paying for both renderers. A comparison that leaves
-the incumbent running is not a comparison; under <code>__useGl</code> the appends are now skipped and the
-SciChart series are hidden.</p>
+the incumbent running is not a comparison; for the rest of the A/B, <code>__useGl</code> skipped the appends and
+hid the SciChart series.</p>
 <p><strong>The renderer appeared broken under test, painting 1.0 frames/s</strong> with every buffer full and correct.
 <code>requestAnimationFrame</code> does not fire in a window Chrome believes is occluded (<code>AgentTraps.md</code> §5f)
 — and <code>setTimeout</code>, the obvious fallback, is clamped to ~1 Hz in the same state. The GUI harness
@@ -511,11 +529,23 @@ unlike series-major, <strong>flat in series count</strong>.</p>
 <p>So at today's wall of 320 series the whole renderer costs <strong>0.050 ms, or 0.3 % of the frame</strong>, and it
 is still 0.048 ms at 1280 series — four times the density that currently collapses the view. The
 phase-1 result survives contact with real ingestion.</p>
-<p><strong>The architecture is therefore settled:</strong> one time-major vertex buffer per column, one contiguous
-<code>bufferSubData</code> per frame, a strided index buffer built once, one <code>drawElements(LINE_STRIP)</code> with
-primitive restart. No worker, no OffscreenCanvas — at 0.3 % of a frame there is nothing to move off
-the main thread.</p>
+<p><strong>On these numbers time-major is the right architecture:</strong> one time-major vertex buffer per column,
+one contiguous <code>bufferSubData</code> per frame, a strided index buffer built once, one
+<code>drawElements(LINE_STRIP)</code> with primitive restart. No worker, no OffscreenCanvas — at 0.3 % of a
+frame there is nothing to move off the main thread.</p>
 <blockquote>
+<p><strong>What actually shipped is series-major, and the reason is correctness, not performance.</strong> A
+time-major <em>ring</em> cannot express "draw the last window as one strip" through a <strong>static</strong> strided
+index buffer — the index buffer would have to be rebuilt or re-uploaded every time the write head
+moves, which is exactly the per-frame cost the layout was chosen to avoid; leave it static and the
+wrap point becomes a visible horizontal slash across every trace. The shipped renderer instead
+gives each row a <code>2 × capacity</code> span written sequentially and compacts it about once a second, so
+the visible window is always one contiguous <code>drawArrays</code> range with no wrap seam.</p>
+<p>The price is the 0.36 ms/frame in the table above (0.411 vs 0.050 at 320 series) — <strong>2 % of a
+17.4 ms budget</strong>, paid to keep the traces free of a rendering artifact. That is the correct trade
+today and it is worth revisiting only when 0.4 ms is the thing in the way; a time-major layout
+would then need a dynamic index buffer or a wrap-aware two-draw path, and both give some of the
+upload win back. Full reasoning: <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a> §5.</p>
 <p><strong><code>fill</code> is excluded from these totals, and must be.</strong> The harness <em>generates</em> synthetic samples
 (3×<code>Math.sin</code> + <code>Math.random</code> each), which the app does not do — it copies decoded floats out of a
 socket buffer. Reading the harness's <code>fill</code> as a renderer cost would be measuring the test.
@@ -530,7 +560,9 @@ had nothing to do with layout; fixed before the numbers above were taken.</p>
   controls and the resize path are the live view's other main-thread work, and none of it is in the
   harness.</li>
 <li><strong>The integrated article.</strong> These are isolated numbers. The claim that they survive integration is
-  a prediction until an actual renderer is measured against the SciChart control with §4's protocol.</li>
+  a prediction until an actual renderer is measured against the SciChart control with §4's protocol.
+  <em>(Answered 2026-08-27: the renderer was built and measured against that control, in simulation and
+  then on real hardware. The prediction held. <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.)</em></li>
 </ul>
 <hr />
 <h2 id="measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)<a class="headerlink" href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz" title="Permanent link">#</a></h2>
@@ -628,7 +660,13 @@ while the one render thread pegs.</p>
 the actual limiter. Always measure before believing a threading fix. SciChart's single-threaded <strong>draw</strong> is
 the hard floor here.</p>
 <h2 id="optimizations-that-dont-apply-are-already-done">Optimizations that DON'T apply / are already done<a class="headerlink" href="#optimizations-that-dont-apply-are-already-done" title="Permanent link">#</a></h2>
-<p>Per SciChart's own perf guidance, most tricks are already in the codebase or moot:
+<blockquote>
+<p><strong>This section describes the SciChart implementation as it stood, and none of it is in the tree any
+more</strong> — the settings, the FIFO series and the four column surfaces went with the bundle on
+2026-08-27. It is kept because it is the answer to "did you not just tune it?", and the answer is
+yes, first, and it bought nothing.</p>
+</blockquote>
+<p>Per SciChart's own perf guidance, most tricks were already in the codebase or moot:
 - <strong>Single-surface-with-y-offset</strong> (all channels on one surface, offset in Y) — this is <em>exactly</em> what each
   ChartColumn already does internally (baked yOffset, one hidden Y axis, <code>drawLabels:false</code>).
 - <strong>Suppress axis/gridline drawing</strong> — already off (<code>drawMajorGridLines:false</code>, <code>drawLabels:false</code>).
@@ -638,6 +676,16 @@ the hard floor here.</p>
   only the per-surface overhead the data showed (~6 %: 80 series as 1×80 = 22 % vs 4×20 = 28 %). Not a fix
   for the 320-series wall; a modest polish at best, for a non-trivial refactor of ChartColumn.</p>
 <h2 id="the-real-fix-future-move-webgl-drawing-off-the-main-thread-a-different-renderer">The real fix (future): move WebGL drawing off the main thread — a <em>different</em> renderer<a class="headerlink" href="#the-real-fix-future-move-webgl-drawing-off-the-main-thread-a-different-renderer" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>Settled 2026-08-27, and by none of the three paths below as written.</strong> SciChart was replaced by a
+hand-written WebGL2 renderer (<code>webinterface/GlRenderer.js</code>) drawing on the <strong>main thread</strong> — no
+worker, no <code>OffscreenCanvas</code>, no vendored line-plot library, nothing bought. The premise of this
+section's first sentence turned out to be false: the isolated harness above put the same 768 k
+vertices on the GPU in 0.076 ms of a 17.4 ms frame, so once the per-series CPU bookkeeping was gone
+there was nothing left worth moving off the main thread. The section stays because the survey of
+what other high-density neural viewers do is still worth reading, and because it records honestly
+what we believed before the harness was written. Result: <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+</blockquote>
 <p>The only way to break the ceiling is to render in a <strong>Web Worker via <code>OffscreenCanvas</code></strong>, so the draw runs
 on an idle core and the GPU is fed directly. SciChart can't; several alternatives can, all keeping the
 HTML/CSS/JS UI (you wrap your own headers/labels/sliders around the canvas — the flexibility we want).
@@ -667,14 +715,24 @@ thread: <strong>decimate to pixels + draw off the main thread</strong>, not a he
 swap the renderer" is <strong>Path 1 (<code>webgl-plot</code> or custom WebGL2 in a worker)</strong> — MIT, off-main-thread, and it
 leaves all the UI chrome to HTML/CSS/JS. Path 2 if we'd rather buy than build. This is a separate project;
 not urgent while ≤ ~200 on-screen series covers the workflows.</p>
-<h2 id="practical-guidance-for-now">Practical guidance for now<a class="headerlink" href="#practical-guidance-for-now" title="Permanent link">#</a></h2>
+<h2 id="practical-guidance">Practical guidance<a class="headerlink" href="#practical-guidance" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>Rewritten 2026-08-27.</strong> This section used to say "keep total on-screen series ≲ 160–200", and that
+instruction is now wrong: it was a SciChart limit, and following it today would throttle a renderer
+that does not need throttling. The numbers behind the old ceiling are preserved in the tables above
+as <em>measurements</em>; they are not repeated here as <em>advice</em>.</p>
+</blockquote>
 <ul>
-<li><strong>Keep total on-screen series ≲ 160–200</strong> for rock-solid 60 fps (e.g. 4 × 40, or 2 × 80). 240 (4×60) is
-  usable but at ~86 % main-thread with occasional hitches; <strong>320 (4×80) drops frames — for a quick look only.</strong></li>
-<li>The <strong>per-column channels dropdown</strong> (<code>Auto/20/40/60/80/120</code>, independent per column/row) lets users spend
-  the budget where they want it — dense on one strip, sparse on the others.</li>
-<li>Real multi-band loads (NP1 AP+LFP + NI-DAQ + ripple detection + recording) add main-thread work on top, so
-  the practical ceiling is lower than the single-band sim numbers.</li>
+<li><strong>There is no density ceiling to budget around.</strong> On the OneBox + NP2.0 rig, four columns of 120 —
+  <strong>480 on-screen traces</strong>, half again the density that used to collapse the view — hold a solid 60 fps
+  with the renderer main thread at 0.225 of a core. SciChart on the same rig at the same density was
+  42 ± 5 fps at 0.964 of a core.</li>
+<li>The <strong>per-column channels dropdown</strong> (<code>Auto/20/40/60/80/120</code>, independent per column/row) is now a
+  <em>what do you want to look at</em> control rather than a performance budget.</li>
+<li>Real multi-band loads (NP1 AP+LFP + NI-DAQ + ripple detection + recording) still add main-thread work
+  on top of the traces, and that has <strong>not</strong> been re-measured against the current renderer. The
+  headroom is much larger than it was; it is not infinite, and the ripple dock in particular still runs
+  its own unconditional rAF loop.</li>
 </ul>
 <h2 id="display-polish-done-this-session-2026-07-12">Display polish done this session (2026-07-12)<a class="headerlink" href="#display-polish-done-this-session-2026-07-12" title="Permanent link">#</a></h2>
 <ul>
@@ -709,7 +767,7 @@ and the <code>spikespeak-vertical-display</code> memory for the code map.</li>
 <li><a href="#what-we-tried-and-the-measured-result">What we tried (and the measured result)</a></li>
 <li><a href="#optimizations-that-dont-apply-are-already-done">Optimizations that DON'T apply / are already done</a></li>
 <li><a href="#the-real-fix-future-move-webgl-drawing-off-the-main-thread-a-different-renderer">The real fix (future): move WebGL drawing off the main thread — a different renderer</a></li>
-<li><a href="#practical-guidance-for-now">Practical guidance for now</a></li>
+<li><a href="#practical-guidance">Practical guidance</a></li>
 <li><a href="#display-polish-done-this-session-2026-07-12">Display polish done this session (2026-07-12)</a></li>
 </ul>
 </div>

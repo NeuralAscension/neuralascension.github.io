@@ -229,7 +229,7 @@ html[data-theme="dark"] .figpair img{box-shadow:0 1px 3px rgba(0,0,0,.55)}
 .cover { text-align: center; }
 .cover-logo { width: min(420px, 72%); height: auto; display: block; margin: 8px auto 4px; }
 .cover-title {
-    /* SpikesPeak's own accent, not a neutral grey -- the cover is the one place the identity should
+    /* SpikesPeak's own accent, not a neutral gray -- the cover is the one place the identity should
        be unambiguous. var(--brand-ink) is the theme's readable brand tone in both light and dark. */
     margin: 0 0 6px; font-size: 20px; font-weight: 500; letter-spacing: .18em;
     text-transform: uppercase; color: var(--brand-ink);

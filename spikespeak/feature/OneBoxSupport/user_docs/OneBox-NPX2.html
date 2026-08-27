@@ -92,10 +92,9 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="neuropixels-20-multishank-on-a-onebox">Neuropixels 2.0 Multishank on a OneBox<a class="headerlink" href="#neuropixels-20-multishank-on-a-onebox" title="Permanent link">#</a></h1>
 <p>Start to finish with the hardware that is on the rig right now: a <strong>Neuropixels 2.0 multishank probe</strong>
@@ -302,9 +302,9 @@ probe, then stream.</strong></p>
 <h3 id="editing-the-map">Editing the map<a class="headerlink" href="#editing-the-map" title="Permanent link">#</a></h3>
 <ol>
 <li>Click the <strong>Probe Map</strong> tab. The mode radio must be on <strong>Edit Map</strong>.</li>
-<li>All four shanks are drawn side by side, labelled <strong>0, 1, 2, 3 left → right</strong> (matching the imec
+<li>All four shanks are drawn side by side, labeled <strong>0, 1, 2, 3 left → right</strong> (matching the imec
    manual), each with its shaft and tip. <strong>Green</strong> = this electrode's channel is active and will
-   stream; <strong>grey</strong> = available, not selected.</li>
+   stream; <strong>gray</strong> = available, not selected.</li>
 </ol>
 <p>📷 <em>NP2 4-shank map editor on the OneBox</em></p>
 <ol start="3">
@@ -340,7 +340,7 @@ running → write the map → <strong>read it back and verify</strong> → resum
 <ul>
 <li>green status: <strong><code>Applied updated probe map successfully</code></strong></li>
 <li>in <strong>Live Data</strong>, the traces <strong>re-order and re-label</strong> — they are sorted by depth (deepest at the
-  bottom) and labelled by electrode, e.g. <code>100L</code>, so a map change visibly moves them</li>
+  bottom) and labeled by electrode, e.g. <code>100L</code>, so a map change visibly moves them</li>
 <li>the column depth readout in each header changes to the new electrode range (e.g. <code>e383 ↕ e0</code>)</li>
 </ul>
 <p><strong>Until you press Apply, the probe keeps its previous map.</strong> Edits live in the editor only. A green
@@ -349,7 +349,7 @@ electrode is a <em>request</em> until Apply says otherwise.</p>
 <h2 id="5-the-live-view">5. The live view<a class="headerlink" href="#5-the-live-view" title="Permanent link">#</a></h2>
 <p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) and click <strong>Live Data</strong>.</p>
 <ul>
-<li><strong>The Play button tells you the state by colour:</strong> green <strong>▶</strong> when paused ("press to play"), and a
+<li><strong>The Play button tells you the state by color:</strong> green <strong>▶</strong> when paused ("press to play"), and a
   white <strong>⏸</strong> inside a <strong>green pulsing ring</strong> while streaming.</li>
 </ul>
 <p>📷 <em>Live view — probe RAW beside the OneBox ADC</em></p>
@@ -374,12 +374,10 @@ electrode is a <em>request</em> until Apply says otherwise.</p>
 <td><strong>Ch</strong></td>
 <td>Channels per strip: <code>Auto / 20 / 40 / 60 / 80 / 120</code>.</td>
 </tr>
-<tr>
-<td><strong>Window (sec)</strong></td>
-<td>Time width of the view: 1 / 2 / 5 / 10 s.</td>
-</tr>
 </tbody>
 </table>
+<p><strong>Cost of density.</strong> Columns × Ch is what the browser draws. Up to ~160–200 traces the live view is a solid 60 fps; <strong>4 × 120 = 480 traces drops it to about 42 fps</strong> on this rig (measured, OneBox + NP2.0). That is display smoothness only — acquisition, recording and ripple detection are unaffected.
+| <strong>Window (sec)</strong> | Time width of the view: 1 / 2 / 5 / 10 s. |</p>
 <p>Each strip also has a <strong>vertical slider</strong> (plus ▲/▼) to scroll through depth, and its header shows the
 <strong>depth readout</strong> — the deepest and shallowest thing currently on screen.</p>
 <h3 id="per-column-band-selection">Per-column band selection<a class="headerlink" href="#per-column-band-selection" title="Permanent link">#</a></h3>
@@ -458,7 +456,7 @@ the caption; there is no control captioned <em>Scale</em>:</p>
 </table>
 <p>Click a trace label to <strong>select</strong> that channel, then use the <strong>scroll wheel</strong> over the chart to zoom
 just that one. Click again to deselect.</p>
-<h3 id="the-control-strip-changed-2026-08-25-this-is-the-current-behaviour">The control strip (changed 2026-08-25 — this is the current behaviour)<a class="headerlink" href="#the-control-strip-changed-2026-08-25-this-is-the-current-behaviour" title="Permanent link">#</a></h3>
+<h3 id="the-control-strip-changed-2026-08-25-this-is-the-current-behavior">The control strip (changed 2026-08-25 — this is the current behavior)<a class="headerlink" href="#the-control-strip-changed-2026-08-25-this-is-the-current-behavior" title="Permanent link">#</a></h3>
 <p>The per-column strip of controls (band, shank, L+R, scale, density) <strong>stays fully visible whenever it
 fits.</strong> It folds away to a small <strong><code>▾ controls</code></strong> chip only when the column is genuinely too narrow —
 the row needs 448 px beside the depth readout.</p>
@@ -599,7 +597,7 @@ is where you capture:</p>
 <li>a <strong>stimulus monitor</strong> (the stimulator's own trigger or monitor output, fed back in, so the pulse is
   in the recording),</li>
 <li>a <strong>sync line</strong> from another instrument, so two systems can be aligned offline,</li>
-<li>any <strong>behaviour / TTL</strong> signal you want on the same clock as the neural data.</li>
+<li>any <strong>behavior / TTL</strong> signal you want on the same clock as the neural data.</li>
 </ul>
 <p>Because the ADC and the probe are two streams from <strong>one device</strong>, they need no cross-device sync
 alignment — which is the single biggest reason to prefer it over a second acquisition card.</p>
@@ -837,7 +835,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 <li><a href="CommandLineControl.html"><code>CommandLineControl.md</code></a> — driving all of this with no clicking.</li>
 <li><a href="SimulatedData.html"><code>SimulatedData.md</code></a> — the Simulated Data picker's
   <strong><code>Neuropixels 2.0 Multishank (OneBox + ADC)</code></strong> reproduces this whole walkthrough, ADC band included,
-  with no hardware attached. Practise there first.</li>
+  with no hardware attached. Practice there first.</li>
 <li>Developer detail: <a href="../developer_docs/archive/NextTask_OneBoxSupport.html"><code>../developer_docs/archive/NextTask_OneBoxSupport.md</code></a>
   (design + the imec API surface), <a href="../developer_docs/Recording.html"><code>../developer_docs/Recording.md</code></a>
   (file formats), <a href="../developer_docs/ConfigReference.html"><code>../developer_docs/ConfigReference.md</code></a>
@@ -869,7 +867,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 <li><a href="#columns-rows-and-density">Columns, rows and density</a></li>
 <li><a href="#per-column-band-selection">Per-column band selection</a></li>
 <li><a href="#scale-labels-and-the-depth-readout">Scale, labels and the depth readout</a></li>
-<li><a href="#the-control-strip-changed-2026-08-25-this-is-the-current-behaviour">The control strip (changed 2026-08-25 — this is the current behaviour)</a></li>
+<li><a href="#the-control-strip-changed-2026-08-25-this-is-the-current-behavior">The control strip (changed 2026-08-25 — this is the current behavior)</a></li>
 </ul>
 </li>
 <li><a href="#6-recording">6. Recording</a><ul>

@@ -92,10 +92,9 @@
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,6 +123,7 @@
 <a href="developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-instructions-for-agents">SpikesPeak — instructions for agents<a class="headerlink" href="#spikespeak-instructions-for-agents" title="Permanent link">#</a></h1>
 <p>Qt/C++ acquisition backend + an <strong>external browser</strong> GUI (HTTP :8234, WebSocket :1234), Neuropixels
@@ -214,7 +214,7 @@ and the same GUI as real hardware. So when something looks broken:</p>
 </ol>
 <p>This is written up properly in <code>developer_docs/Testing.md</code> §4, with the 2026-08-20 incident that
 produced it: a dead probe reported a completely healthy rig for three and a half minutes.</p>
-<h2 id="what-this-system-is-optimising-for">What this system is optimising for<a class="headerlink" href="#what-this-system-is-optimising-for" title="Permanent link">#</a></h2>
+<h2 id="what-this-system-is-optimizing-for">What this system is optimizing for<a class="headerlink" href="#what-this-system-is-optimizing-for" title="Permanent link">#</a></h2>
 <p><strong>Real time, minimal overhead, no new dependencies.</strong> This is an acquisition and closed-loop
 stimulation system: the numbers it is judged on are milliseconds of latency and samples that were
 not dropped. Every change is measured against that first.</p>
@@ -230,9 +230,13 @@ not dropped. Every change is measured against that first.</p>
   loop that runs at 30 kHz are all defects, whatever they are measuring. Measure per batch.</li>
 <li><strong>Do not record what can be recomputed.</strong> A derived band is the raw band plus documented
   coefficients, so it is reproduced offline exactly rather than written to disk twice.</li>
-<li><strong>The GUI is on notice.</strong> SciChart is a dependency we intend to remove. Do not deepen the coupling
-  to it, do not build new features that only work through it, and prefer plain DOM/canvas for
-  anything new.</li>
+<li><strong>The GUI has no chart library, and is not to acquire one.</strong> SciChart was removed on 2026-08-27:
+  the live traces are drawn by a hand-written WebGL2 renderer (<code>webinterface/GlRenderer.js</code>) and the
+  probe map by plain canvas 2D (<code>webinterface/ProbeMap.js</code>), which together cost about a quarter of
+  the CPU the library did and deleted 3.5 MB of vendored bundle. Reach for plain DOM, canvas 2D, or
+  WebGL2 for anything new. Adding a charting dependency back is a decision for the operator, not a
+  convenience — see <a href="developer_docs/RendererExperiment.html"><code>RendererExperiment.md</code></a> for what the last
+  one cost.</li>
 </ul>
 <p>When a change trades latency, CPU or a dependency for convenience, that trade is the headline of
 your report -- not a footnote.</p>
@@ -258,7 +262,7 @@ your report -- not a footnote.</p>
 <li><a href="#running-the-app">Running the app</a></li>
 <li><a href="#hardware-safety-read-before-touching-a-rig">Hardware safety — read before touching a rig</a></li>
 <li><a href="#sim-first-always">Sim first, always</a></li>
-<li><a href="#what-this-system-is-optimising-for">What this system is optimising for</a></li>
+<li><a href="#what-this-system-is-optimizing-for">What this system is optimizing for</a></li>
 <li><a href="#repo-conventions">Repo conventions</a></li>
 </ul>
 </div>

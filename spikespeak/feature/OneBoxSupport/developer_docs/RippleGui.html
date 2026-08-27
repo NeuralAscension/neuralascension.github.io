@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,11 +123,12 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="ripple-detection-gui-design-ws-contract-and-integration-plan">Ripple-detection GUI — design, WS contract, and integration plan<a class="headerlink" href="#ripple-detection-gui-design-ws-contract-and-integration-plan" title="Permanent link">#</a></h1>
 <p>The RippleDetection panel is a <strong>right-side dock column</strong> (≤ ¼ width, stretchable) that coexists with the
 Probe Map / Live Data views (a toolbar tab <strong>toggles</strong> the dock; it does not replace the main view). It drives
-<code>proc.rippledetector</code> and visualises its per-channel state.</p>
+<code>proc.rippledetector</code> and visualizes its per-channel state.</p>
 <blockquote>
 <p><strong>Scope — this doc is the GUI ↔ backend WS contract only.</strong> How to <em>operate</em> the dock (with annotated
 screenshots): <a href="../user_docs/RippleDetection.html"><code>../user_docs/RippleDetection.md</code></a>. The detection
@@ -146,7 +146,7 @@ default, ±0.001)</strong>. <strong>Start/Pause + Edit-lock verified headless (2
 3 channels trained), <code>pause</code>→<code>enabled=false</code> (0 detections while paused), <code>setChannels[0,10,20,30]</code> while paused
 merged to 4 channels, <code>start</code>→resume trained ONLY the new e30 (e0/e10/e20 kept their baselines), 7 detections
 total, no crash across the runtime channel-set mutations. <strong>Ctrl+drag channel selection is DONE:</strong> a shared <code>RippleModule.beginElectrodeDrag</code>
-custom-drag (works over the WebGL probe canvas AND the live-view DOM labels, unlike HTML5 DnD) — the probe view
+custom-drag (works over the probe-map canvas AND the live-view DOM labels, unlike HTML5 DnD) — the probe view
 hooks it on <code>Ctrl+mousedown</code> via <code>electrodeUnderCursor</code>/<code>np2ElectrodeUnderCursor</code> (NP2 → global
 <code>shank*1280+e</code>); the live view hooks it on the electrode labels (<code>Ctrl+mousedown</code>, normal Ctrl-click select
 skipped). Verified headless: drop-on-dock → <code>addElectrode</code> (chip + per-channel column appear). Remaining: the
@@ -319,7 +319,8 @@ DOM back through CDP — never by clicking the control it is supposed to be test
 4. <strong>Envelope source:</strong> the detector already fills <code>mDataStoreEnvelope</code> (per-channel envelope) — sample the
    latest per channel for <code>rippleEnvelope</code> rather than adding new state.
 5. <strong>Ctrl+drag source side:</strong> make electrodes draggable from <code>ImroManager</code>/<code>ChartColumn</code> when Ctrl is held
-   (SciChart pointer handlers) and set <code>dataTransfer</code> = the electrode number; the dock's dropzone already accepts.</p>
+   (<code>ImroManager</code>'s mouse handlers on the probe-map canvas) and set <code>dataTransfer</code> = the electrode number;
+   the dock's dropzone already accepts.</p>
 <h2 id="5-notes">5. Notes<a class="headerlink" href="#5-notes" title="Permanent link">#</a></h2>
 <ul>
 <li>The stim server "communicates via Ethernet" — the existing <code>StimulatorClient</code> (UDP to an IP:port) maps to the
@@ -330,13 +331,13 @@ DOM back through CDP — never by clicking the control it is supposed to be test
 <p>Below the editable <strong>Stim pulse</strong> params (phase µs / gap µs / freq Hz / train ms) the ripple dock draws
 a live schematic on <code>#rd-pulse-canvas</code> (<code>RippleModule._drawPulse()</code>), redrawn on every edit:
 - <strong>top zone</strong> — one biphasic pulse, zoomed so the two <code>phase</code> lobes and the inter-phase <code>gap</code> are
-  always visible and labelled;
+  always visible and labeled;
 - <strong>bottom zone</strong> — the pulse train at real <code>1/freq</code> spacing over the <code>train</code> window, with a <code>1/freq</code>
   period marker and a <code>&lt;freq&gt;Hz · train &lt;ms&gt; → &lt;N&gt; pulses</code> summary.</p>
 <p>So editing any value updates both the pulse <strong>shape</strong> (phase/gap widths) and the <strong>spacing/count</strong>
 (freq/train) immediately. Pure frontend — no rebuild; sync <code>webinterface/RippleModule.js</code> into the
 build tree's <code>webinterface/</code> (the backend serves that copy) and hard-reload the browser (it caches JS).</p>
-<p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labelled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview.png" /></p>
+<p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labeled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview.png" /></p>
 <h2 id="clickable-armdisarm-stim-toggle-2026-07-16">Clickable arm/disarm stim toggle (2026-07-16)<a class="headerlink" href="#clickable-armdisarm-stim-toggle-2026-07-16" title="Permanent link">#</a></h2>
 <p>The small <strong>stim-server LED</strong> in the Detection &amp; stimulation card is a <strong>clickable toggle</strong>
 (<code>#rd-stim-toggle</code>, a pill wrapping the LED + status text + a ⏻ power icon) that arms/disarms the Pi —
@@ -361,7 +362,7 @@ stimulation.</p>
 <li><em>(historical, no longer true)</em> <code>WebSocketServer::onSourceSelection</code>
   then broadcasts the armed status so the pill shows <strong>green "armed"</strong> immediately on select (even before
   Play).</li>
-<li><strong>Click while armed</strong> → <code>disarmStim</code> → the Pi disarms and the pill goes grey. Detection keeps running, but
+<li><strong>Click while armed</strong> → <code>disarmStim</code> → the Pi disarms and the pill goes gray. Detection keeps running, but
   a disarmed server ignores <code>fire()</code>, so <strong>no pulse goes out</strong> until you re-arm.</li>
 <li><strong>Click while disarmed</strong> → <code>armStim</code> → the Pi re-arms and the pill goes green.</li>
 <li>The click is <strong>optimistic</strong> — the frontend flips the LED/label on every click (so rapid arm/disarm
@@ -379,7 +380,7 @@ mutex/<code>setStatusSafe</code>), <code>RippleDetector.{hpp,cpp}</code> (<code>
 arm/disarm to <code>setStimArmed</code> on the main thread + broadcast armed-by-default on select), <code>RippleModule.js</code>
 (<code>.rd-stim-toggle</code> CSS, button markup, <code>_isStimArmed()</code>, <code>_syncStimLed()</code>, optimistic click binding).
 <strong>Verified on the live Pi 3B+ without streaming:</strong> 6/6 clicks alternated reliably — journal <code>Device ARMED</code>
-/ <code>Device DISARMED</code> per click, pill green/grey, short cowsay (verified by CDP screenshot).</p></article>
+/ <code>Device DISARMED</code> per click, pill green/gray, short cowsay (verified by CDP screenshot).</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/RippleGui.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">

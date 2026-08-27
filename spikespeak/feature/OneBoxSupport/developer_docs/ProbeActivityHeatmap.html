@@ -92,10 +92,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
@@ -124,12 +123,36 @@
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="feature-plan-probe-activity-heatmap-live-on-the-probe-map">Feature Plan — Probe Activity Heatmap (live, on the probe map)<a class="headerlink" href="#feature-plan-probe-activity-heatmap-live-on-the-probe-map" title="Permanent link">#</a></h1>
-<p><strong>Status:</strong> PROPOSED (planning only — nothing built). Awaiting design decisions (§6).
-<strong>Goal:</strong> Once a channel map is applied and data is streaming, stop "freezing" the probe-map tab to a
-static selection. Instead, <strong>color the selected electrodes by live activity</strong> — a dark-mode SciChart
-take on the OpenEphys <em>ProbeViewer</em> heatmap, with the active sites "blinking"/glowing by activity level.</p>
+<p><strong>Status: BLOCKED — the rendering half of this plan needs a redesign before anything is built.</strong>
+Nothing here was built. The goal stated below and the OpenEphys reference work (§1) are unaffected and
+still good. The <em>feasibility argument</em> is not: it rested on SciChart, and SciChart is gone.</p>
+<blockquote>
+<p><strong>Invalidated 2026-08-27 by the removal of SciChart.</strong> The vendored bundle
+(<code>webinterface/lib/index.min.js</code> + <code>scichart2d.js</code> + <code>scichart2d.wasm</code>) was deleted from the repo that
+day. <strong>Both</strong> of this document's rendering options were SciChart-native features, and both were
+justified here by the fact that they were <em>verified present inside that bundle</em>:
+<code>PaletteProvider</code> / <code>overridePointMarker</code> (§3 Decision 2 Option A) and <code>UniformHeatmapDataSeries</code> +
+<code>HeatmapColorMap</code> / <code>GradientColorPalette</code> (Option B). Neither API exists in the front end any more,
+so §2's "no canvas-overlay hack is required" is exactly backwards and §3 Decision 2 no longer offers a
+choice. This is a design that has lost its foundation, not a document with the wrong vendor name in
+it — do not read the option letters as still meaning anything.</p>
+<p><strong>What survives unchanged:</strong> §1 (what OpenEphys does), §2 findings 1 and 3, §3 Decisions 1, 3, 4, 5, 6
+and 7, and the whole of the metric side. The channel→electrode→geometry map is still
+<code>window.imroLiveView.electrodeOf(channelId)</code> in <code>ImroManager.js</code>, which the removal did not touch.</p>
+<p><strong>A direction to investigate, explicitly NOT a verified plan:</strong> the probe map is now drawn by
+<code>webinterface/ProbeMap.js</code> in plain <strong>canvas 2D</strong>, keeping the <code>clear()</code> / <code>appendRange(xs, ys, metas)</code>
+series API the old scatter had. A heatmap would most likely be drawn there — per-electrode fill is a
+natural thing for a 2D canvas and the <code>metas</code> channel already carries per-point data — but <strong>nobody
+has prototyped it, measured it, or checked it against the culling and reactive-redraw behavior
+<code>ProbeMap.js</code> actually implements.</strong> Whoever picks this up owns that spike; treat the paragraph you
+are reading as a lead, and re-derive §3 Decision 2 from scratch.</p>
+</blockquote>
+<p><strong>Goal:</strong> Once a channel map is applied and data is streaming, stop "freezing" the probe-map tab to a
+static selection. Instead, <strong>color the selected electrodes by live activity</strong> — a dark-mode take on the
+OpenEphys <em>ProbeViewer</em> heatmap, with the active sites "blinking"/glowing by activity level.</p>
 <blockquote>
 <p>References: the OpenEphys source we mirror is vendored at
 <code>Source-OpenEphys-Neuropixels-PXI/UI/</code> (<code>ProbeBrowser</code>, <code>ActivityView</code>, <code>ColourScheme</code>). Our probe map
@@ -149,15 +172,20 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
 <li><strong>Colormap = Inferno</strong> (matplotlib), a 256-step LUT (<code>ColourScheme.cpp</code>). Black→purple→orange→yellow —
   already dark-mode friendly. (Viridis/Plasma/Magma/Jet also available.)</li>
 <li><strong>Normalization = fixed clim</strong>, <em>not</em> auto-scaling: <code>color = inferno(p2p / clim)</code>, clim selectable
-  <strong>{250, 500, 750, 1000} µV</strong>, default <strong>500</strong>. No-data sites (sentinel <code>-1</code>) drawn <strong>grey (160,160,160)</strong>.</li>
+  <strong>{250, 500, 750, 1000} µV</strong>, default <strong>500</strong>. No-data sites (sentinel <code>-1</code>) drawn <strong>gray (160,160,160)</strong>.</li>
 <li><strong>Geometry:</strong> one filled rectangle per electrode, placed by integer <code>(shank, column_index, row_index)</code>
   — same grid our probe map already uses. Selected sites get a contrasting outline.</li>
 <li><strong>Channel→electrode mapping</strong> (<code>refreshActivityViewMapping</code>) ensures activity lands on the correct
-  physical site even as the IMRO selection changes; the full electrode array stays grey except the
+  physical site even as the IMRO selection changes; the full electrode array stays gray except the
   connected channels.</li>
 </ul>
 <hr />
 <h2 id="2-the-big-shortcut-we-already-have-the-metric-and-the-renderer-primitives">2. The big shortcut — we already have the metric and the renderer primitives<a class="headerlink" href="#2-the-big-shortcut-we-already-have-the-metric-and-the-renderer-primitives" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>Half of this heading is dead as of 2026-08-27.</strong> The metric shortcut (finding 1) and the geometry
+shortcut (finding 3) hold. The <em>renderer primitives</em> (finding 2) were SciChart's, and SciChart was
+removed. See the banner at the top.</p>
+</blockquote>
 <p>Two findings make this much cheaper than OpenEphys's full pipeline:</p>
 <ol>
 <li>
@@ -167,10 +195,14 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
    exactly OpenEphys's metric. Aggregate over ~100 ms of timebins for a smoothed value.</p>
 </li>
 <li>
-<p><strong>SciChart v5.2.35 (our bundle) natively supports the rendering we need</strong> — verified present in
+<p>~~<strong>SciChart v5.2.35 (our bundle) natively supports the rendering we need</strong> — verified present in
    <code>lib/index.min.js</code>: <code>PaletteProvider</code> / <code>overridePointMarker</code> (per-point coloring of a scatter
    series), <code>UniformHeatmapDataSeries</code> + <code>HeatmapColorMap</code> (a true heatmap), and <code>GradientColorPalette</code>.
-   <strong>No canvas-overlay hack is required.</strong></p>
+   <strong>No canvas-overlay hack is required.</strong>~~
+   <strong>VOID 2026-08-27.</strong> All four of those APIs came from the vendored bundle, and the bundle was deleted
+   — <code>webinterface/lib/</code> now holds <code>qwebchannel.js</code> and nothing else. The verification was honest when
+   it was done and it is worthless now, because the thing verified is not in the tree. There is no
+   inherited rendering capability to build on: the drawing has to be designed, not selected.</p>
 </li>
 <li>
 <p><strong>The channel→electrode→geometry map already exists</strong> as <code>window.imroLiveView.electrodeOf(channelId)</code>
@@ -191,28 +223,44 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
   More faithful, isolates the cost from the display path, but is new backend work.</li>
 <li>Recommendation: <strong>A</strong> first (immediate, free); add <strong>B</strong> later if you want spike-band fidelity.</li>
 </ul>
-<h3 id="decision-2-how-its-rendered-both-are-scichart-native-and-confirmed-available">Decision 2 — HOW it's rendered (both are SciChart-native and confirmed available)<a class="headerlink" href="#decision-2-how-its-rendered-both-are-scichart-native-and-confirmed-available" title="Permanent link">#</a></h3>
-<ul>
-<li><strong>Option A — <code>PaletteProvider</code> on the existing electrode scatter (RECOMMENDED for "blink selected").</strong>
+<h3 id="decision-2-how-its-rendered-void-2026-08-27-needs-redesign">Decision 2 — HOW it's rendered  ·  <strong>VOID 2026-08-27, needs redesign</strong><a class="headerlink" href="#decision-2-how-its-rendered-void-2026-08-27-needs-redesign" title="Permanent link">#</a></h3>
+<blockquote>
+<p>The heading below used to read "both are SciChart-native and confirmed available", and that was the
+entire argument for both options. SciChart was removed on 2026-08-27, so <strong>neither option is
+available and this decision cannot be taken as written.</strong> Options A and B are left in place because
+the <em>visual</em> question they frame is still the real one — recolour the existing selection map in
+place, or add a separate full-probe heatmap panel — and that question is renderer-independent. The
+<em>mechanisms</em> named in them are not. Re-derive them against <code>webinterface/ProbeMap.js</code> (canvas 2D).
+Note in passing that Option C — dismissed below as unnecessary — is the only one of the three whose
+premise survived the removal. That is an observation about which door is still open, not a
+recommendation to walk through it: nothing has been prototyped.
+- <strong>Option A — <code>PaletteProvider</code> on the existing electrode scatter (RECOMMENDED for "blink selected").</strong>
   Keep the current probe-map geometry; attach an <code>IPointMarkerPaletteProvider</code> to the <em>selected</em> series
   (<code>activeLeft</code>/<code>activeRight</code>) that returns <code>inferno(activity[electrode]/clim)</code> per point. Inactive stay
-  grey, reference stays amber. Update the activity array + invalidate the surface each frame.</li>
-<li><em>Pros:</em> keeps selection context exactly as you described ("selected channels blinking by activity");
-    minimal change to <code>renderElectrodeMap</code>. <em>Cons:</em> per-point palette wiring; one series, many points.</li>
-<li><strong>Option B — <code>UniformHeatmapDataSeries</code> heatmap.</strong> Render the probe as a 2-col × N-row (NP1) /
-  per-shank (NP2) heatmap with <code>HeatmapColorMap</code> (Inferno + clim). Most "OpenEphys-looking."</li>
-<li><em>Pros:</em> a true heatmap, built-in colormap + legend. <em>Cons:</em> a <em>different</em> visual from the selection
-    scatter — you'd swap to it in an "activity mode" rather than recolor the existing map.</li>
-<li><em>(Option C — canvas overlay: not needed now that A/B are available; omit.)</em></li>
-<li>Recommendation: <strong>A</strong> if the intent is "the existing selection map comes alive"; <strong>B</strong> if you want a
-  dedicated full-probe heatmap panel. They can coexist (A on the map, B as an optional panel).</li>
-</ul>
+  gray, reference stays amber. Update the activity array + invalidate the surface each frame.
+  - <em>Pros:</em> keeps selection context exactly as you described ("selected channels blinking by activity");
+    minimal change to <code>renderElectrodeMap</code>. <em>Cons:</em> per-point palette wiring; one series, many points.
+- <strong>Option B — <code>UniformHeatmapDataSeries</code> heatmap.</strong> Render the probe as a 2-col × N-row (NP1) /
+  per-shank (NP2) heatmap with <code>HeatmapColorMap</code> (Inferno + clim). Most "OpenEphys-looking."
+  - <em>Pros:</em> a true heatmap, built-in colormap + legend. <em>Cons:</em> a <em>different</em> visual from the selection
+    scatter — you'd swap to it in an "activity mode" rather than recolor the existing map.
+- <em>(Option C — canvas overlay: ~~not needed now that A/B are available; omit~~ — </em><em>the dismissal is
+  what expired, not the option.</em><em> It was dismissed because A and B were free; they no longer are. Note
+  also that "overlay" is no longer the right word: the probe map is itself a 2D canvas now, so drawing
+  activity into it is not a hack layered over a chart, it is the map drawing itself. Unprototyped.)</em>
+- ~~Recommendation: <strong>A</strong> if the intent is "the existing selection map comes alive"; <strong>B</strong> if you want a
+  dedicated full-probe heatmap panel. They can coexist (A on the map, B as an optional panel).~~
+  <strong>Withdrawn 2026-08-27</strong> — a recommendation between two unavailable mechanisms is not a
+  recommendation.</p>
+</blockquote>
 <h3 id="decision-3-colormap">Decision 3 — colormap<a class="headerlink" href="#decision-3-colormap" title="Permanent link">#</a></h3>
-<p>Inferno (OpenEphys default, dark-mode native) via <code>GradientColorPalette</code>/<code>HeatmapColorMap</code> gradient
-stops. Offer Viridis as an alternative. (We don't need the 256-row LUT — matplotlib gradient stops
-reproduce it.)</p>
+<p>Inferno (OpenEphys default, dark-mode native), as gradient stops. Offer Viridis as an alternative. (We
+don't need the 256-row LUT — matplotlib gradient stops reproduce it.) <em>(This decision is unaffected by
+the SciChart removal; only the two API names it used to cite for the gradient —
+<code>GradientColorPalette</code> / <code>HeatmapColorMap</code> — went away, and a color ramp is a handful of lines
+anywhere.)</em></p>
 <h3 id="decision-4-normalization-clim-units">Decision 4 — normalization / clim &amp; units<a class="headerlink" href="#decision-4-normalization-clim-units" title="Permanent link">#</a></h3>
-<p>Fixed, user-selectable clim like OpenEphys (<strong>250/500/750/1000</strong>, default <strong>500</strong>), <code>grey</code> for no-data.
+<p>Fixed, user-selectable clim like OpenEphys (<strong>250/500/750/1000</strong>, default <strong>500</strong>), <code>gray</code> for no-data.
 <strong>Open item:</strong> confirm the <em>units</em> of our min/max stream (the <code>DisplayProcessor</code> applies NPX gains —
 need to check whether the result is µV) so the clim numbers are meaningful; otherwise clim is in
 "display units" and we relabel. (<code>DisplayProcessor.cpp</code> gain logic + <code>Npx.hpp</code>.)</p>
@@ -235,13 +283,21 @@ vs <strong>manual toggle</strong> (default on).</p>
 either a per-shank palette or a wider heatmap — straightforward but do it after NP1.0.</p>
 <hr />
 <h2 id="4-implementation-outline-assuming-js-activity-paletteprovider-inferno-auto-mode">4. Implementation outline (assuming JS-activity / PaletteProvider / Inferno / auto-mode)<a class="headerlink" href="#4-implementation-outline-assuming-js-activity-paletteprovider-inferno-auto-mode" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>Steps 2 and 3 are void as of 2026-08-27</strong> — <code>PaletteProvider</code> / <code>overridePointMarker</code> and
+<code>sciChartSurface.invalidateElement()</code> went with the bundle. <strong>Steps 1 and 4 stand</strong>: deriving <code>p2p</code>
+from the min/max already on the wire, and the clim / mode / legend UI, are both renderer-independent,
+and so is the Decision-1B backend variant at the end. Do not follow steps 2 and 3; they are kept so
+the shape of the missing piece is visible — a per-electrode fill function plus a redraw trigger — not
+as instructions.</p>
+</blockquote>
 <p><strong>Frontend only (Option A/A):</strong>
 1. <strong>Activity store + derivation</strong> (<code>NetworkClient.js</code> after each batch, or a 10 Hz timer): for each
    channel, <code>p2p = max − min</code> smoothed over ~100 ms; <code>electrode = window.imroLiveView.electrodeOf(ch)</code>;
    write <code>window.probeActivity[electrode] = p2p</code>. (Reuse the data already parsed for the charts.)
 2. <strong>PaletteProvider</strong> on the active scatter series in <code>ImroManager.js</code> <code>renderElectrodeMap</code>: implement
    <code>overridePointMarker(x,y,i,opacity,md)</code> → <code>fill = inferno(clamp(probeActivity[md.electrode]/clim))</code>,
-   grey if no data. Store <code>md.electrode</code> per point (already storing <code>md.text</code>).
+   gray if no data. Store <code>md.electrode</code> per point (already storing <code>md.text</code>).
 3. <strong>Refresh loop</strong> (~10-30 Hz <code>requestAnimationFrame</code> or <code>setInterval</code>): update <code>probeActivity</code>, then
    <code>sciChartSurface.invalidateElement()</code> so the palette re-evaluates. (Optional pulse = modulate opacity
    in the palette by a time term × activity.)
@@ -253,18 +309,29 @@ reads that frame instead of deriving p2p. Steps 2-4 unchanged.</p>
 <hr />
 <h2 id="5-risks-unknowns">5. Risks / unknowns<a class="headerlink" href="#5-risks-unknowns" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Per-point palette ergonomics:</strong> <code>PaletteProvider</code> exists in the bundle; confirm the exact
-  <code>IPointMarkerPaletteProvider</code> signature in v5.2.35 during a spike (it's the one API I'd prototype first).</li>
+<li><strong>The renderer itself is now the top risk, and it is no longer a signature question.</strong> ~~<strong>Per-point
+  palette ergonomics:</strong> <code>PaletteProvider</code> exists in the bundle; confirm the exact
+  <code>IPointMarkerPaletteProvider</code> signature in v5.2.35 during a spike (it's the one API I'd prototype
+  first).~~ The bundle is gone (2026-08-27). What replaces this risk is larger: <strong>how per-electrode
+  activity color is drawn at all</strong>, and what that costs inside <code>ProbeMap.js</code>'s existing culling and
+  reactive-redraw behavior. That is a spike to run before any of §6 can be answered, not a signature
+  to look up.</li>
 <li><strong>Units for clim</strong> (Decision 4) — verify µV vs display units.</li>
-<li><strong>Cost at 10-30 Hz:</strong> ~384-960 points re-evaluated per frame is cheap, but confirm the surface
-  invalidation cadence doesn't fight the live charts (they share the WebGL context budget).</li>
+<li><strong>Cost at 10-30 Hz:</strong> ~384-960 points re-evaluated per frame is cheap, but confirm the redraw cadence
+  doesn't fight the live charts. <em>(The "they share the WebGL context budget" reasoning this bullet used
+  to give stopped being true on 2026-08-27: the probe map is canvas 2D and the traces are WebGL2, so
+  they no longer share a context. They still share the main thread and the GPU, so the question stands
+  — the mechanism behind it has to be re-argued.)</em></li>
 <li><strong>JS-derived activity is broadband</strong> (no CAR/BP) — acceptable to start; Decision 1B closes the gap.</li>
 </ul>
 <h2 id="6-decisions-i-need-from-you">6. Decisions I need from you<a class="headerlink" href="#6-decisions-i-need-from-you" title="Permanent link">#</a></h2>
 <ol>
 <li><strong>Compute activity:</strong> JS from the existing min/max stream (A) or a C++ CAR+band-pass processor (B)?  <em>(lean A)</em></li>
-<li><strong>Render:</strong> PaletteProvider recolor of the existing selection map (A) or a SciChart <code>UniformHeatmap</code>
-   panel (B)?  <em>(lean A for "blink selected")</em></li>
+<li><strong>Render:</strong> ~~PaletteProvider recolor of the existing selection map (A) or a SciChart <code>UniformHeatmap</code>
+   panel (B)?  <em>(lean A for "blink selected")</em>~~ <strong>Not answerable as posed — see §3 Decision 2.</strong> Both
+   named mechanisms were removed with SciChart on 2026-08-27. The question that remains is the visual
+   one, "recolour the existing map in place, or add a separate full-probe heatmap panel", and it needs
+   a costed canvas-2D spike behind it before it is worth putting to the operator.</li>
 <li><strong>Colormap:</strong> Inferno (match OpenEphys) — ok? Viridis alternative?</li>
 <li><strong>clim values + units:</strong> keep 250/500/750/1000 µV default 500? (pending units check)</li>
 <li><strong>"Blink":</strong> color-intensity tracks activity (A) or literal pulse (B) or both?</li>
@@ -272,11 +339,18 @@ reads that frame instead of deriving p2p. Steps 2-4 unchanged.</p>
 <li><strong>Probe scope:</strong> NP1.0 now, NP2.0 after — ok?</li>
 </ol>
 <h2 id="7-effort-risk">7. Effort &amp; risk<a class="headerlink" href="#7-effort-risk" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>These estimates are void as of 2026-08-27</strong> and are left only to show what they assumed. Every one
+of them is priced against dropping into a rendering feature that already existed inside the vendored
+bundle; that bundle is gone, so the rendering work is now design-and-build rather than wire-up, and
+the estimate cannot be repaired by adjusting a number. Re-estimate after the canvas-2D spike in §5.</p>
+</blockquote>
 <ul>
-<li>Option <strong>A/A</strong> (JS activity + PaletteProvider): ~2-3 focused days, <strong>frontend-only</strong>, low backend risk.
-  The first hour should prototype the <code>PaletteProvider</code> per-point recolor to lock Risk #1.</li>
-<li>Adding <strong>C++ activity (B)</strong> for spike-band fidelity: +1-2 days.</li>
-<li>A <code>UniformHeatmap</code> panel (Render B) instead of/alongside palette: comparable, mostly layout work.</li>
+<li>~~Option <strong>A/A</strong> (JS activity + PaletteProvider): ~2-3 focused days, <strong>frontend-only</strong>, low backend risk.
+  The first hour should prototype the <code>PaletteProvider</code> per-point recolor to lock Risk #1.~~</li>
+<li>Adding <strong>C++ activity (B)</strong> for spike-band fidelity: +1-2 days. <em>(Still roughly right — the backend
+  half of this plan never depended on the front-end renderer.)</em></li>
+<li>~~A <code>UniformHeatmap</code> panel (Render B) instead of/alongside palette: comparable, mostly layout work.~~</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/ProbeActivityHeatmap.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -286,7 +360,7 @@ reads that frame instead of deriving p2p. Steps 2-4 unchanged.</p>
 <li><a href="#2-the-big-shortcut-we-already-have-the-metric-and-the-renderer-primitives">2. The big shortcut — we already have the metric and the renderer primitives</a></li>
 <li><a href="#3-design-options">3. Design options</a><ul>
 <li><a href="#decision-1-where-activity-is-computed">Decision 1 — WHERE activity is computed</a></li>
-<li><a href="#decision-2-how-its-rendered-both-are-scichart-native-and-confirmed-available">Decision 2 — HOW it's rendered (both are SciChart-native and confirmed available)</a></li>
+<li><a href="#decision-2-how-its-rendered-void-2026-08-27-needs-redesign">Decision 2 — HOW it's rendered · VOID 2026-08-27, needs redesign</a></li>
 <li><a href="#decision-3-colormap">Decision 3 — colormap</a></li>
 <li><a href="#decision-4-normalization-clim-units">Decision 4 — normalization / clim &amp; units</a></li>
 <li><a href="#decision-5-what-blinking-means-please-pick">Decision 5 — what "blinking" means (please pick)</a></li>

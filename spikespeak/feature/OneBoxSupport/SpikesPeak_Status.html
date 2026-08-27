@@ -253,6 +253,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>The probe map is tested, and NP1.0 selection is free-form</strong>: click-to-route and drag-select now asserted against the resulting IMRO map; the NP1 drag stops padding out to a full 384-electrode window; stale drag handlers on reused labels fixed (T-13)</td>
 </tr>
 <tr>
+<td>S64</td>
+<td>2026-08-27</td>
+<td><strong>The probe map was dead on real 2.0 hardware</strong>: probe identity was pattern-matched from the part-number string, which sim spells <code>24</code> and the shipping part spells <code>2013</code>; plus the auto-detect refusal now reaches the operator as a choice instead of a false "not available in this build"</td>
+</tr>
+<tr>
 <td><strong>S21</strong></td>
 <td><strong>2026-07-09</strong></td>
 <td><strong>Stim closed loop: ripple → UDP <code>fire</code> → ESP32 → biphasic pulse on NI-DAQ ai4</strong></td>
@@ -5722,7 +5727,89 @@ or NI-DAQ stream: it still looked draggable, and dragging it fired with an elect
 to a stream no longer on screen.</p>
 <p>Cleared unconditionally at the top of the per-slot iteration rather than in each branch that does not
 want it — so a branch added later cannot inherit the same bug. Without the fix the new assertion
-reports <strong>20 labels</strong> still carrying a handler and a grab cursor.</p></article>
+reports <strong>20 labels</strong> still carrying a handler and a grab cursor.</p>
+<hr />
+<h2 id="64-the-map-that-drew-perfectly-and-did-nothing-2026-08-27-evening">64. THE MAP THAT DREW PERFECTLY AND DID NOTHING  (2026-08-27, evening)<a class="headerlink" href="#64-the-map-that-drew-perfectly-and-did-nothing-2026-08-27-evening" title="Permanent link">#</a></h2>
+<p>Found by the operator on the rig, in the least alarming possible form: <em>"I can't scroll up and down
+on the probe map view."</em></p>
+<h3 id="64a-probe-identity-was-a-string-match-against-the-prototype-part-id">64a. Probe identity was a string match against the prototype part id<a class="headerlink" href="#64a-probe-identity-was-a-string-match-against-the-prototype-part-id" title="Permanent link">#</a></h3>
+<p><code>probeIdStr</code> is a part-TYPE id. The simulator reports the PROTOTYPE (<code>"24"</code> for a 4-shank 2.0); real
+hardware reports the true part, and the shipping 4-shank part is <strong>NP2013 -&gt; <code>"2013"</code></strong>. Seven places
+in <code>ImroManager.js</code> identified the probe by matching that string against <code>"24"</code>, <code>"21"</code>, <code>"NP2..."</code>.</p>
+<p>On the rig every one of them answered <em>not a Neuropixels probe</em>:</p>
+<table>
+<thead>
+<tr>
+<th>what broke</th>
+<th>how it looked</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>wheel handler early-returns</td>
+<td><strong>cannot scroll the probe map</strong> — the reported symptom</td>
+</tr>
+<tr>
+<td>mousedown / mouseup guards</td>
+<td>clicks and drags do nothing</td>
+</tr>
+<tr>
+<td><code>lvKind</code> never set</td>
+<td>the live view never builds its depth ordering</td>
+</tr>
+<tr>
+<td><code>updateQuickFormatVisibility</code></td>
+<td>Shank / Bank preset buttons hidden</td>
+</tr>
+<tr>
+<td><code>appliedRecordInfo</code>, <code>renderRecordSelection</code></td>
+<td>record selection treats a 2.0 as a 1.0</td>
+</tr>
+<tr>
+<td><code>probeFriendlyName</code></td>
+<td>probe named <code>(2013)</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rendering is not gated on probe type, so the map drew perfectly throughout.</strong> That is why this
+reads as a scrolling complaint rather than a dead editor, and why nobody caught it sooner.</p>
+<p>The suite could not have caught it: sim spells the id the way the old code expected. So the fix is a
+single <code>probeGen()</code> helper keying off <code>probeType</code> — the <code>ProbeType</code> enum the C++ branches on and has
+been sending in <code>getImroAsJson</code> all along — and the test pins the RULE on synthetic payloads
+including <code>{probeType: 3, probeIdStr: "2013"}</code>. Reverting <code>probeGen</code> to string matching turns that
+test red on exactly the two real-hardware cases. Written up as <code>AgentTraps.md</code> 5i.</p>
+<h3 id="64b-the-auto-detect-refused-correctly-and-told-the-operator-the-wrong-thing">64b. The auto-detect refused correctly and told the operator the wrong thing<a class="headerlink" href="#64b-the-auto-detect-refused-correctly-and-told-the-operator-the-wrong-thing" title="Permanent link">#</a></h3>
+<p>Connecting the auto-detecting <strong>Neuropixels</strong> profile on a rig with both a OneBox and a PXIe module
+reported:</p>
+<pre><code>The selected source module &quot;source.npx.auto&quot; is not available in this build.
+</code></pre>
+<p>Two independent faults produced that sentence:</p>
+<ol>
+<li><code>WebSocketServer</code> looked the RAW config name up in the source registry. <code>source.npx.auto</code> is not
+   a registered module — it is a request to read the rig — so the lookup failed and fell into the
+   "not compiled into this build" branch. <code>SourceManager</code> resolved it properly; the two never
+   compared notes.</li>
+<li><code>resolveAutoSource()</code> writes a precise, operator-facing reason for every refusal — <em>"A OneBox and
+   a PXIe basestation are both attached. Only one can be used at a time"</em> — and sent it to
+   <code>qWarning()</code>. The log had the right answer the whole time.</li>
+</ol>
+<p>So the operator was sent to look for a broken build when the actual situation was two basestations
+and a question. <code>WebSocketServer</code> now resolves the auto name from the same cached scan, and relays
+the real reason.</p>
+<p><strong>And the ambiguous case is now a choice, not an error.</strong> Nothing is broken when two basestations
+are attached — the rig has more hardware than SpikesPeak streams, and which one this recording is on
+is the one fact auto-detection cannot read off the hardware. It opens a dialog offering OneBox or
+PXIe, exactly as a multi-probe rig is offered its ports. <code>error_paths.py</code> asserts it opens, has real
+size (the 0x0-invisible-card trap has bitten one of these dialogs before), offers both buttons, and
+is <strong>not</strong> the blocking hardware-error dialog.</p>
+<h3 id="64c-two-test-authoring-notes-worth-keeping">64c. Two test-authoring notes worth keeping<a class="headerlink" href="#64c-two-test-authoring-notes-worth-keeping" title="Permanent link">#</a></h3>
+<ul>
+<li>A <code></code> inside a non-raw Python triple-quoted string becomes a REAL newline before it reaches the
+  browser, which is a syntax error inside a JS string literal. The eval then does nothing, silently,
+  and the test fails blaming the feature. Use an r-string for any JS payload containing escapes.</li>
+<li><code>build.bat</code> pauses by default and will hang a scripted chain at <em>"Press any key to continue"</em>.
+  <code>--no-pause</code> exists for exactly this, and the file says so.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6101,6 +6188,12 @@ reports <strong>20 labels</strong> still carrying a handler and a grab cursor.</
 <li><a href="#63a-the-probe-map-is-now-tested-where-it-matters">63a. The probe map is now tested where it matters</a></li>
 <li><a href="#63b-np10-selection-is-free-form">63b. NP1.0 selection is free-form</a></li>
 <li><a href="#63c-t-13-stale-drag-affordance-on-reused-labels">63c. T-13: stale drag affordance on reused labels</a></li>
+</ul>
+</li>
+<li><a href="#64-the-map-that-drew-perfectly-and-did-nothing-2026-08-27-evening">64. THE MAP THAT DREW PERFECTLY AND DID NOTHING (2026-08-27, evening)</a><ul>
+<li><a href="#64a-probe-identity-was-a-string-match-against-the-prototype-part-id">64a. Probe identity was a string match against the prototype part id</a></li>
+<li><a href="#64b-the-auto-detect-refused-correctly-and-told-the-operator-the-wrong-thing">64b. The auto-detect refused correctly and told the operator the wrong thing</a></li>
+<li><a href="#64c-two-test-authoring-notes-worth-keeping">64c. Two test-authoring notes worth keeping</a></li>
 </ul>
 </li>
 </ul>

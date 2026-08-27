@@ -542,6 +542,51 @@ on each start. So:</p>
   confused about why your assertion sees the previous configuration.</li>
 </ul>
 <hr />
+<h2 id="5i-the-simulator-uses-the-prototype-part-id-the-hardware-reports-the-real-one">5i. The simulator uses the PROTOTYPE part id; the hardware reports the real one<a class="headerlink" href="#5i-the-simulator-uses-the-prototype-part-id-the-hardware-reports-the-real-one" title="Permanent link">#</a></h2>
+<p><code>probeIdStr</code> is a part-TYPE id, and the two sources do not agree on which one:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>NP1.0</th>
+<th>NP2.0 4-shank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>simulated source</td>
+<td><code>"0"</code></td>
+<td><code>"24"</code> (the NP2010 <strong>prototype</strong>)</td>
+</tr>
+<tr>
+<td>real hardware</td>
+<td><code>"0"</code></td>
+<td><code>"2013"</code> (the shipping <strong>NP2013</strong> part)</td>
+</tr>
+</tbody>
+</table>
+<p><code>ImroManager.js</code> identified the probe by pattern-matching that string against <code>"24"</code>, <code>"21"</code> and
+<code>"NP2..."</code>. Sim matched. <strong>A real 2.0 probe matched nothing</strong>, so every check answered "not a
+Neuropixels probe" and, on the rig only:</p>
+<ul>
+<li>the probe map went completely inert — no scroll, no click, no drag;</li>
+<li><code>lvKind</code> was never set, so the live view never built its depth ordering;</li>
+<li>the Shank / Bank preset buttons stayed hidden;</li>
+<li>record-channel selection treated the 2.0 as a 1.0.</li>
+</ul>
+<p><strong>The map kept drawing the whole time</strong>, because rendering is not gated on probe type. So it
+presented as "I cannot scroll the probe map" rather than as a dead editor, and the GUI suite was
+green throughout — no simulated fixture can reproduce a mismatch that only exists between sim and
+hardware.</p>
+<p>The fix keys off <code>probeType</code>, the <code>ProbeType</code> enum the C++ itself branches on and already sends in
+<code>getImroAsJson</code> (<code>NpInterface.hpp</code>: 1 = NP1.0, 2 = 2.0 single-shank, 3 = 2.0 multishank), through a
+single <code>probeGen()</code> helper. <code>tests/gui/probe_map.py</code> pins the rule on synthetic payloads including
+<code>{probeType: 3, probeIdStr: "2013"}</code>, because that is the one case the simulator cannot present.</p>
+<p><strong>The general form:</strong> when a value has a "friendly" spelling and a true one, the simulator tends to
+carry the friendly spelling. Identify hardware by what the hardware layer decided, never by
+re-deriving it from a string — and when a check can only be wrong on real hardware, test the RULE on
+a synthetic input rather than trusting the fixture.</p>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -573,6 +618,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. requestAnimationFrame does not fire when nothing is being painted</a></li>
 <li><a href="#5g-linux-three-traps-from-the-2026-08-26-bring-up">5g. Linux: three traps from the 2026-08-26 bring-up</a></li>
 <li><a href="#5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing">5h. A WIN32 binary has no stdout, so redirecting it captures nothing</a></li>
+<li><a href="#5i-the-simulator-uses-the-prototype-part-id-the-hardware-reports-the-real-one">5i. The simulator uses the PROTOTYPE part id; the hardware reports the real one</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

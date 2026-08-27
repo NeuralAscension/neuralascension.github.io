@@ -1003,11 +1003,16 @@ shape the tier had chosen. The shape must not depend on the thing being measured
 chart and the ResizeObserver repaints on every hover. It also keeps the <strong>narrow 3-row template</strong>,
 because <code>#view-data</code> is <code>overflow:hidden</code> and a 448 px overlay in a narrow column loses ~275 px of
 controls.</p>
-<p><strong>T-13 — Stale drag handlers (a real defect, still present).</strong> <code>label.onmousedown</code> and <code>cursor:'grab'</code>
-are assigned only in the probe-electrode branch and are never cleared in the REF / ADC / plain
-branches (<code>ChartColumn.js:766-792</code>). Labels are reused across draws, so scrolling a probe label into a
-REF slot, or switching a column from a probe to the ADC, leaves a drag handler bound with the
-<strong>previous</strong> channel's electrode captured in its closure.</p>
+<p><strong>T-13 — Per-slot label state must be cleared at the TOP of the loop (fixed 2026-08-27).</strong> The label
+elements are reused across draws — only their text is rewritten — so anything set in one branch
+survives into a later draw whose branch never sets it. <code>label.onmousedown</code> and <code>cursor:'grab'</code> were
+assigned only in the probe-electrode branch and cleared nowhere, so switching a column from a probe
+band to the OneBox ADC or NI-DAQ left a drag handler bound with the <strong>previous</strong> channel's electrode
+captured in its closure: the label still looked draggable and dragging it fired with a stale index.</p>
+<p>They are now cleared unconditionally at the start of each slot iteration, and only set in the branch
+that wants them — deliberately, so that a branch added later cannot inherit the bug by omission.
+<code>tests/gui/stream_options.py</code> asserts a non-electrode stream leaves <strong>zero</strong> labels carrying the
+handler or the grab cursor; without the fix it reports 20.</p>
 <p><strong>T-14 — <code>draw()</code> is the sole owner of shank/side visibility.</strong> <code>refreshFilterOptions()</code> used to set it
 and caused a visible flash, because its test (<code>hasOrdering()</code>) is weaker than draw's
 (<code>hasOrdering() &amp;&amp; channels.length === 384</code>). <code>refreshFilterOptions()</code> also <strong>early-returns</strong> with no

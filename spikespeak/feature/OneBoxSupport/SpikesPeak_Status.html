@@ -248,6 +248,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>The chart library is gone</strong>: SciChart removed entirely — live traces on a hand-written WebGL2 renderer, probe map on canvas 2D; 3.5 MB of vendored bundle deleted; 4.28x less main-thread CPU at 480 traces with the GPU at parity; four defects the removal exposed</td>
 </tr>
 <tr>
+<td>S63</td>
+<td>2026-08-27</td>
+<td><strong>The probe map is tested, and NP1.0 selection is free-form</strong>: click-to-route and drag-select now asserted against the resulting IMRO map; the NP1 drag stops padding out to a full 384-electrode window; stale drag handlers on reused labels fixed (T-13)</td>
+</tr>
+<tr>
 <td><strong>S21</strong></td>
 <td><strong>2026-07-09</strong></td>
 <td><strong>Stim closed loop: ripple → UDP <code>fire</code> → ESP32 → biphasic pulse on NI-DAQ ai4</strong></td>
@@ -5665,7 +5670,59 @@ draws-anything probe in <code>live_view.py</code> now asks the renderer for its 
 <p>Before the removal, the full GUI suite was run green under <strong>both</strong> renderers — 11/11 on SciChart and
 11/11 on WebGL2 — which is the evidence that the swap changed nothing an operator can see. Four tests
 that previously left no visual evidence (<code>sim_picker</code>, <code>shrink_window</code>, <code>record_flow</code>, <code>error_paths</code>)
-now each save a screenshot, so every test in the suite is inspectable.</p></article>
+now each save a screenshot, so every test in the suite is inspectable.</p>
+<hr />
+<h2 id="63-what-a-click-actually-selects-2026-08-27-later">63. WHAT A CLICK ACTUALLY SELECTS  (2026-08-27, later)<a class="headerlink" href="#63-what-a-click-actually-selects-2026-08-27-later" title="Permanent link">#</a></h2>
+<p>Three changes, all about the probe map being trustworthy rather than merely working.</p>
+<h3 id="63a-the-probe-map-is-now-tested-where-it-matters">63a. The probe map is now tested where it matters<a class="headerlink" href="#63a-the-probe-map-is-now-tested-where-it-matters" title="Permanent link">#</a></h3>
+<p>62 added a test that the map DRAWS. That is not the question an operator cares about. The question
+is whether a click lands on the electrode they aimed at — and getting that wrong is invisible: the
+map looks correct, the recording is of different sites, and you find out from the data.</p>
+<p>The test now computes the target pixel <strong>itself</strong> from the published axis ranges
+(<code>window.probeMapTest.geometry()</code>), drives a real mouse event through CDP, and asserts on the
+resulting IMRO channel map. Computing the pixel independently is the whole point: a test that reused
+<code>ProbeMap</code>'s own transform could only prove it was self-consistent with itself.</p>
+<p><strong>Proven able to fail</strong>, which is the only reason to keep it. Injecting a one-row error into
+<code>pxToY</code> trips six checks with the exact signature you would want:</p>
+<pre><code>NP1.0 click: aiming at electrode 630 (row 315, col 0) must route channel 246 to bank 1; it is on bank 0
+NP1.0 click on electrode 630: exactly channel 246 may change; channels [248] changed
+NP1.0 drag: dragging rows 286..344 must select rows 286..477; it selected 287..478
+</code></pre>
+<p>Two things had to be fixed in the test before it could fail at all, and both are worth recording:</p>
+<ul>
+<li><strong>The first version could not fail on NP1.</strong> A fresh map routes every channel to bank 0 and the
+  view opens on that block, so every electrode on screen was <em>already</em> selected — a click asked the
+  app to do what it had already done, and "did the bank change?" was vacuously true wherever the
+  click landed. NP2 caught the injected error; NP1 sailed through. The test now scrolls into an
+  unselected bank first, and asserts that it managed to, rather than passing on a no-op.</li>
+<li><strong>Channel 191 is skipped by a drag</strong>, because its electrodes are internal-reference sites. The
+  first drag assertion counted it and reported the selection as spanning the whole probe. The app
+  was right; the check was wrong.</li>
+</ul>
+<h3 id="63b-np10-selection-is-free-form">63b. NP1.0 selection is free-form<a class="headerlink" href="#63b-np10-selection-is-free-form" title="Permanent link">#</a></h3>
+<p>The operator asked for arbitrary per-channel selection on 1.0 probes, noting we appeared to offer
+only banks. <strong>Per-channel selection already worked</strong> — clicking electrode <em>E</em> routes channel
+<code>E mod 384</code> to bank <code>E div 384</code> on its own, <code>NpInterface.cpp</code> validates each <code>(channel, bank)</code> pair
+independently, and <code>np_selectElectrode</code> is called per channel. The new test proves it end to end.</p>
+<p>What was bank-like was the <strong>drag</strong>: it padded the dragged span out to exactly 192 rows so the result
+always covered all 384 channels exactly once. Tidy, and always valid — but not the hardware's rule,
+and it meant a 50-row drag silently produced a 192-row selection. Electrodes nobody asked for.</p>
+<p>The drag now assigns exactly what it covers, matching NP2.0's drag, OpenEphys and SpikeGLX. Channels
+outside the run keep the electrodes they had, which is always legal because each channel picks its
+own bank independently. The Bank buttons still fill all 384 channels at one depth in a click, so
+nothing that relied on a complete window is lost.</p>
+<p>The test asserts the <em>outside-is-untouched</em> property directly, since that is the substance of the
+change: reinstating the snap moves <strong>262 channels</strong> that were never dragged over, and the check says
+so by name.</p>
+<h3 id="63c-t-13-stale-drag-affordance-on-reused-labels">63c. T-13: stale drag affordance on reused labels<a class="headerlink" href="#63c-t-13-stale-drag-affordance-on-reused-labels" title="Permanent link">#</a></h3>
+<p>Channel labels are reused across draws — only their text is rewritten. <code>label.onmousedown</code> and the
+grab cursor were set only in the probe-electrode branch and never cleared, so a label that had once
+shown an electrode kept the Ctrl+drag-to-ripple gesture after the column switched to the OneBox ADC
+or NI-DAQ stream: it still looked draggable, and dragging it fired with an electrode index belonging
+to a stream no longer on screen.</p>
+<p>Cleared unconditionally at the top of the per-slot iteration rather than in each branch that does not
+want it — so a branch added later cannot inherit the same bug. Without the fix the new assertion
+reports <strong>20 labels</strong> still carrying a handler and a grab cursor.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6038,6 +6095,12 @@ now each save a screenshot, so every test in the suite is inspectable.</p></arti
 <li><a href="#62b-what-it-cost-measured-on-the-rig">62b. What it cost, measured on the rig</a></li>
 <li><a href="#62c-four-defects-the-removal-exposed">62c. Four defects the removal exposed</a></li>
 <li><a href="#62d-testing">62d. Testing</a></li>
+</ul>
+</li>
+<li><a href="#63-what-a-click-actually-selects-2026-08-27-later">63. WHAT A CLICK ACTUALLY SELECTS (2026-08-27, later)</a><ul>
+<li><a href="#63a-the-probe-map-is-now-tested-where-it-matters">63a. The probe map is now tested where it matters</a></li>
+<li><a href="#63b-np10-selection-is-free-form">63b. NP1.0 selection is free-form</a></li>
+<li><a href="#63c-t-13-stale-drag-affordance-on-reused-labels">63c. T-13: stale drag affordance on reused labels</a></li>
 </ul>
 </li>
 </ul>

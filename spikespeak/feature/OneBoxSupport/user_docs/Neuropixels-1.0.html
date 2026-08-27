@@ -182,11 +182,28 @@ the map live (each Apply briefly pauses and restarts streaming automatically).</
    - <strong>Bank 2 (Top)</strong> — the half-bank: channels 0–191 jump to bank 2, channels 192–383 stay on bank 0.</li>
 <li><strong>Click an electrode</strong> — routes <em>that electrode's channel</em> to <em>that electrode's bank</em> (its
    bank-siblings auto-deselect). Use this to hand-tune individual channels.</li>
-<li><strong>Drag a vertical box</strong> — selects a contiguous 384-electrode depth window (always a valid full map).</li>
+<li><strong>Drag a vertical box</strong> — assigns every electrode in the box to its own read-out channel. The run
+   is taken <strong>exactly as dragged</strong>: channels outside it keep whatever electrodes they already had.
+   Drag several times, in different places, to build a selection that is not one contiguous block.</li>
 </ol>
 <blockquote>
 <p>The on-panel hint summarizes this; Bank 2 being a half-bank (channels 0–191 only) is expected.</p>
 </blockquote>
+<p><strong>What you are allowed to select, and why.</strong> Every electrode is hard-wired to exactly one read-out
+channel: <code>channel = electrode mod 384</code>. A channel can read <em>one</em> of its electrodes at a time, so
+picking electrode <em>E</em> automatically drops whichever sibling that channel was reading. That is the
+only rule. Any set of electrodes is legal as long as no two of them share a channel — which the
+editor enforces for you, because selecting one sibling always releases the other.</p>
+<p>Two consequences worth knowing:</p>
+<ul>
+<li><strong>Electrodes 768–959 (bank 2) only exist for channels 0–191.</strong> Channel 192 has no bank-2 electrode
+  (192 + 384×2 = 960, one past the end), so the top of the shank is half-width.</li>
+<li><strong>Channel 191 is never selectable.</strong> Its three electrodes (191, 575, 959) are internal-reference
+  sites, shown in amber. A drag that crosses them skips that channel and leaves it where it was.</li>
+</ul>
+<p>Before 2026-08-27 a drag padded the dragged span out to a full 384-electrode window, so a short drag
+quietly selected electrodes you had not asked for. It no longer does. Use a <strong>Bank</strong> button when you
+want the complete uniform window.</p>
 <p><strong>Save / Load a map:</strong>
 - <strong>Save .imro</strong> — downloads the current map as a standard <code>.imro</code> file (via your browser's download).
 - <strong>Load .imro</strong> — pick a <code>.imro</code> file; the editor loads + displays it. <em>Loading does not apply it</em> —

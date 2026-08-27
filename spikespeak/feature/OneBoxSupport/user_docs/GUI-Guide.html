@@ -197,9 +197,11 @@ the channel map) and <strong>Select Recording Channels</strong> (§4).</p>
 <ul>
 <li><strong>Green</strong> = an electrode whose channel is active (will stream); <strong>gray</strong> = available; <strong>amber</strong> =
   the internal-reference site (channel 191 — reserved, not recordable).</li>
-<li><strong>Click</strong> an electrode to route its read-out channel to that electrode's <strong>bank</strong>; <strong>drag</strong> a vertical
-  box to select a contiguous 384-electrode window. The <strong>Bank 0 / 1 / 2</strong> buttons are quick presets
-  (Bank 2 is a half-bank, channels 0–191 only).</li>
+<li><strong>Click</strong> an electrode to route its read-out channel to it; <strong>drag</strong> a vertical box to assign every
+  electrode in the box. The run is taken exactly as dragged — channels outside it keep the electrodes
+  they already had — so you can build any selection you like, one region at a time. The
+  <strong>Bank 0 / 1 / 2</strong> buttons remain quick presets that fill all 384 channels at one depth (Bank 2 is a
+  half-bank, channels 0–191 only).</li>
 <li><strong>Apply Map to Hardware</strong> pushes the map to the probe (and re-orders the live view by depth).</li>
 <li><strong>Save .imro / Load .imro</strong> write/read the channel map as a standard <code>.imro</code> file (a bad or wrong-probe
   file is rejected).</li>

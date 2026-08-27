@@ -273,6 +273,77 @@ anyone writing them down. Captured at 4 × 40, sim NP2 raw @ 30 kHz:</p>
 worker and measured no gain, which is what you would predict from this number. It is not the
 bottleneck and moving it is not worth a worker round-trip.</p>
 <hr />
+<h2 id="built-and-measured-in-the-app-2026-08-27-the-cliff-is-gone">BUILT AND MEASURED IN THE APP (2026-08-27) — the cliff is gone<a class="headerlink" href="#built-and-measured-in-the-app-2026-08-27-the-cliff-is-gone" title="Permanent link">#</a></h2>
+<p><code>webinterface/GlRenderer.js</code> is a WebGL2 trace renderer wired into the live view behind
+<code>window.__useGl</code>. SciChart remains the default and the suite still gates on it; <code>window.__setGl(true)</code>
+switches every column live, without a reload.</p>
+<p><strong>Same protocol, same session, one variable.</strong></p>
+<table>
+<thead>
+<tr>
+<th>layout</th>
+<th>series</th>
+<th>SciChart fps / busy</th>
+<th>WebGL2 fps / busy</th>
+<th>busy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 × 20</td>
+<td>20</td>
+<td>56 / 0.194</td>
+<td>56 / 0.103</td>
+<td>1.9×</td>
+</tr>
+<tr>
+<td>4 × 20</td>
+<td>80</td>
+<td>56 / 0.434</td>
+<td>56 / 0.164</td>
+<td>2.6×</td>
+</tr>
+<tr>
+<td>4 × 40</td>
+<td>160</td>
+<td>56 / 0.658</td>
+<td>56 / 0.179</td>
+<td>3.7×</td>
+</tr>
+<tr>
+<td>4 × 60</td>
+<td>240</td>
+<td>56 / 0.877</td>
+<td>56 / 0.191</td>
+<td>4.6×</td>
+</tr>
+<tr>
+<td><strong>4 × 80</strong></td>
+<td><strong>320</strong></td>
+<td><strong>44 / 0.999</strong></td>
+<td><strong>56 / 0.208</strong></td>
+<td><strong>4.8×</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>At 320 traces the frame-rate cliff disappears</strong>: 44 fps with the main thread saturated becomes a
+full 56 fps at 21 % busy, leaving 79 % of the thread free. The gain grows monotonically with density,
+which is the signature of per-series overhead being what was removed — exactly what the isolated
+harness predicted. Traces render correctly at 320 across four columns, with the same palette, depth
+ordering and labels.</p>
+<h3 id="two-mistakes-made-getting-here-both-of-which-produced-confident-wrong-numbers">Two mistakes made getting here, both of which produced confident wrong numbers<a class="headerlink" href="#two-mistakes-made-getting-here-both-of-which-produced-confident-wrong-numbers" title="Permanent link">#</a></h3>
+<p><strong>The first A/B showed no gain at all</strong> — 41 fps vs 44, both saturated. The GL canvas was layered
+<em>over</em> the SciChart surface, so it looked like a swap, but SciChart was still bound, still being fed
+by <code>appendRange</code>, and still drawing. The app was paying for both renderers. A comparison that leaves
+the incumbent running is not a comparison; under <code>__useGl</code> the appends are now skipped and the
+SciChart series are hidden.</p>
+<p><strong>The renderer appeared broken under test, painting 1.0 frames/s</strong> with every buffer full and correct.
+<code>requestAnimationFrame</code> does not fire in a window Chrome believes is occluded (<code>AgentTraps.md</code> §5f)
+— and <code>setTimeout</code>, the obvious fallback, is clamped to ~1 Hz in the same state. The GUI harness
+passed no anti-throttling flags, so <strong>every GUI test had been running against a page throttled to
+1 Hz</strong>. Fixed in <code>tests/gui/_harness.py</code>; the renderer also schedules a timer alongside rAF so it
+cannot be held hostage by either one alone.</p>
+<hr />
 <h2 id="the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in">The GL drawing is not the cost — it is ~200x cheaper than the frame it sits in<a class="headerlink" href="#the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in" title="Permanent link">#</a></h2>
 <p><code>benchmarks/renderer_lab.html</code> + <code>renderer_lab_bench.py</code> (new) draw the live view's exact data shape
 — N series, 2400 points each, a min/max pair per timebin, y offsets baked in, same palette and 1 px
@@ -617,6 +688,10 @@ and the <code>spikespeak-vertical-display</code> memory for the code map.</li>
 <li><a href="#re-measured-2026-08-27-and-the-architecture-question-is-now-answered">RE-MEASURED 2026-08-27 — and the architecture question is now answered</a><ul>
 <li><a href="#the-cost-is-per-series-by-a-factor-of-9">The cost is PER-SERIES, by a factor of 9</a></li>
 <li><a href="#why-the-web-worker-decode-experiment-measured-nothing-now-with-the-number">Why the Web Worker decode experiment measured nothing (now with the number)</a></li>
+</ul>
+</li>
+<li><a href="#built-and-measured-in-the-app-2026-08-27-the-cliff-is-gone">BUILT AND MEASURED IN THE APP (2026-08-27) — the cliff is gone</a><ul>
+<li><a href="#two-mistakes-made-getting-here-both-of-which-produced-confident-wrong-numbers">Two mistakes made getting here, both of which produced confident wrong numbers</a></li>
 </ul>
 </li>
 <li><a href="#the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in">The GL drawing is not the cost — it is ~200x cheaper than the frame it sits in</a><ul>

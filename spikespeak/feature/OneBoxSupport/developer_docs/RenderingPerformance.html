@@ -273,6 +273,105 @@ anyone writing them down. Captured at 4 × 40, sim NP2 raw @ 30 kHz:</p>
 worker and measured no gain, which is what you would predict from this number. It is not the
 bottleneck and moving it is not worth a worker round-trip.</p>
 <hr />
+<h2 id="the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in">The GL drawing is not the cost — it is ~200x cheaper than the frame it sits in<a class="headerlink" href="#the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in" title="Permanent link">#</a></h2>
+<p><code>benchmarks/renderer_lab.html</code> + <code>renderer_lab_bench.py</code> (new) draw the live view's exact data shape
+— N series, 2400 points each, a min/max pair per timebin, y offsets baked in, same palette and 1 px
+stroke — in raw WebGL2, with <strong>no backend, no WebSocket, no SciChart and no app</strong>. Two modes differing
+only in draw-call count: one <code>drawArrays(LINE_STRIP)</code> per series, versus a single
+<code>drawElements(LINE_STRIP)</code> for all series separated by the WebGL2 primitive-restart index.</p>
+<p><strong>The first run of this reported frame rate and every cell came back 57.4 fps / 17.4 ms</strong> — 20 series
+and 1280 series, 48 k vertices and 3 M, both modes, identical. That is the vsync cap, not a result.
+A benchmark pinned at vsync measures the monitor. It now times the draw itself.</p>
+<table>
+<thead>
+<tr>
+<th>series</th>
+<th>vertices</th>
+<th>many <code>drawMs</code></th>
+<th>one <code>drawMs</code></th>
+<th>collapse</th>
+<th>SciChart's frame at this density</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20</td>
+<td>48 k</td>
+<td>0.037</td>
+<td>0.034</td>
+<td>1.1×</td>
+<td>3.4 ms — <strong>91× the raw draw</strong></td>
+</tr>
+<tr>
+<td>80</td>
+<td>192 k</td>
+<td>0.060</td>
+<td>0.025</td>
+<td>2.4×</td>
+<td>5.7 ms — <strong>95×</strong></td>
+</tr>
+<tr>
+<td>160</td>
+<td>384 k</td>
+<td>0.075</td>
+<td>0.023</td>
+<td>3.3×</td>
+<td>11.4 ms — <strong>153×</strong></td>
+</tr>
+<tr>
+<td>240</td>
+<td>576 k</td>
+<td>0.062</td>
+<td>0.029</td>
+<td>2.1×</td>
+<td>15.3 ms — <strong>246×</strong></td>
+</tr>
+<tr>
+<td><strong>320</strong></td>
+<td><strong>768 k</strong></td>
+<td><strong>0.076</strong></td>
+<td><strong>0.020</strong></td>
+<td><strong>3.8×</strong></td>
+<td><strong>17.4 ms — 229×</strong></td>
+</tr>
+<tr>
+<td>640</td>
+<td>1.5 M</td>
+<td>0.117</td>
+<td>0.023</td>
+<td>5.1×</td>
+<td>—</td>
+</tr>
+<tr>
+<td>1280</td>
+<td>3.1 M</td>
+<td>0.187</td>
+<td>0.025</td>
+<td>7.5×</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>(<code>drawMs</code> is CPU time issuing the frame's draw calls; the SciChart column is its measured
+<code>main_thread_busy</code> × the 17.4 ms frame.)</p>
+<p><strong>Two things follow, and the second is the important one.</strong></p>
+<p><strong>Collapsing draw calls works, as predicted.</strong> <code>one</code> is <em>flat</em> at ~0.023 ms from 20 series to 1280,
+while <code>many</code> grows linearly — 3.8× at today's wall, 7.5× at 1280. That is the 9.1×-per-series finding
+showing up exactly where it should.</p>
+<p><strong>But the raw draw is ~200× cheaper than the frame SciChart needs at the same density.</strong> 320 series is
+where the live view collapses to 44 fps with the main thread saturated; the same vertices go to the
+GPU in <strong>0.076 ms</strong>, a fifth of a percent of the budget. So the wall is <em>not</em> the GL drawing, and it
+is not the vertex count either. It is the chart library's own per-series CPU work — its scene graph,
+its coordinate transforms, its JS↔WASM crossings — which a renderer with no per-series objects does
+not have. The replacement is not a marginal win; it removes the bottleneck rather than shrinking it.</p>
+<h3 id="what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion">What this measurement does NOT cover, and it is the one real threat to the conclusion<a class="headerlink" href="#what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion" title="Permanent link">#</a></h3>
+<p>The lab draws <strong>static</strong> buffers. The live view must push new samples every frame — the equivalent of
+<code>appendRange</code>, i.e. <code>bufferSubData</code> into a ring. That upload cost is <strong>not measured here</strong>, and it is
+the obvious candidate for where a naive replacement would give the win back. Measure it before
+committing to an architecture: the next experiment is the same page with a per-frame
+<code>bufferSubData</code> of one update's worth of samples (50 Hz × 20 bins × 2 × N series) layered on top.</p>
+<p>Decode is already known not to be the problem — 1.4 ms per batch against a ~18 ms frame (below).</p>
+<hr />
 <h2 id="measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)<a class="headerlink" href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz" title="Permanent link">#</a></h2>
 <p>On-screen series = columns × channels-per-strip. Cost scales ≈ linearly with series count; FPS holds 60 until
 the main thread saturates, then collapses.</p>
@@ -434,6 +533,10 @@ and the <code>spikespeak-vertical-display</code> memory for the code map.</li>
 <li><a href="#re-measured-2026-08-27-and-the-architecture-question-is-now-answered">RE-MEASURED 2026-08-27 — and the architecture question is now answered</a><ul>
 <li><a href="#the-cost-is-per-series-by-a-factor-of-9">The cost is PER-SERIES, by a factor of 9</a></li>
 <li><a href="#why-the-web-worker-decode-experiment-measured-nothing-now-with-the-number">Why the Web Worker decode experiment measured nothing (now with the number)</a></li>
+</ul>
+</li>
+<li><a href="#the-gl-drawing-is-not-the-cost-it-is-200x-cheaper-than-the-frame-it-sits-in">The GL drawing is not the cost — it is ~200x cheaper than the frame it sits in</a><ul>
+<li><a href="#what-this-measurement-does-not-cover-and-it-is-the-one-real-threat-to-the-conclusion">What this measurement does NOT cover, and it is the one real threat to the conclusion</a></li>
 </ul>
 </li>
 <li><a href="#measured-scichart-values-this-desktop-19201080-sim-np2-384-ch-raw-30-khz">Measured SciChart values (this desktop, 1920×1080, sim NP2 384-ch RAW @ 30 kHz)</a></li>

@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE LIVE-VIEW RENDERER CONTRACT - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Unsorted / THE LIVE-VIEW RENDERER CONTRACT</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup" open><summary>Unsorted<span class="navcount">1</span></summary>
+<a class="active" href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><!-- Written by a recon pass over the live view, then hand-checked against the files it -->
+<!-- cites. This is the SPEC the renderer replacements are written against. Where it and -->
+<!-- the code disagree, the CODE is right and this file is the bug. -->
+
+<h1 id="the-live-view-renderer-contract">THE LIVE-VIEW RENDERER CONTRACT<a class="headerlink" href="#the-live-view-renderer-contract" title="Permanent link">#</a></h1>
+<p><strong>Status:</strong> normative specification. Any renderer that satisfies every MUST below is a drop-in replacement for the SciChart implementation in <code>webinterface/ChartColumn.js</code>. Three independent implementations will be written against this document; where it says MUST, divergence is a bug.</p>
+<p><strong>Baseline under specification:</strong> <code>webinterface/ChartColumn.js:1-832</code>, <code>webinterface/DataStore.js:1-118</code>, <code>webinterface/NetworkClient.js:1-220</code>, <code>webinterface/main.js</code>, <code>webinterface/Config.js</code>, <code>webinterface/style.css</code>, <code>webinterface/toolbar.css</code>, as of branch <code>feature/OneBoxSupport</code> @ 2026-08-26.</p>
+<p><strong>Verified during authoring (corrections to the recon digests):</strong>
+- <code>tests/gui/live_view.py:55-71</code> reads <code>c.surface.renderableSeries.size()</code>, <strong>not</strong> <code>c.sciChartSurface</code>. The probe was repaired 2026-08-25; the "the suite asserts nothing" claim in <code>developer_docs/NextTask_WasmFrontend.md:211,369</code> and in digest 3 is <strong>stale</strong>. §1.6 is therefore a live constraint, not a dead one.
+- <code>webinterface/Config.js:3-23</code> confirmed verbatim: <code>TRACES_PER_COLUMN: 20</code>, <code>TRACES_HORIZONTAL: 20</code>, <code>TRACES_VERTICAL: 40</code>, <code>PALETTE</code> = 7 entries.
+- <code>benchmarks/cdp_bench.py:54-55</code> reads <code>columns[0].onScreenSeries[0].dataSeries.count()</code>. <code>window.__benchPointCount</code> is documented in <code>benchmarks/README.md:51-52</code> but <strong>is not implemented anywhere</strong>.
+- <code>webinterface/main.js:279-310</code> is the perf meter (<code>__perfStats</code>/<code>__perfReset</code>), not <code>main.js:140-165</code> as the planning doc says.</p>
+<hr />
+<h2 id="1-the-interface">1. THE INTERFACE<a class="headerlink" href="#1-the-interface" title="Permanent link">#</a></h2>
+<h3 id="11-construction-and-lifecycle">1.1 Construction and lifecycle<a class="headerlink" href="#11-construction-and-lifecycle" title="Permanent link">#</a></h3>
+<pre><code class="language-js">new ChartColumn(colIndex, startChannel, channelsPerColumn,
+                mainContainerEl, dataStore, onDrawCallback, onColTracesCb)
+</code></pre>
+<p>Call site: <code>webinterface/main.js:616</code>. MUST be pure DOM — it constructs the element tree (§3.2) and appends it to <code>mainContainerEl</code>. It MUST NOT touch the GPU, allocate buffers, or need <code>await</code>.</p>
+<ul>
+<li><code>colIndex: int</code> — 0-based; used for the chart-area element id and for <code>onColTracesCb</code>/<code>onColumnPinChanged</code>.</li>
+<li><code>startChannel: int</code> — <strong>a SLOT index in the depth ordering, not a channel id.</strong> <code>buildColumns()</code> staggers it as <code>i * traces</code> (<code>main.js:614</code>). Stored as <code>this.bottomSlot</code>.</li>
+<li><code>channelsPerColumn: int|falsy</code> — <code>this.tracesPerColumn = channelsPerColumn || Config.TRACES_PER_COLUMN</code> (20).</li>
+<li><code>dataStore: DataStore</code> — stored, never mutated except via the documented fields in §2.4.</li>
+<li><code>onDrawCallback: () =&gt; void</code> — <code>() =&gt; AppController.forceXAxisUpdate()</code>.</li>
+<li><code>onColTracesCb: (colIndex:int, rawSelectValue:string) =&gt; void</code> — the <strong>raw string</strong> from the density <code>&lt;select&gt;</code>; <code>''</code> means Auto.</li>
+</ul>
+<p>Initial state MUST be: <code>selectedShank = 0</code>, <code>selectedColKey = 'B'</code>, <code>currentStreamId = null</code>, <code>userPickedStream = false</code>, <code>selectedChannelIndices = new Set()</code>, <code>onScreenSeries = []</code>, <code>onScreenLabels = []</code>.</p>
+<pre><code class="language-js">await col.initialize()              // main.js:622 — async, MUST be awaited
+</code></pre>
+<p>Allocates the render surface and the fixed pool of <code>tracesPerColumn</code> series + <code>tracesPerColumn</code> label elements. Nothing may call <code>draw()</code> before this resolves.</p>
+<pre><code class="language-js">col.destroy()                       // main.js:588
+</code></pre>
+<p>MUST unbind every series from its data buffer <strong>before</strong> releasing the surface, disconnect the ResizeObserver, and remove <code>this.container</code> from the DOM. It MUST NOT delete any buffer owned by <code>DataStore</code> — several columns can be bound to the same buffer object.</p>
+<h3 id="12-instance-methods-called-from-outside">1.2 Instance methods called from outside<a class="headerlink" href="#12-instance-methods-called-from-outside" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Call sites</th>
+<th>Semantics</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>draw()</code></td>
+<td><code>main.js:199, 691, 764</code></td>
+<td>The entire render decision. Idempotent, synchronous, safe to call at any rate. Full algorithm in §2.6.</td>
+</tr>
+<tr>
+<td><code>updateStreamSelectors()</code></td>
+<td><code>main.js:537, 548, 727</code></td>
+<td>Rebuild the stream <code>&lt;select&gt;</code> from <code>dataStore.knownStreams</code>. Empty ⇒ one option <code>Waiting for data...</code> and <code>currentStreamId = null</code>. Keep the current value if still known, else fall to the first. Option text from <code>ChartColumn.streamLabel()</code>.</td>
+</tr>
+<tr>
+<td><code>refreshFilterOptions()</code></td>
+<td><code>main.js:635, 689</code></td>
+<td>Fill shank options from <code>window.imroLiveView.shanks()</code> as <code>Shank N</code>; disable the select when ≤1 shank; sync <code>colSelector.value</code> from <code>selectedColKey</code>. <strong>MUST early-return when <code>!imroLiveView.hasOrdering()</code>.</strong> MUST NOT touch the <em>visibility</em> of <code>.cc-shank</code> / <code>.cc-side</code> — that is <code>draw()</code>'s alone (trap T-14).</td>
+</tr>
+<tr>
+<td><code>setStream(streamId)</code></td>
+<td><code>main.js:742-743</code></td>
+<td>Set <code>currentStreamId</code>, sync the <code>&lt;select&gt;</code>, then <code>draw()</code>. Does <strong>not</strong> set <code>userPickedStream</code>.</td>
+</tr>
+<tr>
+<td><code>setTracesPerColumn(n)</code></td>
+<td>ChartColumn.js:799 (via the density select)</td>
+<td>Clamp <code>n</code> to <code>[1, 384]</code>; tear down and rebuild exactly <code>n</code> series and <code>n</code> labels <strong>keeping the surface alive</strong>; <code>slider.max = 384 - n</code>; clamp <code>bottomSlot</code>; then <code>window.onLiveFilterChange(); draw(); onDrawCallback();</code>.</td>
+</tr>
+<tr>
+<td><code>updateStripMode()</code></td>
+<td><code>main.js:629</code></td>
+<td>Delegates to the static <code>ChartColumn.fitStrips()</code>. Ignores <code>this</code> entirely — keep it that way.</td>
+</tr>
+<tr>
+<td><code>setStripPinned(on: bool)</code></td>
+<td><code>main.js:459, 630</code></td>
+<td>Toggle <code>.strip-pinned</code> on <code>this.container</code>, set <code>aria-expanded</code>, toggle <code>.on</code> on <code>.cc-pin</code>, call <code>window.onColumnPinChanged(colIndex, on)</code>.</td>
+</tr>
+<tr>
+<td><code>syncLabelOverlayGeometry()</code></td>
+<td>internal, from the surface's post-layout/<code>rendered</code> hook</td>
+<td>§3.4.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-statics">1.3 Statics<a class="headerlink" href="#13-statics" title="Permanent link">#</a></h3>
+<pre><code class="language-js">ChartColumn.streamLabel(streamId) -&gt; string     // ChartColumn.js:403
+</code></pre>
+<p>MUST return exactly: <code>nidaq → "NIDAQ AI/O"</code>, <code>nidaq_di → "NIDAQ DI/O"</code>, <code>adc → "OneBox ADC (SDR)"</code>, <code>spike → "Spike Band"</code>, otherwise <code>streamId.toUpperCase() + " Band"</code> (<code>ap → "AP Band"</code>, <code>lfp → "LFP Band"</code>, <code>raw → "RAW Band"</code>). <code>tests/gui/stream_options.py:34-45</code> compares these strings literally.</p>
+<pre><code class="language-js">ChartColumn.fitStrips()                          // static; main.js:420, ChartColumn.js:557
+</code></pre>
+<p>MUST measure <strong>column 0 only</strong> and apply the answer to <strong>every</strong> <code>.column-container</code>:
+1. temporarily remove <code>strip-collapsed</code> from column 0;
+2. <code>need = band.scrollWidth</code> (448px by construction), <code>avail = header.clientWidth - pageInfo.offsetWidth - 24</code>;
+3. restore the class;
+4. <strong>if <code>avail &lt;= 0</code>, return without changing anything</strong> (a hidden <code>#view-data</code> reports 0×0);
+5. <code>collapse = need &gt; avail</code>; toggle <code>strip-collapsed</code> on all columns, clearing <code>strip-focus</code> when expanding.</p>
+<h3 id="14-instance-fields-read-or-written-by-other-code">1.4 Instance fields read or written by other code<a class="headerlink" href="#14-instance-fields-read-or-written-by-other-code" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Direction</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>colIndex</code></td>
+<td>read (<code>main.js:459, 630</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>currentStreamId</code></td>
+<td>read (<code>main.js:708, 753</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>selectedColKey</code></td>
+<td>read (<code>main.js:710</code>)</td>
+<td><code>'B'</code> | <code>'L'</code> | <code>'R'</code></td>
+</tr>
+<tr>
+<td><code>userPickedStream</code></td>
+<td>read (<code>main.js:742-743</code>)</td>
+<td>set true only by the user's <code>change</code> on <code>.cc-stream</code></td>
+</tr>
+<tr>
+<td><code>stripPinned</code></td>
+<td>read (<code>main.js:459</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>tracesPerColumn</code>, <code>bottomSlot</code>, <code>shownSlots</code></td>
+<td>internal, but <code>shownSlots</code> is a hard cross-method contract (<code>draw()</code> → <code>syncLabelOverlayGeometry()</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>surface</code></td>
+<td>read by <code>tests/gui/live_view.py:65</code> — see §1.6</td>
+<td></td>
+</tr>
+<tr>
+<td><code>onScreenSeries</code></td>
+<td>read by <code>benchmarks/cdp_bench.py:54</code> — see §1.6</td>
+<td></td>
+</tr>
+<tr>
+<td><code>wasmContext</code></td>
+<td>read from <code>columns[0]</code> by <code>main.js:646-647, 762-763</code> — <strong>MUST be removed, see §1.5</strong></td>
+<td></td>
+</tr>
+<tr>
+<td><code>xAxis</code></td>
+<td><strong>written</strong> by <code>main.js:755</code> — <strong>see §1.5</strong></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="15-two-couplings-that-must-be-broken-and-the-exact-abstractions-that-replace-them">1.5 Two couplings that MUST be broken, and the exact abstractions that replace them<a class="headerlink" href="#15-two-couplings-that-must-be-broken-and-the-exact-abstractions-that-replace-them" title="Permanent link">#</a></h3>
+<p>These are the only interface changes this contract mandates. All three implementations MUST implement them identically, or <code>DataStore</code>/<code>main.js</code> will diverge per renderer.</p>
+<p><strong>(a) Buffer allocation must not go through a renderer handle.</strong>
+Today <code>main.js:646-647</code> and <code>:762-763</code> do <code>dataStore.initializeStream(this.columns[0].wasmContext, …)</code> / <code>updateWindowSize(this.columns[0].wasmContext, …)</code>.</p>
+<p>Normative replacement — the renderer module exports a factory:</p>
+<pre><code class="language-js">// renderer module (one per implementation)
+export function createSeriesBuffer(capacity) -&gt; SeriesBuffer
+
+interface SeriesBuffer {
+    appendRange(xs: Float64Array, ys: Float64Array): void  // equal lengths, x non-decreasing
+    clear(): void
+    count(): number                 // samples currently held
+    setCapacity(n: number): void    // FIFO capacity change IN PLACE — object identity MUST survive
+    delete(): void                  // release; only DataStore may call this
+}
+</code></pre>
+<p><code>DataStore.initializeStream(streamId, numChannels)</code> and <code>DataStore.updateWindowSize(newSizeInSeconds)</code> MUST lose their first parameter and call the factory. FIFO semantics: when full, the oldest sample is evicted; capacity is in <strong>points</strong>, not seconds.</p>
+<p><strong>(b) X range must not be written as an axis property.</strong>
+Today: <code>col.xAxis.visibleRange = new SciChart.NumberRange(max - windowSize, max)</code> (<code>main.js:751-758</code>).</p>
+<p>Normative replacement:</p>
+<pre><code class="language-js">col.setXRange(minSeconds: number, maxSeconds: number): void
+</code></pre>
+<p>Called for <strong>every</strong> column on <strong>every</strong> processed batch of <strong>every</strong> stream. It MUST be cheap and MUST NOT force a synchronous layout or a full rebuild. For one transition release a renderer MAY additionally expose <code>col.xAxis = { set visibleRange(r) { … } }</code> accepting any <code>{min, max}</code>; new code MUST use <code>setXRange</code>.</p>
+<h3 id="16-probes-the-test-suite-and-the-benchmark-read-must-keep-working">1.6 Probes the test suite and the benchmark read (MUST keep working)<a class="headerlink" href="#16-probes-the-test-suite-and-the-benchmark-read-must-keep-working" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>GUI suite, <code>tests/gui/live_view.py:55-71</code>:</strong> <code>app.columns[i].surface.renderableSeries.size()</code> must return an <strong>integer &gt; 0</strong> for at least one column, and must not throw. A renderer MAY satisfy this by exposing <code>col.surface = { renderableSeries: { size: () =&gt; this.onScreenSeries.length } }</code>, <strong>or</strong> the probe may be re-pointed — but if you re-point it you MUST prove it can fail (unbind a series, watch it go red, revert) per <code>CLAUDE.md</code>.</li>
+<li><strong>Benchmark, <code>benchmarks/cdp_bench.py:54-55</code>:</strong> <code>columns[0].onScreenSeries[0].dataSeries.count()</code>. <strong>This one really breaks on a swap.</strong> Every implementation MUST additionally expose the renderer-neutral hook already specified in <code>benchmarks/README.md:49-53</code>:
+  <code>js
+  window.__benchPointCount(colIndex) -&gt; number   // on-screen sample count for column colIndex, -1 if unavailable</code>
+  and <code>cdp_bench.py</code> MUST call it first, falling back to <code>onScreenSeries</code> (that fallback is documented but unimplemented — write it).</li>
+<li><strong>Recommended richer probe</strong> (<code>developer_docs/NextTask_WasmFrontend.md:369-385</code>), OPTIONAL but wanted by all three:
+  <code>js
+  col.probeRender() -&gt; JSON string of {seriesCount, pointsPerSeries, plotRect:{x,y,w,h}, yForValue(v), colorOf(i)}</code>
+  It may return a Promise but MUST resolve to a <strong>string</strong> (<code>tests/gui/_harness.py</code> does <code>json.loads</code>).</li>
+</ul>
+<h3 id="17-globals-and-window-objects-the-column-calls-must-keep-calling">1.7 Globals and window objects the column calls (MUST keep calling)<a class="headerlink" href="#17-globals-and-window-objects-the-column-calls-must-keep-calling" title="Permanent link">#</a></h3>
+<ul>
+<li><code>window.onLiveFilterChange()</code> → <code>AppController.updateAppendModes()</code>. <strong>MUST be called before the next <code>draw()</code> whenever <code>currentStreamId</code>, <code>selectedColKey</code>, or <code>tracesPerColumn</code> changes</strong>, or the column renders blank (trap T-3).</li>
+<li><code>window.onColumnPinChanged(colIndex, pinned)</code>.</li>
+<li><code>window.imroLiveView</code> (<code>ImroManager.js:212-233</code>): <code>hasOrdering()</code>, <code>kind()</code>, <code>shanks()</code>, <code>total()</code>, <code>slotOf(ch)</code>, <code>channelAtSlot(slot)</code>, <code>slotIOf(ch)</code>, <code>channelAtSlotI(slot)</code>, <code>electrodeOf(ch)</code>, <code>shankOf(ch)</code>, <code>colOf(ch)</code> (0=L, 1=R), <code>isRef(ch)</code>, <code>band(shank, 'L'|'R'|'B') -&gt; {start,count}|null</code>, <code>bandI(shank) -&gt; {start,count}|null</code>.</li>
+<li><code>window.rippleModule.beginElectrodeDrag(clientX, clientY, globalElectrode)</code>.</li>
+<li><code>window.audioModule.listeningChannel()</code>, <code>window.audioModule.setChannel(ch)</code>.</li>
+<li><code>document.body</code> classes read: <code>ripple-open</code>, <code>audio-open</code>. (<code>no-source</code> is CSS-only.)</li>
+</ul>
+<hr />
+<h2 id="2-the-data-contract">2. THE DATA CONTRACT<a class="headerlink" href="#2-the-data-contract" title="Permanent link">#</a></h2>
+<h3 id="21-wire-frame-informative-for-the-renderer-normative-for-anything-touching-networkclient">2.1 Wire frame (informative for the renderer, normative for anything touching <code>NetworkClient</code>)<a class="headerlink" href="#21-wire-frame-informative-for-the-renderer-normative-for-anything-touching-networkclient" title="Permanent link">#</a></h3>
+<p>One WebSocket <strong>binary</strong> message = one frame = one stream, little-endian, IEEE-754 float32 (<code>DisplayProcessor.cpp:291-293</code>, forwarded byte-for-byte by <code>WebSocketServer::broadcastData</code>, <code>WebSocketServer.cpp:797-802</code>):</p>
+<pre><code>[u8 idLen][idLen bytes UTF-8 streamId][u32 numChannels][u32 numBins]
+then numBins × { f32 tsSeconds ,  numChannels × ( f32 min , f32 max ) }
+</code></pre>
+<ul>
+<li><code>streamId</code> ∈ <code>ap</code>, <code>lfp</code>, <code>raw</code>, <code>adc</code>, <code>nidaq</code> (<code>nidaq_di</code> is specified, not shipped).</li>
+<li><code>numChannels</code> is <strong>per stream</strong>: 384 for a probe band, 12 for the OneBox ADC, device count for NI-DAQ. Never assume 384 (<code>DisplayProcessor.cpp:456-457</code>).</li>
+<li><strong>min is written first, then max</strong> (<code>DisplayProcessor.cpp:458-470</code>; read at <code>NetworkClient.js:133-134</code>). Swapping them still renders — inverted segments — so it fails silently.</li>
+<li>Timestamp is float32 <strong>seconds at the bin MIDPOINT</strong>.</li>
+<li>Units are <strong>not on the wire</strong>: <code>ap</code>/<code>lfp</code>/<code>raw</code> arrive in hundreds-of-µV (<code>Config.MICROVOLTS_PER_DISPLAY_UNIT = 100</code>); <code>adc</code>/<code>nidaq</code> arrive in volts.</li>
+<li>Payload start offset is <code>1 + idLen + 8</code> — <strong>11/12/14 bytes, not 4-byte aligned</strong>, which is why <code>NetworkClient.js:87</code> copies (<code>new Float32Array(event.data.slice(offset))</code>).</li>
+</ul>
+<h3 id="22-rate-and-volume-what-the-renderer-must-sustain">2.2 Rate and volume — what the renderer must sustain<a class="headerlink" href="#22-rate-and-volume-what-the-renderer-must-sustain" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frames per second per stream</td>
+<td><strong>50</strong> (20 bins × 1 ms of data)</td>
+</tr>
+<tr>
+<td>Timebins per frame</td>
+<td>20 (<code>timebins_per_update</code>, 20/20 in every shipped config)</td>
+</tr>
+<tr>
+<td>Bin width</td>
+<td>1 ms = 100 ticks of the 100 kHz timestamp clock</td>
+</tr>
+<tr>
+<td><strong>Points appended per channel per frame</strong></td>
+<td><strong>40</strong> (20 bins × min+max) = 2000 pts/s/channel</td>
+</tr>
+<tr>
+<td>Bytes/s, one 384-ch stream</td>
+<td>~3.08 MB/s (61,532 B/frame for <code>raw</code>)</td>
+</tr>
+<tr>
+<td>Worst shipped case</td>
+<td>NP1 <code>ap</code> + <code>lfp</code> + <code>nidaq</code> concurrently</td>
+</tr>
+</tbody>
+</table>
+<p>Each bin contributes two points at the <strong>same x</strong>, so a bin renders as a vertical min→max segment. Any renderer that assumes strictly increasing x will collapse or mis-draw these.</p>
+<h3 id="23-buffers">2.3 Buffers<a class="headerlink" href="#23-buffers" title="Permanent link">#</a></h3>
+<p><code>DataStore</code> owns, per channel of each stream:</p>
+<pre><code class="language-js">{ dataSeries, dataSeriesInterleaved, yOffset, yOffsetInterleaved, zoom, color, acMin?, acMax? }
+</code></pre>
+<p>Two buffers per channel exist because the vertical offset is baked into y (§2.4): packed depth order and electrode-interleaved order. Capacity (<code>DataStore.js:47-50</code>):</p>
+<pre><code>cap = ceil(REFRESH_RATE_HZ(50) * POINTS_PER_UPDATE(20) * 2 * windowSeconds * CAPACITY_BUFFER_MULTIPLIER(1.2))
+</code></pre>
+<p>= <strong>2400 points/channel at the 1 s default</strong>, 24 000 at 10 s. <code>updateWindowSize</code> MUST resize in place (<code>setCapacity</code>) so bound renderables do not blank.</p>
+<h3 id="24-y-baking-the-single-most-important-rule">2.4 y-baking — the single most important rule<a class="headerlink" href="#24-y-baking-the-single-most-important-rule" title="Permanent link">#</a></h3>
+<p><strong>The vertical position and the vertical scale of a trace are baked into the Y samples at append time by <code>NetworkClient</code> (<code>NetworkClient.js:136-184</code>). The renderer MUST NOT re-offset, re-scale, auto-range, or auto-fit anything.</strong> Y values are absolute plot coordinates.</p>
+<pre><code>probe (numCh === 384) and streamId !== 'raw':   s = v * channel.zoom
+probe and streamId === 'raw':                   AC-couple: envelope min/max with DECAY = 0.9995,
+                                                baseline = midpoint, s = (v - baseline) * zoom,
+                                                DELIBERATELY NOT CLAMPED
+non-probe (adc / nidaq):                        AC-couple as above,
+                                                gain = (CHANNEL_VERTICAL_SPACING / NIDAQ_UNITS_PER_ROW) * zoom,
+                                                then HARD-CLAMPED to ±0.47 * CHANNEL_VERTICAL_SPACING
+y = channel.yOffset            + s   -&gt; dataSeries
+y = channel.yOffsetInterleaved + s   -&gt; dataSeriesInterleaved
+</code></pre>
+<p>Consequences the renderer must accept: a zoom or offset change does <strong>not</strong> alter samples already buffered, so the view re-scales gradually over one window; <code>AppController.relayoutByDepth()</code> (<code>main.js:665-692</code>) sets <code>yOffset = slot * 3.0</code>, <code>yOffsetInterleaved = slotI * 3.0</code> and then <code>clear()</code>s both buffers precisely because old samples carry the old layout.</p>
+<p>Which buffers are fed is gated by <code>dataStore.appendPacked</code> / <code>appendInterleaved</code>, recomputed by <code>AppController.updateAppendModes()</code> from every column's <code>selectedColKey</code> and whether its stream is 384-wide.</p>
+<h3 id="25-what-the-renderer-does-per-frame">2.5 What the renderer does per frame<a class="headerlink" href="#25-what-the-renderer-does-per-frame" title="Permanent link">#</a></h3>
+<p><strong>Nothing is pushed to the renderer per frame.</strong> There is no per-frame draw call in the data path. Per frame the app does exactly:
+1. <code>NetworkClient</code> performs <strong>one <code>appendRange(xs, ys)</code> per channel per frame</strong> into the buffers a column is bound to;
+2. <code>AppController.forceXAxisUpdate()</code> calls <code>col.setXRange(latest - windowSize, latest)</code> on every column;
+3. one <code>textContent</code> write of the time display.</p>
+<p>Therefore the renderer MUST: repaint from buffers it already holds, coalescing to at most one paint per animation frame regardless of how many appends and range writes arrive (50/s per stream, ×N streams — today that is ~600 range writes/s on a 3-stream 4-column config). <strong>A renderer that repaints synchronously inside <code>appendRange</code> or <code>setXRange</code> fails this contract.</strong></p>
+<h3 id="26-draw-the-complete-render-decision-normative-pseudocode">2.6 <code>draw()</code> — the complete render decision (normative pseudocode)<a class="headerlink" href="#26-draw-the-complete-render-decision-normative-pseudocode" title="Permanent link">#</a></h3>
+<p>Reproduces <code>ChartColumn.js:603-795</code>. Deviations here are visible to the operator and to the GUI suite.</p>
+<pre><code>channels = dataStore.streams[currentStreamId];      if (!channels) return
+lv       = window.imroLiveView
+useDepth = lv.hasOrdering() &amp;&amp; channels.length === 384
+TRACES   = this.tracesPerColumn
+
+// 1. Filter-control visibility — draw() is the SINGLE owner of this.
+show(.cc-shank) = show(.cc-side) = useDepth
+toggle('.no-filters') on .column-controls = !useDepth
+
+// 2. Band, slot-&gt;channel map, and which buffer to bind
+if (useDepth &amp;&amp; selectedColKey === 'B')  band = lv.bandI(selectedShank);          chanAt = lv.channelAtSlotI; field='dataSeriesInterleaved'
+else if (useDepth)                       band = lv.band(selectedShank, colKey);   chanAt = lv.channelAtSlot;  field='dataSeries'
+else                                     band = {start:0, count:channels.length}; chanAt = s=&gt;s;              field='dataSeries'
+if (!band) band = {start:0, count:0}
+
+// 3. How many rows are actually on screen
+shownSlots = useDepth ? TRACES : min(TRACES, max(1, band.count))
+
+// 4. Paging window
+bandStart = band.start; bandEnd = band.start + band.count
+maxBottom = max(bandStart, bandEnd - shownSlots)
+bottom    = clamp(this.bottomSlot, bandStart, maxBottom);  this.bottomSlot = bottom
+topRange  = bottom + shownSlots - 1
+shownTop  = min(topRange, bandEnd - 1)
+
+// 5. Slider
+slider.min = bandStart; slider.max = maxBottom; slider.value = bottom
+
+// 6. Depth readout (innerHTML)
+band.count === 0                -&gt; &quot;(no electrodes)&quot;
+useDepth                        -&gt; &quot;&lt;strong&gt;e{electrodeOf(chanAt(shownTop))}&lt;/strong&gt;&amp;nbsp;&amp;#8597;&amp;nbsp;e{electrodeOf(chanAt(bottom))}&quot;
+else, prefix = (streamId==='adc' ? 'IO' : 'CH ')
+                                -&gt; &quot;&lt;strong&gt;{prefix}{shownTop}&lt;/strong&gt;&amp;nbsp;&amp;#8597;&amp;nbsp;{prefix}{bottom}&quot;
+
+// 7. Y RANGE — exactly shownSlots rows, traces centred in their row
+setYRange(bottom * 3.0 - 1.5,  topRange * 3.0 + 1.5)      // 3.0 = Config.CHANNEL_VERTICAL_SPACING
+
+this.shownSlots = shownSlots
+syncLabelOverlayGeometry()          // opportunistic; may no-op before first layout
+
+// 8. Bind, top-first
+for i in 0 .. TRACES-1:
+    slot   = topRange - i                     // DOM index 0 = TOPMOST = SHALLOWEST
+    series = onScreenSeries[i]; label = onScreenLabels[i]
+    label.style.top = (((i + 0.5) / shownSlots) * 100).toFixed(4) + '%'
+    ch = (slot &gt;= bandStart &amp;&amp; slot &lt; bandEnd) ? chanAt(slot) : undefined
+    if (ch === undefined || !channels[ch]) { series.visible = false; label.style.display = 'none'; continue }
+    series.visible = true; label.style.display = ''
+    series.buffer = channels[ch][field]        // BIND BY REFERENCE — never copy, never mutate
+    series.stroke = channels[ch].color
+    label.textContent / title / handlers  per §3.5
+</code></pre>
+<p>X range is <strong>not</strong> set here.</p>
+<hr />
+<h2 id="3-the-visual-contract">3. THE VISUAL CONTRACT<a class="headerlink" href="#3-the-visual-contract" title="Permanent link">#</a></h2>
+<p>The replacement must be indistinguishable from today's screenshots at normal viewing. Everything below is a MUST unless marked otherwise.</p>
+<h3 id="31-plot-area">3.1 Plot area<a class="headerlink" href="#31-plot-area" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Background:</strong> SciChart's implicit <code>SciChartJSDarkv2Theme</code> — <code>radial-gradient(circle, #3C3C3FFF 0%, #1C1C1EFF 100%)</code> across the chart canvas. It is in no stylesheet; it comes from <code>SciChartSurfaceBase.DEFAULT_THEME</code> in <code>webinterface/lib/index.min.js</code>. Reproduce this gradient explicitly.</li>
+<li><strong>Padding around the plot:</strong> top 0, right 2px, bottom 0, left 2px (<code>SciChart.Thickness(0,2,0,2)</code>, ChartColumn.js:291-293 — the argument order is top, right, bottom, left). Left/right are 2 and not 0 so the leftmost stroke and the <code>left:5px</code> label overlay are not clipped.</li>
+<li><strong>No gridlines. No major or minor. No axis tick labels. No axis line. No annotations. No zoom/pan/cursor modifiers. No legend.</strong> The Y axis is invisible; the X axis is nominally visible but draws nothing and only insets the plot rect vertically. A replacement MAY drop the X axis entirely provided the plot rect is what the labels are pinned to (§3.4).</li>
+<li><strong>Traces:</strong> 1 px stroke, no markers, no fill, no anti-alias change, colour = <code>Config.PALETTE[channelIndex % 7]</code> where <code>channelIndex</code> is the <strong>read-out channel index</strong>, assigned once at <code>DataStore.initializeStream</code> and never reassigned. Palette: <code>#FF4500, #FFD700, #32CD32, #00BFFF, #6495ED, #DA70D6, #FF69B4</code>. Because depth ordering permutes channels into slots, the on-screen colour sequence is deliberately NOT a clean repeating 7-cycle. Do not re-key the palette to the slot.</li>
+<li><strong>Y direction:</strong> NORMAL. Offsets grow upward, so <strong>slot 0 (tip / deepest) sits at the BOTTOM</strong> and electrode numbers increase upward.</li>
+</ul>
+<h3 id="32-dom-tree-class-names-and-ids-are-the-test-contract">3.2 DOM tree (class names and ids are the test contract)<a class="headerlink" href="#32-dom-tree-class-names-and-ids-are-the-test-contract" title="Permanent link">#</a></h3>
+<pre><code>div.column-container                       flex column, height 100%, bg #262626, radius 5px,
+│                                          flex:1 1 0, min-width:0, position relative
+├─ div.column-header                       grid &quot;controls depth&quot;, height 46px DEFINITE, padding 6px,
+│  │                                       columns max-content minmax(0,1fr), gap 4px/6px
+│  ├─ button.cc-reveal &gt; span.cc-chev + span.cc-reveal-lbl      (display:none unless .strip-collapsed)
+│  ├─ div.column-controls                  5 tracks: stream shank side scale dens
+│  │  ├─ select.stream-selector.cc-stream
+│  │  ├─ select.stream-selector.cc-shank
+│  │  ├─ select.stream-selector.cc-side     values B | L | R, text &quot;L+R&quot; | &quot;Left&quot; | &quot;Right&quot;
+│  │  ├─ div.cc-scale  → input[type=number].stream-selector + span.cc-scale-unit
+│  │  ├─ select.stream-selector.cc-dens     '' (Ch:Auto), 20, 40, 60, 80, 120
+│  │  └─ button.cc-pin  '◉'                grid-column -2/-1, shown only when collapsed
+│  └─ span.page-info                       depth readout — NEVER hidden, even collapsed
+└─ div.chart-column-wrapper                flex row, flex-grow 1, position relative, min-height 0
+   ├─ div.scichart-container-wrapper       flex-grow 1, position relative   ← wheel handler binds here
+   │  ├─ div#scichart-container-&lt;colIndex&gt; 100% × 100%   ← the renderer mounts here
+   │  └─ div.labels-overlay
+   └─ div.channel-slider-container         INLINE width 30px (defeats style.css's 60px)
+      ├─ div &quot;shallow&quot;                     #999, 9px, margin-bottom 3px
+      ├─ button ▲ (&amp;#9650;)                no bg/border, #888, 14px, padding 2px
+      ├─ input[type=range].vertical-slider INLINE 100%×100%, vertical orientation
+      ├─ button ▼ (&amp;#9660;)
+      └─ div &quot;deep&quot;                        #999, 9px, margin-top 3px
+</code></pre>
+<p>The wrapper class name <code>scichart-container-wrapper</code> and the id prefix <code>scichart-container-</code> are <strong>frozen</strong> — <code>tests/gui/*.py</code> and CSS both key off them. Renaming them is a separate change from swapping the renderer.</p>
+<p><strong><code>tests/gui/live_view.py:28-30, 86-91</code> and <code>stream_options.py:54-55, 100-102</code> require at least one <code>&lt;canvas&gt;</code> per column with <code>clientWidth &gt; 0</code> and <code>clientHeight &gt; 100</code> (60 in stream_options).</strong> An SVG-only or DOM-only renderer fails the suite as written.</p>
+<h3 id="33-column-framing-and-control-band">3.3 Column framing and control band<a class="headerlink" href="#33-column-framing-and-control-band" title="Permanent link">#</a></h3>
+<ul>
+<li><code>.main-container</code>: flex, gap 5px, padding 5px, height 100%, min-height/min-width 0. <code>.vertical</code> ⇒ <code>flex-direction: column</code>.</li>
+<li>Page: body <code>#1c1c1c</code>, text <code>#fff</code>, sans-serif. Watermark <code>#logo-watermark</code>: fixed, centred, max 50vw/50vh, opacity 0.05, z-index 5, pointer-events none.</li>
+<li><code>.column-controls</code>: bg <code>--tb-band #2b2b2b</code>, border 1px <code>--tb-band-border #3f3f3f</code>, radius 7px, padding <code>4px 7px</code>, one row <code>--tb-h-sm 24px</code>, fixed tracks stream 108 / shank 80 / side 64 / scale 84 / dens 80, gap 4px ⇒ <strong>448px, one authored shape, both orientations</strong>.</li>
+<li><code>.stream-selector</code>: bg <code>#4F4F4F</code>, colour <code>#FFFFFF</code>, border 1px <code>#6E6E6E</code> (<code>#5a5a5a</code> inside a band), radius 4px, 12px, height 24px, padding <code>0 6px</code>.</li>
+<li><code>.cc-scale-unit</code>: reserved <code>flex: 0 0 32px</code>, <code>#9aa0a8</code>, 11px. Unit text is <code>µV</code> (<strong>U+00B5 MICRO SIGN</strong>), <code>V/row</code>, or <code>×</code>.</li>
+<li><code>.page-info</code>: <code>justify-self:end</code>, 12px, <code>#c8ccd2</code>, <code>tabular-nums</code>, <code>min-width:132px</code>, <code>white-space:nowrap</code>.</li>
+<li>Collapsed: header becomes <code>"reveal depth"</code>; <code>.cc-reveal</code> chip 24px tall, padding <code>0 8px</code>, 11px, <code>#9aa0a8</code> on <code>#2b2b2b</code> with a 1px <code>#3f3f3f</code> border and radius 6px; the band becomes <code>position:absolute; top:calc(100% + 4px); left:0; z-index:30</code>, <code>box-shadow 0 6px 20px rgba(0,0,0,.45)</code>, opacity/visibility transition .12s, hidden unless <code>:hover</code> / <code>.strip-focus</code> / <code>.strip-pinned</code>, and uses the <strong>narrow 3-row template</strong> <code>"stream stream" / "shank side" / "scale dens"</code> (2 rows under <code>.no-filters</code>).</li>
+<li><code>body.no-source</code> hides <code>.column-header</code> and <code>.column-controls</code> entirely.</li>
+<li><code>body { min-width: 1080px }</code>; with the ripple dock open the live view gets <code>margin-right: var(--rd-dock-w, 380px)</code>.</li>
+</ul>
+<h3 id="34-label-overlay-geometry">3.4 Label overlay geometry<a class="headerlink" href="#34-label-overlay-geometry" title="Permanent link">#</a></h3>
+<p><code>.labels-overlay</code>: <code>position:absolute; top:0; left:5px; bottom:0; pointer-events:none; z-index:10; text-align:left; font-size:11px</code>.</p>
+<p><code>syncLabelOverlayGeometry()</code> MUST run <strong>after layout, from the renderer's post-render hook</strong>, and set inline:</p>
+<pre><code>top    = plotRect.top  + 'px'
+height = plotRect.height + 'px'
+bottom = 'auto'
+fontSize = max(7, min(11, floor(plotRect.height / this.shownSlots) - 1)) + 'px'
+</code></pre>
+<p>It MUST bail silently if the plot rect is not yet readable, and it MUST NOT write a reactive property unconditionally in that hook (that self-triggers a redraw every frame).</p>
+<p><code>.channel-label</code>: <code>color #CCCCCC; font-weight bold; font-family monospace; font-size: inherit</code> (<strong>never an explicit size — the inherited computed size is the auto-shrink</strong>); <code>position:absolute; transform:translateY(-50%); line-height:1; padding:0 4px; white-space:nowrap; border-radius:3px; cursor:pointer; pointer-events:all; transition background-color .2s, color .2s</code>.
+- <code>.selected</code> → <code>background rgba(135,206,250,.4); color:white; font-weight:bold</code>.
+- <code>.listening</code> (injected by <code>AudioModule.js:136</code>) → <code>color:#8fe39a !important; font-weight:700; text-shadow:0 0 6px rgba(76,175,80,.9)</code>.
+- Placement is <strong>arithmetic</strong> (<code>top = ((i+0.5)/shownSlots)*100 %</code>), never flexbox distribution (<code>style.css:147-153</code>).
+- Hidden rows use <code>display:none</code>, <strong>not</strong> <code>visibility:hidden</code>.</p>
+<h3 id="35-label-text-tooltips-and-handlers-priority-order">3.5 Label text, tooltips and handlers (priority order)<a class="headerlink" href="#35-label-text-tooltips-and-handlers-priority-order" title="Permanent link">#</a></h3>
+<ol>
+<li>probe &amp;&amp; <code>lv.isRef(ch)</code> → text <code>REF</code>, title <code>internal-reference site (pinned) · read-out channel {ch}</code></li>
+<li>probe → text <code>`${lv.electrodeOf(ch)}${lv.colOf(ch)===0 ? 'L' : 'R'}`</code> (e.g. <code>100L</code>); title <code>electrode N · left/right col · shank S · read-out channel C  (Ctrl+drag → ripple)</code>; <code>style.cursor='grab'</code>; <code>onmousedown</code> fires <code>window.rippleModule.beginElectrodeDrag(clientX, clientY, gEl)</code> when <code>ctrlKey || body.ripple-open</code>, with <code>gEl = shank*1280 + electrode</code> for NP2 and plain <code>electrode</code> otherwise.</li>
+<li><code>currentStreamId === 'adc'</code> → text <code>IO{ch}</code>, title <code>OneBox ADC channel N -- BNC ION on the SDR breakout</code></li>
+<li>else → text <code>{ch}</code>, title <code>""</code>.</li>
+</ol>
+<p><code>label.onclick</code>, reassigned on every draw: if <code>body.audio-open</code> &amp;&amp; <code>window.audioModule</code> → <code>setChannel(ch)</code> and return; else if <code>ctrlKey || body.ripple-open</code> → return; else toggle membership in <code>selectedChannelIndices</code> and <code>draw()</code>. <code>.listening</code> is toggled from <code>window.audioModule.listeningChannel()</code>.</p>
+<p><strong>Fix while reimplementing (see T-13):</strong> clear <code>onmousedown</code> and <code>style.cursor</code> in branches 1, 3 and 4.</p>
+<h3 id="36-scale-control-semantics">3.6 Scale control semantics<a class="headerlink" href="#36-scale-control-semantics" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Unit text</th>
+<th>Displayed value</th>
+<th>Inverse</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>channels.length === 384</code></td>
+<td><code>µV</code></td>
+<td><code>round(3.0 * 100 / zoom)</code></td>
+<td><code>zoom = 300 / v</code></td>
+</tr>
+<tr>
+<td><code>currentStreamId === 'adc'</code></td>
+<td><code>V/row</code></td>
+<td><code>(6.0 / zoom).toFixed(3)</code></td>
+<td><code>zoom = 6.0 / v</code></td>
+</tr>
+<tr>
+<td>otherwise</td>
+<td><code>×</code></td>
+<td><code>zoom.toFixed(3)</code></td>
+<td><code>zoom = v</code></td>
+</tr>
+</tbody>
+</table>
+<p>Apply clamps <code>zoom = max(0.01, zoom)</code> and writes it to <strong>every</strong> channel of the stream, then <code>updateScaleControl(); draw(); onDrawCallback();</code>. Invalid or ≤0 input re-reads the control and changes nothing. <code>currentZoom()</code> reads channel 0.</p>
+<h3 id="37-interactions">3.7 Interactions<a class="headerlink" href="#37-interactions" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Wheel</strong> on <code>.scichart-container-wrapper</code>, <code>{passive:false}</code>: acts only when <code>selectedChannelIndices.size &gt; 0 &amp;&amp; currentStreamId</code>; then <code>preventDefault()</code> and <code>zoom += ±0.2</code> (floor 0.2) for each selected channel. <strong>No redraw</strong> — the view rescales over the next window as new samples arrive. With nothing selected it MUST NOT <code>preventDefault()</code>, so the page scrolls.</li>
+<li><strong>Slider</strong> <code>input</code> → <code>bottomSlot = int(value); draw(); onDrawCallback()</code>. ▲/▼ step ±1 and dispatch a synthetic <code>input</code>.</li>
+<li><strong>Density select</strong> → <code>setTracesPerColumn(val ? parseInt(val) : (Config.TRACES_PER_COLUMN || 20))</code> then <code>onColTracesCb(colIndex, rawStringValue)</code>.</li>
+<li><strong>ResizeObserver</strong> on the chart area: rAF#1 <code>updateStripMode()</code>, rAF#2 <code>draw()</code>, both in swallowing try/catch. It exists because the flex layout settles after the first draw.</li>
+</ul>
+<h3 id="38-orientation">3.8 Orientation<a class="headerlink" href="#38-orientation" title="Permanent link">#</a></h3>
+<p>Horizontal (default): row flex, 20 traces/column (<code>TRACES_HORIZONTAL</code>). Vertical: <code>.vertical</code> on <code>#main-container</code> ⇒ column flex + <code>min-height:0</code> on children, 40 traces/row (<code>TRACES_VERTICAL</code>), toolbar label flips <code>Columns:</code> ⇄ <code>Rows:</code>. The control band shape is identical in both; the only genuine difference is <code>.no-filters</code>, which uses a 3-track map (stream/scale/dens) in vertical. Gap/padding stay 5px.</p>
+<hr />
+<h2 id="4-the-benchmark-protocol">4. THE BENCHMARK PROTOCOL<a class="headerlink" href="#4-the-benchmark-protocol" title="Permanent link">#</a></h2>
+<h3 id="41-the-baseline-table-frozen-benchmarksbench_channel_density_scichartcsv">4.1 The baseline table (frozen, <code>benchmarks/bench_channel_density_scichart.csv</code>)<a class="headerlink" href="#41-the-baseline-table-frozen-benchmarksbench_channel_density_scichartcsv" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>cell</th>
+<th>series</th>
+<th>fps</th>
+<th>frame mean / p95 / max (ms)</th>
+<th>main-thread busy</th>
+<th>heap MB</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 × 20</td>
+<td>20</td>
+<td>60</td>
+<td>16.67 / 16.8 / 17.1</td>
+<td><strong>0.154</strong></td>
+<td>19.8</td>
+</tr>
+<tr>
+<td>2 × 40</td>
+<td>80</td>
+<td>61</td>
+<td>16.67 / 16.8 / 17.2</td>
+<td><strong>0.297</strong></td>
+<td>33.7</td>
+</tr>
+<tr>
+<td>4 × 40</td>
+<td>160</td>
+<td>60</td>
+<td>16.67 / 16.8 / 17.3</td>
+<td><strong>0.627</strong></td>
+<td>23.0</td>
+</tr>
+<tr>
+<td>4 × 60</td>
+<td>240</td>
+<td>61</td>
+<td>16.71 / 16.8 / <strong>33.4</strong></td>
+<td><strong>0.859</strong></td>
+<td>40.1</td>
+</tr>
+<tr>
+<td>4 × 80</td>
+<td>320</td>
+<td><strong>45</strong></td>
+<td><strong>22.92 / 33.4 / 66.8</strong></td>
+<td><strong>0.999</strong></td>
+<td>38.1</td>
+</tr>
+</tbody>
+</table>
+<p><code>main_thread_busy</code> is <code>ΔPerformance.getMetrics().TaskDuration / Δwall</code> — a <strong>single-core</strong> fraction of the renderer main thread, not a share of the 16 logical cores.</p>
+<p><strong>This CSV is a historical reference, not a control arm.</strong> No commit is recorded for it (dated 2026-07-12/13; no <code>SpikesPeak_Status.md</code> entry), and the frontend has changed materially since (async <code>buildColumns</code>, <code>#channelsPerStrip</code>, source-selection refactor, removal of the webinterface copy targets). <strong>You MUST re-measure SciChart on today's tree, with the corrected counter (§4.3), as your control.</strong></p>
+<h3 id="42-prerequisites-benchmarkscdp_benchpy-is-broken-and-must-be-fixed-first">4.2 Prerequisites — <code>benchmarks/cdp_bench.py</code> is broken and must be fixed first<a class="headerlink" href="#42-prerequisites-benchmarkscdp_benchpy-is-broken-and-must-be-fixed-first" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>The sim never connects.</strong> <code>cdp_bench.py:38-39</code> clicks <code>#sim-picker-card button</code>; that id no longer exists (<code>main.js:1732</code> now opens an anchored <code>#src-menu</code>). The click is guarded (<code>if(b)b.click()</code>), so it fails <strong>silently</strong> and the sweep measures an idle, unconnected view at a beautiful 60 fps. Replace it with the WebSocket path every GUI test uses (<code>tests/gui/_harness.py:286-300</code>): send <code>{"command":"Disconnect","value":true}</code>, sleep 2, then <code>{"command":"selectSource","value":"Simulated NPX 2.0 Multishank"}</code>, sleep 13. <code>MainController::handleConnectRequest</code> <strong>refuses a connect while a source is still selected, and refuses it quietly</strong> — always Disconnect first.</li>
+<li><strong>Select the source by exact name.</strong> <code>/2\.0 Multishank/</code> now matches both <code>SimNpx2</code> and <code>SimNpx2OneBox</code>.</li>
+<li><strong>Force <code>document.getElementById('channelsPerStrip').value = ''</code></strong> in setup. A non-empty value silently overrides <code>window.__tracesOverride</code> (<code>main.js:594-599</code>) and it is persisted in <code>localStorage["spikespeak_channels_per_strip"]</code> — a reused bench profile flattens the whole curve.</li>
+<li><strong>Clear <code>window.app.perColTraces</code></strong> (persists across <code>buildColumns()</code>, <code>main.js:610-617</code>) or reload the page.</li>
+<li><strong>Implement the label argument.</strong> <code>cdp_bench.py</code> ignores <code>sys.argv</code>; the output path is hard-coded (<code>:80</code>) and a second run overwrites the baseline. Take <code>sys.argv[1]</code> as a label → <code>benchmarks/bench_channel_density_&lt;label&gt;.csv</code> and <code>benchmarks/shots/&lt;label&gt;_h_c&lt;cols&gt;_t&lt;traces&gt;.png</code>.</li>
+<li><strong>Implement <code>window.__benchPointCount(colIndex)</code></strong> (§1.6) and call it before the <code>onScreenSeries</code> fallback.</li>
+<li><strong>Avoid <code>Page.reload</code> when the browser is the only WS client</strong> — <code>WebSocketServer.cpp:82</code> arms a 2000 ms shutdown on last-client disconnect.</li>
+</ol>
+<h3 id="43-fix-the-counter-before-you-measure-anything-phase-0">4.3 Fix the counter before you measure anything (phase 0)<a class="headerlink" href="#43-fix-the-counter-before-you-measure-anything-phase-0" title="Permanent link">#</a></h3>
+<p><code>window.__perfStats</code> (<code>main.js:279-310</code>) is a <strong>main-thread rAF loop</strong>, and <code>TaskDuration</code> is the <strong>renderer main thread</strong>. Both invert the moment a renderer draws in a worker or on OffscreenCanvas: main would report a serene 60 fps at 3 % busy while the worker drew at 12.</p>
+<p>MUST: change <code>__perfStats</code> to count <strong>presented frames where the draw actually happens</strong>, keep the object shape byte-identical so <code>cdp_bench.py</code> needs no change, and re-run the SciChart baseline with the corrected counter. <strong>The SciChart numbers must not move</strong> when you do; if they move, the counter is wrong, not the renderer.</p>
+<pre><code class="language-js">window.__perfStats = { fps:int, frameMsMean:float, frameMsP95:float,
+                       frameMsMax:float, samples:int, heapMB:float|null }   // republished every ~1 s
+window.__perfReset = () =&gt; void                                             // clears frame buffer + counter
+</code></pre>
+<p><code>frameMsMean</code> = mean of inter-frame deltas since reset; <code>frameMsP95</code> = <code>sorted[floor(0.95*len)]</code>; <code>frameMsMax</code> = <code>sorted[len-1]</code>; buffer capped at 600 entries; deltas outside <code>(0, 1000)</code> ms discarded.</p>
+<h3 id="44-fixed-conditions-any-deviation-invalidates-the-comparison">4.4 Fixed conditions (any deviation invalidates the comparison)<a class="headerlink" href="#44-fixed-conditions-any-deviation-invalidates-the-comparison" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Source</td>
+<td><code>Simulated NPX 2.0 Multishank</code> (<code>config/SimNpx2.yaml</code>) — one 384-ch <code>raw</code> band @ 30 kHz</td>
+</tr>
+<tr>
+<td>Window size</td>
+<td><strong>1 s</strong> (the default; never swept in the baseline)</td>
+</tr>
+<tr>
+<td>Layout</td>
+<td>horizontal — <code>window.app.orientation='horizontal'; window.app.applyOrientation()</code></td>
+</tr>
+<tr>
+<td>Browser</td>
+<td>Chrome <code>--app=http://localhost:8234</code>, <code>--window-size=1920,1080</code>, <code>--remote-debugging-port=9222</code>, <code>--remote-allow-origins=*</code>, <strong>fresh <code>--user-data-dir</code></strong></td>
+</tr>
+<tr>
+<td>Backend</td>
+<td><code>run_spikespeak.bat --no-browser</code></td>
+</tr>
+<tr>
+<td>Ripple dock</td>
+<td><strong>CLOSED</strong> (its rAF loop at <code>RippleModule.js:809-823</code> never stops and <code>_drawEnv</code> reallocates a canvas per channel per frame)</td>
+</tr>
+<tr>
+<td>Recording</td>
+<td>off; second band off; NI-DAQ off</td>
+</tr>
+<tr>
+<td><strong>WebSocket clients</strong></td>
+<td><strong>exactly one — the browser.</strong> Every extra client doubles ~3 MB/s of identical broadcast (<code>WebSocketServer.cpp:797-802</code>, no backpressure). Do not leave a stray tab or a harness socket open.</td>
+</tr>
+<tr>
+<td>Sweep</td>
+<td><code>COLS ∈ {1,2,4} × TRACES ∈ {20,40,60,80}</code>, 12 cells</td>
+</tr>
+</tbody>
+</table>
+<p>Per cell, in order: set <code>__tracesOverride</code> and <code>#columns</code> → <code>await window.app.buildColumns()</code> (it is <code>async</code>; <code>cdp.eval</code> must keep <code>awaitPromise=True</code>) → sleep <strong>1.5 s</strong> → <code>window.__perfReset()</code> → snapshot <code>Performance.getMetrics</code> + wall clock → sleep <strong>7 s</strong> → snapshot again → read <code>JSON.stringify(window.__perfStats)</code> → compute <code>busy = ΔTaskDuration/Δwall</code> (3 dp) → read the point-count probe → screenshot.</p>
+<p>CSV schema is frozen: <code>cols,traces,series,fps,frame_mean_ms,frame_p95_ms,frame_max_ms,heap_mb,main_thread_busy,bound_pts</code>.</p>
+<h3 id="45-acceptance">4.5 Acceptance<a class="headerlink" href="#45-acceptance" title="Permanent link">#</a></h3>
+<p>A replacement is a drop-in <strong>only if</strong>, against the freshly re-measured SciChart control on the same machine in the same session:</p>
+<ol>
+<li><code>bound_pts</code> (or <code>__benchPointCount</code>) is <strong>&gt; 0 on every cell</strong> — the anti-blank-surface guard. Note it saturates at 2400 = <code>calculateCapacity()</code> at 1 s, so it proves "streaming and bound", nothing finer.</li>
+<li><code>fps ≥ control_fps − 1</code> at every cell.</li>
+<li><code>main_thread_busy ≤ control_busy + 0.02</code> at every cell, and strictly <strong>lower</strong> at 4×60 and 4×80 if the renderer is being swapped for performance.</li>
+<li><code>frame_p95 ≤ control_p95 + 1 ms</code> at every cell.</li>
+<li>Heap does not grow across the 12-cell sweep.</li>
+<li>Both suites green: <code>build.bat</code> → ALL N SUITES PASSED, and <code>python -u scripts/run_gui_tests.py</code> → ALL N GUI TESTS PASSED. Never <code>--hold</code> when automating.</li>
+</ol>
+<p><strong>Recommended zero-code experiment before writing any renderer</strong> (nobody has run it): sweep <strong>window size 1 s → 10 s at fixed series count</strong>. That is a 10× change in points per series with no change in draw-call count. If FPS/busy are flat, vertex count is not the cost and per-series overhead is — which decides the architecture.</p>
+<p>Also capture, once, the never-recorded decode metrics <code>avgParseMs</code> / <code>maxParseMs</code> / <code>maxGapMs</code> from <code>NetworkClient.js:201-215</code>. They decide whether moving decode off the main thread is worth anything at all.</p>
+<hr />
+<h2 id="5-the-traps">5. THE TRAPS<a class="headerlink" href="#5-the-traps" title="Permanent link">#</a></h2>
+<p><strong>T-1 — The renderer does not own the data.</strong> <code>yOffset</code> and <code>zoom</code> are baked into Y at append time (<code>NetworkClient.js:183-184</code>). Y values are absolute plot coordinates. Do not re-offset, do not auto-range, do not normalise. A zoom change does not touch buffered samples; the view re-scales over one window. That is correct behaviour, not a bug to fix.</p>
+<p><strong>T-2 — Buffers are shared.</strong> Several columns can bind the <strong>same</strong> buffer object. A renderer MUST NOT mutate, clear, resize, or delete a buffer. Only <code>DataStore</code> and <code>relayoutByDepth()</code> may.</p>
+<p><strong>T-3 — Blank traces with a perfectly healthy socket.</strong> Only the buffers a visible column needs are fed (<code>dataStore.appendPacked</code> / <code>appendInterleaved</code>). Any change to <code>currentStreamId</code>, <code>selectedColKey</code> or <code>tracesPerColumn</code> MUST call <code>window.onLiveFilterChange()</code> <strong>before</strong> the next <code>draw()</code>. Ordering matters at rebuild too: <code>refreshStreamSelectors()</code> then <code>updateAppendModes()</code> (<code>main.js:636-639</code>).</p>
+<p><strong>T-4 — Two buffers per channel, not one.</strong> <code>dataSeries</code> (packed depth order) and <code>dataSeriesInterleaved</code> (electrode order 0L,1R,2L,3R…). <code>selectedColKey === 'B'</code> binds the interleaved one; L/R bind the packed one.</p>
+<p><strong>T-5 — Both x values of a min/max pair are the same timestamp.</strong> Renderers that dedupe or assume strictly increasing x will erase the vertical extent of every bin.</p>
+<p><strong>T-6 — Plot geometry is unreadable before layout.</strong> <code>seriesViewRect</code> throws <code>Cannot get seriesViewRect before layout has ocurred</code>, and the old guard swallowed it, leaving every label slightly low. Read it only from the post-render hook, and never write a reactive property unconditionally there.</p>
+<p><strong>T-7 — <code>draw()</code> loops <code>i &lt; TRACES</code> but positions with <code>shownSlots</code>.</strong> For <code>i &gt;= shownSlots</code> the computed <code>top</code> exceeds 100 %; harmless only because those labels are <code>display:none</code> and their series invisible. Preserve both.</p>
+<p><strong>T-8 — Label DOM order is top-first.</strong> Index 0 = shallowest = slot <code>topRange</code>. Slot 0 is the tip and sits at the <strong>bottom</strong>. If depth appears upside-down, flip the range/slot sign in <code>draw()</code>/<code>relayoutByDepth()</code>, not the axis.</p>
+<p><strong>T-9 — Labels are placed arithmetically.</strong> <code>space-around</code> only lands on slot centres while the labels fit; past ~30 rows free space goes negative and they bunch and drift off their traces (<code>style.css:147-153</code>). Do not "simplify" back to flex.</p>
+<p><strong>T-10 — <code>fitStrips()</code> measures column 0 only, on purpose.</strong> <code>flex:1 1 0</code> distributes in 1/64 px LayoutUnits while <code>clientWidth</code> rounds, so per-column measurement puts siblings on opposite sides of the threshold and produces two header heights in one row; and per-column class flips fire the chart ResizeObserver recursively (it took the page down during development). It also removes/restores <code>strip-collapsed</code> within one frame, and returns early on <code>avail &lt;= 0</code>.</p>
+<p><strong>T-11 — Do not reintroduce <code>@container</code> shape tiers for the band</strong> (<code>toolbar.css:723-740</code>). Twelve tiers were deleted because the tier decided the shape and <code>updateStripMode()</code> then measured whatever shape the tier had chosen. The shape must not depend on the thing being measured.</p>
+<p><strong>T-12 — The collapsed band is <code>position:absolute</code> on purpose.</strong> In flow, revealing it resizes the chart and the ResizeObserver repaints on every hover. It also keeps the <strong>narrow 3-row template</strong>, because <code>#view-data</code> is <code>overflow:hidden</code> and a 448 px overlay in a narrow column loses ~275 px of controls.</p>
+<p><strong>T-13 — Stale drag handlers (a real defect; fix it).</strong> <code>label.onmousedown</code> and <code>cursor:'grab'</code> are assigned only in the probe-electrode branch and never cleared in the REF / ADC / plain branches (<code>ChartColumn.js:729-756</code>). Labels are reused across draws, so scrolling a probe label into a REF slot, or switching a column from a probe to the ADC, leaves a drag handler bound with the <strong>previous</strong> channel's electrode captured in its closure.</p>
+<p><strong>T-14 — <code>draw()</code> is the sole owner of shank/side visibility.</strong> <code>refreshFilterOptions()</code> used to set it and caused a visible flash, because its test (<code>hasOrdering()</code>) is weaker than draw's (<code>hasOrdering() &amp;&amp; channels.length === 384</code>). <code>refreshFilterOptions()</code> also <strong>early-returns</strong> with no ordering, so stale shank options can survive a source change.</p>
+<p><strong>T-15 — <code>isProbeStream()</code> is <code>channels.length === 384</code>, by count, never by name.</strong> <code>isVoltsStream()</code> is a hardcoded <code>currentStreamId === 'adc'</code>. Any future 384-wide non-probe stream silently gets probe scaling; any 383-channel probe silently gets the volts-per-row clamp.</p>
+<p><strong>T-16 — <code>bottomSlot</code> is a slot index, not a channel id.</strong> <code>slider.min/max</code> set in <code>buildHTML</code> and in <code>setTracesPerColumn</code> are transient; <code>draw()</code> overwrites them from the band bounds every time.</p>
+<p><strong>T-17 — <code>chSelector.value = String(tracesPerColumn)</code> falls back to <code>''</code> (Ch:Auto)</strong> for any count not in the option list — e.g. a <code>__tracesOverride</code> of 30 from a benchmark.</p>
+<p><strong>T-18 — Pin state does not survive a rebuild.</strong> <code>buildColumns()</code> destroys every instance; <code>AppController.pinnedColumns</code> is the only thing that outlives them.</p>
+<p><strong>T-19 — <code>setTracesPerColumn</code> keeps the surface</strong> and recreates only series + labels. <code>destroy()</code> MUST unbind every series <strong>before</strong> releasing the surface.</p>
+<p><strong>T-20 — Inline styles beat the stylesheet in two places.</strong> <code>.channel-slider-container</code> reads 60px in CSS but is inline 30px (deliberate — 27 px per column back to the traces); <code>.vertical-slider</code> reads 80 % but is inline 100 %.</p>
+<p><strong>T-21 — Sentinel zeros look like signal.</strong> An empty timebin writes <code>0.0f</code> for min and max (<code>DisplayProcessor.cpp:460-470</code>), so a stalled band draws a flat line at its <code>yOffset</code>, not a gap. This is exactly the healthy-looking-dead-probe failure <code>CLAUDE.md</code> warns about. <strong>Count binary frames at the socket, not pixels.</strong></p>
+<p><strong>T-22 — The first frame of every new stream is discarded</strong> (<code>NetworkClient.js:82-85</code>), and it is dropped again if no column exists yet (<code>main.js:646</code>). Stream allocation is lazy and frame-triggered.</p>
+<p><strong>T-23 — <code>forceXAxisUpdate()</code> runs per batch per stream</strong>, not per animation frame (<code>main.js:746-758</code>) — ~600 range writes/s plus ~150 <code>textContent</code> writes/s on a 3-stream config. This is a renderer-independent defect; fix it, or it gets miscredited to the renderer swap.</p>
+<p><strong>T-24 — <code>µV</code> is U+00B5 MICRO SIGN.</strong> Writing <code>uV</code> produced four false failures against a correct application (<code>tests/gui/stream_options.py:34-36</code>).</p>
+<p><strong>T-25 — Header height is DEFINITE (<code>height: 46px</code>), never <code>min-height</code>.</strong> min-height lets a column with more controls grow and puts the charts on different baselines.</p>
+<p><strong>T-26 — The theme is implicit.</strong> Passing any theme to the surface — or copying <code>ImroManager.js:267-271</code>'s <code>SciChartJsNavyTheme</code> with a transparent background — silently repaints every column. Gridlines are off <strong>at the axis</strong>, not by theme: the theme still carries <code>majorGridLineBrush #AAAAAA37</code> and <code>axisBandsFill #20212333</code>.</p>
+<p><strong>T-27 — Editing <code>webinterface/*.js</code> needs no build.</strong> <code>CMakeLists.txt:248-292</code> removed the copy targets on 2026-08-26 and <code>src/main.cpp:57-60</code> serves the directory off disk per request. <code>developer_docs/NextTask_WasmFrontend.md:195-201</code> is wrong about this. But <code>src/main.cpp:57</code> never strips the query string, and <code>?</code> is an illegal Windows filename character — so a <code>?renderer=…</code> A/B flag 404s until that one line is fixed.</p>
+<p><strong>T-28 — Rig and teardown rules apply</strong> (<code>CLAUDE.md</code>): always <code>--no-browser</code>; kill only the isolated debug-port Chrome profile you launched, never a blanket <code>Get-Process chrome | Stop-Process</code>; bring the backend down when not actively measuring, because a live backend holds <code>bin/SpikesPeak.exe</code> and the next build dies on <code>LNK1104</code> — and the tempting fix is a kill, which is forbidden with a OneBox open.</p>
+<hr />
+<h3 id="open-questions-this-contract-does-not-settle">Open questions this contract does not settle<a class="headerlink" href="#open-questions-this-contract-does-not-settle" title="Permanent link">#</a></h3>
+<ul>
+<li>Device-pixel-ratio behaviour of <code>strokeThickness: 1</code> (1 CSS px vs 1 device px on HiDPI) is undetermined; pick CSS px and eyedrop against a SciChart screenshot.</li>
+<li>Whether SciChart paints faint X-axis <strong>bands</strong> (<code>drawMajorBands</code> is never set; theme <code>axisBandsFill #20212333</code>). Eyedrop a live column before deciding to reproduce them.</li>
+<li><code>.chart-area</code> in <code>style.css:206-209</code> matches no element <code>ChartColumn</code> builds — probably dead, not proven.</li>
+<li>Ripple-dock and audio-dock styling live in JS-injected stylesheets and are outside this contract except for <code>.channel-label.listening</code> and the <code>--rd-dock-w</code> margin.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/RendererContract.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-interface">1. THE INTERFACE</a><ul>
+<li><a href="#11-construction-and-lifecycle">1.1 Construction and lifecycle</a></li>
+<li><a href="#12-instance-methods-called-from-outside">1.2 Instance methods called from outside</a></li>
+<li><a href="#13-statics">1.3 Statics</a></li>
+<li><a href="#14-instance-fields-read-or-written-by-other-code">1.4 Instance fields read or written by other code</a></li>
+<li><a href="#15-two-couplings-that-must-be-broken-and-the-exact-abstractions-that-replace-them">1.5 Two couplings that MUST be broken, and the exact abstractions that replace them</a></li>
+<li><a href="#16-probes-the-test-suite-and-the-benchmark-read-must-keep-working">1.6 Probes the test suite and the benchmark read (MUST keep working)</a></li>
+<li><a href="#17-globals-and-window-objects-the-column-calls-must-keep-calling">1.7 Globals and window objects the column calls (MUST keep calling)</a></li>
+</ul>
+</li>
+<li><a href="#2-the-data-contract">2. THE DATA CONTRACT</a><ul>
+<li><a href="#21-wire-frame-informative-for-the-renderer-normative-for-anything-touching-networkclient">2.1 Wire frame (informative for the renderer, normative for anything touching NetworkClient)</a></li>
+<li><a href="#22-rate-and-volume-what-the-renderer-must-sustain">2.2 Rate and volume — what the renderer must sustain</a></li>
+<li><a href="#23-buffers">2.3 Buffers</a></li>
+<li><a href="#24-y-baking-the-single-most-important-rule">2.4 y-baking — the single most important rule</a></li>
+<li><a href="#25-what-the-renderer-does-per-frame">2.5 What the renderer does per frame</a></li>
+<li><a href="#26-draw-the-complete-render-decision-normative-pseudocode">2.6 draw() — the complete render decision (normative pseudocode)</a></li>
+</ul>
+</li>
+<li><a href="#3-the-visual-contract">3. THE VISUAL CONTRACT</a><ul>
+<li><a href="#31-plot-area">3.1 Plot area</a></li>
+<li><a href="#32-dom-tree-class-names-and-ids-are-the-test-contract">3.2 DOM tree (class names and ids are the test contract)</a></li>
+<li><a href="#33-column-framing-and-control-band">3.3 Column framing and control band</a></li>
+<li><a href="#34-label-overlay-geometry">3.4 Label overlay geometry</a></li>
+<li><a href="#35-label-text-tooltips-and-handlers-priority-order">3.5 Label text, tooltips and handlers (priority order)</a></li>
+<li><a href="#36-scale-control-semantics">3.6 Scale control semantics</a></li>
+<li><a href="#37-interactions">3.7 Interactions</a></li>
+<li><a href="#38-orientation">3.8 Orientation</a></li>
+</ul>
+</li>
+<li><a href="#4-the-benchmark-protocol">4. THE BENCHMARK PROTOCOL</a><ul>
+<li><a href="#41-the-baseline-table-frozen-benchmarksbench_channel_density_scichartcsv">4.1 The baseline table (frozen, benchmarks/bench_channel_density_scichart.csv)</a></li>
+<li><a href="#42-prerequisites-benchmarkscdp_benchpy-is-broken-and-must-be-fixed-first">4.2 Prerequisites — benchmarks/cdp_bench.py is broken and must be fixed first</a></li>
+<li><a href="#43-fix-the-counter-before-you-measure-anything-phase-0">4.3 Fix the counter before you measure anything (phase 0)</a></li>
+<li><a href="#44-fixed-conditions-any-deviation-invalidates-the-comparison">4.4 Fixed conditions (any deviation invalidates the comparison)</a></li>
+<li><a href="#45-acceptance">4.5 Acceptance</a></li>
+</ul>
+</li>
+<li><a href="#5-the-traps">5. THE TRAPS</a><ul>
+<li><a href="#open-questions-this-contract-does-not-settle">Open questions this contract does not settle</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

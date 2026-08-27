@@ -32,9 +32,10 @@
 <a href="user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="developer_docs/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="developer_docs/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-running-status-log">SpikesPeak — Running Status Log<a class="headerlink" href="#spikespeak-running-status-log" title="Permanent link">#</a></h1>
 <blockquote>
 <p>PROJECT: SpikesPeak - Real-Time Neural Data Acquisition System</p>
@@ -223,6 +225,21 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S58</td>
 <td>2026-08-25</td>
 <td><strong>NP2.0 microvolts were 19% high (#65)</strong>; two tests were green without testing; the C++ suite could not build on Linux; the ADC verified against a known signal (#53)</td>
+</tr>
+<tr>
+<td>S59</td>
+<td>2026-08-26</td>
+<td><strong>Both suites green on Linux</strong> (20 C++ suites / 384 cases, 10 GUI tests); the <code>CommandDispatch</code> crash only a second session could find</td>
+</tr>
+<tr>
+<td>S60</td>
+<td>2026-08-26</td>
+<td>#63 confirmed a third time (100.0 % flat over 130 s) and <strong>the streams shown provably gap-free</strong>; <strong>twelve hardware profiles become three</strong> — the probe names itself and the display/recorder bind from it; the simulated picker cascades</td>
+</tr>
+<tr>
+<td>S61</td>
+<td>2026-08-26</td>
+<td><strong>The rig names itself</strong>: basestation auto-detected (OneBox/PXIe), ambiguity and multi-probe prompted rather than guessed; Source becomes an anchored menu; the benchmark harness was silently measuring an idle view</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -2112,7 +2129,7 @@ real detector failure is written up in <code>developer_docs/RippleClosedLoopAnal
 <li>The <code>wait_baselines</code> helper can return before training truly completes, which is what produces the
   recording lead-in above. The sidecar now self-corrects, so this is cosmetic; tightening it to wait on the
   "training complete" state would make recordings start clean.</li>
-<li><code>developer_docs/NextTask_SyncPulseCountCheck.md</code> — the NI-DAQ drops a trailing sync pulse vs the NPX. Low
+<li><code>developer_docs/archive/NextTask_SyncPulseCountCheck.md</code> — the NI-DAQ drops a trailing sync pulse vs the NPX. Low
   priority; the analysis side is already handled by <code>match="auto"</code>.</li>
 </ul>
 <h2 id="26-esp32-s3-eth-stim-server-an-am-2300-twin-of-the-pi-2026-07-20">26. ESP32-S3-ETH STIM SERVER — an AM 2300 twin of the Pi  (2026-07-20)<a class="headerlink" href="#26-esp32-s3-eth-stim-server-an-am-2300-twin-of-the-pi-2026-07-20" title="Permanent link">#</a></h2>
@@ -2622,7 +2639,7 @@ the maintainer + collaborator to pick a direction — <strong>not implemented.</
 <p>Branch <code>feature/OneBoxSupport</code>. Reference implementation: the local OpenEphys <code>neuropixels-pxi</code> copy
 (<code>Source-OpenEphys-Neuropixels-PXI/</code>, gitignored — clone from
 <a href="https://github.com/open-ephys-plugins/neuropixels-pxi">https://github.com/open-ephys-plugins/neuropixels-pxi</a>). Plan + design:
-<code>developer_docs/NextTask_OneBoxSupport.md</code>.</p>
+<code>developer_docs/archive/NextTask_OneBoxSupport.md</code>.</p>
 <p><strong>Headline — the OneBox is a working acquisition source.</strong> A real <strong>Neuropixels 2.0 multishank probe on a
 real OneBox</strong> connects, detects the headstage, streams, records, pauses/plays, disconnects and — the part
 that took the longest — <strong>reconnects cleanly</strong>, with its <strong>12-channel ADC streaming alongside as its own
@@ -5165,7 +5182,337 @@ has not regressed on Linux.</p>
 <p>All three are portability/correctness fixes rather than Linux special cases. <code>developer_docs/Testing.md</code>
 gained a Linux section (it previously contained no occurrence of the word) and its suite table, five
 suites and 68 cases out of date, now reads 20/384. <code>developer_docs/AgentTraps.md</code> gained §5g.</p>
-<p><strong>Green at the end: 20/20 C++ suites (384 cases), 10/10 GUI tests, on Linux.</strong></p></article>
+<p><strong>Green at the end: 20/20 C++ suites (384 cases), 10/10 GUI tests, on Linux.</strong></p>
+<hr />
+<h2 id="60-the-throughput-shortfall-that-isnt-and-a-probe-that-names-itself-2026-08-26">60. THE THROUGHPUT SHORTFALL THAT ISN'T, AND A PROBE THAT NAMES ITSELF  (2026-08-26)<a class="headerlink" href="#60-the-throughput-shortfall-that-isnt-and-a-probe-that-names-itself-2026-08-26" title="Permanent link">#</a></h2>
+<p>Two pieces of work on the original Windows rig (OneBox 25420802, NP2014 probe): settling issue #63's
+throughput question with a measurement, and then the source-selection refactor — twelve hardware
+profiles down to three, with the probe discovered rather than declared.</p>
+<h3 id="60a-63-the-streams-are-provably-unbroken-which-is-more-than-the-count-was-right">60a. #63: the streams are provably unbroken, which is more than "the count was right"<a class="headerlink" href="#60a-63-the-streams-are-provably-unbroken-which-is-more-than-the-count-was-right" title="Permanent link">#</a></h3>
+<p><a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a> reported two independent effects from
+the second machine: the ADC stream costing ~22 % of probe throughput, and an unrelated decay to ~66 %
+of nominal by t+90 s present even with the ADC disabled.</p>
+<p><strong>That question was already closed before this run, and I initially wrote this up as though it were
+not.</strong> §56 measured 4/4 cells at 100.0 % here on 2026-08-25, and the second machine then re-ran the
+runbook and reported 100.0 % on its own cells, including the old-vs-new-code arm on the same box that
+exonerates the code. This run is a third confirmation on the rig that had already confirmed it. The
+issue comment framing it as settling the machine-specific question has been corrected in the thread.</p>
+<p><strong>What it adds is the continuity check, which none of the earlier runs did.</strong> Neither reproduces: Two continuous 130 s recordings — <code>NPX 2.0 Multishank (OneBox)</code>
+and the no-ADC control — with throughput computed in 10 s windows across each run, so a decay would
+appear as a trend inside one file rather than as two disconnected numbers:</p>
+<table>
+<thead>
+<tr>
+<th>run</th>
+<th>band</th>
+<th>records</th>
+<th>device clock</th>
+<th>actual</th>
+<th>nominal</th>
+<th>%</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>with ADC</td>
+<td><code>raw</code></td>
+<td>3,899,980</td>
+<td>130.00 s</td>
+<td>30,001 Hz</td>
+<td>30,000</td>
+<td><strong>100.0 %</strong></td>
+</tr>
+<tr>
+<td>with ADC</td>
+<td><code>adc</code></td>
+<td>3,939,290</td>
+<td>130.00 s</td>
+<td>30,303 Hz</td>
+<td>30,300</td>
+<td><strong>100.0 %</strong></td>
+</tr>
+<tr>
+<td>no ADC</td>
+<td><code>raw</code></td>
+<td>3,899,996</td>
+<td>130.00 s</td>
+<td>30,001 Hz</td>
+<td>30,000</td>
+<td><strong>100.0 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Every window of all three files reads 100.0 %, t+0 through t+110. The ADC costs 16 records in 3.9
+million.</p>
+<p>Counted against the device's own clock, not wall clock: the <code>uint32</code> in each NPX frame is a <strong>100 kHz
+tick counter, not a sample index</strong> (first row of <code>AgentTraps.md</code>), so <code>(last − first) / 100000</code> is the
+device saying how long it streamed. That is what #63's step 2 asks for — measure the device, not the
+script's <code>record</code>/<code>stop</code> round trip.</p>
+<p><strong>The decisive check was the tick counter's continuity, not the rate.</strong> A low record count can mean
+dropped samples <em>or</em> a record window shorter than the script believed, and a rate cannot separate
+them — but a dropped sample leaves a <strong>gap</strong>. Across all 3.9 M records of each file the step
+alternates 3/4 ticks (averaging the expected 3.333) and the largest single step anywhere in any file
+is <strong>4 ticks, 40 µs</strong>. Not one gap. So this is not "the right number of records arrived"; it is "the
+stream is unbroken from first sample to last".</p>
+<p>Every earlier measurement, on both machines, counted records and divided — which cannot separate
+dropped samples from a record window shorter than the script believed. Continuity can, and the 12
+retained second-machine recording directories can be checked for gaps with <strong>no rig time at all</strong>.
+That would establish whether the original shortfall was lost samples or a measurement artifact, which
+is the one question the re-runs cannot answer, because they no longer reproduce it.</p>
+<p><strong>#63 stays open, already narrowed</strong> (by the retitling comment) to the half that survives: nothing
+warns when a band records short, and a steady one-third loss looks exactly like a healthy rig. Today
+sharpens the definition of "short". The suggested stop-time check — records vs elapsed x nominal, once
+per band — catches a deficit spread too thinly to leave a visible gap; a continuity check catches a
+discrete loss and says <strong>when</strong>. The counter is monotonic with a known step, so that is a comparison
+of each batch's first timestamp against the previous batch's last: constant work per batch, no clock
+read, no allocation, nothing per-sample. The two compose.</p>
+<h3 id="60b-twelve-hardware-profiles-become-three">60b. Twelve hardware profiles become three<a class="headerlink" href="#60b-twelve-hardware-profiles-become-three" title="Permanent link">#</a></h3>
+<p>The Source dropdown listed twelve, because every probe/basestation pairing had been materialised as
+its own YAML. It now lists <code>OneBox</code>, <code>PXIe</code>, <code>PXIe + NI-DAQ</code>, and the simulated picker.</p>
+<p>The reason a profile could be <em>wrong for the probe</em> is that a 1.0 streams hardware <code>ap</code> + <code>lfp</code> and a
+2.0 streams one <code>raw</code> band — so a profile naming bands was a profile pinned to one probe. And it
+failed silently: every band name resolves through <code>getDataByName()</code>, which <strong>creates what you ask it
+to look up</strong>, so the wrong profile manufactured empty buffers, drew 384 flat traces, and wrote a real
+<code>.bin</code> and sidecar containing nothing.</p>
+<p>The probe already names itself (<code>np_getProbeHardwareID</code> during <code>setupSources</code>), and <code>setupSources</code>
+completes <strong>before</strong> <code>setupProcessors</code> — so by the time any processor is configured, the registry
+holds exactly this probe's bands. Three of the six probe-dependent decisions already keyed off that
+(derived bands, ripple detector input, audio). This work added the other two and collapsed the
+profiles the rest had made redundant:</p>
+<ul>
+<li><strong>Display</strong>: <code>inputs:</code> is now optional; <code>ProcessorManager</code> binds every band <code>hasData()</code> reports.</li>
+<li><strong>Recorder</strong>: a <code>recordings:</code> entry whose band is absent is skipped with an INFO line, instead of
+  writing a zero-length file for it.</li>
+<li><strong>Probe-mismatch warning</strong>: a profile declaring <em>both</em> generations is now understood as
+  deliberately probe-agnostic and is not warned at. This also fixes the <code>.raw</code>-precedence flaw
+  <code>ConfigReference.md</code> had recorded, where such a profile was always classified NP2.</li>
+</ul>
+<p>Verified in sim on <strong>both</strong> generations, because sim covers what this rig cannot: NP1 auto-bound
+<code>ap</code> + <code>lfp</code> and nothing else; NP2 auto-bound <code>raw</code> + the two derived bands and nothing else; frames
+flowing in both. The check was then made to fail on purpose by naming a 1.0 band in the 2.0 profile —
+and the instructive part is that the phantom band <strong>bound successfully and frames kept flowing</strong>,
+which is precisely the silent failure being removed.</p>
+<p>The twelve superseded profiles are <code>gui_hidden</code>, not deleted. Their names are how published
+measurements — the closed-loop latency figures among them — are reproduced, and a config's identity
+is its <code>name:</code> field. The GUI gets short; the archive stays runnable.</p>
+<h3 id="60c-the-simulated-picker-cascades-instead-of-listing-sixteen">60c. The simulated picker cascades instead of listing sixteen<a class="headerlink" href="#60c-the-simulated-picker-cascades-instead-of-listing-sixteen" title="Permanent link">#</a></h3>
+<p>"Simulated Data…" now asks basestation → probe → scenario. Sixteen entries in one flat list had
+stopped being a menu, and three of them carried the <em>identical</em> label
+<code>"Neuropixels 1.0 — Ripple Detection (GUI)"</code> — three buttons with the same words on them.</p>
+<p>Both axes come from the config (<code>sim_basestation:</code>, <code>sim_probe:</code>), never from a table in the
+frontend, so adding a scenario stays a one-file change. <strong>An omitted axis means "independent of it"</strong>
+and the variant is offered under every value: the plain sine-wave sources open no basestation at all,
+so filing them under one would invent a distinction the data does not have. That rule is the one most
+likely to rot — the obvious exact-match implementation drops those variants while the picker still
+looks reasonable — so <code>tests/gui/sim_picker.py</code> asserts it from both directions, and was proven to go
+red when the wildcard is removed.</p>
+<h3 id="60c-ii-the-source-control-stopped-being-a-native-select">60c-ii. The Source control stopped being a native <code>&lt;select&gt;</code><a class="headerlink" href="#60c-ii-the-source-control-stopped-being-a-native-select" title="Permanent link">#</a></h3>
+<p>Two rounds. First the picker was restyled from hand-rolled <code>.btn-secondary</code> rows to the app's own
+vocabulary — every value taken from <code>#band-menu</code> and <code>#aud-dock</code> / <code>#aud-devmenu</code>, the two surfaces
+an operator actually meets, which already agree with each other on purpose. Then the <strong>Source control
+itself</strong> followed: it was the last native <code>&lt;select&gt;</code> in the toolbar, and <code>AudioModule</code> had already
+written down why that is wrong — a native select's popup is OS-drawn, so it opens light-on-white in
+the middle of a dark acquisition GUI.</p>
+<p>It is now <code>#src-btn</code> + an anchored <code>#src-menu</code>, and the simulated branch <strong>drills down in place</strong>
+rather than opening a centred modal: a dropdown that hands you to a modal halfway through a decision
+is two surfaces for one choice.</p>
+<p><strong><code>#selectSource</code> is hidden, not deleted, and is still the single state holder.</strong> The menu writes its
+<code>.value</code> and dispatches the same <code>change</code> event a native select fired, so <code>reflectSource()</code>'s
+no-re-send logic, <code>rebuildSourceOptions()</code>, the control CLI, <code>gui_scenarios.py</code> and the GUI tests all
+work unchanged. <code>syncSourceButton()</code> mirrors label and disabled state from it, on every path
+including the remote ones.</p>
+<p><strong>Three defects, all of which looked cosmetic and were not.</strong></p>
+<ol>
+<li>The picker's backdrop was <code>z-index: 1000</code> — <em>below</em> <code>#aud-dock</code> and <code>#band-menu</code> at
+   <code>2147480000</code>. An open dock covered the modal. Now <code>2147480002</code>, still below <code>#cfm-veil</code> and
+   <code>#hwfault-veil</code> so a confirmation or hardware fault opens over it.</li>
+<li>The menu's stylesheet was injected lazily on first open, and it carries the rule that hides
+   <code>#selectSource</code> — so the native select sat visible in the toolbar <strong>beside its own replacement</strong>
+   until somebody opened the menu once. Injected at startup now. The test caught this, by asserting
+   the select is genuinely out of sight rather than assuming the CSS had applied.</li>
+<li><code>gui_hidden</code> filtered only the hardware dropdown, so a simulated profile marked hidden was still
+   offered in the picker — the flag half-worked, silently. It now filters both, which also removes
+   the last duplicate-label case (the two latency benches carry the same <code>sim_variant</code> label as the
+   ordinary ripple scenario).</li>
+</ol>
+<p><code>tests/gui/sim_picker.py</code> was rewritten against the menu and now covers seven invariants, including
+that the visible trigger cannot disagree with the hidden state element. It also stopped selecting the
+play-file box by its literal inline background colour — a selector no restyle could have survived.</p>
+<h3 id="60c-iii-the-pickers-earlier-modal-form">60c-iii. The picker's earlier modal form<a class="headerlink" href="#60c-iii-the-pickers-earlier-modal-form" title="Permanent link">#</a></h3>
+<p>Its first version used <code>.btn-secondary</code> rows on a bare card. That is a third dialect: the two surfaces
+an operator actually meets — the Bands menu and the audio dock — already agree with each other on
+purpose, and the picker matched neither. Restyled so every value comes from <code>#band-menu</code> and
+<code>#aud-dock</code> / <code>#aud-devmenu</code>: dock shell (<code>#2a2e39</code> / <code>#3a3f4b</code>, radius 8, 12.5px), a title bar with a
+hairline and an <code>h2</code> at 14px/600, borderless rows with the same 9px status dot and <code>#262c36</code> hover,
+<code>#8d97a5</code> sub-lines, the uppercase letter-spaced group label for the breadcrumb, and the audio dock's
+inset-panel treatment for the play-file form. No new colours were invented; the mapping is written
+above <code>SIM_PICKER_CSS</code> so a future change to one surface can be carried across.</p>
+<p><strong>One thing that looked cosmetic and was not.</strong> The picker's backdrop was <code>z-index: 1000</code> — <em>below</em>
+<code>#aud-dock</code> and <code>#band-menu</code> at <code>2147480000</code>. An open dock covered the modal. It is now <code>2147480002</code>:
+above the docks and menus, still below <code>#cfm-veil</code> and <code>#hwfault-veil</code> so a confirmation or a hardware
+fault opens over it.</p>
+<p>Two things the restyle also forced, both improvements: <code>gui_hidden</code> now filters this picker (it only
+ever filtered the hardware dropdown, so the flag half-worked and silently — the two latency benches
+are now hidden, which removes the last duplicate-label case), and <code>tests/gui/sim_picker.py</code> stopped
+selecting the play-file box by its literal inline background colour, which no restyle could have
+survived. It selects by class, and asserts no two choices on a leaf share a label.</p>
+<h3 id="60d-two-defects-found-along-the-way">60d. Two defects found along the way<a class="headerlink" href="#60d-two-defects-found-along-the-way" title="Permanent link">#</a></h3>
+<p><strong>Every recording's sidecar had a NUL-padded part number.</strong> <code>probe.part_number</code> was written as
+<code>"NP2014"</code> followed by 58 embedded NULs: the vendor field is a fixed-width <code>char[]</code> and <code>trimmed()</code>
+strips whitespace, not NULs. Every match in the codebase uses <code>startsWith()</code>, so detection and the</p>
+<h1 id="65-microvolt-scale-were-never-wrong-but-an-offline-tool-comparing-np2014-fails-silently">65 microvolt scale were never wrong — but an offline tool comparing <code>== "NP2014"</code> fails silently.<a class="headerlink" href="#65-microvolt-scale-were-never-wrong-but-an-offline-tool-comparing-np2014-fails-silently" title="Permanent link">#</a></h1>
+<p>Cut at the first NUL now, still bounded by <code>sizeof()</code> first.</p>
+<p><strong>The GUI harness's startup diagnostics were dead on Windows.</strong> <code>_gui_backend.log</code> exists so a failed
+startup names its cause instead of collapsing into a 30-second silence; on Windows it was 261 bytes
+every time. The backend is built <code>WIN32</code> — GUI subsystem, <strong>no stdout or stderr to inherit</strong> — so the
+redirect captures only the launcher's two lines and everything the app says goes to <code>output.log</code>. The
+harness now reads both. Recorded as <code>AgentTraps.md</code> §5h, including that <code>output.log</code> rotates on the
+next start, so a script running the backend twice must copy it or read the wrong run.</p>
+<h3 id="60e-files-changed">60e. Files changed<a class="headerlink" href="#60e-files-changed" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>src/core/ProcessorManager.cpp</code></td>
+<td>Binds display streams from the bands the source actually produced, before the derived-band block.</td>
+</tr>
+<tr>
+<td><code>src/modules/recording/RecordProcessor.cpp</code></td>
+<td>Skips a <code>recordings:</code> entry whose band no source provides.</td>
+</tr>
+<tr>
+<td><code>src/modules/neuropixels/DisplayProcessor.{hpp,cpp}</code></td>
+<td><code>inputs:</code> optional; <code>ensureDerivedBandStream</code> takes a channel width so it can bind the 12-wide ADC band.</td>
+</tr>
+<tr>
+<td><code>src/modules/neuropixels/NpInterface.cpp</code></td>
+<td>Part-number NUL fix; both-generations profiles expect no particular probe.</td>
+</tr>
+<tr>
+<td><code>src/core/Configuration.{hpp,cpp}</code></td>
+<td><code>getRootString()</code> + the two <code>sim_*</code> axis accessors.</td>
+</tr>
+<tr>
+<td><code>src/core/WebSocketServer.cpp</code></td>
+<td><code>configList</code> carries each variant's two axes.</td>
+</tr>
+<tr>
+<td><code>webinterface/main.js</code></td>
+<td>The picker becomes a cascade.</td>
+</tr>
+<tr>
+<td><code>config/OneBox.yaml</code>, <code>Pxie.yaml</code>, <code>PxieNiDaq.yaml</code></td>
+<td>New, probe-agnostic.</td>
+</tr>
+<tr>
+<td><code>config/*.yaml</code> (12)</td>
+<td><code>gui_hidden: true</code> + a banner naming the profile that supersedes them.</td>
+</tr>
+<tr>
+<td><code>config/*.yaml</code> (16 sim)</td>
+<td><code>sim_basestation:</code> / <code>sim_probe:</code> axis tags.</td>
+</tr>
+<tr>
+<td><code>tests/gui/sim_picker.py</code></td>
+<td>New GUI test for the cascade.</td>
+</tr>
+<tr>
+<td><code>tests/gui/_harness.py</code></td>
+<td>Reads <code>output.log</code> too, so a Windows startup failure says why.</td>
+</tr>
+<tr>
+<td><code>developer_docs/SourceSelection.md</code></td>
+<td>New — the durable design.</td>
+</tr>
+</tbody>
+</table>
+<p>This is <strong>Phase 1 / Option A</strong> of <code>NextTask_SourceArchitecture.md</code> (2026-07-24), reached by a
+different route: the brief proposed a config-layering <code>include:</code> loader to collapse the cross-product,
+and none was needed, because the axis doing most of the multiplying is discoverable. Phases 2 and 3 —
+a parameterized NPX sim, a file-playback source, the descriptor model — are untouched and still open.</p>
+<hr />
+<h2 id="61-the-rig-names-itself-2026-08-26-late">61. THE RIG NAMES ITSELF  (2026-08-26, late)<a class="headerlink" href="#61-the-rig-names-itself-2026-08-26-late" title="Permanent link">#</a></h2>
+<p>The source-selection work finished the job it started: after the probe, the BASESTATION and the
+PROBE COUNT are read from the hardware too. Plus the renderer-swap groundwork.</p>
+<h3 id="61a-one-entry-because-a-onebox-and-a-pxie-module-are-the-same-thing-to-the-api">61a. One entry, because a OneBox and a PXIe module are the same thing to the API<a class="headerlink" href="#61a-one-entry-because-a-onebox-and-a-pxie-module-are-the-same-thing-to-the-api" title="Permanent link">#</a></h3>
+<p><code>np_scanBS()</code> enumerates every basestation and <code>np_getDeviceList()</code> reports each one's <code>platformid</code>.
+<code>np_openBS()</code> is where the exclusive claim starts, and the scan never gets there -- so "which
+basestation is this?" is answerable for free, before the operator commits to anything.</p>
+<p>Both source classes were already making exactly those calls, separately. They are now one cached
+helper (<code>BasestationScan.hpp</code>), and <code>source.npx.auto</code> resolves to <code>source.npx.onebox</code> or
+<code>source.npx.pxi</code> from it. The menu is <code>Neuropixels</code> + <code>PXIe with NI-DAQ</code> + <code>Simulated Data</code>.</p>
+<p><strong>Ambiguity is asked about, never resolved by a rule.</strong> Both attached =&gt; the connect refuses and the
+menu asks which, because only one is supported at a time. Not theoretical: this machine reports
+<code>1 PXIe module and 1 OneBox</code>, and the prompt is what it shows.</p>
+<h3 id="61b-the-ni-daq-stays-an-explicit-choice-and-the-reason-i-first-gave-was-wrong">61b. The NI-DAQ stays an explicit choice -- and the reason I first gave was wrong<a class="headerlink" href="#61b-the-ni-daq-stays-an-explicit-choice-and-the-reason-i-first-gave-was-wrong" title="Permanent link">#</a></h3>
+<p><code>PxieNiDaq.yaml</code> said the card "has to be reserved" and so could not be detected like a probe. That
+conflated two things the code keeps apart: <code>DAQmxGetSysDevNames</code> lists devices with no claim, and
+the reservation is not taken until <code>DAQmx_Val_Task_Commit</code> at connect. It also drew a false parallel
+-- the probe's basestation is claimed exclusively too. Retracted in the file.</p>
+<p>The real reason it stays explicit: whether the DAQ was captured is a <strong>provenance fact about the
+recording</strong>, and its absence is only discoverable AFTER the experiment. No <code>_nidaq_</code> file means no
+ai4 edge, which means closed-loop latency cannot be computed at all. Auto-using a card "if one is
+there" turns a loud pre-experiment failure into a quiet post-experiment discovery.</p>
+<p>Detection is still used: the NI-DAQ entry is hidden on a rig with no PXIe module, via a new
+<code>probeHardware</code> command whose answer the backend caches.</p>
+<h3 id="61c-more-than-one-probe-is-a-question">61c. More than one probe is a question<a class="headerlink" href="#61c-more-than-one-probe-is-a-question" title="Permanent link">#</a></h3>
+<p><code>detectProbePort()</code> returns the FIRST port with a headstage -- arbitrary, on a rig with several. A
+new <code>listProbePorts()</code> counts them, and more than one stops the connect and asks which port to use.
+The choice lives in a static, because the question is raised by a connect that FAILS and has to
+outlive it. The dialog says plainly that multi-probe acquisition is in the backlog and not a
+priority, so nobody has to wonder whether the restriction is a bug.</p>
+<p><code>listProbePorts()</code> is separate from <code>detectProbePort()</code> rather than a mode on it: the latter carries
+the OneBox's 8-attempt power-up retry, and rewriting two hardware paths whose retry behaviour cannot
+be exercised without the hardware is not worth doing for tidiness.</p>
+<h3 id="61d-the-source-control-stopped-being-a-native-select">61d. The Source control stopped being a native <code>&lt;select&gt;</code><a class="headerlink" href="#61d-the-source-control-stopped-being-a-native-select" title="Permanent link">#</a></h3>
+<p>It was the last one in the toolbar. <code>AudioModule</code> had already made this call for its device picker
+and written down why: a native select's popup is OS-drawn, so it opens light-on-white in the middle
+of a dark GUI. It is now <code>#src-btn</code> + an anchored <code>#src-menu</code> in the app's own palette, with the
+simulated cascade drilling down IN PLACE rather than jumping to a modal.</p>
+<p><code>#selectSource</code> is hidden, not deleted, and remains the single state holder -- the menu writes its
+<code>.value</code> and fires the same <code>change</code> event, so <code>reflectSource()</code>, the CLI and the GUI tests are
+untouched.</p>
+<p>Three defects, all of which looked cosmetic and were not: the picker sat at <code>z-index: 1000</code>, BELOW
+the audio dock at <code>2147480000</code> (an open dock covered it); the menu's stylesheet was injected lazily
+on first open and carries the rule that hides <code>#selectSource</code>, so the native select sat visible
+beside its own replacement until someone opened the menu once; and <code>gui_hidden</code> filtered only the
+hardware dropdown, so a hidden simulated profile was still offered in the picker.</p>
+<h3 id="61e-tests">61e. Tests<a class="headerlink" href="#61e-tests" title="Permanent link">#</a></h3>
+<p><code>tests/test_basestationscan.cpp</code> -- 15 cases, linking the REAL <code>BasestationScan.cpp</code>. The important
+one asserts the REFUSAL: both transports attached must not resolve to a source name. It also pins
+that "unambiguous" is about the KIND of basestation (two OneBoxes is still one transport) and that
+<code>apiAvailable == false</code> is distinguishable from "nothing attached" -- one is an operator problem,
+the other is a build that cannot look.</p>
+<p><code>tests/gui/sim_picker.py</code> rewritten against the menu: seven invariants including that the visible
+trigger cannot disagree with the hidden state element, and that a hidden profile is hidden in both
+pickers. It stopped selecting the play-file box by its literal inline background colour -- a
+selector no restyle could survive, and this restyle proved it.</p>
+<p><strong>22 C++ suites, 11 GUI tests.</strong></p>
+<h3 id="61f-groundwork-for-the-renderer-swap">61f. Groundwork for the renderer swap<a class="headerlink" href="#61f-groundwork-for-the-renderer-swap" title="Permanent link">#</a></h3>
+<p><code>developer_docs/RendererContract.md</code> -- 524 lines, the normative spec any SciChart replacement must
+satisfy: the interface, the data contract, the visual contract (literal colours and spacing, because
+the look must not change), the benchmark protocol, and the traps.</p>
+<p><strong><code>benchmarks/cdp_bench.py</code> was silently broken and is fixed.</strong> It connected the sim by clicking a
+button inside <code>#sim-picker-card</code> -- an element that stopped existing when the picker became an
+anchored menu -- and the click was guarded with <code>if(b)b.click()</code>, so it did nothing, raised nothing,
+and the sweep measured an IDLE, UNCONNECTED view at a beautiful 60 fps in every cell. It now drives
+the backend over the WebSocket like every GUI test. Also fixed: the source name matched two configs
+once the OneBox sim landed; <code>#channelsPerStrip</code> silently overrode the sweep variable and persisted
+in localStorage; <code>buildColumns()</code> was not awaited; and the output path was hard-coded so a second
+run overwrote the first. <code>window.__benchPointCount()</code> -- documented in <code>benchmarks/README.md</code> and
+never implemented -- now exists.</p>
+<p><strong>The frozen baseline CSV is therefore a historical reference, not a control arm.</strong> SciChart must be
+re-measured on today's tree with the corrected harness before any replacement is compared to it.</p>
+<h3 id="61g-archived">61g. Archived<a class="headerlink" href="#61g-archived" title="Permanent link">#</a></h3>
+<p>Six briefs whose work is done: <code>NextTask_OneBoxSupport</code>, <code>NextSession_SecondMachine_OneBox</code>,
+<code>NextTask_WindowsReverify</code>, <code>NextTask_ThroughputOnSecondMachine</code>, <code>NextTask_LinuxBringUp</code>,
+<code>NextTask_SyncPulseCountCheck</code> -- each with a row in <code>developer_docs/archive/README.md</code> saying what
+superseded it. Links repointed in both directions; docs book rebuilds with 0 broken links.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -5511,6 +5858,26 @@ suites and 68 cases out of date, now reads 20/384. <code>developer_docs/AgentTra
 <li><a href="#59f-what-this-run-did-not-close-stated-plainly">59f. What this run did NOT close, stated plainly</a></li>
 <li><a href="#59g-dependency-decisions-left-for-the-operator-per-claudemd">59g. Dependency decisions left for the operator, per CLAUDE.md</a></li>
 <li><a href="#59h-files-changed">59h. Files changed</a></li>
+</ul>
+</li>
+<li><a href="#60-the-throughput-shortfall-that-isnt-and-a-probe-that-names-itself-2026-08-26">60. THE THROUGHPUT SHORTFALL THAT ISN'T, AND A PROBE THAT NAMES ITSELF (2026-08-26)</a><ul>
+<li><a href="#60a-63-the-streams-are-provably-unbroken-which-is-more-than-the-count-was-right">60a. #63: the streams are provably unbroken, which is more than "the count was right"</a></li>
+<li><a href="#60b-twelve-hardware-profiles-become-three">60b. Twelve hardware profiles become three</a></li>
+<li><a href="#60c-the-simulated-picker-cascades-instead-of-listing-sixteen">60c. The simulated picker cascades instead of listing sixteen</a></li>
+<li><a href="#60c-ii-the-source-control-stopped-being-a-native-select">60c-ii. The Source control stopped being a native &lt;select&gt;</a></li>
+<li><a href="#60c-iii-the-pickers-earlier-modal-form">60c-iii. The picker's earlier modal form</a></li>
+<li><a href="#60d-two-defects-found-along-the-way">60d. Two defects found along the way</a></li>
+<li><a href="#60e-files-changed">60e. Files changed</a></li>
+</ul>
+</li>
+<li><a href="#61-the-rig-names-itself-2026-08-26-late">61. THE RIG NAMES ITSELF (2026-08-26, late)</a><ul>
+<li><a href="#61a-one-entry-because-a-onebox-and-a-pxie-module-are-the-same-thing-to-the-api">61a. One entry, because a OneBox and a PXIe module are the same thing to the API</a></li>
+<li><a href="#61b-the-ni-daq-stays-an-explicit-choice-and-the-reason-i-first-gave-was-wrong">61b. The NI-DAQ stays an explicit choice -- and the reason I first gave was wrong</a></li>
+<li><a href="#61c-more-than-one-probe-is-a-question">61c. More than one probe is a question</a></li>
+<li><a href="#61d-the-source-control-stopped-being-a-native-select">61d. The Source control stopped being a native &lt;select&gt;</a></li>
+<li><a href="#61e-tests">61e. Tests</a></li>
+<li><a href="#61f-groundwork-for-the-renderer-swap">61f. Groundwork for the renderer swap</a></li>
+<li><a href="#61g-archived">61g. Archived</a></li>
 </ul>
 </li>
 </ul>

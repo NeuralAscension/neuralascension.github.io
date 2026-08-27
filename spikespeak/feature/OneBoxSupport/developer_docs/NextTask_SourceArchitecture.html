@@ -32,9 +32,10 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a class="active" href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-source-architecture-taming-the-config-explosion-arbitraryneuronexusreplay-sources-design-options">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)<a class="headerlink" href="#spikespeak-source-architecture-taming-the-config-explosion-arbitraryneuronexusreplay-sources-design-options" title="Permanent link">#</a></h1>
 <p>A <strong>planning brief (no implementation)</strong> for reorganizing "source options." Today there are 23 near-duplicate
 config profiles behind two hand-synced pickers, and adding a new <em>kind</em> of source (an arbitrary simulated
@@ -137,7 +139,24 @@ central router). Related: <a href="NextTask_CommandEventBus.html"><code>NextTask
 today leans on the same fragile string-matching a topic bus would replace. Tracking: <code>SpikesPeak_Status.md</code>
 §19.1 (file playback goal) + §34. <strong>Transient <code>NextTask_</code> brief</strong> — fold the durable design into a topic doc
 once a direction is chosen; <code>git mv</code> to <code>archive/</code> when done.</p>
-<p><strong>Do NOT implement any of this yet.</strong> This is a decision doc.</p>
+<h2 id="do-not-implement-any-of-this-yet-this-is-a-decision-doc"><strong>Do NOT implement any of this yet.</strong> This is a decision doc.<a class="headerlink" href="#do-not-implement-any-of-this-yet-this-is-a-decision-doc" title="Permanent link">#</a></h2>
+<p><strong>STATUS 2026-08-26 — PHASE 1 IS DONE.</strong> Goal 1 ("fewer / better-organized source options") is
+delivered: twelve hardware profiles collapsed to three, one picker, no label collisions, no
+accidentally-invisible configs. The durable design is written up in
+<a href="SourceSelection.html"><code>SourceSelection.md</code></a>; the rest of this brief remains a decision doc for
+<strong>Phases 2 and 3</strong>, which are untouched.</p>
+<p><strong>It was reached by a different route than §4.1 proposed, and the difference is worth recording.</strong>
+Option A assumed the cross-product had to be collapsed by a <em>config layering</em> (<code>include:</code>) loader
+in <code>Configuration.cpp</code>. None was needed. The axis doing most of the multiplying — the probe — is
+<strong>discoverable</strong>: the basestation reports the part number on connect, and <code>setupSources()</code> finishes
+before <code>setupProcessors()</code>, so every probe-dependent binding can be resolved from the detected
+probe rather than from a profile. Removing that axis takes 2 (probe) x 3 (basestation/NI-DAQ) down
+to 3 files with no new loader and no new config semantics. §4.1's "capability-tagged list" survives
+as exactly two optional keys, <code>sim_basestation:</code> and <code>sim_probe:</code>, and only for the simulated
+picker, where there is no hardware to ask.</p>
+<p>The remaining axes named in §2.2 — ASAP delivery, ADC on/off, scenario — did <strong>not</strong> collapse. They
+are still one profile each, now <code>gui_hidden</code> so they are out of the operator's way while staying
+CLI-selectable. Making them runtime toggles is real work and is not what "fewer options" required.</p>
 </blockquote>
 <hr />
 <h2 id="1-context-the-problem-and-the-goals">1. Context — the problem and the goals<a class="headerlink" href="#1-context-the-problem-and-the-goals" title="Permanent link">#</a></h2>
@@ -360,6 +379,7 @@ invent a format); keep the SimDataLinux ruling (one sim class per hardware famil
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
+<li><a href="#do-not-implement-any-of-this-yet-this-is-a-decision-doc">Do NOT implement any of this yet. This is a decision doc.</a></li>
 <li><a href="#1-context-the-problem-and-the-goals">1. Context — the problem and the goals</a></li>
 <li><a href="#2-current-state-what-any-plan-must-build-on">2. Current state (what any plan must build on)</a><ul>
 <li><a href="#21-registered-source-classes-6-total-srccoreutilscppregisterbuiltintypes">2.1 Registered source classes — 6 total (src/core/Utils.cpp::registerBuiltInTypes)</a></li>

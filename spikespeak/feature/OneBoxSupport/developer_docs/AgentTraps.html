@@ -32,9 +32,10 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup" open><summary>Start here<span class="navcount">6</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a class="active" href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="traps-that-have-cost-real-time">Traps that have cost real time<a class="headerlink" href="#traps-that-have-cost-real-time" title="Permanent link">#</a></h1>
 <p>Things in this codebase that are <strong>not wrong, but are not what they look like</strong>. Every entry below
 was found the expensive way — by an agent or a person writing correct-looking code, watching it fail
@@ -158,6 +160,11 @@ everything is <a href="README.html"><code>README.md</code></a>.</p>
 <td><code>getDataByName(name)</code></td>
 <td><strong>Get-or-CREATE.</strong> It lazily constructs any registered type, so it is non-null for almost any name, on almost any config.</td>
 <td>Using it as an existence test made an NP1-only branch always win and its NP2 counterpart unreachable dead code — a ripple detector bound to a band nothing ever wrote, reporting itself perfectly healthy at zero samples. Ask with <strong><code>hasData()</code></strong>, which does not create.</td>
+</tr>
+<tr>
+<td>a profile's <code>inputs:</code> / <code>recordings:</code> band list</td>
+<td>A statement of what the profile WANTS, not of what the probe streams. Which bands exist is a property of the <strong>probe</strong>: a 1.0 gives hardware <code>ap</code> + <code>lfp</code>, a 2.0 gives one <code>raw</code>.</td>
+<td>Because the names resolve through <code>getDataByName()</code> (row above), naming the wrong generation's band does not fail -- it manufactures an empty buffer, draws 384 flat traces, and records a real <code>.bin</code> and sidecar containing nothing. A recording that looks like it worked. Since 2026-08-26 the display binds from <code>hasData()</code> and the recorder skips absent bands, so a profile can serve either probe; see <a href="SourceSelection.html">SourceSelection.md</a>.</td>
 </tr>
 <tr>
 <td><code>getProcessorByName(name)</code></td>
@@ -512,6 +519,28 @@ backend and a genuine assertion failure both printed the same single line —
 <code>[harness] reusing the backend on :1234</code>. Folding stderr into stdout turned a day of guessing into one
 readable traceback. <strong>When a failure report is uninformative, suspect the reporter before the code.</strong></p>
 <hr />
+<h2 id="5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing">5h. A WIN32 binary has no stdout, so redirecting it captures nothing<a class="headerlink" href="#5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing" title="Permanent link">#</a></h2>
+<p><code>add_executable(... WIN32 ...)</code> in <code>CMakeLists.txt</code> makes SpikesPeak a <strong>GUI-subsystem</strong> binary on
+Windows. A GUI-subsystem process has no console and no inherited stdout or stderr, so this:</p>
+<pre><code class="language-python">subprocess.Popen([... &quot;spikespeak.py&quot;, &quot;run&quot;, &quot;--no-browser&quot;], stdout=log_fh, stderr=subprocess.STDOUT)
+</code></pre>
+<p>captures exactly the two lines the Python launcher prints before it hands over, and <strong>nothing the
+application says</strong>. The file is 261 bytes whether the run went perfectly or the backend died on a
+missing Qt plugin.</p>
+<p>That is not hypothetical: <code>tests/gui/_harness.py</code> opened <code>_gui_backend.log</code> specifically so that a
+failed startup would name its cause instead of "collapsing into the same 30-second wait", and on
+Windows that file was empty every time — the one platform the rig runs on. Fixed 2026-08-26 by
+reading both files.</p>
+<p>The application's real log is <strong><code>output.log</code></strong>, written by the <code>qInstallMessageHandler</code> in
+<code>main.cpp</code>, in the process's working directory, rotated <code>output.log</code> → <code>output.1.log</code> → … → <code>.5.log</code>
+on each start. So:</p>
+<ul>
+<li><strong>Read <code>output.log</code>, not your redirect</strong>, when you want to know what the backend did.</li>
+<li><strong>It rotates on the NEXT start.</strong> If you run the backend twice in one script, the first run's log
+  is now <code>output.1.log</code>. Copy it before starting run two, or you will read the wrong one and be very
+  confused about why your assertion sees the previous configuration.</li>
+</ul>
+<hr />
 <h2 id="6-saying-what-is-true">6. Saying what is true<a class="headerlink" href="#6-saying-what-is-true" title="Permanent link">#</a></h2>
 <p>The recurring defect class in this application is <strong>announcing a REQUESTED state instead of a
 CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
@@ -542,6 +571,7 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5e-the-shape-must-not-depend-on-the-measurement">5e. The shape must not depend on the measurement</a></li>
 <li><a href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. requestAnimationFrame does not fire when nothing is being painted</a></li>
 <li><a href="#5g-linux-three-traps-from-the-2026-08-26-bring-up">5g. Linux: three traps from the 2026-08-26 bring-up</a></li>
+<li><a href="#5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing">5h. A WIN32 binary has no stdout, so redirecting it captures nothing</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
 </ul>
 </div>

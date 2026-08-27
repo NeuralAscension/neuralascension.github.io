@@ -32,9 +32,10 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup" open><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup" open><summary>Start here<span class="navcount">6</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-developer-docs">SpikesPeak — Developer Docs<a class="headerlink" href="#spikespeak-developer-docs" title="Permanent link">#</a></h1>
 <p>Onboarding + reference for the SpikesPeak acquisition stack (Qt/C++ backend, external-browser UI,
 closed-loop stimulation). <strong>Start here</strong>, then jump to the doc for your task below.</p>
@@ -165,7 +167,7 @@ configure, and a real display. No hardware row can be closed there.</p>
    like: a constant named for a sample rate that is a tick rate, a getter that <em>creates</em> what you asked it
    to check for, a queued call that is not delivered until Play, a fatal that reports as a test with no
    output. Every entry cost somebody real time. <strong>Add to it when something costs you time.</strong></li>
-<li><strong><a href="ConfigReference.html"><code>ConfigReference.md</code></a></strong> and <strong><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></strong> — before you write a profile or a script that drives the backend. What is a config key and what is a runtime command is not guessable from the YAML, and the driving sequence has one step everybody misses.</li>
+<li><strong><a href="SourceSelection.html"><code>SourceSelection.md</code></a></strong>, <strong><a href="ConfigReference.html"><code>ConfigReference.md</code></a></strong> and <strong><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></strong> — before you write a profile or a script that drives the backend. What is a config key and what is a runtime command is not guessable from the YAML, and the driving sequence has one step everybody misses.</li>
 <li><strong>The doc for your actual task</strong> from the tables below.</li>
 </ol>
 <p><strong>Before you touch hardware</strong>, also read the Safety rules in the <code>spikespeak</code> skill (never force-kill a
@@ -244,6 +246,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="ConfigReference.html"><code>ConfigReference.md</code></a></td>
 <td><strong>Every config key, and the much longer list of what is NOT one.</strong> 77 keys across every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
+</tr>
+<tr>
+<td><a href="SourceSelection.html"><code>SourceSelection.md</code></a></td>
+<td><strong>Why the Source dropdown has three entries instead of twelve, and how the probe names itself.</strong> The connect order that makes it work (<code>setupSources</code> finishes before <code>setupProcessors</code>, so the registry already holds the detected probe's bands), the six probe-dependent decisions and where each is made, what a hardware profile still declares, and the two config keys the simulated picker cascades on.</td>
 </tr>
 <tr>
 <td><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></td>
@@ -332,7 +338,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="OpenEphys-OneBox-Reference.html"><code>OpenEphys-OneBox-Reference.md</code></a></td>
-<td>How the vendored OpenEphys plugin drives the <strong>OneBox</strong> USB basestation — a digest cross-checked symbol-by-symbol against the vendored v4 header. Supporting reference for <a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a>, which is the authority.</td>
+<td>How the vendored OpenEphys plugin drives the <strong>OneBox</strong> USB basestation — a digest cross-checked symbol-by-symbol against the vendored v4 header. Supporting reference for <a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a>, which is the authority.</td>
 </tr>
 </tbody>
 </table>
@@ -514,7 +520,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td><strong>Open runbook — the branch that replaces the SciChart live view.</strong> The operator asked for "move the front end to WASM"; the measured bottleneck is the main-thread <strong>draw</strong>, and moving the parse to a worker was already tried and reverted, so the runbook orders the work draw-first (OffscreenCanvas + WebGL2 in a plain-JS worker) and gates WASM on a profile. Separates the build-time toolchain / runtime library / browser capability asks, phases 0-5 each ending GUI-suite green, the parity problem (the trace assertion is currently dead), the numbers to beat, and kill criteria.</td>
 </tr>
 <tr>
-<td><a href="NextTask_OneBoxSupport.html"><code>NextTask_OneBoxSupport.md</code></a></td>
+<td><a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a></td>
 <td><strong>Implementation plan for Neuropixels OneBox</strong> (USB basestation) — verified v4 API deltas vs PXI (platform + <code>mapBS</code> + FTDI check), reuse of the probe workers/IMRO, the new 12-ch ADC stream, and the DAC/WavePlayer native closed-loop stim output. One new file pair (<code>OneBoxSource.*</code>) + a thin virtual seam; phased 0→5. Includes the exact FTDI D3XX 1.3.0.10 driver + link.</td>
 </tr>
 <tr>
@@ -526,7 +532,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td>Open design brief — the <strong>config-declared, runtime-modifiable, unified command <em>and</em> event subscription bus</strong> (off the hot path). The four mechanisms today, multiple solution options, a recommended <code>MessageBus</code> plan + phased steps + a measured validation. Closes the retired <code>todo.txt</code> items 5–6 / Status §31.</td>
 </tr>
 <tr>
-<td><a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a></td>
+<td><a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a></td>
 <td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
 </tr>
 <tr>
@@ -534,7 +540,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td><strong>IN PROGRESS — the documentation refresh.</strong> Which screenshots have been recaptured on the real rig, which are still stale and exactly what each one needs (a ripple signal, the NP2 probe, a play file, NI-DAQ), which prose has been corrected and what is still wrong, and the traps that waste a recapture pass.</td>
 </tr>
 <tr>
-<td><a href="NextSession_SecondMachine_OneBox.html"><code>NextSession_SecondMachine_OneBox.md</code></a></td>
+<td><a href="archive/NextSession_SecondMachine_OneBox.html"><code>archive/NextSession_SecondMachine_OneBox.md</code></a></td>
 <td><strong>Brief for an agent standing this up on a SECOND Windows machine with a OneBox and no PXIe</strong> — prerequisites and every known hardcoded path, the build recipe, the definition of green, which test is expected to be red and why, and the OneBox verification order. Tracking issue #52.</td>
 </tr>
 </tbody>

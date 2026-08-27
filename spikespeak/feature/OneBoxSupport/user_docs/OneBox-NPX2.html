@@ -32,9 +32,10 @@
 <a class="active" href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="../developer_docs/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="../developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="../developer_docs/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="neuropixels-20-multishank-on-a-onebox">Neuropixels 2.0 Multishank on a OneBox<a class="headerlink" href="#neuropixels-20-multishank-on-a-onebox" title="Permanent link">#</a></h1>
 <p>Start to finish with the hardware that is on the rig right now: a <strong>Neuropixels 2.0 multishank probe</strong>
 on a <strong>Neuropixels OneBox</strong> (the USB basestation), including the OneBox's own <strong>12-channel ADC</strong>.</p>
@@ -220,43 +222,19 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 <hr />
 <h2 id="3-select-the-onebox-source">3. Select the OneBox source<a class="headerlink" href="#3-select-the-onebox-source" title="Permanent link">#</a></h2>
 <ol>
-<li>Open the <strong>Source</strong> dropdown and pick <strong><code>NPX 2.0 Multishank (OneBox)</code></strong>.</li>
+<li>Open the <strong>Source</strong> dropdown and pick <strong><code>OneBox</code></strong>.</li>
 </ol>
-<p>📷 <em>Source dropdown with the OneBox profiles</em></p>
-<p>The list is built from the profiles the backend actually has, and each entry is the profile's own
-   name — not its filename. The OneBox entries are:</p>
-<table>
-<thead>
-<tr>
-<th>Entry</th>
-<th>What it is</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>NPX 2.0 Multishank (OneBox)</strong></td>
-<td>Probe <strong>+ the 12-channel ADC</strong>. This is the one to use.</td>
-</tr>
-<tr>
-<td>NPX 2.0 Multishank (OneBox, no ADC)</td>
-<td>Probe only. A control profile for measurements; the ADC band will not appear.</td>
-</tr>
-<tr>
-<td>NPX 1.0 (OneBox)</td>
-<td>For a 1.0 probe on the same box.</td>
-</tr>
-<tr>
-<td>NPX 2.0 Multishank (OneBox, ASAP) · NPX 1.0 (OneBox, ASAP)</td>
-<td><strong>Latency-benchmark variants — do not pick these for an experiment.</strong> Identical to the two above except that the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. They exist so an ASAP-vs-default comparison can differ by that one setting. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
-</tr>
-</tbody>
-</table>
-<p>The ASAP entries <strong>are listed in the dropdown</strong> — they are ordinary profiles, sitting right beside
-   the ones you want, and nothing stops you selecting one by accident. Read the name before you
-   connect.</p>
+<p>📷 <em>Source dropdown</em></p>
+<p>That is the only OneBox entry, and it works for <strong>either probe</strong> — a 1.0 or a 2.0. You are naming
+   the basestation; the probe identifies itself when the box opens, and everything that depends on
+   which probe it is (which bands exist, whether the LFP has to be computed, what the ripple detector
+   reads) follows from that answer. The 12-channel ADC streams alongside.</p>
+<p>Until 2026-08-26 there were five OneBox entries, one per probe and per variant, and picking the
+   wrong one silently gave you flat traces and an empty recording. They still exist for reproducing
+   old measurements, but they are <strong>no longer in the dropdown</strong> — see §3a.</p>
 <ol start="2">
 <li><strong>What you should see, in this order</strong> (watch the status box on the left of the second row):
-   - <code>Connecting to NPX 2.0 Multishank (OneBox)…</code>
+   - <code>Connecting to OneBox…</code>
    - green: <strong><code>Found Neuropixels 2.0 Multishank probe</code></strong>
    - green: <strong><code>Connected — device ready</code></strong>
    - the <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and a <strong>▣ OneBox</strong> tab appears beside them
@@ -277,6 +255,33 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 </li>
 </ol>
 <hr />
+<h3 id="3a-the-variants-that-are-no-longer-in-the-dropdown">3a. The variants that are no longer in the dropdown<a class="headerlink" href="#3a-the-variants-that-are-no-longer-in-the-dropdown" title="Permanent link">#</a></h3>
+<p>Three OneBox profiles remain available from the command line only, because they are measurement tools
+rather than everyday choices. Select them with the control CLI (<code>select "&lt;exact name&gt;"</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
+<td>Probe only. The control profile for throughput measurements; the ADC band does not appear.</td>
+</tr>
+<tr>
+<td><code>NPX 2.0 Multishank (OneBox + digital in)</code></td>
+<td>Adds the ADC's 12 comparator outputs as a separate logic-level band.</td>
+</tr>
+<tr>
+<td><code>NPX 2.0 Multishank (OneBox, ASAP)</code> · <code>NPX 1.0 (OneBox, ASAP)</code></td>
+<td><strong>Latency-benchmark variants — do not use for an experiment.</strong> Identical to the normal profile except the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. They exist so an ASAP-vs-default comparison differs by that one setting. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
+</tr>
+</tbody>
+</table>
+<p>Taking them out of the dropdown is the point: they used to sit right beside the profile you wanted,
+and nothing stopped you picking one by accident.</p>
 <h2 id="4-the-probe-map-choosing-which-electrodes-record">4. The probe map — choosing which electrodes record<a class="headerlink" href="#4-the-probe-map-choosing-which-electrodes-record" title="Permanent link">#</a></h2>
 <h3 id="a-60-second-primer-on-the-20-multishank">A 60-second primer on the 2.0 multishank<a class="headerlink" href="#a-60-second-primer-on-the-20-multishank" title="Permanent link">#</a></h3>
 <p>A Neuropixels 2.0 multishank probe has <strong>4 shanks × 1280 electrodes = 5120 sites</strong>, and the probe reads
@@ -492,7 +497,8 @@ which electrodes a column is showing.</p>
 <h2 id="6-recording">6. Recording<a class="headerlink" href="#6-recording" title="Permanent link">#</a></h2>
 <h3 id="first-choose-which-channels-to-record">First: choose which channels to record<a class="headerlink" href="#first-choose-which-channels-to-record" title="Permanent link">#</a></h3>
 <p><strong>The default for this profile is three probe channels, not all of them.</strong> The
-<code>NPX 2.0 Multishank (OneBox)</code> profile ships with <code>channels: [1, 192, 196]</code> for the probe band — deliberate,
+The <code>OneBox</code> profile records ALL channels by default (it cannot know which few matter on your rig); the
+superseded <code>NPX 2.0 Multishank (OneBox)</code> profile ships with <code>channels: [1, 192, 196]</code> — deliberate,
 because a full 384-channel raw stream is a lot of disk. If you want more (or fewer), set it here before
 you record.</p>
 <ol>
@@ -673,7 +679,8 @@ you opened it to look at).</p>
 <strong><a href="RippleDetection.html"><code>RippleDetection.md</code></a></strong> — read that one for picking channels, thresholds,
 quorum, training, and live z-tuning. Only the OneBox-specific parts are here.</p>
 <ul>
-<li>The <code>NPX 2.0 Multishank (OneBox)</code> profile already carries the detector and the derived LFP band. Both
+<li>The <code>OneBox</code> profile gets the detector and the derived LFP band automatically, provisioned from the
+  probe that connects rather than declared in the file. Both
   are <strong>inert until you start them</strong> from the GUI — carrying them costs nothing when unused.</li>
 <li>Open the dock with <strong>◉ Ripple Detection</strong> in the second toolbar row (the same row that carries
   <strong>Bands ▼</strong> and the <strong>▣ OneBox</strong> tab). Opening it takes about 380 px off the live view, which is what
@@ -830,7 +837,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 <li><a href="SimulatedData.html"><code>SimulatedData.md</code></a> — the Simulated Data picker's
   <strong><code>Neuropixels 2.0 Multishank (OneBox + ADC)</code></strong> reproduces this whole walkthrough, ADC band included,
   with no hardware attached. Practise there first.</li>
-<li>Developer detail: <a href="../developer_docs/NextTask_OneBoxSupport.html"><code>../developer_docs/NextTask_OneBoxSupport.md</code></a>
+<li>Developer detail: <a href="../developer_docs/archive/NextTask_OneBoxSupport.html"><code>../developer_docs/archive/NextTask_OneBoxSupport.md</code></a>
   (design + the imec API surface), <a href="../developer_docs/Recording.html"><code>../developer_docs/Recording.md</code></a>
   (file formats), <a href="../developer_docs/ConfigReference.html"><code>../developer_docs/ConfigReference.md</code></a>
   (every config key).</li>
@@ -846,7 +853,10 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 </ul>
 </li>
 <li><a href="#2-launch-and-reach-the-gui">2. Launch, and reach the GUI</a></li>
-<li><a href="#3-select-the-onebox-source">3. Select the OneBox source</a></li>
+<li><a href="#3-select-the-onebox-source">3. Select the OneBox source</a><ul>
+<li><a href="#3a-the-variants-that-are-no-longer-in-the-dropdown">3a. The variants that are no longer in the dropdown</a></li>
+</ul>
+</li>
 <li><a href="#4-the-probe-map-choosing-which-electrodes-record">4. The probe map — choosing which electrodes record</a><ul>
 <li><a href="#a-60-second-primer-on-the-20-multishank">A 60-second primer on the 2.0 multishank</a></li>
 <li><a href="#editing-the-map">Editing the map</a></li>

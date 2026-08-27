@@ -32,9 +32,10 @@
 <a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="../developer_docs/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="../developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="../developer_docs/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-gui-guide-with-screenshots">SpikesPeak — GUI Guide (with screenshots)<a class="headerlink" href="#spikespeak-gui-guide-with-screenshots" title="Permanent link">#</a></h1>
 <p>An illustrated, end-to-end walkthrough of the SpikesPeak browser UI: connect a probe (or a simulated
 source), set the channel map, watch the live signal, pick which channels to record, record, and check the
@@ -136,17 +138,54 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
 <ol>
 <li>Run <strong><code>SpikesPeak.exe</code></strong>. It opens a dedicated browser window at the UI (or browse to
    <code>http://localhost:8234</code>). The top toolbar shows <strong>Source: None</strong> and a status of <strong>Ready</strong>.</li>
-<li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown:
-   - A <strong>hardware profile</strong> (e.g. <code>NPX 1.0</code>, <code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank</code>) connects the real
-     probe. Connecting takes a few seconds (the toolbar shows <strong>Found Neuropixels … probe</strong> when ready).
-   - <strong><code>Simulated Data…</code></strong> opens a <strong>picker</strong> of hardware-free simulated sources — no probe needed:</li>
+<li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown. There are three hardware choices, and they name
+   the <strong>basestation</strong> — not the probe:</li>
 </ol>
+<table>
+<thead>
+<tr>
+<th>Choose</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>OneBox</code></strong></td>
+<td>A OneBox (the USB box). Its 12-channel ADC streams alongside the probe.</td>
+</tr>
+<tr>
+<td><strong><code>PXIe</code></strong></td>
+<td>A PXIe chassis, probe only.</td>
+</tr>
+<tr>
+<td><strong><code>PXIe + NI-DAQ</code></strong></td>
+<td>A PXIe chassis where you also want the NI-DAQ card's analog and digital inputs — this is the one a closed-loop rig wants, because it captures the stimulus pulse.</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Source dropdown" src="images/source_dropdown.png" /></p>
+<p><strong>You do not tell SpikesPeak which probe you have.</strong> It asks the probe. A Neuropixels 1.0 and a
+   2.0 stream different things — a 1.0 gives separate AP and LFP bands, a 2.0 gives one wideband
+   stream from which the LFP is computed — and all of that is worked out from the probe itself when
+   it connects. Connecting takes a few seconds; the toolbar shows <strong>Found Neuropixels … probe</strong> when
+   it is ready, and that message tells you what it found.</p>
+<ul>
+<li><strong><code>Simulated Data ›</code></strong> drills down, in the same menu, to the hardware-free simulated sources —
+     no probe needed. It asks three short questions: which system (<strong>OneBox</strong> or <strong>PXIe</strong>), which
+     probe (<strong>1.0</strong> or <strong>2.0</strong>), and then what to stream (a sine wave, synthetic ripples, a recorded
+     file to replay, a ripple-detection scenario). <strong>←</strong> at the top of each step goes back.</li>
+</ul>
 <p><img alt="Simulated Data picker" src="images/sim_picker.png" /></p>
-<p>Pick a variant (Neuropixels 1.0 sine, synthetic ripples, 1.0 + NI-DAQ, 2.0 Multishank, 2.0 + NI-DAQ).</p>
+<p>…and then lists the scenarios that match, each showing the exact config name underneath (that is
+   the name a script would use):</p>
+<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios.png" /></p>
 <blockquote>
-<p><strong>Probe-type mismatch:</strong> if you pick a profile for one probe (say <em>NPX 2.0 Multishank</em>) but a different
-probe is physically connected (a 1.0), a dialog appears — <strong>Disconnect</strong> or <strong>Continue anyway</strong> — so you
-never silently stream the wrong probe.</p>
+<p><strong>Why there is no "NPX 1.0" and "NPX 2.0" in the list any more.</strong> There used to be twelve entries,
+one per probe-and-basestation combination, and picking the wrong one did not give you an error — it
+gave you flat traces and a recording full of nothing. The probe now identifies itself, so the wrong
+choice is not available to make.</p>
+<p>The old profile names still work from the command line (<code>select "NPX 2.0 Multishank (OneBox)"</code>), so
+scripts and published measurements keep running unchanged.</p>
 </blockquote>
 <hr />
 <h2 id="2-probe-channel-map-edit-map">2. Probe Channel Map (Edit Map)<a class="headerlink" href="#2-probe-channel-map-edit-map" title="Permanent link">#</a></h2>

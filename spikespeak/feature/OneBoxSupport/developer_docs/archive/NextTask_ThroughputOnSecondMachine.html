@@ -5,123 +5,125 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reproducing the recording throughput shortfall on the second machine - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
-<link rel="stylesheet" href="../assets/style.css">
-<script src="../assets/logo.js" defer></script>
+<link rel="stylesheet" href="../../assets/style.css">
+<script src="../../assets/logo.js" defer></script>
 <noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
 </head><body>
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
-  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Unsorted / Reproducing the recording throughput shortfall on the second machine</span>
+  <a class="brand" href="../../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Archive (historical) / Reproducing the recording throughput shortfall on the second machine</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
 <div class="layout">
-  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../../index.html">Home</a>
 <h3>Overview</h3>
-<a href="../README.html">SpikesPeak</a>
-<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
-<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<a href="../../README.html">SpikesPeak</a>
+<a href="../../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../../CLAUDE.html">SpikesPeak — instructions for agents</a>
 <h3>User Guide</h3>
-<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
-<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
-<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
-<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
-<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
-<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
-<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
-<a href="README.html">SpikesPeak — Developer Docs</a>
-<a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
-<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
-<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
+<a href="../README.html">SpikesPeak — Developer Docs</a>
+<a href="../AgentTraps.html">Traps that have cost real time</a>
+<a href="../SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
-<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
-<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
-<a href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="../ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../Logging.html">Logging — format, severity, and what to write</a>
 </details>
 <details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
-<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
-<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
-<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+<a href="../AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
 <details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
-<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
-<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
-<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
-<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+<a href="../Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="../NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
 <details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
-<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
-<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
-<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
 <details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
-<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
-<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
-<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
-<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
-<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+<a href="../RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
-<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
-<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
-<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
-<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
-<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../ControlCLI.html">Control CLI — headless command interface</a>
 </details>
 <details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
-<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
-<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
 <details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
-<a href="Building.html">Building and running SpikesPeak</a>
-<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
-<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
-<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+<a href="../Building.html">Building and running SpikesPeak</a>
+<a href="../BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
-<a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
-<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
-<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<a href="../NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="../NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="../NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup" open><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a class="active" href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
-<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<a href="../../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
-<a href="../python/README.html">spikespeakpostprocess</a>
+<a href="../../python/README.html">spikespeakpostprocess</a>
 <h3>Hardware Results</h3>
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
-<a href="../benchmarks/README.html">Benchmarks</a>
-<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<a href="../../benchmarks/README.html">Benchmarks</a>
+<a href="../../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
 <h3>Stim Server</h3>
-<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
-<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<a href="../../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
 <h3>Archive (historical)</h3>
-<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
-<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a class="active" href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="reproducing-the-recording-throughput-shortfall-on-the-second-machine">Reproducing the recording throughput shortfall on the second machine<a class="headerlink" href="#reproducing-the-recording-throughput-shortfall-on-the-second-machine" title="Permanent link">#</a></h1>
 <p><strong>Issue: <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a>.</strong>
 Read that first — it has the original numbers and the two effects they separate into.</p>
@@ -315,7 +317,7 @@ the <em>same</em> fraction points at a shared cause rather than anything band-sp
   variable, which is why the control is committed rather than edited in place.</li>
 <li>Do not conclude anything from a cell where the source switch was refused.</li>
 </ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_ThroughputOnSecondMachine.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_ThroughputOnSecondMachine.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>

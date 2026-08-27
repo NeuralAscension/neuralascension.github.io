@@ -32,9 +32,10 @@
 <a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="../developer_docs/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="../developer_docs/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="../developer_docs/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="../developer_docs/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="../developer_docs/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="../developer_docs/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-simulated-data-complete-operating-guide">SpikesPeak — Simulated Data (complete operating guide)<a class="headerlink" href="#spikespeak-simulated-data-complete-operating-guide" title="Permanent link">#</a></h1>
 <p>SpikesPeak can stream <strong>hardware-free simulated data</strong> through the <em>exact same</em> pipeline as a real probe — display,
 probe-map editor, recording, channel selection, and ripple detection all work with <strong>no probe attached</strong>. Use it to
@@ -134,12 +136,31 @@ internals), <a href="../developer_docs/ControlCLI.html"><code>../developer_docs/
 </blockquote>
 <hr />
 <h2 id="1-selecting-a-simulated-source">1. Selecting a simulated source<a class="headerlink" href="#1-selecting-a-simulated-source" title="Permanent link">#</a></h2>
-<p>In the toolbar <strong>Source</strong> dropdown, choose <strong><code>Simulated Data…</code></strong>. A <strong>picker modal</strong> opens listing every simulated
-scenario (each config that carries a <code>sim_variant:</code> label). Click one to connect it. Most need no hardware — but three entries in this list <strong>do</strong>: <code>NI-DAQ only (real, no probe)</code>, <code>Neuropixels 1.0 + Real NI-DAQ + Ripples</code> and <code>NPX 2.0 Multishank + Real NI-DAQ + Ripples</code> all drive a real NI-DAQ card, as their names say.</p>
+<p>In the toolbar <strong>Source</strong> dropdown, choose <strong><code>Simulated Data ›</code></strong>. The menu drills down in place and
+asks three short questions:</p>
+<ol>
+<li><strong>Which system</strong> — <code>OneBox</code> or <code>PXIe</code>.</li>
+<li><strong>Which probe</strong> — <code>Neuropixels 1.0</code> (hardware AP + LFP bands) or <code>Neuropixels 2.0</code> (one wideband
+   stream, LFP derived).</li>
+<li><strong>What to stream</strong> — a sine wave, synthetic ripples, a recorded <code>.h5</code> to replay, a
+   ripple-detection scenario, and so on.</li>
+</ol>
+<p><strong>←</strong> at the top of each step goes back. It used to be one flat list of sixteen, which had stopped being a menu —
+and three entries carried the <em>same</em> label, so you were offered three identical-looking buttons.
+Each choice now shows its exact config name underneath, which is the name a script would use.</p>
 <p><img alt="Simulated Data picker" src="images/sim_picker.png" /></p>
-<p>There is nothing else to install: the picker's list comes from the backend's loaded configs, so any <code>config/*.yaml</code>
-with a <code>sim_variant:</code> key shows up here automatically. Two names matter per config: the <strong>picker label</strong> (its
-<code>sim_variant:</code>) and the <strong>exact name</strong> (its <code>name:</code>) you pass to <code>selectSource</code> over the WebSocket — they differ.</p>
+<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios.png" /></p>
+<p>Most scenarios need no hardware — but three <strong>do</strong>: <code>NI-DAQ only (real, no probe)</code>,
+<code>Neuropixels 1.0 + Real NI-DAQ + Ripples</code> and <code>NPX 2.0 Multishank + Real NI-DAQ + Ripples</code> all drive
+a real NI-DAQ card, as their names say.</p>
+<p>Some scenarios appear under <strong>both</strong> systems. That is deliberate, not a duplicate: the plain
+sine-wave sources do not open a basestation at all, so they are genuinely independent of that choice
+and filing them under one would be inventing a distinction.</p>
+<p>There is nothing else to install: the picker is built from the backend's loaded configs, so any
+<code>config/*.yaml</code> with a <code>sim_variant:</code> key shows up automatically — and its <code>sim_basestation:</code> /
+<code>sim_probe:</code> keys, if present, decide where in the cascade. Two names matter per config: the
+<strong>picker label</strong> (<code>sim_variant:</code>) and the <strong>exact name</strong> (<code>name:</code>) you pass to <code>selectSource</code> over
+the WebSocket — they differ.</p>
 <hr />
 <h2 id="2-the-simulated-sources-what-each-one-is">2. The simulated sources (what each one is)<a class="headerlink" href="#2-the-simulated-sources-what-each-one-is" title="Permanent link">#</a></h2>
 <h3 id="21-in-the-picker">2.1 In the picker<a class="headerlink" href="#21-in-the-picker" title="Permanent link">#</a></h3>

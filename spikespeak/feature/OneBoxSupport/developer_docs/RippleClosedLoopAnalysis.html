@@ -32,9 +32,10 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
@@ -90,21 +91,16 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">9</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
-<a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">3</span></summary>
-<a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
-<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
-<a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -121,7 +117,13 @@
 <h3>Archive (historical)</h3>
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
-<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a></nav>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="offline-analysis-of-closed-loop-ripplestim-recordings">Offline analysis of closed-loop ripple→stim recordings<a class="headerlink" href="#offline-analysis-of-closed-loop-ripplestim-recordings" title="Permanent link">#</a></h1>
 <p><strong>This is the canonical reference for analysing a recorded closed-loop test offline, and for the
 NI-DAQ↔Neuropixels clock/sync machinery every recorded latency depends on.</strong> It covers (a) reproducing
@@ -232,7 +234,7 @@ After the fix: unmatched 257→0, and the healthy recordings are bit-identical. 
 <li><strong>Verify event-by-event, not nearest-neighbour</strong>, and look at the per-channel envelope vs threshold + the
   raster <strong>first</strong>, before theorising about hardware.</li>
 <li>A guard rail now exists: <code>align_timestamps</code> warns on both a pulse-count mismatch and a modulo-wrap. Watch for
-  those warnings. See <a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a> for the remaining
+  those warnings. See <a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a> for the remaining
   capture-side asymmetry (low priority; the analysis side is fully handled).</li>
 </ul>
 <h2 id="reading-a-count-mismatch-correctly-np10-lessons-2026-07-20">Reading a count mismatch correctly (NP1.0 lessons, 2026-07-20)<a class="headerlink" href="#reading-a-count-mismatch-correctly-np10-lessons-2026-07-20" title="Permanent link">#</a></h2>
@@ -256,7 +258,7 @@ pulses at the same instants, the stimulus is the cause.</p>
 the recorded signal, never by nearest-neighbour matching on a periodic train, and never by reasoning about
 the hardware before plotting the envelope against the threshold.</p>
 <h2 id="open-follow-ups">Open follow-ups<a class="headerlink" href="#open-follow-ups" title="Permanent link">#</a></h2>
-<p>See <a href="NextTask_SyncPulseCountCheck.html"><code>NextTask_SyncPulseCountCheck.md</code></a> — the NI-DAQ dropping a trailing sync
+<p>See <a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a> — the NI-DAQ dropping a trailing sync
 pulse (stops a beat before the NPX). Low priority; the <code>auto</code> fix handles the analysis side.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/RippleClosedLoopAnalysis.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>

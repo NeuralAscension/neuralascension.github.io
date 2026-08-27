@@ -32,12 +32,13 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
@@ -137,6 +138,11 @@
 - <code>benchmarks/cdp_bench.py:54-55</code> reads <code>columns[0].onScreenSeries[0].dataSeries.count()</code>. <code>window.__benchPointCount</code> is documented in <code>benchmarks/README.md:51-52</code> but <strong>is not implemented anywhere</strong>.
 - <code>webinterface/main.js:279-310</code> is the perf meter (<code>__perfStats</code>/<code>__perfReset</code>), not <code>main.js:140-165</code> as the planning doc says.</p>
 <hr />
+<blockquote>
+<p><strong>A renderer written against this contract now exists and has been measured:</strong>
+<code>webinterface/GlRenderer.js</code>, see <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.
+5.05x less main-thread CPU at 320 traces, and the frame-rate cliff removed.</p>
+</blockquote>
 <h2 id="1-the-interface">1. THE INTERFACE<a class="headerlink" href="#1-the-interface" title="Permanent link">#</a></h2>
 <h3 id="11-construction-and-lifecycle">1.1 Construction and lifecycle<a class="headerlink" href="#11-construction-and-lifecycle" title="Permanent link">#</a></h3>
 <pre><code class="language-js">new ChartColumn(colIndex, startChannel, channelsPerColumn,

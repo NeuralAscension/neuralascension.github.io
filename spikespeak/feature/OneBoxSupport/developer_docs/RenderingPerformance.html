@@ -32,12 +32,13 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup"><summary>Start here<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
@@ -274,6 +275,11 @@ worker and measured no gain, which is what you would predict from this number. I
 bottleneck and moving it is not worth a worker round-trip.</p>
 <hr />
 <h2 id="built-and-measured-in-the-app-2026-08-27-the-cliff-is-gone">BUILT AND MEASURED IN THE APP (2026-08-27) — the cliff is gone<a class="headerlink" href="#built-and-measured-in-the-app-2026-08-27-the-cliff-is-gone" title="Permanent link">#</a></h2>
+<blockquote>
+<p>The full experimental record -- method, repeats, CPU and GPU data, the
+figures, the mechanism and the limits -- is in
+<a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>. This section is the summary.</p>
+</blockquote>
 <p><code>webinterface/GlRenderer.js</code> is a WebGL2 trace renderer wired into the live view behind
 <code>window.__useGl</code>. SciChart remains the default and the suite still gates on it; <code>window.__setGl(true)</code>
 switches every column live, without a reload.</p>

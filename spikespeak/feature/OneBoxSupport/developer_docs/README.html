@@ -32,12 +32,13 @@
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
-<details class="navgroup" open><summary>Start here<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
 <a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
 <details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
@@ -246,6 +247,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="ConfigReference.html"><code>ConfigReference.md</code></a></td>
 <td><strong>Every config key, and the much longer list of what is NOT one.</strong> 77 keys across every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
+</tr>
+<tr>
+<td><a href="RendererExperiment.html"><code>RendererExperiment.md</code></a></td>
+<td><strong>Replacing SciChart in the live view, measured.</strong> The repeated-measures experiment (2 renderers x 5 densities x 5 interleaved repeats, CPU <em>and</em> GPU, idle control), the data and figures, and -- the part worth reading even if you never touch the renderer -- WHY it is faster: the live view needs almost none of what a charting library does, and SciChart re-establishes all of it per series per frame. Also the two mistakes that each produced confident wrong numbers.</td>
 </tr>
 <tr>
 <td><a href="SourceSelection.html"><code>SourceSelection.md</code></a></td>

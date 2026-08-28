@@ -29,6 +29,7 @@
 <a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
 <h3>Developer Docs</h3>
@@ -99,7 +100,8 @@
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
+<a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 <a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
@@ -126,6 +128,12 @@
 <a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak_postprocess">spikespeak_postprocess<a class="headerlink" href="#spikespeak_postprocess" title="Permanent link">#</a></h1>
+<blockquote>
+<p><strong>Looking for how to EXPORT a session?</strong> This file documents the <em>loader</em> — reading a recording
+directly as NumPy/xarray. For converting to SpikeGLX or Open Ephys see
+<a href="../user_docs/Exporting-Recordings.html"><code>user_docs/Exporting-Recordings.md</code></a> (how) and
+<a href="../developer_docs/DataConversion.html"><code>developer_docs/DataConversion.md</code></a> (the contract).</p>
+</blockquote>
 <p>Load <a href="../developer_docs/Recording.html">SpikesPeak</a> recordings — Neuropixels 1.0 <strong>AP</strong> / <strong>LFP</strong> bands
 and <strong>NI-DAQ</strong> — addressed by the <strong>electrode number you saw on screen</strong>, as NumPy arrays or xarray
 DataArrays.</p>
@@ -278,14 +286,22 @@ band is <strong>refused</strong>, with the measured inflation in the message; co
 <code>scan</code> reports it as <code>timestamps_usable: false</code> + <code>index_inflation</code> without raising, so the dry run
 still tells you everything. The check is a <strong>pre-flight over every band before a byte is written</strong>,
 so a refusal never leaves a half-written tree.</p>
-<p>⚠️ <strong>The two converters disagree about NP2.0 microvolts, by 3.81×.</strong> Both pass the int16 counts
-through untouched; only the declared scale differs. SpikesPeak's own constant (backend, live view,
-<code>developer_docs/Recording.md</code>) is <code>1.0 V / 84 / 4096 = 2.9064 µV/count</code>; SpikeGLX/IMEC describe the
-same probe as <code>0.5 / 8192 / 80 = 0.7629 µV/count</code>. For NP1.0 the two agree <em>exactly</em> (2.34375),
-which is what shows the arithmetic is right and the NP2.0 constant is the outlier. Nothing in a v1
-sidecar settles it — the <code>metadata_version: 2</code> <code>scale</code> block will. Until then it is an operator
-decision; pass <code>bit_volts</code> explicitly if you know the answer. A test pins the ratio so the two
-cannot drift further apart silently.</p>
+<p><strong>NP2.0 microvolts: settled 2026-08-28, and the old numbers were wrong.</strong> This README used to
+record a 3.81× disagreement between the two exporters and leave it to the operator. It is resolved,
+and neither of the two figures it quoted was right:</p>
+<ul>
+<li>the backend's own constant was <code>1.0 V / 84 / 4096 = 2.9064 µV/count</code> — <strong>gain 84 belongs to no
+  NP2.0 variant</strong>;</li>
+<li>the SpikeGLX exporter used the <em>prototype</em> four-shank spec (<code>0.5 / 8192 / 80 = 0.7629</code>), which is
+  correct for an NP2010 and wrong by 3.2× for the shipping part.</li>
+</ul>
+<p>The truth depends on the probe, and the probe is recorded. Commercial parts (NP2003/4/13/14) are
+12-bit, gain 100 → <strong>2.4414 µV/count</strong>; the prototypes (NP2000/NP2010) are 14-bit, gain 80 → 0.7629.
+The backend resolves this from <code>acquisition.probe.part_number</code>, writes it into the sidecar's <code>scale</code>
+block, and both exporters now agree with it. See <code>developer_docs/DataConversion.md</code> §3.</p>
+<p>Anything exported <strong>before 2026-08-28</strong> carries one of the two wrong scales. The int16 counts were
+never affected, so it is recoverable: divide a 2.9064-scaled figure by 1.190, or a 0.7629-scaled one
+by 0.3125, after confirming which the file used.</p>
 <p><strong>Scaling is a pass-through and says so.</strong> int16 counts in, the same int16 counts out, with only
 <code>bit_volts</code> declared — exact and reversible, unlike Open Ephys's native <code>round(µV/bit_volts)</code> path.
 But <code>bit_volts</code> is <em>not</em> in the SpikesPeak sidecar (it records <code>units: "adc_int16"</code> and no more), so
@@ -315,9 +331,9 @@ into <code>structure.oebin</code> → <code>spikespeak</code> and into every cha
 </tr>
 <tr>
 <td><code>raw</code></td>
-<td>1e6/84/4096 = 2.9064</td>
+<td>1e6/100/4096 = 2.4414</td>
 <td>µV</td>
-<td>NP2.0 fixed 84× gain</td>
+<td>NP2.0 commercial part, fixed gain 100 (prototypes: 1e6/80/16384 = 0.7629)</td>
 </tr>
 <tr>
 <td><code>adc</code></td>

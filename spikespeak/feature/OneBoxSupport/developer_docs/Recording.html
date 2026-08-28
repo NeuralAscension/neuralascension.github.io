@@ -347,8 +347,8 @@ future reader disputing a scale factor must be able to tell which one they are h
 </tr>
 <tr>
 <td><code>data.npx.raw</code> (NP2.0)</td>
-<td><code>1.0 V / 100 / 4096</code> = 2.4414 uV/count, uniform -- NP2 is fixed-gain, <code>np_setGain</code> is never called. Gain 100 and the 12-bit ADC are imec's own figures (NP2.0 user manual p.15 and probe spec sheet p.3, both in <code>manuals/</code>). This read 84 until 2026-08-25, which made every NP2.0 microvolt figure 1.190x too large; see issue #65</td>
-<td><code>compiled-constant</code></td>
+<td><code>1.0 V / gain / 2^adc_bits</code>, <strong>resolved from the probe's own part number</strong> via <code>Npx2Scale.hpp</code> -- commercial parts (NP2003/4/13/14) are 12-bit gain-100 = 2.4414 uV/count, prototypes (NP2000/NP2010) are 14-bit gain-80 = 0.7629, a 3.2x spread. NP2 is fixed-gain: <code>np_setGain</code> is never called. An unrecognised part falls back to the commercial figure AND writes an <code>unavailable_reason</code> saying so. <strong>Corrected 2026-08-28</strong>: this block hardcoded gain 84 -- a value belonging to no variant -- so the sidecar was 1.190x high while the LIVE VIEW, which had used the part-resolved value since #65, was right. One recording, two scales</td>
+<td><code>device-readback</code> (the part number comes from the probe)</td>
 </tr>
 <tr>
 <td><code>data.npx.adc</code> (OneBox)</td>

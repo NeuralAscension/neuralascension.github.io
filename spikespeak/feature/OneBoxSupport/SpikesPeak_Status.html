@@ -77,10 +77,11 @@
 <a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 </details>
-<details class="navgroup"><summary>Recording and headless control<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
 <a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
 <details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
 <a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
@@ -100,14 +101,15 @@
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
 <a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 </details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
 <a href="python/README.html">spikespeakpostprocess</a>
+<a href="ripple_tools/README.html">rippletools/ — ripple detection & closed-loop stimulation toolkit</a>
+<a href="ripple_tools/NOISE_WORKFLOW.html">Baseline-noise workflow (record → metrics → figures → report + deck)</a>
 <h3>Hardware Results</h3>
 <a href="RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
 <h3>Benchmarks</h3>
@@ -258,6 +260,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S64</td>
 <td>2026-08-27</td>
 <td><strong>The probe map was dead on real 2.0 hardware</strong>: probe identity was pattern-matched from the part-number string, which sim spells <code>24</code> and the shipping part spells <code>2013</code>; plus the auto-detect refusal now reaches the operator as a choice instead of a false "not available in this build"</td>
+</tr>
+<tr>
+<td>S65</td>
+<td>2026-08-28</td>
+<td><strong>The morning of an in-vivo session</strong>: the recording sidecar and the live view disagreed about microvolts; a GUI-started recording wrote no ripple sidecar; the tab bar highlighted one panel over another; and the SpikeGLX export described a prototype probe with fabricated geometry. Plus #50 and #59 closed, and the first conversion documentation</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -5811,6 +5818,99 @@ is <strong>not</strong> the blocking hardware-error dialog.</p>
   and the test fails blaming the feature. Use an r-string for any JS payload containing escapes.</li>
 <li><code>build.bat</code> pauses by default and will hang a scripted chain at <em>"Press any key to continue"</em>.
   <code>--no-pause</code> exists for exactly this, and the file says so.</li>
+</ul>
+<hr />
+<h2 id="65-the-morning-of-an-in-vivo-session-2026-08-28">65. THE MORNING OF AN IN-VIVO SESSION  (2026-08-28)<a class="headerlink" href="#65-the-morning-of-an-in-vivo-session-2026-08-28" title="Permanent link">#</a></h2>
+<p>An animal was going in today. Everything below was found in the hours before it, most of it by
+asking the rig rather than the code, and every hardware-facing fix was verified on the rig.</p>
+<h3 id="65a-a-pre-experiment-hardware-smoke-and-what-it-was-for">65a. A pre-experiment hardware smoke, and what it was for<a class="headerlink" href="#65a-a-pre-experiment-hardware-smoke-and-what-it-was-for" title="Permanent link">#</a></h3>
+<p>The probe-identity fix from 64a had never met real hardware — sim reports part id <code>"24"</code> and the
+shipping probe reports its own, so no simulated run could confirm it. A scripted smoke did:</p>
+<pre><code>probeKind='NP2'  probeIdStr='2014'
+</code></pre>
+<p><strong><code>2014</code>, not the <code>2013</code> I had assumed.</strong> String matching would have failed on it whichever literal
+I had added; keying off the <code>ProbeType</code> enum works regardless, which is the point of 64a.</p>
+<p>19/19 checks: probe named properly, Shank/Bank buttons visible, wheel scrolls, a click routes exactly
+one channel, <strong>Apply Map to Hardware succeeds</strong>, streaming with depth ordering (labels <code>19R 18L 17R
+16L</code>), 20 s recorded (510 MB <code>raw</code> + 20 MB <code>adc</code> with sidecars), clean teardown.</p>
+<p>Two of the early "failures" were the test, not the app: the record dialog only EXISTS after Record is
+pressed while idle, and <code>build.bat</code> pauses by default and will hang a scripted chain at <em>"Press any
+key to continue"</em> (<code>--no-pause</code> exists for exactly this).</p>
+<h3 id="65b-the-sidecar-and-the-live-view-disagreed-about-microvolts">65b. The sidecar and the live view disagreed about microvolts<a class="headerlink" href="#65b-the-sidecar-and-the-live-view-disagreed-about-microvolts" title="Permanent link">#</a></h3>
+<p><code>NpInterface.cpp:1507</code> has resolved the probe's part number through <code>Npx2Scale.hpp</code> since #65 and
+hands the result to the display — so what an operator SEES has been right. The block that writes the
+<strong>recording sidecar</strong> was never wired to the same table and hardcoded</p>
+<pre><code class="language-cpp">b.voltsPerCount = 1.0 / 84.0 / 4096.0;   // gain 84 belongs to NO NP2.0 variant
+</code></pre>
+<p>Prototypes are gain 80, commercial parts gain 100. On the NP2014 that wrote 2.906 µV/count where
+2.441 is true — 1.190× — while the screen showed 2.441. <strong>One recording described by two different
+scales is worse than a uniform error</strong>: anyone reconciling an export against the display finds a
+discrepancy with no visible cause. Now resolved from the part number, provenance <code>device-readback</code>,
+and an unrecognised part writes an <code>unavailable_reason</code> into the file instead of scaling by a guess.</p>
+<h3 id="65c-a-gui-started-recording-wrote-no-ripple-sidecar">65c. A GUI-started recording wrote no ripple sidecar<a class="headerlink" href="#65c-a-gui-started-recording-wrote-no-ripple-sidecar" title="Permanent link">#</a></h3>
+<p><code>slWriteRippleSidecar</code> had exactly one caller: the WebSocket <code>setRecording</code> handler. The GUI Record
+button invokes the recorder directly over QWebChannel and never reaches it — so <strong>every recording an
+operator started by pressing Record</strong>, which is every in-vivo session, was written without its
+detection electrodes or its trained per-channel baselines.</p>
+<p>Counts can be rescaled afterwards. A trained baseline cannot be reconstructed from anything on disk,
+so the detections in such a recording could not be explained after the fact.</p>
+<p>The trigger moved to <code>RecordProcessor::setRecording</code>, the one point both paths pass through. The new
+test drives the <strong>button</strong>, because driving the WebSocket path passes even with the bug present —
+which is exactly how it survived.</p>
+<h3 id="65d-the-tab-bar-highlighted-a-panel-that-was-not-showing">65d. The tab bar highlighted a panel that was not showing<a class="headerlink" href="#65d-the-tab-bar-highlighted-a-panel-that-was-not-showing" title="Permanent link">#</a></h3>
+<p>Reported from the rig: connected, landed on Live Data with <strong>Probe Map</strong> still highlighted. Two
+faults in one branch:</p>
+<pre><code class="language-js">if (sourceName.includes(&quot;NPX&quot;)) { ...show map, set active... }
+else { tabs.hide(); viewMap.hide(); viewData.show(); }   // never moves 'active'
+</code></pre>
+<p>The <code>else</code> moved the panel and left the highlight. And <code>includes("NPX")</code> is <strong>false for every real
+rig</strong> — the hardware profiles are <code>OneBox</code> / <code>PXIe</code> / <code>Neuropixels</code> since the source-selection
+refactor, while every SIMULATED profile still says NPX. The correct branch ran in simulation and the
+broken one on hardware, which is why the suite never saw it. <strong>Third instance of the same mistake in
+two days</strong>: asking a display string a question about hardware.</p>
+<p><code>selectMainTab()</code> now owns both halves. A third instance of the same gate in <code>NetworkClient.js</code> had
+inverted into "reset stale probe state on hardware, keep it in simulation" — now unconditional.</p>
+<h3 id="65e-the-exports-described-the-wrong-probe">65e. The exports described the wrong probe<a class="headerlink" href="#65e-the-exports-described-the-wrong-probe" title="Permanent link">#</a></h3>
+<p>Asked whether everything recorded can be converted for post-hoc analysis. Yes for today's bands — but
+verifying it found two defects that would have corrupted an export silently.</p>
+<p><strong>SpikeGLX carried only the PROTOTYPE four-shank spec</strong> (<code>PRB2_4_2_0640_0</code>, type 24, 14-bit, gain
+80). SpikeGLX reconstructs volts as <code>Vmax/Imax/gain</code>, so a commercial NP2014 exported as
+0.5/8192/80 = 0.7629 µV/count against the true 0.5/2048/100 = 2.4414 — <strong>a 3.2× error</strong>.</p>
+<p><strong>And geometry was fabricated</strong>: <code>geom_entry()</code> hardcoded <code>shank = 0</code> for every channel, with a
+comment saying a real multi-shank map "would come from the probe — which SpikesPeak does not record".
+It does: <code>columns.shank</code> carries 384 values and <code>acquisition.imro.text</code> is the applied map verbatim,
+already in SpikeGLX's own format. On a four-shank probe the export claimed every site was on shank 0,
+and geometry is precisely what a sorter consumes.</p>
+<p>Both now come from the recording. Verified on a real NP2014: <code>imDatPrb_pn NP2014</code>, <code>type 2014</code>,
+<code>imMaxInt 2048</code>, gain 100 → 2.4414 µV/count, <code>~imroTbl</code> verbatim, <code>~snsGeomMap</code> shanks <code>[0, 1]</code>.
+Open Ephys gained <code>shank</code> / <code>xpos</code> / <code>ypos</code>, which it had none of.</p>
+<p><strong>Recorded because it is a property of the recording, not the tools:</strong> both converters refuse the
+NP1.0 <strong>AP band</strong>. Its per-frame timestamp is not a per-sample clock — inside each 12-sample IMEC
+packet the stamps advance ≈4.36 ticks/sample then step back by 8 — so ~8 % of frames do not advance,
+and forcing them inflates the axis to <strong>1.3057×</strong> and invents ~110 000 gaps. Refusing beats writing a
+plausible lie. Convert the LFP band.</p>
+<p><code>python/README.md</code> had documented a "3.81× disagreement between the two converters" and left it to
+the operator. <strong>Neither of its two numbers was right</strong> — one was the no-such-variant gain 84, the
+other the prototype spec.</p>
+<p>First conversion documentation: <code>user_docs/Exporting-Recordings.md</code> and
+<code>developer_docs/DataConversion.md</code>.</p>
+<h3 id="65f-50-and-59-closed">65f. #50 and #59 closed<a class="headerlink" href="#65f-50-and-59-closed" title="Permanent link">#</a></h3>
+<p><strong>#50</strong> — the comparator thresholds had been implemented and confirmed on the rig since 08-26 and
+<strong>nothing had ever called them</strong>. The OneBox dock now has the panel (device read-back, not what was
+typed — the device quantizes; Reset-all, because thresholds persist across sessions). One scope
+bullet was closed as unbuildable: there is no <code>np_ADC_enableChannel</code> in the vendor API, only
+<code>ADC_enableProbe</code> all-twelve-or-none.</p>
+<p><strong>#59</strong> — closed as <em>recovered and mitigated</em>, explicitly not as fixed. Root cause never found; the
+box recovered on a power-cycle and has not failed since. What makes it safe to close is that the
+dangerous property is gone: <code>np_readPackets</code> returning SUCCESS while delivering nothing is now
+surfaced by <code>slSourceStalled</code> as an operator-facing error, so a recurrence is visible while it
+happens rather than in the data afterwards.</p>
+<h3 id="65g-two-things-an-operator-has-to-know">65g. Two things an operator has to know<a class="headerlink" href="#65g-two-things-an-operator-has-to-know" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>&lt;name&gt;_ripple.json</code> is written BESIDE the recording folder, not inside it.</strong> Archive the parent
+  session directory or a copy leaves it behind.</li>
+<li><strong>Per-event detections and stim times are never written to disk</strong> — they exist only as live
+  WebSocket messages. Capture the stream during a closed-loop run or they are gone.</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -6196,6 +6296,16 @@ is <strong>not</strong> the blocking hardware-error dialog.</p>
 <li><a href="#64a-probe-identity-was-a-string-match-against-the-prototype-part-id">64a. Probe identity was a string match against the prototype part id</a></li>
 <li><a href="#64b-the-auto-detect-refused-correctly-and-told-the-operator-the-wrong-thing">64b. The auto-detect refused correctly and told the operator the wrong thing</a></li>
 <li><a href="#64c-two-test-authoring-notes-worth-keeping">64c. Two test-authoring notes worth keeping</a></li>
+</ul>
+</li>
+<li><a href="#65-the-morning-of-an-in-vivo-session-2026-08-28">65. THE MORNING OF AN IN-VIVO SESSION (2026-08-28)</a><ul>
+<li><a href="#65a-a-pre-experiment-hardware-smoke-and-what-it-was-for">65a. A pre-experiment hardware smoke, and what it was for</a></li>
+<li><a href="#65b-the-sidecar-and-the-live-view-disagreed-about-microvolts">65b. The sidecar and the live view disagreed about microvolts</a></li>
+<li><a href="#65c-a-gui-started-recording-wrote-no-ripple-sidecar">65c. A GUI-started recording wrote no ripple sidecar</a></li>
+<li><a href="#65d-the-tab-bar-highlighted-a-panel-that-was-not-showing">65d. The tab bar highlighted a panel that was not showing</a></li>
+<li><a href="#65e-the-exports-described-the-wrong-probe">65e. The exports described the wrong probe</a></li>
+<li><a href="#65f-50-and-59-closed">65f. #50 and #59 closed</a></li>
+<li><a href="#65g-two-things-an-operator-has-to-know">65g. Two things an operator has to know</a></li>
 </ul>
 </li>
 </ul>

@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -162,7 +162,7 @@ sees</strong>. Where it says MUST, it is stating something an operator can see o
 divergence is a bug — in the change, or in this file.</p>
 <p><strong>Files under specification:</strong> <code>webinterface/ChartColumn.js</code>, <code>GlRenderer.js</code>, <code>ProbeMap.js</code>,
 <code>DataStore.js</code>, <code>NetworkClient.js</code>, <code>main.js</code>, <code>Config.js</code>, <code>style.css</code>, <code>toolbar.css</code>,
-<code>ImroManager.js</code>, as of branch <code>feature/OneBoxSupport</code> @ 2026-08-27.</p>
+<code>ImroManager.js</code>, as of branch <code>feature/OneBoxSupport</code> @ 2026-08-28.</p>
 <p><strong>Why the renderer is shaped like this</strong> — the measured comparison against the library it replaced,
 the mechanism, and the buffer-layout decision — is
 <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>. This file does not repeat it. Read it before
@@ -398,7 +398,9 @@ it go red, revert — per <code>CLAUDE.md</code>. Two of them have already been 
   next <code>draw()</code> whenever <code>currentStreamId</code>, <code>selectedColKey</code>, or <code>tracesPerColumn</code> changes</strong>, or the
   column renders blank (trap T-3).</li>
 <li><code>window.onColumnPinChanged(colIndex, pinned)</code>.</li>
-<li><code>window.imroLiveView</code> (<code>ImroManager.js:212-233</code>): <code>hasOrdering()</code>, <code>kind()</code>, <code>shanks()</code>, <code>total()</code>,
+<li><code>window.imroLiveView</code> (<code>ImroManager.js:248-309</code>, which also publishes <code>genOf(imro)</code>, the
+  probe-generation helper keyed on the ProbeType enum, not called by ChartColumn): <code>hasOrdering()</code>,
+  <code>kind()</code>, <code>shanks()</code>, <code>total()</code>,
   <code>slotOf(ch)</code>, <code>channelAtSlot(slot)</code>, <code>slotIOf(ch)</code>, <code>channelAtSlotI(slot)</code>, <code>electrodeOf(ch)</code>,
   <code>shankOf(ch)</code>, <code>colOf(ch)</code> (0=L, 1=R), <code>isRef(ch)</code>, <code>band(shank, 'L'|'R'|'B') -&gt; {start,count}|null</code>,
   <code>bandI(shank) -&gt; {start,count}|null</code>.</li>
@@ -537,7 +539,7 @@ in. <code>GlColumnRenderer.requestPaint()</code> therefore asks rAF <strong>and<
 paints on the vsync clock and nothing double-draws. Removing either scheduler is a regression — see
 T-6, and <code>AgentTraps.md</code> §5f.</p>
 <h3 id="26-draw-the-complete-render-decision-normative-pseudocode">2.6 <code>draw()</code> — the complete render decision (normative pseudocode)<a class="headerlink" href="#26-draw-the-complete-render-decision-normative-pseudocode" title="Permanent link">#</a></h3>
-<p>Reproduces <code>ChartColumn.js:611-832</code>. Deviations here are visible to the operator and to the GUI suite.</p>
+<p>Reproduces <code>ChartColumn.js:625-846</code>. (Whole-file anchor sweep needed in the same pass — every citation in §§1-3 drifted when the free-form-selection and tab-behaviour commits landed: ChartColumn.js :859→:895, :309→:314, :593→:594, :380-397→:381-398, :401→:402; main.js :588→:589, :616→:617, :622→:623, :626→:627, :420→:423, :677-700→:678-703, :753-765→:754-766. Every claim's substance is still correct; only the line numbers moved.) Deviations here are visible to the operator and to the GUI suite.</p>
 <pre><code>channels = currentStreamId ? dataStore.streams[currentStreamId] : null
 lv       = window.imroLiveView
 useDepth = lv.hasOrdering() &amp;&amp; channels &amp;&amp; channels.length === 384
@@ -787,7 +789,7 @@ Gap/padding stay 5px.</p>
 <hr />
 <h2 id="4-the-probe-map">4. THE PROBE MAP<a class="headerlink" href="#4-the-probe-map" title="Permanent link">#</a></h2>
 <p><code>webinterface/ProbeMap.js</code> draws the electrode / bank / shank map into <code>#probe-map-root</code> with canvas
-2D. It is constructed once per device by <code>initProbeMap()</code> (<code>ImroManager.js:253</code>), which is called from
+2D. It is constructed once per device by <code>initProbeMap()</code> (<code>ImroManager.js:363</code>), which is called from
 <code>NetworkClient.js:416-417</code> when a probe appears. <code>ProbeMap.js</code> is loaded as a <strong>classic script before
 <code>ImroManager.js</code></strong> (<code>index.html:11-12</code>) and publishes <code>window.ProbeMap</code> and
 <code>window.ProbeMapNumberRange</code>; that order is load-bearing.</p>

@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -190,8 +190,8 @@ ripple module.)</p>
    (GUI)</strong>. It connects with no probe attached.</li>
 </ol>
 <p><img alt="Simulated Data picker" src="images/sim_picker.png" />
-3. <strong>Play.</strong> Press <strong>▶</strong>, then open the <strong>Live Data</strong> tab — you'll see the live waveforms, one trace per
-   channel, stacked by depth.</p>
+3. <strong>Play.</strong> Press <strong>▶</strong> — the view switches itself to the <strong>Live Data</strong> tab, and you'll see the live
+   waveforms, one trace per channel, stacked by depth.</p>
 <p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview.png" />
 4. <strong>Open Ripple Detection.</strong> Click <strong>◉ Ripple Detection</strong> in the toolbar; the dock slides in on the right.
 5. <strong>Add a channel + arm.</strong> Drag an electrode label from the view (or type a number and <strong>Add</strong>), set
@@ -242,7 +242,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Source</strong></td>
-<td>Pick the input: <strong>NPX 1.0</strong>, NPX 2.0 Multishank (+ NI-DAQ / Synthetic Ripples variants), or Simulated Data. Selecting one <strong>connects</strong> it.</td>
+<td>Pick the input: <strong>Neuropixels</strong> (basestation and probe both auto-detected), <strong>PXIe with NI-DAQ</strong> (shown when a PXIe module is present), or <strong>Simulated Data ›</strong>, which drills down system → probe → scenario. Selecting one <strong>connects</strong> it. If both a OneBox and a PXIe module are attached the menu asks which to use instead of guessing.</td>
 </tr>
 <tr>
 <td><strong>Disconnect</strong></td>
@@ -258,7 +258,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Probe Map / Live Data</strong> <em>(tabs)</em></td>
-<td>Switch between the channel-map editor and the live waveforms. Appears only for Neuropixels sources.</td>
+<td>Switch between the channel-map editor and the live waveforms. The bar appears once a probe map exists — connecting a probe opens <strong>Probe Map</strong>, and streaming switches to <strong>Live Data</strong> on the backend's confirmation. Pausing does not switch back: you may have paused in order to edit the map.</td>
 </tr>
 <tr>
 <td><strong>♪</strong> <em>(second row)</em></td>

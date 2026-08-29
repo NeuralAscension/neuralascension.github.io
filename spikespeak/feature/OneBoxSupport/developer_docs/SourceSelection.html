@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Source selection — three choices, and a probe that names itself - SpikesPeak Docs</title>
+<title>Source selection — the rig names itself - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Start here / Source selection — three choices, and a probe that names itself</span>
+  <span class="crumb">Developer Docs / Start here / Source selection — the rig names itself</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a class="active" href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a class="active" href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -127,19 +127,22 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="source-selection-three-choices-and-a-probe-that-names-itself">Source selection — three choices, and a probe that names itself<a class="headerlink" href="#source-selection-three-choices-and-a-probe-that-names-itself" title="Permanent link">#</a></h1>
+  <main class="content"><article class="markdown-body"><h1 id="source-selection-the-rig-names-itself">Source selection — the rig names itself<a class="headerlink" href="#source-selection-the-rig-names-itself" title="Permanent link">#</a></h1>
 <p><strong>The operator picks a basestation. The probe is discovered, not declared.</strong></p>
 <p>Before 2026-08-26 the Source dropdown listed twelve hardware profiles, because every probe/basestation
 pairing had been materialised as its own YAML: <code>Npx1OneBox</code>, <code>Npx2OneBox</code>, <code>Npx2OneBoxNoAdc</code>,
 <code>Npx1Pxi</code>, <code>Npx2Pxi</code>, <code>Npx1PxiNiDaq</code>, and so on. Picking the wrong one did not produce an error — it
 produced a rig that looked like it was working.</p>
-<p>It now lists three:</p>
+<p>Between 2026-08-26 and 2026-08-27 it listed three (<code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code>). Since
+commit 4670d2c those three are <code>gui_hidden: true</code> and the menu lists:</p>
 <pre><code>None
-OneBox
-PXIe
-PXIe + NI-DAQ
+Neuropixels              (source.npx.auto — basestation AND probe read from the rig)
+PXIe with NI-DAQ         (only when a PXIe module is detected)
 Simulated Data…
 </code></pre>
+<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI, and are surfaced
+in the menu only when the scan is ambiguous — see §2, where <code>source.npx.auto</code> REFUSES to pick with
+both a OneBox and a PXIe attached and the GUI raises a <code>basestation-choice</code> dialog instead.</p>
 <p>This document is how that works and what you have to know before editing a profile.</p>
 <hr />
 <h2 id="1-why-a-profile-could-ever-be-wrong-for-the-probe">1. Why a profile could ever be "wrong for the probe"<a class="headerlink" href="#1-why-a-profile-could-ever-be-wrong-for-the-probe" title="Permanent link">#</a></h2>

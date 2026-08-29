@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -301,9 +301,12 @@ six steps) + the three clock/sync bugs found in the analysis path:
 <p>NP1 reads the recorded <code>lfp</code> directly (decimation 1). Both probes' sidecar metadata is correct as of
 2026-07-20 (NP2 carries <code>"band":"raw"</code> / <code>sample_rate_hz: 30000</code>; NP1 carries <code>ap</code>/<code>lfp</code> + 30000/2500 —
 an earlier NP2 record-metadata bug that wrote the band as the filename with <code>sample_rate_hz: 0</code> is fixed).</p>
-<h2 id="the-ripple-sidecar-name_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (<code>&lt;name&gt;_ripple.json</code>) — and the race that used to break it<a class="headerlink" href="#the-ripple-sidecar-name_ripplejson-and-the-race-that-used-to-break-it" title="Permanent link">#</a></h2>
-<p>On record START the backend drops a sidecar next to the band files (<code>RippleDetector::slWriteRippleSidecar</code>,
-invoked from <code>WebSocketServer::setRecording</code>) recording which electrodes the detector ran on, their read-out
+<h2 id="the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (<code>&lt;name&gt;/&lt;name&gt;_ripple.json</code>) — and the race that used to break it<a class="headerlink" href="#the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it" title="Permanent link">#</a></h2>
+<p>On record START the backend drops a sidecar <strong>inside the recording folder</strong>, beside the band files (<code>RippleDetector::slWriteRippleSidecar</code>,
+queued from <code>RecordProcessor::setRecording</code> — the single point both the GUI Record button and the
+WebSocket <code>setRecording</code> command pass through; before 2026-08-27 only the WebSocket path wrote it, so
+browser-driven sessions lost their detection channels and their trained baselines) recording which
+electrodes the detector ran on, their read-out
 channels, the per-electrode <code>mu</code> / <code>sigma</code> / <code>threshold</code> / <code>z</code>, the detector params, the <code>stim</code> pulse train,
 and <code>baselines_trained</code>.</p>
 <p><strong>It used to be a one-shot snapshot, and that was a bug.</strong> A recording can legitimately start <em>before</em> the
@@ -317,6 +320,26 @@ last detection channel finishes training</strong>, then the target is cleared on
 (<code>slClearRippleSidecar</code>) so a finished recording is never touched again. Check <code>baselines_trained</code> before
 trusting the thresholds in an old sidecar; if it is <code>false</code>, take the thresholds from the WS capture
 (<code>analyze_recording.py --ws &lt;capture&gt;.jsonl</code>) instead.</p>
+<p><strong>It also used to land one directory too high.</strong> <code>RecordProcessor</code> nests every band into
+<code>&lt;dir&gt;/&lt;name&gt;/</code>; the sidecar was written to <code>&lt;dir&gt;/</code>. Copying or archiving "the recording folder" therefore
+left the detection channels and trained thresholds behind, and <code>analyze_recording.py</code> — whose <code>recdir</code>
+argument is the folder holding the <code>.bin.json</code>s — could not auto-discover it, so <code>--ripple-sidecar</code> had to
+be passed by hand. Fixed 2026-08-28; the analysis tools read <strong>both</strong> layouts and print which one they
+found, because every recording made before that date still has the old one.</p>
+<h2 id="the-event-log-namename_eventsjsonl-what-actually-happened">The event log (<code>&lt;name&gt;/&lt;name&gt;_events.jsonl</code>) — what actually happened<a class="headerlink" href="#the-event-log-namename_eventsjsonl-what-actually-happened" title="Permanent link">#</a></h2>
+<p>The sidecar records what a session was <strong>configured</strong> with. Until 2026-08-28 nothing recorded what it
+<strong>did</strong>: <code>rippleDetected</code>, <code>rippleLatency</code> and <code>rippleStimFired</code> were emitted only as live WebSocket
+messages, so unless someone happened to be capturing the socket, a closed-loop recording could not
+afterwards say when the loop fired or how long it took. Neither export format carried it either.</p>
+<p>Those three events now append to <code>&lt;name&gt;_events.jsonl</code> in the recording folder, one JSON object per line,
+flushed as they are written — a session that ends badly still has its events up to the last complete
+line. The file is opened lazily on the first event and closed on record stop.</p>
+<p><strong>Only those three.</strong> <code>rippleEnvelope</code> streams at ~25 Hz to drive the live plot and is fully recomputable
+from the recorded band, so writing it would put a file append on the detection path to store something
+the recording already contains — both halves of that are against the rules in <code>CLAUDE.md</code>. A detection is
+a decision the online quorum made against a trained baseline, and a stim time is an event in the world:
+neither can be recovered offline, which is the test for what belongs here.</p>
+<p>Covered by the <code>ripple_sidecar</code> GUI test, which provokes detections at <code>z = 0</code> and reads the file back.</p>
 <h2 id="are-the-filters-actually-right">Are the filters actually right?<a class="headerlink" href="#are-the-filters-actually-right" title="Permanent link">#</a></h2>
 <p>Yes — validated 2026-07-20 to float32 rounding (relative error ~2e-7, correlation 1.000000000) by re-running
 the 26-tap ripple FIR and 10-tap envelope FIR offline over the backend's own dumped input and comparing
@@ -343,7 +366,8 @@ switches that ship <strong>false</strong>. See <a href="FilterDebugging.html"><c
 <li><a href="#runbook-validate-detection-headlessly-no-hardware">Runbook — validate detection headlessly (no hardware)</a></li>
 <li><a href="#hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia">Hardware — validated in saline (2026-07-21), ready for in vivo (under anesthesia)</a></li>
 <li><a href="#validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)</a></li>
-<li><a href="#the-ripple-sidecar-name_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (&lt;name&gt;_ripple.json) — and the race that used to break it</a></li>
+<li><a href="#the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (&lt;name&gt;/&lt;name&gt;_ripple.json) — and the race that used to break it</a></li>
+<li><a href="#the-event-log-namename_eventsjsonl-what-actually-happened">The event log (&lt;name&gt;/&lt;name&gt;_events.jsonl) — what actually happened</a></li>
 <li><a href="#are-the-filters-actually-right">Are the filters actually right?</a></li>
 <li><a href="#known-limitations-todo">Known limitations / TODO</a></li>
 </ul>

@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -192,13 +192,30 @@ coverage itself.</p>
 <td>The <strong>Simulated Data</strong> picker cascade: two systems at step 1, either system reaching either probe, the filter actually excluding the other system's scenarios, and the wildcard rule (a config declaring no basestation appears under BOTH)</td>
 <td>13 checks</td>
 </tr>
+<tr>
+<td><code>ripple_sidecar</code></td>
+<td>A recording started from the GUI Record BUTTON carries its ripple provenance — driving the operator's QWebChannel path, not the WebSocket command, because the WebSocket path passed even with the bug present. Asserts the sidecar is written, that it sits <strong>inside</strong> the recording folder with the bands (a recursive glob passed either way), and that <code>&lt;name&gt;_events.jsonl</code> records the detections while excluding the continuous envelope. Provokes detections at <code>z = 0</code> and waits for one before recording, so the event assertions cannot pass on an empty file</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td>The recording state machine from the buttons an operator presses: idle -&gt; armed -&gt; recording, that ARMED writes nothing, and what actually reached the disk</td>
+<td>20 checks</td>
+</tr>
+<tr>
+<td><code>shrink_window</code></td>
+<td>Every supported width x dock open/closed: never &gt;2 toolbar rows, nothing folded without a reachable chip, and the below-minimum refusal</td>
+<td>7 widths x 2</td>
+</tr>
+<tr>
+<td><code>probe_map</code></td>
+<td>The probe channel map DRAWS, on a 1.0 and on a 4-shank 2.0 (shank shafts, routed vs available electrodes, electrode-number labels -- asserted by reading canvas pixels back, because a canvas has no DOM to check and an empty one photographs perfectly); that probe identity comes from <code>probeType</code> and NOT the part-number string, on synthetic payloads the simulator cannot produce; and that an NP1.0 click/drag assigns exactly the electrodes it covers</td>
+<td>2 probes</td>
+</tr>
 </tbody>
 </table>
-<p>| <code>record_flow</code> | The recording state machine from the buttons an operator presses: idle -&gt; armed -&gt; recording, that ARMED writes nothing, and what actually reached the disk | 20 checks |
-| <code>shrink_window</code> | Every supported width x dock open/closed: never &gt;2 toolbar rows, nothing folded without a reachable chip, and the below-minimum refusal | 7 widths x 2 |
-| <code>probe_map</code> | The probe channel map DRAWS, on a 1.0 and on a 4-shank 2.0: shank shafts, routed vs available electrodes, and the electrode-number labels -- asserted by reading the canvas pixels back, because a canvas has no DOM to check and an empty one photographs perfectly | 2 probes x 8 checks |</p>
 <p>All drive a <strong>real browser</strong> over CDP against a <strong>real backend</strong> on a simulated source. No hardware.</p>
-<p>All twelve drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is now the
+<p>All thirteen drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is now the
 only one, so there is no renderer to select. During the transition off SciChart the whole suite was
 run under <strong>both</strong> renderers and was green under both; that is the evidence that removing SciChart
 changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
@@ -864,7 +881,9 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
   density, the depth slider and its paging buttons.</li>
 <li><strong>Toolbar controls' effects</strong> — Window (1/2/5/10 s) and Ch (Auto/20/…/120) change what is drawn;
   only their presence is checked, not their effect.</li>
-<li><strong>Recording flow</strong> — the Set-Location dialog, arming, the REC badge truncation, files on disk.</li>
+<li><strong>Recording dialog details</strong> — the Browse… native picker and the REC badge's truncation behaviour.
+  The arm → record → stop state machine and the files on disk are covered by <code>record_flow</code>; the
+  ripple sidecar on the GUI record path is covered by <code>ripple_sidecar</code>.</li>
 <li><strong>Backend → GUI direction.</strong> Everything in §4 is GUI → backend. The reverse (set via WebSocket,
   assert the GUI reflects it) is not covered.</li>
 <li><strong>Error and fault surfaces</strong> — the hardware-error modal, the processor-fault relay, the source

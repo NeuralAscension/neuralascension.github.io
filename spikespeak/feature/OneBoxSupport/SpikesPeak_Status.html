@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -5904,12 +5904,67 @@ dangerous property is gone: <code>np_readPackets</code> returning SUCCESS while 
 surfaced by <code>slSourceStalled</code> as an operator-facing error, so a recurrence is visible while it
 happens rather than in the data afterwards.</p>
 <h3 id="65g-two-things-an-operator-has-to-know">65g. Two things an operator has to know<a class="headerlink" href="#65g-two-things-an-operator-has-to-know" title="Permanent link">#</a></h3>
+<blockquote>
+<p><strong>Both of these were fixed on 2026-08-28 — see §66.</strong> They are left here as written because this
+log is dated: the entries below describe what was true when the OneBox matrix was run, and any
+recording made before that date has the layout they describe.</p>
+</blockquote>
 <ul>
 <li><strong><code>&lt;name&gt;_ripple.json</code> is written BESIDE the recording folder, not inside it.</strong> Archive the parent
   session directory or a copy leaves it behind.</li>
 <li><strong>Per-event detections and stim times are never written to disk</strong> — they exist only as live
   WebSocket messages. Capture the stream during a closed-loop run or they are gone.</li>
-</ul></article>
+</ul>
+<hr />
+<h2 id="66-a-recording-now-carries-its-own-provenance-2026-08-28">66. A RECORDING NOW CARRIES ITS OWN PROVENANCE  (2026-08-28)<a class="headerlink" href="#66-a-recording-now-carries-its-own-provenance-2026-08-28" title="Permanent link">#</a></h2>
+<p>The two operator-facing gaps §65g had to warn about, closed. Both are about the same thing: a closed-
+loop recording should be able to explain itself months later, from the folder alone.</p>
+<h3 id="66a-the-sidecar-was-written-one-directory-too-high">66a. The sidecar was written one directory too high<a class="headerlink" href="#66a-the-sidecar-was-written-one-directory-too-high" title="Permanent link">#</a></h3>
+<p><code>RecordProcessor</code> nests every band into <code>&lt;dir&gt;/&lt;name&gt;/</code>. <code>RippleDetector::writeRippleSidecar</code> wrote
+to <code>&lt;dir&gt;/&lt;name&gt;_ripple.json</code> — beside the folder, not in it. Two consequences, one of which had
+already cost a re-run:</p>
+<ul>
+<li>Copying or archiving "the recording" left the detection channels and trained thresholds behind.</li>
+<li><code>analyze_recording.py</code>'s auto-discovery could never find it. Its <code>recdir</code> argument is the folder
+  holding the <code>.bin.json</code>s, so the glob looked <em>inside</em> while the file sat <em>outside</em>, and
+  <code>--ripple-sidecar</code> had to be passed by hand on every cell of the OneBox latency matrix. The
+  instruction to pass it is still in <code>NextTask_OneBoxLatencyMatrix.md</code>, now marked as no longer
+  needed rather than deleted.</li>
+</ul>
+<p>The sidecar is written inside the folder as of today. <strong>The analysis tools read both layouts</strong> and
+print which one they found — every recording made before today has the old one, and those are
+precisely the recordings being re-analysed.</p>
+<h3 id="66b-nothing-on-disk-said-what-the-loop-actually-did">66b. Nothing on disk said what the loop actually did<a class="headerlink" href="#66b-nothing-on-disk-said-what-the-loop-actually-did" title="Permanent link">#</a></h3>
+<p><code>rippleDetected</code>, <code>rippleLatency</code> and <code>rippleStimFired</code> were emitted only as live WebSocket messages.
+Unless somebody was capturing the socket at the time, a finished closed-loop session could not say
+when it fired or how long it took — and no export format carried it either. The sidecar records the
+<strong>configuration</strong>; nothing recorded the <strong>session</strong>.</p>
+<p>Those three events now append to <code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_events.jsonl</code>, one JSON object per line,
+flushed as written so a session that ends badly still has everything up to its last complete line.
+The file opens lazily on the first event and closes on record stop.</p>
+<p><strong><code>rippleEnvelope</code> is deliberately excluded</strong>, and the reason is the rule in <code>CLAUDE.md</code> twice over:
+it streams at ~25 Hz, so writing it would put a file append on the detection path, and it is fully
+recomputable from the recorded band, so it would be recording what can be recomputed. The three that
+are kept are the ones that cannot be: a detection is a decision the online quorum made against a
+trained baseline, and a stim time is an event in the world.</p>
+<h3 id="66c-the-test-that-could-not-see-either-bug">66c. The test that could not see either bug<a class="headerlink" href="#66c-the-test-that-could-not-see-either-bug" title="Permanent link">#</a></h3>
+<p><code>tests/gui/ripple_sidecar.py</code> globbed <code>outdir/**</code> recursively, so it passed whether the sidecar was
+inside the folder or above it. It now asserts the sidecar's directory equals the bands' directory.</p>
+<p>Making the event assertions mean anything took more than adding them. The test sets <code>z = 0</code> — "fire
+on anything above the mean", which <code>RippleModule</code> supports deliberately for exactly this — and waits
+for a detection to reach the page <em>before</em> starting the recording, so an empty events file can only
+mean the writer is broken, never that the window happened to be quiet.</p>
+<p>Two things that cost time getting there, both worth keeping:</p>
+<ul>
+<li><strong>Adding electrodes does not start the detector.</strong> The dock's <code>#rd-run</code> button does, and the
+  baseline estimation window (~13 s) only begins then. The first version of the test set <code>z = 0</code> and
+  waited 90 s on a detector reporting <code>running: false</code> and a null threshold the entire time.</li>
+<li><strong>Do not poll the cowsay.</strong> It is rewritten by the next event and cleared on lockout, so a poll
+  landing in a gap sees nothing and concludes the detector is dead. Wrapping <code>rm.onDetected</code> gives a
+  counter that only goes up.</li>
+</ul>
+<p>Proved by injecting both regressions at once and watching exactly the two new checks go red, naming
+the defect in each case ("Sidecar is in <code>'.'</code>, bands are in <code>'sidecar_probe'</code>"), then reverting.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6304,6 +6359,12 @@ happens rather than in the data afterwards.</p>
 <li><a href="#65e-the-exports-described-the-wrong-probe">65e. The exports described the wrong probe</a></li>
 <li><a href="#65f-50-and-59-closed">65f. #50 and #59 closed</a></li>
 <li><a href="#65g-two-things-an-operator-has-to-know">65g. Two things an operator has to know</a></li>
+</ul>
+</li>
+<li><a href="#66-a-recording-now-carries-its-own-provenance-2026-08-28">66. A RECORDING NOW CARRIES ITS OWN PROVENANCE (2026-08-28)</a><ul>
+<li><a href="#66a-the-sidecar-was-written-one-directory-too-high">66a. The sidecar was written one directory too high</a></li>
+<li><a href="#66b-nothing-on-disk-said-what-the-loop-actually-did">66b. Nothing on disk said what the loop actually did</a></li>
+<li><a href="#66c-the-test-that-could-not-see-either-bug">66c. The test that could not see either bug</a></li>
 </ul>
 </li>
 </ul>

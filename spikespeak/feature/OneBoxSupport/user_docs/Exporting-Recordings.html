@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -235,12 +235,18 @@ from a post-hoc discovery into a pre-flight check.</p>
 <p>It reports frames and gaps per band. A dropped-sample gap found now can still be acted on.</p>
 <hr />
 <h2 id="things-that-will-surprise-you">Things that will surprise you<a class="headerlink" href="#things-that-will-surprise-you" title="Permanent link">#</a></h2>
-<p><strong>The ripple sidecar is written <em>beside</em> the recording folder, not inside it.</strong> The bands go into
-<code>&lt;dir&gt;/&lt;name&gt;/</code>, but <code>&lt;name&gt;_ripple.json</code> lands in <code>&lt;dir&gt;/</code>. <strong>Archive the parent directory</strong>, or
-copying "the recording folder" leaves behind the detection channels and trained thresholds.</p>
-<p><strong>Per-event detections and stimulation times are not written to disk by the backend.</strong> They exist as
-live WebSocket messages. If you need a per-event record of a closed-loop session, capture the
-WebSocket stream yourself while it runs — no converter can recover it afterwards.</p>
+<p><strong>A recording folder made before 2026-08-28 is missing its ripple sidecar.</strong> Until that date the
+bands went into <code>&lt;dir&gt;/&lt;name&gt;/</code> but <code>&lt;name&gt;_ripple.json</code> landed in <code>&lt;dir&gt;/</code>, one level up — so
+copying "the recording folder" left behind the detection channels and trained thresholds. For those
+recordings, <strong>archive the parent directory</strong>. New recordings put the sidecar inside the folder with
+everything else, and the analysis tools read both layouts and tell you which one they found.</p>
+<p><strong>A closed-loop recording now carries its own event log.</strong> <code>&lt;name&gt;_events.jsonl</code> sits in the
+recording folder with one JSON object per line for every detection, latency measurement and
+confirmed stimulus. Recordings made before 2026-08-28 do not have it: those events existed only as
+live WebSocket messages, so unless the stream was captured at the time they cannot be recovered.</p>
+<p>Neither converter translates the event log into SpikeGLX or Open Ephys — read the JSONL directly.
+The continuous ripple <em>envelope</em> is deliberately not recorded at all; it is reproducible from the
+recorded band.</p>
 <p><strong>Do not rename <code>output_filename</code> in a profile.</strong> The sidecar's band name comes straight from it and
 both converters key their tables off that string. A renamed band stops converting.</p>
 <p><strong>The OneBox ADC's declared rate is the profile's number.</strong> Profiles say 30300 Hz; the device runs

@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a class="active" href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -323,7 +323,7 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>ripple sidecar write / clear (recording-driven, not a ripple command)</td>
-<td>Not reachable through the "ripple" command at all. WebSocketServer::setRecording invokes the Q_INVOKABLE slots RippleDetector::slWriteRippleSidecar(dir,name) on record START and slClearRippleSidecar() on record STOP, both Qt::QueuedConnection onto the worker thread (WebSocketServer.cpp:1025-1033; declared RippleDetector.hpp:90 and :94). Writes <dir>/<name>_ripple.json with the resolved detection channels + estimated per-electrode thresholds + params (writeRippleSidecar, RippleDetector.cpp:534-...); rewritten once training completes (called again at :1046).</td>
+<td>Not reachable through the "ripple" command at all. RecordProcessor::setRecording invokes the Q_INVOKABLE slots RippleDetector::slWriteRippleSidecar(dir,name) on record START and slClearRippleSidecar() on record STOP, both Qt::QueuedConnection onto the detector's worker thread (src/modules/recording/RecordProcessor.cpp:295-302; declared RippleDetector.hpp:90 and :94). That is deliberately the RECORDER, not the WebSocket handler: the GUI Record button invokes RecordProcessor::setRecording directly over QWebChannel and never reaches the WS handler, so writing it there recorded every browser-driven session with no detection channels and no trained baselines. Writes <dir>/<name>/<name>_ripple.json — INSIDE the recording folder with the bands, since 2026-08-28; it used to go one level up, where archiving the folder left it behind — with the resolved detection channels + estimated per-electrode thresholds + params (writeRippleSidecar, RippleDetector.cpp:554); rewritten once every baseline is trained (RippleDetector.cpp:1163-1164). While a recording is active the detector also appends rippleDetected / rippleLatency / rippleStimFired to <dir>/<name>/<name>_events.jsonl (appendEventToRecording); the continuous rippleEnvelope stream is deliberately excluded.</td>
 </tr>
 </tbody>
 </table>
@@ -636,7 +636,7 @@ are now stale by design. What moved:</p>
 <tr>
 <td><code>proc.npx.display: inputs[].scale_factor</code></td>
 <td>float via std::stof on the raw scalar (NOT getConfigValue -- that helper is integer-only); parse failure only warns and keeps the inferred value</td>
-<td>absent =&gt; INFERRED from the data name: data.lfp/data.spike =&gt; (1/100/4096)<em>1e4; </em>.ap =&gt; (1.2/1024<em>1e4)/500; </em>.lfp =&gt; (1.2/1024<em>1e4)/250; </em>.raw =&gt; (1/100/4096)<em>1e4; </em>.adc =&gt; the live gAdcVoltsPerCount (default 5/32768 V); anything else =&gt; 1.0</td>
+<td>absent =&gt; INFERRED from the data name: data.lfp/data.spike =&gt; the live gNpx2VoltsPerCount * 1e4 (DisplayProcessor.cpp:240-241); <em>.ap =&gt; (1.2/1024</em>1e4)/500; <em>.lfp =&gt; (1.2/1024</em>1e4)/250; <em>.raw =&gt; the live gNpx2VoltsPerCount * 1e4 (DisplayProcessor.cpp:257-258); </em>.adc =&gt; the live gAdcVoltsPerCount (default 5/32768 V); anything else =&gt; 1.0. gNpx2VoltsPerCount is published from the probe's PART NUMBER by NpInterface.cpp:1536-1551 via Npx2Scale.hpp -- commercial NP2003/4/13/14 = 12-bit gain 100 = 2.4414 uV/count, prototype NP2000/NP2010 = 14-bit gain 80 = 0.7629. The compiled fallback used by a simulated or probe-less config is kNpx2FullScaleVolts/4096/100 (DisplayProcessor.cpp:61-63) = the commercial value. See issue #65.</td>
 <td>Explicit per-stream display scale override (counts -&gt; display units), the escape hatch when the name-based inference is wrong (e.g. a derived band computed from an NP1 ap source).</td>
 </tr>
 <tr>

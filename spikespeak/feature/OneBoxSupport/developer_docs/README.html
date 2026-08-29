@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -477,7 +477,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tbody>
 <tr>
 <td><a href="Testing.html"><code>Testing.md</code></a></td>
-<td><strong>The test suites and the green/red lights</strong> — C++ (316 cases, Qt Test + CTest, runs on every build) <strong>and GUI</strong> (<code>python scripts/run_gui_tests.py</code>, real-browser layout/render invariants), how to add a test, and the top-down method for telling a SOFTWARE fault from a HARDWARE one — sim-vs-rig, counting frames at the socket, and what the liveness counters actually count.</td>
+<td><strong>The test suites and the green/red lights</strong> — C++ (Qt Test + CTest, runs on every build; <code>Testing.md</code> carries the current suite/case counts, which are maintained there and nowhere else) <strong>and GUI</strong> (<code>python scripts/run_gui_tests.py</code>, real-browser layout/render invariants), how to add a test, and the top-down method for telling a SOFTWARE fault from a HARDWARE one — sim-vs-rig, counting frames at the socket, and what the liveness counters actually count.</td>
 </tr>
 <tr>
 <td><a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a></td>
@@ -584,7 +584,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="../user_docs/"><code>../user_docs/</code></a></td>
-<td>End-user GUI guide (connect + stream a probe, run ripple detection).</td>
+<td>End-user GUI guide — connect + stream a probe, run ripple detection, and <strong>export a recording to SpikeGLX / Open Ephys</strong> (<a href="../user_docs/Exporting-Recordings.html"><code>Exporting-Recordings.md</code></a>).</td>
 </tr>
 <tr>
 <td><a href="archive/README.html"><code>archive/README.md</code></a></td>

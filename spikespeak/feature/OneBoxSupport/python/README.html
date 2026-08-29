@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -243,8 +243,16 @@ PNGs. Robust: if there's no shared sync pulse train, <code>sync.png</code> still
 </tr>
 </tbody>
 </table>
-<p><code>N</code> = number of channels in the recording's <code>channels:</code> list. <strong>Microvolt conversion assumes the
-default IMEC gains</strong> (AP 500 / LFP 250); if you change the gain in the IMRO panel, scale accordingly.</p>
+<p><code>N</code> = number of channels in the recording's <code>channels:</code> list.</p>
+<p><strong><code>to_microvolts()</code> takes the scale from the recording.</strong> A <code>metadata_version</code> 2 sidecar carries
+<code>scale.volts_per_count</code>, resolved by the backend from the applied IMRO and the probe part number, and
+the loader uses it — so changing the gain in the IMRO panel no longer silently invalidates the
+conversion. The compiled defaults (AP 500 / LFP 250) are the fallback for <code>metadata_version</code> 1
+recordings only, which predate that block.</p>
+<p>An NP2.0 <code>raw</code> band from a version 1 recording raises instead of guessing: its scale is 0.7629
+µV/count on the NP2000/NP2010 prototypes and 2.4414 on the commercial parts — a 3.2× spread — and a
+version 1 sidecar does not say which probe it was. See
+<a href="../developer_docs/DataConversion.html"><code>developer_docs/DataConversion.md</code> §3</a>.</p>
 <h2 id="export-to-open-ephys-binary-convert_to_openephyspy">Export to Open Ephys binary — <code>convert_to_openephys.py</code><a class="headerlink" href="#export-to-open-ephys-binary-convert_to_openephyspy" title="Permanent link">#</a></h2>
 <p>Offline converter to the Open Ephys <strong>"Binary"</strong> record-engine format (the tree the Open Ephys GUI,
 <code>open-ephys-python-tools</code> and SpikeInterface open). Nothing touches the acquisition path; numpy only.</p>
@@ -299,14 +307,28 @@ and neither of the two figures it quoted was right:</p>
 12-bit, gain 100 → <strong>2.4414 µV/count</strong>; the prototypes (NP2000/NP2010) are 14-bit, gain 80 → 0.7629.
 The backend resolves this from <code>acquisition.probe.part_number</code>, writes it into the sidecar's <code>scale</code>
 block, and both exporters now agree with it. See <code>developer_docs/DataConversion.md</code> §3.</p>
-<p>Anything exported <strong>before 2026-08-28</strong> carries one of the two wrong scales. The int16 counts were
-never affected, so it is recoverable: divide a 2.9064-scaled figure by 1.190, or a 0.7629-scaled one
-by 0.3125, after confirming which the file used.</p>
+<p><strong>How much data is actually affected: almost none.</strong> Checked against every NP2.0 sidecar in
+<code>RecordingTests/</code> (53 of them):</p>
+<ul>
+<li><strong>46 are <code>metadata_version</code> 1 and carry no <code>scale</code> block at all.</strong> They never claimed a microvolt,
+  so there is nothing in them to be wrong — the factor came from whatever read them, and the loader
+  and live view have been right since #65.</li>
+<li><strong>7 carry <code>gain: 84</code>, and every one is dated 2026-08-26</strong> — the window between the <code>scale</code> block
+  being introduced and the fix. All seven are bench tests (<code>adc50_baseline</code>, <code>comparator_sweep</code>,
+  <code>issue63_decay</code>, <code>issue67_diband</code>), not experimental data.</li>
+</ul>
+<p>So this is a metadata defect with a two-day blast radius, not an archive-wide one. The int16 counts
+were never affected in any of them. If you do need to correct one of those seven, divide a
+2.9064-scaled figure by 1.190; a SpikeGLX export made from one before today would instead have been
+0.7629-scaled, so divide by 0.3125. Check which the file used rather than assuming.</p>
 <p><strong>Scaling is a pass-through and says so.</strong> int16 counts in, the same int16 counts out, with only
 <code>bit_volts</code> declared — exact and reversible, unlike Open Ephys's native <code>round(µV/bit_volts)</code> path.
-But <code>bit_volts</code> is <em>not</em> in the SpikesPeak sidecar (it records <code>units: "adc_int16"</code> and no more), so
-the defaults below come from the backend's own display constants and each carries its assumption
-into <code>structure.oebin</code> → <code>spikespeak</code> and into every channel's <code>description</code>.</p>
+Since 2026-08-28 the sidecar carries a <code>scale</code> block (<code>volts_per_count</code> + <code>provenance</code>, resolved from
+the probe's part number via <code>Npx2Scale.hpp</code>), and the converter uses it <strong>in preference to anything
+compiled in</strong> — the channel <code>description</code> then records the value and where it came from. The table
+below is the <strong>fallback</strong>, used only for a <code>metadata_version 1</code> recording with no <code>scale</code> block, or
+for a band the recording cannot scale (<code>adc</code>, <code>nidaq</code>). Do not override <code>bit_volts</code> on a recording
+that has a <code>scale</code> block — on a prototype NP2000/NP2010 that turns a correct 0.7629 into 2.4414.</p>
 <table>
 <thead>
 <tr>
@@ -363,7 +385,8 @@ recording pipeline is regression-tested end-to-end. See
 <p><code>python/convert_to_spikeglx.py</code> converts a finished recording into <strong>SpikeGLX 3.0</strong> <code>.bin</code>/<code>.meta</code>
 pairs so it can be read by SpikeGLX's own FileViewer, CatGT, TPrime and SpikeInterface. Offline, numpy
 only, nothing on the acquisition path.</p>
-<pre><code class="language-bash">python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np2-4shank
+<pre><code class="language-bash">python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt;
+python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np2014   # only for a metadata_version 1 recording with no part number
 python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np1 --band raw --dry-run
 </code></pre>
 <table>
@@ -376,9 +399,14 @@ python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np1 
 </thead>
 <tbody>
 <tr>
-<td><code>raw</code>, <code>ap</code></td>
+<td><code>raw</code></td>
 <td><code>&lt;run&gt;_g0_t0.imec0.ap</code></td>
-<td>needs <code>--probe</code>; carries a synthesised default <code>~imroTbl</code></td>
+<td>probe, <code>~imroTbl</code> and <code>~snsGeomMap</code> all come from the sidecar; <code>--probe</code> only for a <code>metadata_version 1</code> file</td>
+</tr>
+<tr>
+<td><code>ap</code> (NP1.0)</td>
+<td>—</td>
+<td><strong>REFUSED</strong>: the per-frame timestamp is not a per-sample clock (~8 % of frames do not advance). Convert <code>lfp</code> instead.</td>
 </tr>
 <tr>
 <td><code>lfp</code></td>
@@ -411,9 +439,13 @@ timestamp is a <strong>100 kHz tick counter</strong>, not a sample index — con
 alternate 3 and 4 at 30 kHz — so the test is <code>rint(Δ / (100000/fs)) == 1</code>.)</p>
 <p>The samples themselves are copied <strong>bit-for-bit</strong>: SpikeGLX's <code>V = i·imAiRangeMax/imMaxInt/gain</code> is
 numerically identical to this package's µV/LSB, so the conversion lives entirely in the <code>.meta</code>.
-<code>--probe</code> is required for a neural band because the sidecar does not record the probe and the probe
-is what sets that scale. Assumptions that cannot be read from the recording (probe, ADC range,
-default Bank-0 map, synthesised IMRO) are written into <code>userNotes</code>.</p>
+<code>--probe</code> is <strong>optional</strong>. The sidecar records the probe (<code>acquisition.probe.part_number</code>, read from
+the device at record time) and the converter resolves imMaxInt / imAiRangeMax / gain from it. Pass
+<code>--probe</code> only for a pre-2026-08-28 <code>metadata_version 1</code> recording that has no part number; a
+<code>--probe</code> that contradicts the recorded part is <strong>refused</strong>, not silently honoured. Geometry is not
+assumed either: <code>~imroTbl</code> is the applied map copied verbatim from <code>acquisition.imro.text</code>, and
+<code>~snsGeomMap</code> uses the per-channel <code>columns.shank</code> / <code>columns.electrode</code>. Only what genuinely is not
+in the recording — the ADC range, and the probe when you had to name it — goes into <code>userNotes</code>.</p>
 <pre><code class="language-python">from spikespeak_convert import convert_to_spikeglx, ConversionRefused
 convert_to_spikeglx(r&quot;C:/Data/mouse42&quot;, r&quot;C:/Export&quot;, probe=&quot;np1&quot;)
 </code></pre>

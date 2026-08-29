@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -175,7 +175,7 @@ one backend.</p>
 <h2 id="analysis-per-cell">Analysis, per cell<a class="headerlink" href="#analysis-per-cell" title="Permanent link">#</a></h2>
 <pre><code class="language-bash">python ripple_tools/analyze_recording.py &lt;dir&gt;/&lt;name&gt; --name &lt;name&gt; \
   --stim-band adc --stim-channel 2 \
-  --ws &lt;dir&gt;/&lt;name&gt;_ws.jsonl --ripple-sidecar &lt;dir&gt;/&lt;name&gt;_ripple.json \
+  --ws &lt;dir&gt;/&lt;name&gt;_ws.jsonl \
   --figs &lt;dir&gt;/analysis
 </code></pre>
 <p>Two things this line gets right that an earlier version of it did not, both of which cost a full
@@ -184,8 +184,13 @@ re-run to discover:</p>
 <li><strong><code>recdir</code> is POSITIONAL. There is no <code>--dir</code>.</strong> The earlier form failed instantly with
   <code>unrecognized arguments: --dir</code> on every cell.</li>
 <li><strong>It is the INNER directory.</strong> <code>record_ripples.py --dir D --name N</code> writes the <code>.bin</code> and
-  <code>.bin.json</code> into <code>D/N/</code>, and leaves <code>N_ws.jsonl</code> and <code>N_ripple.json</code> in <code>D/</code> beside it. Passing <code>D</code>
-  gives <code>No SpikesPeak recordings (*.bin.json) found</code>.</li>
+  <code>.bin.json</code> into <code>D/N/</code>, and leaves <code>N_ws.jsonl</code> in <code>D/</code> beside it. Passing <code>D</code> gives
+  <code>No SpikesPeak recordings (*.bin.json) found</code>.</li>
+<li><strong><code>--ripple-sidecar</code> is no longer needed.</strong> Since 2026-08-28 the backend writes the sidecar into
+  <code>D/N/</code> with the bands, which is where <code>recdir</code> points, so it is found automatically. It was the
+  old layout — sidecar in <code>D/</code>, one level above where the tool looked — that made the explicit flag
+  mandatory. Recordings made before that date still need it, or the tool falls back to the parent
+  folder and prints which layout it found.</li>
 </ul>
 <p>And do not pipe the command into <code>tail</code>: a shell pipeline exits with the status of its LAST member, so
 a failing analysis reports success. That is how five cells were "analysed" without producing a single

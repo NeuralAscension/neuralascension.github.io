@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -225,19 +225,24 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 <hr />
 <h2 id="3-select-the-onebox-source">3. Select the OneBox source<a class="headerlink" href="#3-select-the-onebox-source" title="Permanent link">#</a></h2>
 <ol>
-<li>Open the <strong>Source</strong> dropdown and pick <strong><code>OneBox</code></strong>.</li>
+<li>Open the <strong>Source</strong> dropdown and pick <strong><code>Neuropixels</code></strong>.</li>
 </ol>
 <p>📷 <em>Source dropdown</em></p>
-<p>That is the only OneBox entry, and it works for <strong>either probe</strong> — a 1.0 or a 2.0. You are naming
-   the basestation; the probe identifies itself when the box opens, and everything that depends on
-   which probe it is (which bands exist, whether the LFP has to be computed, what the ripple detector
-   reads) follows from that answer. The 12-channel ADC streams alongside.</p>
+<p>You name neither the basestation nor the probe. <code>Neuropixels</code> scans, finds the OneBox, opens it,
+   and the probe identifies itself; everything that depends on which probe it is (which bands exist,
+   whether the LFP has to be computed, what the ripple detector reads) follows from that answer. The
+   12-channel ADC streams alongside.</p>
+<p><strong>If a PXIe module is plugged into this machine as well</strong>, the scan is ambiguous, so the auto entry
+   is withdrawn and the menu asks which basestation to use — pick <strong><code>OneBox</code></strong> there.</p>
 <p>Until 2026-08-26 there were five OneBox entries, one per probe and per variant, and picking the
-   wrong one silently gave you flat traces and an empty recording. They still exist for reproducing
-   old measurements, but they are <strong>no longer in the dropdown</strong> — see §3a.</p>
+   wrong one silently gave you flat traces and an empty recording. Those, and the explicit <code>OneBox</code> /
+   <code>PXIe</code> / <code>PXIe + NI-DAQ</code> overrides, still exist for reproducing old measurements and are still
+   selectable by name from the control CLI — but they are <strong>no longer in the dropdown</strong> unless the
+   scan is ambiguous. See §3a.</p>
 <ol start="2">
 <li><strong>What you should see, in this order</strong> (watch the status box on the left of the second row):
-   - <code>Connecting to OneBox…</code>
+   - <code>Connecting to Neuropixels…</code> (the status line is built from the profile name, so it says
+     <code>Connecting to OneBox…</code> only if you picked the explicit override)
    - green: <strong><code>Found Neuropixels 2.0 Multishank probe</code></strong>
    - green: <strong><code>Connected — device ready</code></strong>
    - the <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and a <strong>▣ OneBox</strong> tab appears beside them
@@ -349,7 +354,8 @@ running → write the map → <strong>read it back and verify</strong> → resum
 electrode is a <em>request</em> until Apply says otherwise.</p>
 <hr />
 <h2 id="5-the-live-view">5. The live view<a class="headerlink" href="#5-the-live-view" title="Permanent link">#</a></h2>
-<p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) and click <strong>Live Data</strong>.</p>
+<p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>); the view switches itself to <strong>Live Data</strong> on the
+backend's confirmation.</p>
 <ul>
 <li><strong>The Play button tells you the state by color:</strong> green <strong>▶</strong> when paused ("press to play"), and a
   white <strong>⏸</strong> inside a <strong>green pulsing ring</strong> while streaming.</li>
@@ -378,8 +384,8 @@ electrode is a <em>request</em> until Apply says otherwise.</p>
 </tr>
 </tbody>
 </table>
-<p><strong>Cost of density.</strong> Columns × Ch is what the browser draws. Up to ~160–200 traces the live view is a solid 60 fps; <strong>4 × 120 = 480 traces drops it to about 42 fps</strong> on this rig (measured, OneBox + NP2.0). That is display smoothness only — acquisition, recording and ripple detection are unaffected.
-| <strong>Window (sec)</strong> | Time width of the view: 1 / 2 / 5 / 10 s. |</p>
+<p>| <strong>Window (sec)</strong> | Time width of the view: 1 / 2 / 5 / 10 s. |</p>
+<p><strong>Cost of density.</strong> Columns × Ch is what the browser draws. Since 2026-08-27 it is drawn by a hand-written WebGL2 renderer that holds a solid 60 fps across the whole range this GUI offers, 4 × 120 = 480 traces included (measured on this rig, OneBox + NP2.0). Frame rate is display smoothness only — acquisition, recording and ripple detection are unaffected either way.</p>
 <p>Each strip also has a <strong>vertical slider</strong> (plus ▲/▼) to scroll through depth, and its header shows the
 <strong>depth readout</strong> — the deepest and shallowest thing currently on screen.</p>
 <h3 id="per-column-band-selection">Per-column band selection<a class="headerlink" href="#per-column-band-selection" title="Permanent link">#</a></h3>
@@ -497,8 +503,7 @@ which electrodes a column is showing.</p>
 <hr />
 <h2 id="6-recording">6. Recording<a class="headerlink" href="#6-recording" title="Permanent link">#</a></h2>
 <h3 id="first-choose-which-channels-to-record">First: choose which channels to record<a class="headerlink" href="#first-choose-which-channels-to-record" title="Permanent link">#</a></h3>
-<p><strong>The default for this profile is three probe channels, not all of them.</strong> The
-The <code>OneBox</code> profile records ALL channels by default (it cannot know which few matter on your rig); the
+<p>The <code>OneBox</code> and <code>Neuropixels</code> profiles record ALL channels by default (they cannot know which few matter on your rig); the
 superseded <code>NPX 2.0 Multishank (OneBox)</code> profile ships with <code>channels: [1, 192, 196]</code> — deliberate,
 because a full 384-channel raw stream is a lot of disk. If you want more (or fewer), set it here before
 you record.</p>
@@ -587,9 +592,11 @@ the profile's <code>channels:</code> list (see <a href="../developer_docs/Config
   real volts.) If you change the ADC range, the conversion changes with it.</li>
 </ul>
 <p>To load a recording in Python, use <code>python/spikespeak_postprocess</code> — see
-<a href="../python/README.html"><code>../python/README.md</code></a>. If you drove the recording from the <strong>control CLI</strong>
-(<a href="CommandLineControl.html"><code>CommandLineControl.md</code></a>) with the ripple detector running, you also get a
-<strong><code>&lt;name&gt;_ripple.json</code></strong> carrying the online thresholds and detection channels.</p>
+<a href="../python/README.html"><code>../python/README.md</code></a>. If the ripple detector had detection channels when you
+pressed Record, you also get a <strong><code>&lt;name&gt;_ripple.json</code></strong> carrying the online thresholds and the
+resolved detection channels — from the <strong>GUI Record button</strong> and from the <strong>control CLI</strong>
+(<a href="CommandLineControl.html"><code>CommandLineControl.md</code></a>) alike; both go through the same recorder. It lands
+in <code>&lt;dir&gt;/</code>, <em>beside</em> the <code>&lt;dir&gt;/&lt;name&gt;/</code> recording folder, so archive the parent directory.</p>
 <hr />
 <h2 id="7-the-onebox-adc-band">7. The OneBox ADC band<a class="headerlink" href="#7-the-onebox-adc-band" title="Permanent link">#</a></h2>
 <p><strong>What it is for.</strong> Twelve analog inputs, ~30.3 kHz, sampled by the same box as the probe. It is the
@@ -654,6 +661,16 @@ you opened it to look at).</p>
   so the live view keeps reading correct volts at every range. <strong>What you should see:</strong> the status line
   in the panel confirms <code>ADC range set to ±N V — live view rescaled…</code>. Pick the smallest range your
   signal fits in.</li>
+<li><strong>Digital input (comparator thresholds)</strong> — each ADC line also feeds a comparator that produces one
+  logic bit. It is a Schmitt trigger, so it takes two voltages: the bit falls to 0 below the low
+  threshold and rises to 1 above the high one, and holds its state between them. Pick the IO channel,
+  set the two voltages, press <strong>Apply</strong>. <strong>Read device</strong> shows what the box actually stored (slightly
+  different from what you typed — it quantizes against an internal reference), and the bit row shows
+  the live 12-bit state, IO11…IO0. <strong>These persist in the device across sessions</strong>, so a previous run
+  that narrowed a window leaves it narrowed for whoever connects next — press <strong>Reset all</strong> to put all
+  twelve back to the boot pair 0.800 / 2.000 V before you trust them. This section is what feeds the
+  <code>adc_di</code> band used by the <code>(OneBox + digital in)</code> profile in §3a, and it appears only on a real
+  OneBox: a simulated one has no comparators.</li>
 <li><strong>Ground unused inputs</strong> — a grid of <code>IO0…IO11</code>. An <strong>unconnected</strong> input floats at a mid-scale
   voltage — the panel's own note says ~1.7 V — and picks up whatever is switching next to it
   (measured: IO1 and IO3 rose from 0.0001 to 0.019 / 0.064 V
@@ -768,7 +785,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 </tr>
 <tr>
 <td><strong>Connect succeeds, Play works, the clock runs — but no traces and no data</strong></td>
-<td>The known OneBox fault where the box accepts everything and then delivers zero packets. SpikesPeak's watchdog reports it within a few seconds; teardown may also stall. <strong>Power-cycle the OneBox and reconnect.</strong> If it repeats, report it — it is tracked as issue #59 and it is not in SpikesPeak's code.</td>
+<td>The known OneBox fault where the box accepts everything and then delivers zero packets. SpikesPeak's watchdog reports it within a few seconds; teardown may also stall. <strong>Power-cycle the OneBox and reconnect.</strong> If it repeats, say so — it is tracked as issue #59, which is closed as <em>recovered and mitigated</em> rather than fixed: the fault is on the vendor side, not in SpikesPeak's code, and SpikesPeak's watchdog is the mitigation.</td>
 </tr>
 <tr>
 <td><strong>A dialog appears that will not close, offering only <em>Restart SpikesPeak<em> or </em>Close SpikesPeak</em></strong></td>
@@ -784,7 +801,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 </tr>
 <tr>
 <td><strong>Only 3 channels in the recording</strong></td>
-<td>That is this profile's default. <strong>Probe Map → Select Recording Channels → Record all → Set recording channels</strong> before you record (§6).</td>
+<td>That is the default of the <em>superseded</em> <code>NPX 2.0 Multishank (OneBox)</code> profile only. On <code>Neuropixels</code> / <code>OneBox</code> it means the GUI record-channel selection was narrowed: <strong>Probe Map → Select Recording Channels → Record all → Set recording channels</strong> before you record (§6).</td>
 </tr>
 <tr>
 <td><strong><code>OneBox ADC (SDR)</code> is not in the band dropdown</strong></td>

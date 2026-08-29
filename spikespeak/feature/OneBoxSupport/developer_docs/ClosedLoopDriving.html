@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a class="active" href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -211,7 +211,8 @@ end to end before trusting a closed-loop number.</p>
 <p><code>rig.record(out_dir, name)</code> does <strong>not</strong> write into <code>out_dir</code>. It creates <code>out_dir/name/</code> and writes
 there, one <code>.bin</code> plus a <code>.bin.json</code> sidecar per band, each stamped with the start time:</p>
 <pre><code>RecordingTests/2026-08-25_trigger_ab/          &lt;- what you passed as out_dir
-  trigger_ab_ripple.json                       &lt;- the ripple sidecar, written at record START
+  trigger_ab/trigger_ab_ripple.json            &lt;- the ripple sidecar, written at record START
+  trigger_ab/trigger_ab_events.jsonl           &lt;- detections + stim times, appended as they happen
   trigger_ab/                                  &lt;- what you passed as name
     trigger_ab_adc_20260825_095710.bin
     trigger_ab_adc_20260825_095710.bin.json    &lt;- frame layout lives HERE

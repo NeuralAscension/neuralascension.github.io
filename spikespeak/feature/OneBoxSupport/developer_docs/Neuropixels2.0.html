@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -142,7 +142,9 @@ NP2.0 must reach <strong>parity</strong> with it — do NOT just make 2.0 stream
 <ul>
 <li><strong>Record-channel selection UI (parts 4+5)</strong> — <code>Recording.md §7</code>. The probe viewer has a mode radio
   (Edit Map | <strong>Select Recording Channels</strong>). Record mode + the map EDITOR are <strong>currently NP1-only</strong>
-  (<code>ImroManager.js</code>: gated on <code>probeIdStr === "0"</code>; <code>renderRecordSelection</code> uses <code>channelId + 384*bank</code>
+  (as of 2026-07-06 <code>ImroManager.js</code> gated the NP1 path on <code>probeIdStr === "0"</code>; it now branches on
+  <code>probeGen()</code>/<code>probeType</code> — see §7 and the <code>probeGen()</code> header comment, and do not reintroduce a
+  <code>probeIdStr</code> test. <code>renderRecordSelection</code> uses <code>channelId + 384*bank</code>
   and excludes ch 191; <code>renderElectrodeMap</code>'s NP2 else-branch is a <strong>placeholder</strong> = Gap 3 below). Extend
   both to the <strong>4-shank</strong> geometry (electrode = <code>electrodeId</code>, shank-aware; no NP1 modulo-384, no ch191
   rule). The committed selection is <code>window.recordChannels = {npx:[...], nidaq:[...]}</code> (read-out channels);
@@ -168,11 +170,16 @@ for 2.0 just like 1.0.</p>
 <hr />
 <h2 id="1-the-probe-variants">1. The probe variants<a class="headerlink" href="#1-the-probe-variants" title="Permanent link">#</a></h2>
 <p><code>ProbeType</code> enum (NpInterface) — set by <code>detectProbe()</code> from the product number (NpInterface.cpp:~989):</p>
+<p>Probe identity is the <strong><code>ProbeType</code> enum</strong> — 1 = NP1.0, 2 = NP2.0 single-shank, 3 = NP2.0 multishank —
+set by <code>detectProbe()</code> from the part number and sent verbatim to the GUI, where
+<code>ImroManager.probeGen()</code> branches on it. <strong>Never pattern-match <code>probeIdStr</code></strong>: it is the part-resolved
+imro type id, so the shipping 4-shank part reports <code>2013</code>/<code>2014</code> and only the prototypes report
+<code>24</code>/<code>21</code> (see <code>Npx2Scale.hpp</code>).</p>
 <table>
 <thead>
 <tr>
 <th>Variant</th>
-<th><code>probeIdStr</code></th>
+<th>imro type id (informational)</th>
 <th>product #</th>
 <th>shanks</th>
 <th>electrodes</th>
@@ -188,14 +195,14 @@ for 2.0 just like 1.0.</p>
 </tr>
 <tr>
 <td><code>eNpx2SingleShank</code></td>
-<td><code>"21"</code> / <code>NP200*</code></td>
+<td><code>2003</code> / <code>2004</code> (commercial) · <code>21</code> (NP2000 prototype)</td>
 <td>NP200x</td>
 <td>1</td>
 <td>1280</td>
 </tr>
 <tr>
 <td><code>eNpx2MultiShank</code></td>
-<td><code>"24"</code> / <code>NP201*</code>,<code>NP202*</code>,<code>*MS*</code></td>
+<td><code>2013</code> / <code>2014</code> (commercial) · <code>24</code> (NP2010 prototype)</td>
 <td>NP201/NP202</td>
 <td><strong>4</strong></td>
 <td>1280/shank</td>

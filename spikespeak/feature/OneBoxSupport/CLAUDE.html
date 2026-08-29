@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -149,7 +149,7 @@ produced a binary is not a green build.</p>
 <a href="developer_docs/Building.html"><code>developer_docs/Building.md</code></a>.</p>
 <pre><code class="language-bash">python scripts/run_gui_tests.py
 </code></pre>
-<p>Runs the <strong>GUI suite</strong>. ~5 min. It is NOT part of the compile (it needs a browser and a backend), so
+<p>Runs the <strong>GUI suite</strong> — 13 tests, ~11 min. It is NOT part of the compile (it needs a browser and a backend), so
 <strong>you have to run it yourself</strong> — and you must run it whenever you touch <code>webinterface/</code>, the
 toolbar, the live view, the ripple dock, or anything an operator clicks.</p>
 <p>A failing C++ suite does not stop the build by default (you usually still want the binary to debug

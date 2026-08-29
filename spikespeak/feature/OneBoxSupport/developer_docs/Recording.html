@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -148,8 +148,11 @@
    appears. Files are written <strong>live</strong> to a <strong>folder named after the recording</strong> —
    <code>&lt;directory&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>, e.g. <code>mouse42/mouse42_ap_…bin</code>, <code>…_lfp_…bin</code>,
    <code>…_nidaq_…bin</code>. One start records every configured stream (NPX AP + LFP + NI-DAQ) into that one folder.</li>
-<li><strong>Which channels?</strong> Set by each recording's <code>channels:</code> in the YAML — <strong>electrode numbers</strong> as shown on
-   screen (for the default Bank 0 map these equal the read-out channels). Only those are written; the
+<li><strong>Which channels?</strong> Set by each recording's <code>channels:</code> in the YAML — <strong>read-out channel indices</strong>,
+   which is what the recorder filters on and what the sidecar's <code>columns.index_space: "readout_channel"</code>
+   declares. On NP1.0 at bank 0 these happen to equal electrode numbers; on NP2.0, and on any NP1.0 map
+   that is not bank 0, they do not — the sidecar's <code>columns.electrode</code> array records which electrode
+   each recorded column actually read. Only those are written; the
    sample configs record electrodes <code>[1,2,3]</code> (NPX) and NI-DAQ <code>[0..7]</code>. <em>(A GUI record-channel picker is
    coming — §7.)</em></li>
 <li><strong>Press ● Record again to stop.</strong> Files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the
@@ -379,9 +382,9 @@ read once per record press</strong> -- nothing per sample, nothing on the 30 kHz
 no value the hardware was not already asked for at connect. A source withdraws on <code>closeDataSource()</code>,
 because a snapshot left standing after a disconnect would stamp the <em>next</em> recording with a probe that
 is gone -- which is worse than no metadata, since it looks like evidence.</p>
-<p>Covered by <code>tests/test_recordingmetadata.cpp</code> (18 cases), including the count -&gt; microvolt round trip,
-a mixed-gain map refusing to offer a scalar, the OneBox ADC getting no probe geometry, and the
-explicit-null-with-a-reason paths.</p>
+<p>Covered by <code>tests/test_recordingmetadata.cpp</code> (25 cases), including the count -&gt; microvolt round trip,
+the part-number-resolved NP2.0 scale, a mixed-gain map refusing to offer a scalar, the OneBox ADC
+getting no probe geometry, and the explicit-null-with-a-reason paths.</p>
 <blockquote>
 <p><strong>Still assumed elsewhere.</strong> <code>DisplayProcessor.cpp:182-189</code> still hardcodes 500/250 for the <em>live</em>
 NP1 microvolt scale, and <code>python/spikespeak_postprocess/reader.py</code> still carries <code>_UV_PER_BIT</code>.

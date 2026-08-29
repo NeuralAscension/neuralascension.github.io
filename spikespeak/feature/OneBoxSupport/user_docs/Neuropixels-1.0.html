@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -154,11 +154,13 @@ once. So each of the 384 channels is wired to <strong>one</strong> electrode cho
 <h2 id="1-launch-connect">1. Launch + connect<a class="headerlink" href="#1-launch-connect" title="Permanent link">#</a></h2>
 <ol>
 <li>Run <code>SpikesPeak.exe</code>; the UI opens in your browser (see <a href="README.html#launching-spikespeak">README</a>).</li>
-<li>In the <strong>Source</strong> dropdown, pick the <strong>basestation</strong> your probe is on — <strong><code>PXIe</code></strong>, or
-   <strong><code>PXIe + NI-DAQ</code></strong> if you also want the NI-DAQ card's inputs. There is no "NPX 1.0" entry: you
-   name the basestation, and the probe identifies itself when it connects.
+<li>In the <strong>Source</strong> dropdown, pick <strong><code>Neuropixels</code></strong> — you name neither the basestation nor the
+   probe; both are read from the rig. Pick <strong><code>PXIe with NI-DAQ</code></strong> instead if you also want the NI-DAQ
+   card's analog and digital inputs (that entry appears only when a PXIe module is detected). There is
+   no "NPX 1.0" entry, and no <code>PXIe</code> entry either unless a OneBox is attached at the same time and the
+   scan has to ask.
    - 📷 <em>Source dropdown</em></li>
-<li>Watch the <strong>status box</strong> (right side): <code>Connecting to PXIe…</code> → <code>Found Neuropixels 1.0 probe</code> /
+<li>Watch the <strong>status box</strong> (right side): <code>Connecting to Neuropixels…</code> → <code>Found Neuropixels 1.0 probe</code> /
    <code>Connected — device ready</code> (green). The <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and <strong>Play</strong>
    becomes available.
    - If it goes <strong>red</strong>, the probe wasn't found — check the PXI connection and the console window.</li>
@@ -223,7 +225,8 @@ streaming (if running) → write the new map → <strong>verify</strong> it read
 </blockquote>
 <hr />
 <h2 id="5-read-the-live-data">5. Read the live data<a class="headerlink" href="#5-read-the-live-data" title="Permanent link">#</a></h2>
-<p>Switch to <strong>Live Data</strong> and press <strong>▶ Play</strong> (status: <code>Streaming started</code>).</p>
+<p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) — the view switches itself to <strong>Live Data</strong> on the
+backend's confirmation.</p>
 <p>📷 <em>Live Data view with 2 columns of traces</em></p>
 <p><strong>Layout:</strong>
 - One <strong>trace per channel</strong>, stacked vertically and <strong>sorted by depth</strong> — the <strong>deepest</strong> electrode

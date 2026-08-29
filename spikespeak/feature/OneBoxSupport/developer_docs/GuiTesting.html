@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -137,7 +137,7 @@ build/verify the 2026-07-06 work and is the recommended way to check any GUI cha
 <h2 id="0-start-here-you-almost-certainly-want-gui-not-raw-cdp">0. START HERE — you almost certainly want <code>Gui</code>, not raw CDP<a class="headerlink" href="#0-start-here-you-almost-certainly-want-gui-not-raw-cdp" title="Permanent link">#</a></h2>
 <p><strong>Do not hand-roll a browser launch.</strong> <code>tests/gui/_harness.py</code> already starts the backend, launches a
 Chromium with an isolated profile on a free debug port, waits for both, and tears everything down. It
-is what the ten GUI tests use. Sections 1–2 below describe the raw layer underneath it — read those
+is what every GUI test uses. Sections 1–2 below describe the raw layer underneath it — read those
 only when you need something the harness does not do.</p>
 <p>This is the whole recipe for "screenshot the app doing X":</p>
 <pre><code class="language-python">import base64, os, sys, time
@@ -165,7 +165,7 @@ with Gui(source=&quot;NPX 2.0 Multishank (OneBox)&quot;, window=(1920, 1080)) as
 <code>ripple_dock(open)</code>, <code>probe(js)</code> (returns parsed JSON), <code>settle_until_stable(js)</code>, <code>errors()</code>,
 <code>check_clean(ck)</code>, <code>shoot(name)</code>.</p>
 <h3 id="use-the-helpers-in-ad-hoc-probes-too-not-just-in-the-suite">Use the helpers in ad-hoc probes too, not just in the suite<a class="headerlink" href="#use-the-helpers-in-ad-hoc-probes-too-not-just-in-the-suite" title="Permanent link">#</a></h3>
-<p>The ten GUI tests use them. A one-off script written to answer a question tends not to, and then
+<p>Every GUI test uses them. A one-off script written to answer a question tends not to, and then
 reports nonsense that reads as an application bug. Both of these cost time on 2026-08-25:</p>
 <ul>
 <li><strong>A fixed <code>time.sleep()</code> after a layout change reads mid-reflow.</strong> A probe that swept

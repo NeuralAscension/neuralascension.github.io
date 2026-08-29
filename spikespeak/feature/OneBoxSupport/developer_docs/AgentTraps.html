@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a class="active" href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -283,6 +283,18 @@ because the merged version looks tidier and someone will try to merge it back.</
   got a fresh one. When a test connected inside that window it reused a backend that still had a
   source, the select was dropped, and the test ran against the <em>previous</em> test's source — surfacing
   as a dozen unrelated failures about labels and units.</li>
+<li><strong>Configuring the ripple detector does not start it.</strong> Adding electrodes populates the dock and is
+  enough for the sidecar to be written, so it <em>looks</em> like the detector is live — but the baseline
+  estimation window does not begin until <code>#rd-run</code> is pressed. A test that set <code>z = 0</code> and waited 90 s
+  for a detection watched a detector reporting <code>running: false</code>, <code>training.active: false</code> and a null
+  threshold for the entire wait, and blamed the feature.</li>
+<li><strong>Do not poll the cowsay for detections.</strong> <code>#rd-cow</code> is a status line: the next event overwrites it
+  and lockout clears it, so a poll landing in a gap sees nothing and concludes the detector is dead.
+  Wrap <code>window.rippleModule.onDetected</code> and count — a counter only goes up.</li>
+<li><strong>A recursive glob cannot see a file in the wrong place.</strong> <code>glob(outdir + "/**/*")</code> finds the
+  sidecar whether it is inside the recording folder or above it, which is why the sidecar test passed
+  for months while the file was one directory too high. If <em>where</em> a file lands is the property under
+  test, assert the directory.</li>
 </ul>
 <hr />
 <h2 id="5-windows-the-shell-and-the-build">5. Windows, the shell, and the build<a class="headerlink" href="#5-windows-the-shell-and-the-build" title="Permanent link">#</a></h2>

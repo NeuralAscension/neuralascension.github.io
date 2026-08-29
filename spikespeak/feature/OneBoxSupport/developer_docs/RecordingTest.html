@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -167,9 +167,12 @@ moved to a <strong>Linux box with no hardware</strong> (2026-07-06). The equival
 </ol>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
-<li>Hardware is physically connected; connecting a real config drives it — see [[hardware-connected-testing]].</li>
-<li>Build is current. If you changed C++/JS, rebuild first (the [[spikespeak-build]] recipe); POST_BUILD
-  deploys <code>webinterface/</code>, <code>config/</code>, <code>imro_maps/</code> next to the exe.</li>
+<li>Hardware is physically connected; connecting a real config drives it — see the hardware-safety
+  section of <a href="README.html"><code>README.md</code></a>.</li>
+<li>Build is current. If you changed C++, rebuild first (<a href="Building.html"><code>Building.md</code></a>). <strong>Frontend and
+  config edits need no build</strong>: the exe in <code>bin/</code> reads <code>webinterface/</code>, <code>config/</code> and <code>imro_maps/</code>
+  straight out of the repo, so just relaunch — or hard-reload the browser (Ctrl+Shift+R) for
+  <code>.js</code>/<code>.css</code>.</li>
 <li>Standalone launch needs <code>C:\Qt\6.7.3\msvc2019_64\bin</code> <strong>and</strong>
   <code>external\neuropixels\api\lib64\v4</code> on <code>PATH</code> (HDF5 already on the system PATH). See <a href="ControlCLI.html">ControlCLI.md</a>.</li>
 </ul>

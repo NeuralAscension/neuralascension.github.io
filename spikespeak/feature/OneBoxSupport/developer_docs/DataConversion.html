@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -321,8 +321,11 @@ sidecar hardcoded gain 84 — a value belonging to no variant — while the live
 part-resolved value since #65; and the SpikeGLX exporter had only the <em>prototype</em> four-shank spec,
 so a commercial NP2014 exported as <code>type 24 / imMaxInt 8192 / gain 80</code> and reconstructed 0.7629
 µV/count instead of 2.4414. A uniform scale error changes no relative comparison, no detection and
-no latency figure, which is exactly why it survived. Anything exported before that date should be
-checked against §5.</p>
+no latency figure, which is exactly why it survived.</p>
+<p><strong>The blast radius is small, and worth stating precisely rather than as a blanket warning.</strong> Of the
+53 NP2.0 sidecars in <code>RecordingTests/</code>, 46 are <code>metadata_version</code> 1 and carry no <code>scale</code> block at
+all — they never claimed a microvolt, so nothing in them is wrong. Exactly 7 carry <code>gain: 84</code>, all
+dated 2026-08-26, and all of them bench tests. Counts were never affected in any recording.</p>
 </blockquote>
 <hr />
 <h2 id="4-why-the-np10-ap-band-is-refused">4. Why the NP1.0 AP band is refused<a class="headerlink" href="#4-why-the-np10-ap-band-is-refused" title="Permanent link">#</a></h2>
@@ -357,8 +360,12 @@ looks clean (issue #63).</p>
 <td><code>sample_rate_hz</code> (the <strong>profile's</strong> number — see §6)</td>
 </tr>
 <tr>
-<td><code>imAiRangeMax</code>, <code>imMaxInt</code>, <code>imChan0apGain</code></td>
+<td><code>imAiRangeMax</code>, <code>imMaxInt</code></td>
 <td>the <code>ProbeSpec</code> resolved from <code>acquisition.probe.part_number</code></td>
+</tr>
+<tr>
+<td><code>imChan0apGain</code> / <code>imChan0lfGain</code></td>
+<td><code>scale.gain</code> from the recording when present, else the <code>ProbeSpec</code> default</td>
 </tr>
 <tr>
 <td><code>imDatPrb_pn</code>, <code>imDatPrb_type</code></td>
@@ -393,7 +400,7 @@ looks clean (issue #63).</p>
 <tbody>
 <tr>
 <td><code>bit_volts</code>, <code>units</code></td>
-<td>a compiled scale table (see §6 — <strong>not</strong> the sidecar's <code>scale</code>)</td>
+<td><code>scale.volts_per_count</code> from the recording when present (×1e6 for µV bands); the compiled table only as a <code>metadata_version</code> 1 fallback — see §6</td>
 </tr>
 <tr>
 <td><code>channel_metadata.electrode_index</code></td>
@@ -416,10 +423,26 @@ looks clean (issue #63).</p>
 <hr />
 <h2 id="6-known-limits">6. Known limits<a class="headerlink" href="#6-known-limits" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Neither converter reads the sidecar's <code>scale</code> block.</strong> Both use their own compiled tables. They
-  currently agree with the sidecar, but that is an invariant nobody enforces — a future probe added
-  to <code>Npx2Scale.hpp</code> and not to <code>PROBES</code> would diverge silently. Wiring the exporters to prefer
-  <code>scale.volts_per_count</code> is the obvious next step.</li>
+<li>~~Neither converter reads the sidecar's <code>scale</code> block.~~ <strong>Fixed 2026-08-28.</strong> Both now prefer the
+  recording's own scale, in this order: an explicit operator override, then <code>scale.volts_per_count</code>
+  from the sidecar, then the compiled table (which remains the fallback for <code>metadata_version</code> 1
+  recordings, whose sidecars have no scale block).
+  <strong>The loader had the same defect and was fixed the same day, separately</strong> —
+  <code>Signal.to_microvolts()</code> hardcoded AP 500 / LFP 250 and had no entry for <code>raw</code> at all, so it both
+  mis-scaled NP1.0 recordings made at a non-default gain and raised on every NP2.0 recording. It
+  now follows the same precedence. An NP2.0 <code>raw</code> band from a <code>metadata_version</code> 1 recording
+  <strong>raises</strong> rather than guessing: the two NP2.0 families differ by 3.2× and a version 1 sidecar does
+  not say which part it was. Covered by <code>python/tests/test_reader_scale.py</code>.
+  This mattered most on <strong>NP1.0</strong>, whose gains are per channel and live in the applied IMRO: the
+  Open Ephys export used to print <em>"assumes IMEC LFP gain 250 … if the gain was changed in the IMRO
+  panel this is wrong by the gain ratio"</em>, and now prints <em>"Taken from the recording:
+  scale.volts_per_count = 4.6875e-06 (provenance applied-map)"</em>. SpikeGLX takes <code>imChan0apGain</code> /
+  <code>imChan0lfGain</code> the same way, and its <code>~imroTbl</code> is the applied map verbatim, so the per-channel
+  gains a SpikeGLX reader actually uses are the ones the probe was configured with.
+  <strong>A NON-uniform band is deliberately not collapsed to one number</strong> — Open Ephys can carry
+  per-channel <code>bit_volts</code>, and averaging differing gains would be exactly the silent misscaling this
+  module refuses elsewhere. Such a recording falls back to the table until per-channel <code>bit_volts</code> is
+  wired through.</li>
 <li><strong><code>sample_rate_hz</code> is always the profile's number, never the device's.</strong> <code>RecordProcessor</code> passes
   the YAML value through. The OneBox ADC is declared 30300 and runs ≈30300.5 — 16.5 ppm. Both
   converters also report an <em>implied</em> rate computed from the tick counter, which is the honest one.</li>
@@ -437,6 +460,43 @@ looks clean (issue #63).</p>
   the Open Ephys writer has no equivalent. Not reachable with the shipped configs — the recorder's
   own filenames would collide first.</li>
 </ul>
+<hr />
+<h2 id="6a-what-a-recording-carries-besides-its-bands">6a. What a recording carries besides its bands<a class="headerlink" href="#6a-what-a-recording-carries-besides-its-bands" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>written by</th>
+<th>what it settles</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;band&gt;.bin.json</code></td>
+<td><code>RecordProcessor</code></td>
+<td>the frame layout, scale, and per-channel map — §1</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_ripple.json</code></td>
+<td><code>RippleDetector</code></td>
+<td>the detector's <strong>configuration</strong>: electrodes, read-out channels, trained µ/σ/threshold, params, stim train</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_events.jsonl</code></td>
+<td><code>RippleDetector</code></td>
+<td>what the session <strong>did</strong>: one JSON object per <code>rippleDetected</code> / <code>rippleLatency</code> / <code>rippleStimFired</code></td>
+</tr>
+</tbody>
+</table>
+<p>All three live inside <code>&lt;dir&gt;/&lt;name&gt;/</code>, with the bands. The ripple sidecar moved there on 2026-08-28
+— it used to sit one level up, so archiving the recording folder left it behind — and the event log
+is new the same day. Before it, detections and stim times existed only as live WebSocket messages
+and did not survive the session.</p>
+<p><strong>Neither exporter translates the event log.</strong> SpikeGLX has no place for it, and while Open Ephys
+does define an events directory, writing one has not been built or verified against a reader — so
+the file is left as JSONL beside the bands rather than half-translated into a format nothing has
+been shown to read. <code>rippleEnvelope</code> is deliberately not recorded at all: it is recomputable from the
+band, and writing it would put a file append on the detection path.</p>
 <hr />
 <h2 id="7-adding-a-band-or-a-probe">7. Adding a band or a probe<a class="headerlink" href="#7-adding-a-band-or-a-probe" title="Permanent link">#</a></h2>
 <p><strong>A new band:</strong> add it to <code>BAND_STREAM</code> in <code>spikeglx.py</code> and to the scale table in <code>openephys.py</code>.
@@ -466,6 +526,7 @@ would make one fail on a machine that has only the other.</p>
 </ul>
 </li>
 <li><a href="#6-known-limits">6. Known limits</a></li>
+<li><a href="#6a-what-a-recording-carries-besides-its-bands">6a. What a recording carries besides its bands</a></li>
 <li><a href="#7-adding-a-band-or-a-probe">7. Adding a band or a probe</a></li>
 </ul>
 </div>

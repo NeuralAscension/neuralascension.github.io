@@ -36,7 +36,7 @@
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -598,11 +598,18 @@ loop (modal dialogs, long hardware ops) is deferred or moved off the dispatch.</
   <code>GlColumnRenderer</code> (WebGL2) per column in <code>#view-data</code>, which holds the only copy of the samples.
   <code>DataStore</code> keeps per-channel <em>display state</em> (offsets, zoom, color), not samples.</li>
 <li>Probe map: <code>ImroManager.initProbeMap(npxBackend)</code> builds a canvas-2D <code>ProbeMap</code> of probe
-  geometry in <code>#view-map</code>, fetches IMRO via <code>getImroAsJson</code>, supports <strong>click-select / drag-window /
-  bank presets</strong> (modulo-384 rules; reserved channel 191 drawn amber) that push back via
+  geometry in <code>#view-map</code>, fetches IMRO via <code>getImroAsJson</code>, supports <strong>click-select / free-form drag /
+  bank presets</strong> (a drag assigns exactly the electrodes it covers and channels outside the run keep
+  what they had; the Bank 0/1/2 buttons still fill all 384 at one depth; channel = electrode % 384,
+  bank = electrode / 384; reserved channel 191 drawn amber) that push back via
   <code>updateImroFromJson</code>, and <strong>Apply / Save / Load</strong> via the invokables above (Load reads the file
   client-side — §7.5).</li>
-<li>The probe-map ↔ live-data tab bar (<code>#main-tabs</code>) is revealed only for NPX sources.</li>
+<li>The probe-map ↔ live-data tab bar (<code>#main-tabs</code>) is hidden on every source change and revealed by
+  <code>initProbeMap</code> when a probe map actually exists — the source's <em>name</em> is never consulted (it used to
+  test <code>sourceName.includes("NPX")</code>, which the hardware profiles <code>OneBox</code>/<code>PXIe</code>/<code>Neuropixels</code> all
+  fail and every simulated profile still passes). <code>selectMainTab('map'|'data')</code> owns both the visible
+  panel and the highlighted tab: connecting a probe opens the map, confirmed streaming switches to
+  Live Data, and pausing does not switch back.</li>
 <li>A toolbar <strong>status display</strong> (<code>#status-display</code>, right of Record) shows human-readable lifecycle +
   IMRO events (connecting, probe found, apply/load/save, play/record) via <code>window.guiStatus</code> →
   <code>AppController.setStatus</code>; everything also mirrors to the console (<code>[STATUS] …</code>).</li>
@@ -757,9 +764,11 @@ config that closes a loop pays the CPU cost. Result: sub-millisecond closed loop
 <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>; numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
 <h3 id="116-the-commandevent-model-today-and-what-is-still-a-todo">11.6 The command/event model today — and what is still a TODO<a class="headerlink" href="#116-the-commandevent-model-today-and-what-is-still-a-todo" title="Permanent link">#</a></h3>
 <p>§7 chose <strong>Option A</strong>: per-module frontend commands ride <code>Q_INVOKABLE</code> over QWebChannel. That is now the
-standard across <em>multiple</em> modules — the NPX sources, <code>RecordProcessor::setRecording</code>, and the ripple
-detector's sidecar invokables all register their own object at select time
-(<code>WebSocketServer::onSourceSelection</code>), so adding a module needs no central-router edit. Alongside it:</p>
+standard across <em>multiple</em> modules — the NPX sources and <code>RecordProcessor</code> register their own object
+at select time (<code>WebSocketServer.cpp:280, :361</code>), so adding a module needs no central-router edit. The
+ripple detector is <strong>not</strong> web-registered: its <code>Q_INVOKABLE</code> sidecar methods are queued to it from
+<code>RecordProcessor::setRecording</code>, which is the one point the GUI Record button and the WebSocket
+command share. Alongside it:</p>
 <ul>
 <li><strong>Data-plane "subscription" is config-driven</strong> and is the only subscription initialized from YAML: a
   processor's <code>configure()</code> reads its <code>input(s):</code> names and registers as a <code>CircularBuffer</code> consumer

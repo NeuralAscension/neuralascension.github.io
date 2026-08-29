@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -324,8 +324,8 @@ made debugging a red suite guesswork.</p>
 </tr>
 <tr>
 <td><code>test_recordingmetadata</code></td>
-<td style="text-align: right;">20</td>
-<td>The sidecar: <code>frame.bytes</code>, channel columns, provenance</td>
+<td style="text-align: right;">25</td>
+<td>The sidecar: <code>frame.bytes</code>, channel columns, the part-number-resolved NP2.0 scale, provenance</td>
 </tr>
 <tr>
 <td><code>test_bandfilterprocessor</code></td>
@@ -338,9 +338,19 @@ made debugging a red suite guesswork.</p>
 <td>WavePlayer against a <strong>link-time fake</strong> of the vendor API (§4a)</td>
 </tr>
 <tr>
+<td><code>test_oneboxadc</code></td>
+<td style="text-align: right;">8</td>
+<td>OneBox comparator windows: which low/high pairs may be sent at all (#50b)</td>
+</tr>
+<tr>
+<td><code>test_basestationscan</code></td>
+<td style="text-align: right;">17</td>
+<td>Which basestation is attached, and that <code>source.npx.auto</code> REFUSES to pick when both are</td>
+</tr>
+<tr>
 <td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>384</strong></td>
-<td>20 suites, ~1.6 s wall clock (Linux/GCC 13.3, 2026-08-26)</td>
+<td style="text-align: right;"><strong>414</strong></td>
+<td>22 suites, ~1.6 s wall clock (Linux/GCC 13.3; counts re-checked 2026-08-28)</td>
 </tr>
 </tbody>
 </table>
@@ -559,8 +569,8 @@ and 1280, so the intermediate tier — which folds only <code>view</code> — is
 failure (every invariant holds), but it means a whole CSS tier is carrying no weight and could be
 removed, or the thresholds separated so it does.</p>
 <h3 id="live_view-traces-labels-strips-pinning"><code>live_view</code> — traces, labels, strips, pinning<a class="headerlink" href="#live_view-traces-labels-strips-pinning" title="Permanent link">#</a></h3>
-<p>Covers: traces render at 1/2/3 columns (a sized canvas and a non-zero renderable-series count per
-column); the ADC column is labelled with the <strong>SDR</strong> connector name and its traces are <code>IOn</code>; no
+<p>Covers: traces render at 1/2/3 columns (a sized canvas, and a non-zero row count reported by the
+column's own WebGL renderer — <code>column.gl.rows</code>, which a renderer that drew nothing cannot fake); the ADC column is labelled with the <strong>SDR</strong> connector name and its traces are <code>IOn</code>; no
 column is left saying <em>"Waiting for data…"</em> after play; a control strip collapses when the window is
 narrowed to 1080px at three columns — width is what makes a column too small, not column count —
 while the <strong>depth readout stays visible</strong>; a pin holds the strip open <strong>and survives a column

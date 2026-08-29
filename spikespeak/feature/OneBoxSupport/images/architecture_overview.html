@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -223,15 +223,51 @@ profile in <code>config/</code> wires names together. A source's <code>Q_INVOKAB
 </tr>
 <tr>
 <td>source</td>
+<td><code>source.npx.onebox</code></td>
+<td><code>Npx::NeuropixelsSource</code></td>
+<td><strong>NPX_HW_ENABLED</strong>; virtual slot 16, port/dock auto-detected</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.npx.sim2</code> / <code>source.npx.simadc</code></td>
+<td><code>Npx::SimulatedDataSource</code></td>
+<td>simulated NP2.0 / simulated OneBox ADC</td>
+</tr>
+<tr>
+<td>source</td>
 <td><code>source.nidaq</code></td>
 <td><code>NiDaq::NIDAQSource</code></td>
 <td>NIDAQ_HW_ENABLED</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.nidaq.sim</code></td>
+<td><code>NiDaq::NIDAQSource</code></td>
+<td>simulated NI-DAQ</td>
 </tr>
 <tr>
 <td>data</td>
 <td><code>data.npx.raw</code></td>
 <td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
 <td>NP2 raw</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.npx.adc</code> / <code>data.npx.adc.di</code></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td>OneBox 12-ch ADC analog + the comparator logic band</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.spike</code></td>
+<td><code>CircularBuffer&lt;float,float&gt;</code></td>
+<td>derived spike band (<code>proc.spike</code>)</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.nidaq.di</code></td>
+<td><code>NiDaq::NiDaqData</code></td>
+<td>NI-DAQ digital in</td>
 </tr>
 <tr>
 <td>data</td>
@@ -295,12 +331,27 @@ profile in <code>config/</code> wires names together. A source's <code>Q_INVOKAB
 </tr>
 <tr>
 <td>interp</td>
-<td><code>interp.nidaq.raw</code></td>
+<td><code>interp.npx.adc</code> / <code>interp.npx.adc.di</code></td>
+<td><code>Npx::NpxDataInterpreter</code></td>
+<td>OneBox ADC framing</td>
+</tr>
+<tr>
+<td>interp</td>
+<td><code>interp.nidaq.raw</code> / <code>interp.nidaq.di</code></td>
 <td><code>NiDaq::NiDaqDataInterpreter</code></td>
 <td>NIDAQ_HW_ENABLED</td>
 </tr>
+<tr>
+<td>proc</td>
+<td><code>proc.spike</code> / <code>proc.nidaq.display</code></td>
+<td><code>BandFilterProcessor</code> / <code>NiDaq::DisplayProcessor</code></td>
+<td></td>
+</tr>
 </tbody>
 </table>
+<p><code>source.npx.auto</code> is deliberately <strong>not</strong> in this table: it is not a registered module.
+<code>SourceManager</code> resolves it to <code>source.npx.onebox</code> or <code>source.npx.pxi</code> from a scan that opens nothing,
+and refuses (offering the operator a choice) when both are attached.</p>
 <hr />
 <h2 id="the-data-plane-one-producer-many-consumers">The data plane (one producer, many consumers)<a class="headerlink" href="#the-data-plane-one-producer-many-consumers" title="Permanent link">#</a></h2>
 <p><code>CircularBuffer&lt;tData, tAux&gt;</code> (<code>src/core/CircularBuffer.hpp</code>): the source is the single <strong>producer</strong>
@@ -365,6 +416,21 @@ live-view ordering/bands over QWebChannel) · <code>Config</code> (constants). S
 <h2 id="per-profile-pipelines">Per-profile pipelines<a class="headerlink" href="#per-profile-pipelines" title="Permanent link">#</a></h2>
 <p>One diagram per <code>config/*.yaml</code>, generated with the rest. These are the useful ones day to day: they
 answer "what does <em>this</em> profile actually wire up" without reading the YAML.</p>
+<details>
+<summary><b>Neuropixels — the profiles you actually select</b></summary>
+<p><code>Neuropixels</code> uses <code>source.npx.auto</code>: the basestation and the probe are both read from the rig, and a
+machine with both a OneBox and a PXIe attached raises a choice rather than guessing — then you pick
+<code>OneBox</code> or <code>Pxie</code> by name.</p>
+<p><img alt="Neuropixels (auto)" src="../developer_docs/images/architecture_Neuropixels.svg" />
+<img alt="PXIe with NI-DAQ" src="../developer_docs/images/architecture_NeuropixelsNiDaq.svg" />
+<img alt="OneBox (explicit)" src="../developer_docs/images/architecture_OneBox.svg" />
+<img alt="PXIe (explicit)" src="../developer_docs/images/architecture_Pxie.svg" />
+<img alt="PXIe + NI-DAQ (explicit)" src="../developer_docs/images/architecture_PxieNiDaq.svg" /></p>
+</details>
+<p>The <code>Npx1Pxi</code> / <code>Npx2OneBox</code> / … family below are the <strong>legacy explicit</strong> profiles, kept for
+reproducing old measurements and hidden from the dropdown. <code>Npx2OneBoxDigitalIn</code>
+(<code>architecture_Npx2OneBoxDigitalIn.svg</code>) is the one carrying the <code>data.npx.adc.di</code> comparator band
+that the OneBox dock's threshold panel configures.</p>
 <details>
 <summary><b>Neuropixels 1.0 — hardware</b></summary>
 <p><code>Asap</code> variants set the low-latency source flag ([<code>../developer_docs/LatencyProfiling.md</code>]) and are

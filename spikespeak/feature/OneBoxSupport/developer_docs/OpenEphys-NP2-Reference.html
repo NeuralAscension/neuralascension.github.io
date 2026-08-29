@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -142,8 +142,8 @@ Within a shank the <em>bank</em> sets the electrode range, but the <em>channel</
 <thead>
 <tr>
 <th></th>
-<th>NP2.0 single (NP2_1, id <code>21</code>)</th>
-<th><strong>NP2.0 multishank (NP2_4, id <code>24</code>)</strong></th>
+<th>NP2.0 single (NP2_1 — ids <code>21</code> / <code>2003</code> / <code>2004</code>)</th>
+<th><strong>NP2.0 multishank (NP2_4 — ids <code>24</code> / <code>2010</code> / <code>2013</code> / <code>2014</code>)</strong></th>
 </tr>
 </thead>
 <tbody>
@@ -258,7 +258,9 @@ NP_ErrorCode writeProbeConfiguration(int slot,int port,int dock,bool read_check)
 <strong>disconnects all four shank switches</strong> (<code>NONE_REF</code>) before setting the chosen reference.</p>
 <hr />
 <h2 id="6-imro-format-formatsimroh113-146-367-401">6. IMRO format  (<code>Formats/IMRO.h:113-146, 367-401</code>)<a class="headerlink" href="#6-imro-format-formatsimroh113-146-367-401" title="Permanent link">#</a></h2>
-<p>Header <code>(24,384)</code> — <code>24</code> = NP2_4 part id, <code>384</code> = channels. Then one entry per channel:</p>
+<p>Header <code>(&lt;part id&gt;,384)</code> — the part id identifies the variant (<code>24</code> = NP2010 prototype,
+<code>2010</code>/<code>2013</code>/<code>2014</code> = the shipping 4-shank parts; OpenEphys accepts all four, <code>Formats/IMRO.h:211</code>),
+<code>384</code> = channels. Then one entry per channel:</p>
 <pre><code>(channel  shank  bank  reference  electrode_within_shank)
    0-383   0-3   0-3   0=Ext|1-4=Tip   0-1279
 </code></pre>
@@ -281,10 +283,15 @@ enforces one-electrode-per-channel and surfaces bank/shank conflicts. This is th
 our <code>ImroManager.js</code> NP2 branch (today a non-interactive placeholder grid).</p>
 <hr />
 <h2 id="8-mapping-to-our-code-what-to-build-see-neuropixels20md">8. Mapping to our code (what to build — see Neuropixels2.0.md)<a class="headerlink" href="#8-mapping-to-our-code-what-to-build-see-neuropixels20md" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>§8 is historical</strong> — built 2026-07-06, kept as the derivation. Current behaviour is in
+<a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a> §7.</p>
+</blockquote>
 <ul>
 <li><strong>Default map</strong> (<code>NpInterface.cpp:548</code> stub) → emulate <code>Neuropixels2</code> default (all ch, shank 0, bank A)
-  or a preset; set <code>probeIdStr="24"</code>, fill <code>channels[]</code> with <code>{channelId, shank, bank, refId,
-  electrodeId(within-shank)}</code>.</li>
+  or a preset; set <code>probeIdStr</code> from <code>SP::npx2Electrical(mProbePartNumber).imroTypeId</code> — <strong>never a
+  literal</strong> (see <code>Npx2Scale.hpp</code>, issue #65) — and fill <code>channels[]</code> with <code>{channelId, shank, bank,
+  refId, electrodeId(within-shank)}</code>.</li>
 <li><strong>Apply</strong> (<code>NpInterface.cpp:745</code> stub) → the §4 sequence: per-channel <code>np_selectElectrode(...,shank,
   bank)</code> + <code>np_setReference(...,shank,...)</code> (disconnect shanks first), then the existing
   <code>np_writeProbeConfiguration(read_check=true)</code> verify. No gain/filter calls.</li>

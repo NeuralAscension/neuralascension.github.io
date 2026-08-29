@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -129,8 +129,13 @@
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="openephys-onebox-reference-digest-for-the-spikespeak-onebox-port">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)<a class="headerlink" href="#openephys-onebox-reference-digest-for-the-spikespeak-onebox-port" title="Permanent link">#</a></h1>
 <blockquote>
-<p>Supporting reference for <a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a> (that plan is the
-authority). This is a digest of how the OpenEphys <code>neuropixels-pxi</code> plugin implements OneBox, produced by
+<p>Digest of how the OpenEphys <code>neuropixels-pxi</code> plugin implements OneBox, kept as the <strong>API reference</strong>.
+The port itself is DONE — issues #50 and #59 are closed (#59 as <em>recovered and mitigated</em>,
+vendor-side, not fixed) — so the authority for current behaviour is the shipped implementation plus
+<code>user_docs/</code>; the archived plan <a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a>
+is history, and one of its scope items is <strong>unbuildable</strong>: there is no <code>np_ADC_enableChannel</code>, only
+<code>ADC_enableProbe</code> (all twelve channels or none). Comparator thresholds have a GUI in the OneBox dock
+and persist in the device across sessions. Produced by
 Antigravity/Gemini and then <strong>cross-checked symbol-by-symbol against the vendored v4 header</strong>
 <code>external/neuropixels/api/include/v4/NeuropixAPI.h</code>. Every IMEC call named below exists in that header
 (confirmed): <code>scanBS</code>, <code>getDeviceList</code>, <code>getDeviceInfo</code>, <code>basestationID.platformid</code>,

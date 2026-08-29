@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
 <a href="AgentTraps.html">Traps that have cost real time</a>
-<a href="SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
 <a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -337,8 +337,11 @@ a live schematic on <code>#rd-pulse-canvas</code> (<code>RippleModule._drawPulse
 - <strong>bottom zone</strong> — the pulse train at real <code>1/freq</code> spacing over the <code>train</code> window, with a <code>1/freq</code>
   period marker and a <code>&lt;freq&gt;Hz · train &lt;ms&gt; → &lt;N&gt; pulses</code> summary.</p>
 <p>So editing any value updates both the pulse <strong>shape</strong> (phase/gap widths) and the <strong>spacing/count</strong>
-(freq/train) immediately. Pure frontend — no rebuild; sync <code>webinterface/RippleModule.js</code> into the
-build tree's <code>webinterface/</code> (the backend serves that copy) and hard-reload the browser (it caches JS).</p>
+(freq/train) immediately. Pure frontend — no rebuild and no copy step. <code>src/main.cpp:58-62</code> serves <code>webinterface/</code> off disk per
+request (the exe sits in <code>&lt;repo&gt;/bin</code>, so <code>../webinterface</code> is the source directory), so editing
+<code>webinterface/RippleModule.js</code> and hard-reloading the browser is the whole loop. See
+<a href="RendererContract.html"><code>RendererContract.md</code></a> T-27 for the one caveat: the handler does not strip a
+query string, so a <code>…js?flag=…</code> URL 404s.</p>
 <p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labeled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview.png" /></p>
 <h2 id="clickable-armdisarm-stim-toggle-2026-07-16">Clickable arm/disarm stim toggle (2026-07-16)<a class="headerlink" href="#clickable-armdisarm-stim-toggle-2026-07-16" title="Permanent link">#</a></h2>
 <p>The small <strong>stim-server LED</strong> in the Detection &amp; stimulation card is a <strong>clickable toggle</strong>

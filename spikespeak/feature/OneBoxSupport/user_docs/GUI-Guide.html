@@ -36,7 +36,7 @@
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
 <a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
-<a href="../developer_docs/SourceSelection.html">Source selection — three choices, and a probe that names itself</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
 <a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
 <a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
 <a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
@@ -141,8 +141,8 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
 <ol>
 <li>Run <strong><code>SpikesPeak.exe</code></strong>. It opens a dedicated browser window at the UI (or browse to
    <code>http://localhost:8234</code>). The top toolbar shows <strong>Source: None</strong> and a status of <strong>Ready</strong>.</li>
-<li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown. There are three hardware choices, and they name
-   the <strong>basestation</strong> — not the probe:</li>
+<li><strong>Pick a source</strong> from the <strong>Source</strong> dropdown. There are two hardware entries, and neither names
+   a probe:</li>
 </ol>
 <table>
 <thead>
@@ -153,19 +153,18 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
 </thead>
 <tbody>
 <tr>
-<td><strong><code>OneBox</code></strong></td>
-<td>A OneBox (the USB box). Its 12-channel ADC streams alongside the probe.</td>
+<td><strong><code>Neuropixels</code></strong></td>
+<td>Always, unless you need the NI-DAQ card. The basestation (OneBox or PXIe) <em>and</em> the probe are both auto-detected; the row shows what the scan found. A OneBox's 12-channel ADC streams alongside the probe.</td>
 </tr>
 <tr>
-<td><strong><code>PXIe</code></strong></td>
-<td>A PXIe chassis, probe only.</td>
-</tr>
-<tr>
-<td><strong><code>PXIe + NI-DAQ</code></strong></td>
-<td>A PXIe chassis where you also want the NI-DAQ card's analog and digital inputs — this is the one a closed-loop rig wants, because it captures the stimulus pulse.</td>
+<td><strong><code>PXIe with NI-DAQ</code></strong></td>
+<td>You also want the NI-DAQ card's analog and digital inputs — this is the one a closed-loop rig wants, because it captures the stimulus pulse. Offered only when a PXIe module is present.</td>
 </tr>
 </tbody>
 </table>
+<p><strong>If a OneBox <em>and</em> a PXIe module are both attached</strong>, the auto entry is withdrawn: only one can be
+   used at a time, so the menu asks which, offering <strong><code>OneBox</code></strong> / <strong><code>PXIe</code></strong> / <strong><code>PXIe with NI-DAQ</code></strong>.
+   Those three are also still selectable by name from the control CLI.</p>
 <p><img alt="Source dropdown" src="images/source_dropdown.png" /></p>
 <p><strong>You do not tell SpikesPeak which probe you have.</strong> It asks the probe. A Neuropixels 1.0 and a
    2.0 stream different things — a 1.0 gives separate AP and LFP bands, a 2.0 gives one wideband
@@ -224,8 +223,9 @@ than in SpikesPeak — or, frankly, in any current Neuropixels acquisition GUI.<
 </blockquote>
 <hr />
 <h2 id="3-live-data-watch-the-signal">3. Live Data (watch the signal)<a class="headerlink" href="#3-live-data-watch-the-signal" title="Permanent link">#</a></h2>
-<p>Press <strong>▶ Play</strong>, then the <strong>Live Data</strong> tab. Traces are <strong>depth-sorted</strong> (deepest/tip at the bottom) and
-labeled by electrode + side.</p>
+<p>Press <strong>▶ Play</strong> — the view switches itself to <strong>Live Data</strong> when the backend confirms the stream is
+running. (Pausing leaves you on Live Data; it does not jump back to the map.) Traces are
+<strong>depth-sorted</strong> (deepest/tip at the bottom) and labeled by electrode + side.</p>
 <p>The <strong>▶ / ⏸ Play button</strong> shows its state by color: <strong>green ▶ when paused</strong> (ready — "press to play"), and
 a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (the green ring is the unmistakable "live" cue —
 it mirrors the Record button's armed ring, but green). A disabled button (no source selected) stays gray.</p>
@@ -255,7 +255,7 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
   probes. The <strong>Columns/Rows</strong> selector sets how many strips (up to 4); the choice persists across reloads.</li>
 </ul>
 <blockquote>
-<p><strong>Density costs frame rate, and only frame rate.</strong> Columns × Ch is what the browser has to draw. Up to roughly 160–200 traces the view holds a full 60 fps; four columns of 120 — 480 traces on screen — runs at about 42 fps on this rig. Nothing is dropped from the data: acquisition, recording and ripple detection are untouched, and it is the <em>display</em> refresh that slows. (A faster renderer that holds 60 fps at that density exists and is opt-in — see <a href="../developer_docs/RendererExperiment.html"><code>RendererExperiment.md</code></a>.)</p>
+<p><strong>Density costs frame rate, and only frame rate.</strong> Columns × Ch is what the browser has to draw, and since 2026-08-27 it is drawn by a hand-written WebGL2 renderer that holds a solid 60 fps even at four columns of 120 — 480 traces on screen. Nothing is dropped from the data in any case: acquisition, recording and ripple detection are untouched. (What the live view used to do at that density, and why it was replaced, is in <a href="../developer_docs/RendererExperiment.html"><code>RendererExperiment.md</code></a>.)</p>
 </blockquote>
 <p><img alt="Vertical (rows) live view on a portrait monitor" src="images/vertical_liveview.png" />
 - With <strong>NI-DAQ</strong>, one column can show the analog channels (a TTL sync pulse is visible on ch 0).

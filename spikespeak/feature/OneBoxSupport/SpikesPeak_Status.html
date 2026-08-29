@@ -101,8 +101,9 @@
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
 <a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -5964,7 +5965,180 @@ mean the writer is broken, never that the window happened to be quiet.</p>
   counter that only goes up.</li>
 </ul>
 <p>Proved by injecting both regressions at once and watching exactly the two new checks go red, naming
-the defect in each case ("Sidecar is in <code>'.'</code>, bands are in <code>'sidecar_probe'</code>"), then reverting.</p></article>
+the defect in each case ("Sidecar is in <code>'.'</code>, bands are in <code>'sidecar_probe'</code>"), then reverting.</p>
+<hr />
+<h2 id="67-the-control-surface-answers-back-2026-08-28">67. THE CONTROL SURFACE ANSWERS BACK  (2026-08-28)<a class="headerlink" href="#67-the-control-surface-answers-back-2026-08-28" title="Permanent link">#</a></h2>
+<p>Issues #51, #63, #64 and #61/#62, worked in one pass because three of them turn out to be the same
+sentence: <strong>the system told a client something that was not true, and the client could not tell.</strong></p>
+<h3 id="67a-two-of-the-four-were-already-half-fixed-and-the-issues-did-not-know-it">67a. Two of the four were already half-fixed, and the issues did not know it<a class="headerlink" href="#67a-two-of-the-four-were-already-half-fixed-and-the-issues-did-not-know-it" title="Permanent link">#</a></h3>
+<p>Before writing anything, an audit of the implementation surface turned up commit <code>1a8b725</code> ("Report a
+short recording, and stop ignoring commands in silence", 2026-08-25) already on this branch. It had
+added the terminal <code>else</code> #64 asks for and the record-stop shortfall check #63 asks for. Both issues
+still described the code as it was before that commit, and so did
+<code>developer_docs/AgentTraps.md</code> — the file <code>CLAUDE.md</code> tells every agent to read second, asserting a
+defect that no longer existed.</p>
+<p><strong>Check the tree before implementing from an issue.</strong> Two of the four items here would have been
+written twice.</p>
+<h3 id="67b-64-a-warning-nobody-receives-is-not-a-report">67b. #64 — a warning nobody receives is not a report<a class="headerlink" href="#67b-64-a-warning-nobody-receives-is-not-a-report" title="Permanent link">#</a></h3>
+<p>The terminal <code>else</code> logged a <code>qWarning</code> and stopped. That reaches <code>output.log</code>, and the sender of an
+unrecognized command is <strong>by definition a script, the CLI or an agent</strong> — none of which read it. The
+four-cell hardware run that motivated the issue would still have failed exactly the same way.</p>
+<p>Every other refusal on this surface already replies to the client: a refused select, a refused play
+and a refused <code>setRecording</code> all broadcast <code>guiStatus</code>. Log-only was the outlier. It now broadcasts.</p>
+<p>Three more things came out of that, none of which were in the issue:</p>
+<ul>
+<li><strong>A known name missing its <code>value</code> was reported as an unrecognized NAME.</strong> That sends the author
+  hunting for a typo that does not exist. The two cases are now distinguished.</li>
+<li><strong><code>Disconnect</code> demanded a <code>value</code> its body throws away.</strong> So <code>{"command":"Disconnect"}</code> — the most
+  likely hand-written command on this whole surface — fell through and was reported as an unknown
+  name, when the name was exactly right. The guard is deleted.</li>
+<li><strong><code>RippleDetector::slApplyCommand</code> had the same gap and a worse consequence.</strong> It echoes full state
+  after every action, unconditionally, so an unknown action came back with a plausible-looking
+  <code>rippleState</code> — a <em>fabricated ACK</em> rather than silence. It is also the highest-traffic scripted
+  surface in the repo. An unknown action now warns and returns without echoing.</li>
+</ul>
+<h3 id="67c-51-narrowed-to-the-transient-and-the-transient-is-gone">67c. #51 — narrowed to the transient, and the transient is gone<a class="headerlink" href="#67c-51-narrowed-to-the-transient-and-the-transient-is-gone" title="Permanent link">#</a></h3>
+<p>The steady state was already correct, which is why two earlier investigations concluded it was fixed.
+What survived was one broadcast wide: <code>stateSource</code> went out naming the <strong>requested</strong> source before
+the connect was attempted, and was corrected only afterwards. A client that polls never notices. A
+client that <em>reacts</em> to a state change — starts a recording, relabels a file, rebuilds a band list —
+acts on a source that never connected.</p>
+<p>The broadcast was early for an ordering reason, not a timing one: <code>deviceReady</code> triggers the
+browser's QWebChannel bind and that bind is keyed on the source name, so <code>stateSource</code> must arrive
+first. Moving it to immediately before <code>setDeviceState</code> preserves that invariant exactly and emits
+nothing at all on the refusal path. The visible cost is that the picker no longer shows the new name
+<em>during</em> a slow connect — which is the honest rendering, because during that window it is not the
+source.</p>
+<h3 id="67d-63-the-half-that-was-closable-and-the-half-that-is-not">67d. #63 — the half that was closable, and the half that is not<a class="headerlink" href="#67d-63-the-half-that-was-closable-and-the-half-that-is-not" title="Permanent link">#</a></h3>
+<p><strong>Closed.</strong> The shortfall warning now travels <code>sigIpErrorOccurred</code>, which is relayed to the toolbar
+for every processor, so a band recording at 66 % of nominal is visible to somebody <em>watching the
+GUI</em> rather than only to somebody reading <code>output.log</code> afterwards.</p>
+<p><strong>Also closed, and it was worse than the issue knew.</strong> Nothing called <code>setRecording(false)</code> on any
+teardown path — <code>teardownSource()</code> paused the stream and deregistered the recorders, and its comment
+claimed recording is "stopped by pausing the stream downstream", which was never true. So a recording
+ended with <code>Disconnect</code> or <code>quit</code> skipped its <strong>entire stop path</strong>: no shortfall check, no ripple
+sidecar rewrite with the trained thresholds, no explicit flush and close of the event log, and no log
+line saying where the file went. The one session you most want the check for — the one that ended
+badly — was exactly the one that never reported.</p>
+<p><strong>Still open, and deliberately.</strong> #63 needs a <strong>per-batch continuity check</strong> on the 100 kHz tick
+counter (each batch's first timestamp against the previous batch's last: constant work per batch, no
+clock read, no allocation) to say <em>when</em> samples were lost, where the stop-time ratio only says <em>how
+many</em>. And it needs the measurement repeated on this rig to settle general-versus-machine-specific.
+Neither is done. The control config <code>Npx2OneBoxNoAdc.yaml</code> the issue asks to be committed <strong>already
+is</strong> — that part of the issue is stale.</p>
+<h3 id="67e-61-62-the-term-everyone-expected-to-differ-does-not">67e. #61 / #62 — the term everyone expected to differ does not<a class="headerlink" href="#67e-61-62-the-term-everyone-expected-to-differ-does-not" title="Permanent link">#</a></h3>
+<p>NP1.0 on PXIe, measured, filling one of the three empty cells of the eye/ear matrix:</p>
+<table>
+<thead>
+<tr>
+<th>term</th>
+<th>NP2.0, OneBox (2026-08-25)</th>
+<th>NP1.0, PXIe (2026-08-28)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_lag_mean_ms</code></td>
+<td>1.00 ms</td>
+<td><strong>1.00 ms</strong></td>
+</tr>
+<tr>
+<td><code>audio_ring_depth_ms</code></td>
+<td>15.11 ms</td>
+<td>3.45 ms</td>
+</tr>
+<tr>
+<td><code>output_latency_measured_ms</code></td>
+<td>99.90 ms</td>
+<td>18.87 ms</td>
+</tr>
+<tr>
+<td>raw → ear</td>
+<td>~116.0 ms</td>
+<td>~23.3 ms</td>
+</tr>
+<tr>
+<td>raw → eye</td>
+<td>19.2 ms</td>
+<td><strong>19.4 ms</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>#61 expected the source lag to differ</strong> because PXIe delivers over the PCIe backplane in a
+different block cadence from the OneBox's FT601 USB path. It does not — 1.00 ms, same to two
+decimals. <strong>#62 expected it might differ the other way</strong>, because NP1.0 hands the audio path a native
+AP band the probe already high-passed while NP2.0 makes the audio processor derive the band itself.
+Also 1.00 ms. Verified on the right band: <code>input_band = data.npx.ap</code>, <code>filtered = false</code>.</p>
+<p><strong>The 5x in the ear is the audio device, not the rig.</strong> Both runs took whatever device came up by
+default and they came up on different ones — MME/Sound Mapper at 99.90 ms measured on 2026-08-25,
+DirectSound/Primary Sound Driver at 18.87 ms today. <code>AudioVideoLatency.md</code> §2 already ranks nine
+devices from 8.71 to 99.90 ms on this same machine, so that spread is squarely inside what the page
+documents. Comparing ear totals is only meaningful with the device held fixed, and the doc now says
+so where the table is.</p>
+<p>Two cells remain and each needs one physical probe move. After these two rows there is little reason
+to expect either to differ: the source lag has now been shown constant across a transport change
+<em>and</em> a probe generation, which are the only variables they introduce.</p>
+<h3 id="67f-52-audited-against-the-evidence-and-it-cannot-close">67f. #52 — audited against the evidence, and it cannot close<a class="headerlink" href="#67f-52-audited-against-the-evidence-and-it-cannot-close" title="Permanent link">#</a></h3>
+<p>Twenty-two agents, every "satisfied" verdict attacked from two angles. <strong>Two of the five
+configurations have a dated record of actually being run</strong>, not four:</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>configuration</th>
+<th>verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Linux, no hardware</td>
+<td>green 2026-08-26 — but 22 commits and a whole renderer replacement ago</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Windows, no hardware</strong></td>
+<td><strong>never run</strong></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Windows + OneBox + PXIe</td>
+<td>no suite result recorded in the both-attached state</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Windows + PXIe, no OneBox</td>
+<td>no C++ or GUI suite counts recorded</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Windows + OneBox, no PXIe</td>
+<td>GUI was 5/6, <code>stream_options</code> red — an explained red, not a pass</td>
+</tr>
+</tbody>
+</table>
+<p>Configuration 1's staleness is the load-bearing one: SciChart came out and the hand-written WebGL2
+renderer went in <strong>after</strong> that run, on Windows only. The Linux 10/10 was against SciChart, and two
+C++ suites, thirty cases and five GUI tests added since have never been compiled by GCC.</p>
+<p><code>developer_docs/SecondMachineRunbooks.md</code> is new: one runbook per configuration, with what each
+proves, what it cannot, the exact commands, what to paste back into the issue, and the trap that
+<code>layout_matrix</code> passes on a landscape-only machine while measuring a layout no operator uses.</p>
+<p><code>scripts/requirements.txt</code> was rewritten. The headline it was missing: <strong>both suites need nothing
+installed</strong> — they import only the standard library and this repo's own modules. The old flat list of
+numpy/scipy/h5py read as "install these before you can test", which is false and is the kind of
+prerequisite a newcomer gives up on.</p>
+<h3 id="67g-two-test-authoring-notes-both-paid-for">67g. Two test-authoring notes, both paid for<a class="headerlink" href="#67g-two-test-authoring-notes-both-paid-for" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>ensure_backend()</code> is now separate from <code>Gui</code>,</strong> so a test that talks only to the WebSocket does
+  not launch a browser it never uses. Extracting it, I inserted the module-level function <em>inside the
+  class body</em>, which silently terminated the class — <code>Gui</code> lost <code>__enter__</code> and every method after
+  it. Caught immediately by the next run, and worth noting because the failure mode of a bad
+  extraction is not a syntax error.</li>
+<li><strong>Injecting the regression found a vacuous check, again.</strong> The unknown-ripple-action assertion ran
+  before any source was selected, so there was no <code>proc.rippledetector</code> to forward to and no echo
+  could ever appear. It passed for a reason unrelated to the code under test. It now runs after
+  connect <em>and</em> after play, with a positive control that a KNOWN action does echo.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6365,6 +6539,16 @@ the defect in each case ("Sidecar is in <code>'.'</code>, bands are in <code>'si
 <li><a href="#66a-the-sidecar-was-written-one-directory-too-high">66a. The sidecar was written one directory too high</a></li>
 <li><a href="#66b-nothing-on-disk-said-what-the-loop-actually-did">66b. Nothing on disk said what the loop actually did</a></li>
 <li><a href="#66c-the-test-that-could-not-see-either-bug">66c. The test that could not see either bug</a></li>
+</ul>
+</li>
+<li><a href="#67-the-control-surface-answers-back-2026-08-28">67. THE CONTROL SURFACE ANSWERS BACK (2026-08-28)</a><ul>
+<li><a href="#67a-two-of-the-four-were-already-half-fixed-and-the-issues-did-not-know-it">67a. Two of the four were already half-fixed, and the issues did not know it</a></li>
+<li><a href="#67b-64-a-warning-nobody-receives-is-not-a-report">67b. #64 — a warning nobody receives is not a report</a></li>
+<li><a href="#67c-51-narrowed-to-the-transient-and-the-transient-is-gone">67c. #51 — narrowed to the transient, and the transient is gone</a></li>
+<li><a href="#67d-63-the-half-that-was-closable-and-the-half-that-is-not">67d. #63 — the half that was closable, and the half that is not</a></li>
+<li><a href="#67e-61-62-the-term-everyone-expected-to-differ-does-not">67e. #61 / #62 — the term everyone expected to differ does not</a></li>
+<li><a href="#67f-52-audited-against-the-evidence-and-it-cannot-close">67f. #52 — audited against the evidence, and it cannot close</a></li>
+<li><a href="#67g-two-test-authoring-notes-both-paid-for">67g. Two test-authoring notes, both paid for</a></li>
 </ul>
 </li>
 </ul>

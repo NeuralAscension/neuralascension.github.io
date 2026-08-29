@@ -101,8 +101,9 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
 <a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -541,15 +542,15 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>listConfigs -- enumerate every loaded profile, plus the sim_variant and gui_hidden subsets</td>
-<td>0x1000 + {"command":"listConfigs"}. Handler: src/core/WebSocketServer.cpp:933-960. Reply broadcast: {"event":"configList", "configs":[<every internal name: field>], "simVariants":[{"name":...,"label":...}], "guiHidden":[names]} (built at :936-959). Sent automatically by the browser on socket open (webinterface/NetworkClient.js:32).</td>
+<td>0x1000 + {"command":"listConfigs"}. Handler: src/core/WebSocketServer.cpp:1069. Reply broadcast: {"event":"configList", "configs":[<every internal name: field>], "simVariants":[{"name":...,"label":...}], "guiHidden":[names]} (built at :936-959). Sent automatically by the browser on socket open (webinterface/NetworkClient.js:32).</td>
 </tr>
 <tr>
 <td>selectSource -- connect a profile by its internal name: (this is the top-level equivalent of "load this config")</td>
-<td>0x1000 + {"command":"selectSource","value":"<exact internal name: field>"} , with an optional {"playbackFile":"<abs path to .h5>"} used only when the name contains the literal substring "(play file)" (src/core/WebSocketServer.cpp:886-925; a "(play file)" name with no path opens a native QFileDialog at :899-921 and sets SP::Npx::SynthRippleSource::sPlaybackFile at :896 / :913). Flows to onSourceSelection (WebSocketServer.cpp:117) -&gt; MainController::handleTextCommand("connect <name>") (WebSocketServer.cpp:139-140) -&gt; handleConnectRequest (MainController.cpp:95) -&gt; setupSources then setupProcessors. Sent by webinterface/main.js:899-901.</td>
+<td>0x1000 + {"command":"selectSource","value":"<exact internal name: field>"} , with an optional {"playbackFile":"<abs path to .h5>"} used only when the name contains the literal substring "(play file)" (src/core/WebSocketServer.cpp:980; a "(play file)" name with no path opens a native QFileDialog and sets SP::Npx::SynthRippleSource::sPlaybackFile). Flows to onSourceSelection (WebSocketServer.cpp:117) -&gt; MainController::handleTextCommand("connect <name>") (WebSocketServer.cpp:139-140) -&gt; handleConnectRequest (MainController.cpp:95) -&gt; setupSources then setupProcessors. Sent by webinterface/main.js:899-901.</td>
 </tr>
 <tr>
 <td>Disconnect -- tear the whole graph down (frees hardware, clears all four registries)</td>
-<td>0x1000 + {"command":"Disconnect","value":"<anything, presence of the key is all that is checked>"}. Handler: src/core/WebSocketServer.cpp:927-929 -&gt; teardownSource() (:417) -&gt; handleTextCommand("disconnect") (:451). Sent by webinterface/main.js:319 (value is the literal string "moo").</td>
+<td>0x1000 + {"command":"Disconnect"}. <strong>No "value" is required as of 2026-08-28 (#64).</strong> It never was read -- teardownSource() takes no argument -- but the guard demanded it, so a bare {"command":"Disconnect"} fell through to the terminal else and was reported as an <em>unrecognized name</em>, which is the worst possible message for the most likely hand-written command on this surface. An extra "value" is still accepted and ignored; webinterface/main.js:507 still sends the literal string "moo". Handler: src/core/WebSocketServer.cpp:1026 -&gt; teardownSource(), which since the same date STOPS ANY RUNNING RECORDING FIRST (#63) so the file is closed through the recorder's stop path rather than dropped.</td>
 </tr>
 <tr>
 <td>setPlaying -- start/stop acquisition on the already-connected profile</td>

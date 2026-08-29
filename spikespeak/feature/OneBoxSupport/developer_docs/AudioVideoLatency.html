@@ -101,8 +101,9 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
 <a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -443,9 +444,90 @@ text frame carrying the same JSON is dropped silently — no error, no log. Use
 the operator happened to be clicking the same controls in the GUI at the time.</p>
 </blockquote>
 <hr />
-<h2 id="5-not-yet-measured">5. Not yet measured<a class="headerlink" href="#5-not-yet-measured" title="Permanent link">#</a></h2>
-<p>The instrumentation is source-agnostic, so these should match the OneBox figures — but "should" is
-not "does", and the whole point of this page is that the answer was measured.</p>
+<h2 id="5-measured-np10-on-pxie-2026-08-28">5. Measured, NP1.0 on PXIe (2026-08-28)<a class="headerlink" href="#5-measured-np10-on-pxie-2026-08-28" title="Permanent link">#</a></h2>
+<p>A different probe generation on a different transport, and the two terms this system owns are
+unchanged.</p>
+<table>
+<thead>
+<tr>
+<th>term</th>
+<th>NP2.0, OneBox (2026-08-25)</th>
+<th>NP1.0, PXIe (2026-08-28)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_lag_mean_ms</code></td>
+<td>1.00 ms</td>
+<td><strong>1.00 ms</strong> (mean 0.97, min 0.40, max 1.00, n = 23)</td>
+</tr>
+<tr>
+<td><code>source_lag_max_ms</code></td>
+<td>—</td>
+<td>2.40 ms median, 3.20 ms worst</td>
+</tr>
+<tr>
+<td><code>audio_ring_depth_ms</code></td>
+<td>15.11 ms</td>
+<td>3.45 ms</td>
+</tr>
+<tr>
+<td><code>output_latency_measured_ms</code></td>
+<td>99.90 ms</td>
+<td>18.87 ms</td>
+</tr>
+<tr>
+<td><code>output_latency_ms</code> (promised)</td>
+<td>91.43 ms</td>
+<td>120.00 ms</td>
+</tr>
+<tr>
+<td>audio device</td>
+<td>MME → Sound Mapper (default)</td>
+<td>DirectSound → Primary Sound Driver</td>
+</tr>
+<tr>
+<td><strong>raw → ear</strong></td>
+<td><strong>~116.0 ms</strong></td>
+<td><strong>~23.3 ms</strong></td>
+</tr>
+<tr>
+<td><strong>raw → eye</strong></td>
+<td><strong>19.2 ms</strong> (n = 973, p95 20.3)</td>
+<td><strong>19.4 ms</strong> (n = 906, p95 20.2)</td>
+</tr>
+</tbody>
+</table>
+<p>Audio ran on the right band, which is the precondition that makes the row mean anything:
+<code>input_band = data.npx.ap</code>, <code>filtered = false</code>, channel 19, 0 underflows, 0 starved callbacks.</p>
+<h3 id="what-this-settles">What this settles<a class="headerlink" href="#what-this-settles" title="Permanent link">#</a></h3>
+<p><strong>The source lag does not depend on the transport.</strong> This was the one term expected to differ. PXIe
+delivers over the PCIe backplane and the OneBox over FT601 USB, in different block cadences, and the
+audio converter runs 1.00 ms behind the acquisition writer on both — same value to two decimals.</p>
+<p><strong>Nor does it depend on how the band is produced.</strong> NP1.0 hands the audio path a native AP band the
+probe has already high-passed and it is passed through unfiltered; NP2.0 has no AP stream and the
+audio processor derives the 300–6000 Hz band itself. That is a materially different amount of work on
+the same path, and it does not show up: 1.00 ms either way. The band-pass is simply not where the
+time goes.</p>
+<p><strong>The eye is the display cadence and nothing else.</strong> 19.4 ms against 19.2 ms, on a different probe,
+a different basestation and a different day.</p>
+<h3 id="the-5-in-the-ear-is-the-audio-device-not-the-rig">The 5× in the ear is the audio device, not the rig<a class="headerlink" href="#the-5-in-the-ear-is-the-audio-device-not-the-rig" title="Permanent link">#</a></h3>
+<p>Read the ear column without the device column and PXIe looks five times worse. It is not. Both runs
+took whatever device came up by default, and they came up on different ones — the 2026-08-25 session
+on MME/Sound Mapper at 99.90 ms measured, this one on DirectSound/Primary Sound Driver at 18.87 ms.
+§2's device table already ranks nine devices from 8.71 ms to 99.90 ms measured on this same machine,
+so a 5× spread between two arbitrary defaults is squarely inside the range that table documents.</p>
+<p><strong>This is the argument for §2's conclusion, arrived at from a different direction:</strong> the ear is
+dominated by a term that has nothing to do with acquisition and everything to do with which device
+the audio panel opened. Comparing two ear totals is only meaningful with the device held fixed.</p>
+<blockquote>
+<p><strong>A caution about the <code>ear</code> column in the table below.</strong> The NP2.0/OneBox row of the original
+summary quoted <strong>≥ 92.4 ms</strong>, which is source lag + the <em>promised</em> output latency. §2 quotes
+<strong>~116.0 ms</strong> for the same run, which is source lag + ring depth + the <em>measured</em> latency. Both
+numbers describe one session. The measured form is the one this page argues for, and it is the one
+used above — so do not read 92.4 and 23.3 as a like-for-like comparison.</p>
+</blockquote>
+<h2 id="5a-still-not-measured">5a. Still not measured<a class="headerlink" href="#5a-still-not-measured" title="Permanent link">#</a></h2>
 <table>
 <thead>
 <tr>
@@ -459,33 +541,35 @@ not "does", and the whole point of this page is that the answer was measured.</p
 <tr>
 <td>NP2.0, OneBox</td>
 <td>19.2 ms</td>
-<td>≥ 92.4 ms</td>
+<td>~116.0 ms</td>
 <td>measured 2026-08-25</td>
+</tr>
+<tr>
+<td>NP1.0, PXIe</td>
+<td>19.4 ms</td>
+<td>~23.3 ms</td>
+<td>measured 2026-08-28</td>
 </tr>
 <tr>
 <td>NP2.0, PXIe</td>
 <td>—</td>
 <td>—</td>
-<td><strong>needs the rig</strong></td>
+<td><strong>needs the 2.0 probe moved to PXIe</strong></td>
 </tr>
 <tr>
 <td>NP1.0, OneBox</td>
 <td>—</td>
 <td>—</td>
-<td><strong>needs a probe swap</strong></td>
-</tr>
-<tr>
-<td>NP1.0, PXIe</td>
-<td>—</td>
-<td>—</td>
-<td><strong>needs both</strong></td>
+<td><strong>needs the 1.0 probe moved to the OneBox</strong></td>
 </tr>
 </tbody>
 </table>
-<p>NP1.0 is the interesting one: its audio is taken from the probe's <strong>native AP band</strong> with no
-filtering, where NP2.0 derives the band inside the audio processor. That is a different amount of
-work on the same path, so the source lag could differ — the only cell here where a different answer
-would not be surprising.</p></article>
+<p>The two remaining cells each need one physical move, and after the two rows above there is little
+reason to expect either to differ: the source lag has now been shown constant across a transport
+change and across a probe generation, which are the only two variables those cells introduce. Worth
+running when a probe is being swapped anyway; not worth a swap of its own.</p>
+<p><strong>Hold the audio device fixed when you run them,</strong> or the ear column will vary by more than anything
+being measured. Pick the device explicitly in the audio panel rather than accepting the default.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AudioVideoLatency.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -502,7 +586,12 @@ would not be surprising.</p></article>
 </ul>
 </li>
 <li><a href="#4-reproducing">4. Reproducing</a></li>
-<li><a href="#5-not-yet-measured">5. Not yet measured</a></li>
+<li><a href="#5-measured-np10-on-pxie-2026-08-28">5. Measured, NP1.0 on PXIe (2026-08-28)</a><ul>
+<li><a href="#what-this-settles">What this settles</a></li>
+<li><a href="#the-5-in-the-ear-is-the-audio-device-not-the-rig">The 5× in the ear is the audio device, not the rig</a></li>
+</ul>
+</li>
+<li><a href="#5a-still-not-measured">5a. Still not measured</a></li>
 </ul>
 </div>
 </aside>

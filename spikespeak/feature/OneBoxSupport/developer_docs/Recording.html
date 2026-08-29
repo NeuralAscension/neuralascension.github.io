@@ -224,6 +224,68 @@ single route, consistent with the NPX module.</p>
 no data flows to disk unless streaming is active. The Record button turns <strong>solid red while recording</strong>; the Play button is a <strong>green ▶ when paused</strong>
 and a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (see GuiTesting.md §6).</p>
 <hr />
+<h2 id="2-how-many-channels-all-of-them-on-every-profile-an-operator-can-pick">2. How many channels? All of them, on every profile an operator can pick<a class="headerlink" href="#2-how-many-channels-all-of-them-on-every-profile-an-operator-can-pick" title="Permanent link">#</a></h2>
+<p><strong>Every hardware profile the source picker offers records all 384 probe channels.</strong> A recording block
+with no <code>channels:</code> key records the whole row — the serializers write <code>sampleDimensions()</code> values when
+the filter is empty — and none of the operator-facing hardware profiles has one:</p>
+<table>
+<thead>
+<tr>
+<th>profile (<code>name:</code>)</th>
+<th>probe bands</th>
+<th>channels</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Neuropixels</code></td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>OneBox</code></td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>PXIe</code></td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>PXIe + NI-DAQ</code></td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>PXIe with NI-DAQ</code></td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Confirmed on hardware, not only from the YAML: a PXIe + NP1.0 recording writes <strong>774-byte frames</strong>,
+which is <code>6 + 2·384</code> — the header plus every channel.</p>
+<p>The <code>adc</code>, <code>nidaq</code> and <code>nidaq_di</code> bands do carry explicit lists (<code>[0..11]</code>, <code>[0..7]</code>), but those are
+<em>complete</em> — the OneBox ADC has twelve channels and the NI-DAQ eight, so listing them all is the same
+thing as recording everything.</p>
+<h3 id="the-profiles-that-record-three-channels-and-why-they-stay-that-way">The profiles that record three channels, and why they stay that way<a class="headerlink" href="#the-profiles-that-record-three-channels-and-why-they-stay-that-way" title="Permanent link">#</a></h3>
+<p>Several <code>gui_hidden</code> per-probe profiles record only <code>[1, 2, 3]</code> or <code>[1, 192, 196]</code>:
+<code>NPX 1.0</code>, <code>NPX 1.0 (OneBox)</code>, <code>NPX 2.0 Multishank</code>, <code>NPX 2.0 Multishank (OneBox)</code>, the ASAP variants,
+and the two latency benches. <strong>This is deliberate and must not be "fixed".</strong> They exist for latency
+benches and as #63's ADC-throughput control, whose published 78.1 % / 99.99 % pair is only reproducible
+against the three-channel pair. Widening them would destroy that comparison.</p>
+<p>They are hidden from the dropdown, but <strong>they remain selectable by exact name</strong> — which is how the
+OneBox latency matrix drove them. So a script that names one gets three channels, by design. If you
+are scripting a real session, name one of the five profiles above.</p>
+<p>Simulated and play-file profiles also record three channels, to keep the test suites fast.</p>
+<p><strong>This is enforced, not just documented.</strong> <code>python/tests/test_config_channels.py</code> fails if an
+operator-facing profile ever acquires a <code>channels:</code> list, and separately if a <em>new</em> profile records a
+subset without being declared an exemption. The failure this guards against is the worst kind: a
+narrowed recording looks completely normal afterwards — the sidecar honestly describes three columns
+and every converter honestly exports three — and the channels that were never written cannot be
+recovered.</p>
+<hr />
 <h2 id="2-what-gets-written-and-where">2. What gets written, and where<a class="headerlink" href="#2-what-gets-written-and-where" title="Permanent link">#</a></h2>
 <p><strong>The Record button prompts (2026-06-26).</strong> Clicking Record opens a GUI modal
 (<code>AppController.showRecordDialog</code>) for a <strong>recording name</strong> (animal/id) and an <strong>output directory</strong> on
@@ -538,6 +600,83 @@ selections as
 matching recorder by registry name (<code>proc.npx.recorder</code> vs <code>proc.nidaq.recorder</code>). Verified in-browser:
 a probe subset + NI-DAQ <code>[0,3,5]</code> -&gt; AP/LFP recorded the probe channels and the NI-DAQ <code>.bin</code> recorded
 exactly channels <code>[0,3,5]</code>.</p>
+<h2 id="did-the-recording-get-everything-two-answers-and-which-to-believe">Did the recording get everything? Two answers, and which to believe<a class="headerlink" href="#did-the-recording-get-everything-two-answers-and-which-to-believe" title="Permanent link">#</a></h2>
+<p>Dropped samples are one of the two numbers this system is judged on, and until 2026-08-25 a
+shortfall was completely invisible: the counters advanced, the traces drew, the stall watchdog stayed
+quiet (it fires on total silence, not on a partial deficit), and the file was simply smaller than it
+should be. On the second machine a band recorded at 66 % of nominal across every run and logged zero
+WARN and zero CRITICAL.</p>
+<p>Every record <strong>stop</strong> now reports two independent verdicts per band.</p>
+<h3 id="1-the-wall-clock-ratio-how-many">1. The wall-clock ratio — "how many"<a class="headerlink" href="#1-the-wall-clock-ratio-how-many" title="Permanent link">#</a></h3>
+<p>File size ÷ frame size, against the host's own start/stop clock and the profile's nominal rate:</p>
+<pre><code>[RecordProcessor] interp.npx.ap throughput 100.0% of nominal (300000 records in 10.0 s).
+[RecordProcessor] interp.npx.ap recorded SHORT: 66.0% of nominal (198000 records in 10.0 s at
+                  30000 Hz, expected ~300000). Samples were dropped between the source and the disk.
+</code></pre>
+<p>Below 95 % it is a warning <strong>and</strong> it reaches the operator's toolbar, not just <code>output.log</code>. It is
+deliberately loose: the window includes the start and stop edges and the rate is nominal, so a few
+percent is measurement rather than loss. Recordings shorter than 2 s are skipped entirely, because at
+that length the edges dominate and everything looks short — and a warning that cries wolf is one
+nobody reads twice.</p>
+<blockquote>
+<p><strong>An empty <code>channels:</code> list means the WHOLE ROW, not zero columns.</strong> This check divides the file
+size by the frame size, and a profile that records everything (<code>Pxie.yaml</code>, <code>OneBox.yaml</code>) has an
+empty filter. Passing that filter's length straight through computed a 6-byte header-only frame and
+inflated the count by the row width — 129× on a 384-channel probe, reported as <code>12904.60% of
+nominal</code>. Being far <em>above</em> the threshold it always took the reassuring branch, so the check could
+not fire at all on exactly the profiles that record everything. Fixed 2026-08-29;
+<code>resolvePayloadChannels()</code> is now the one place that rule lives, shared with the sidecar, and it is
+unit-tested.</p>
+</blockquote>
+<h3 id="2-the-device-clock-span-where">2. The device-clock span — "where"<a class="headerlink" href="#2-the-device-clock-span-where" title="Permanent link">#</a></h3>
+<p>The probe's own 100 kHz tick counter, comparing the frames actually written against the number the
+span they cover implies:</p>
+<pre><code>[RecordProcessor] interp.npx.ap continuous: 300000 frames match the probe clock over ticks
+                  8989550-9989548.
+[RecordProcessor] interp.npx.ap is NOT CONTINUOUS: 299000 frames written where the probe clock
+                  implies 300000 over the same span -- 1000 missing (0.33%), between ticks
+                  8989550 and 9989548.
+</code></pre>
+<p>This is the better witness. It needs no host clock, it is exact rather than nominal, and a shortfall
+comes with a <strong>position</strong> — which is what tells you whether a loss coincided with a stimulus, a disk
+flush, or nothing at all.</p>
+<p><strong>Why a span and not a per-frame step test.</strong> Measured on real hardware (PXIe + NP1.0, 2026-08-29,
+10 s), the AP band's per-frame tick delta is <em>negative</em> 8.3 % of the time:</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>tick deltas observed</th>
+<th>negatives</th>
+<th>ticks/frame</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ap</code></td>
+<td>−8, −7, +4, +5</td>
+<td>25 003 of 300 048</td>
+<td>3.3333 (= 100 kHz / 30 kHz)</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td>39, 40, 41</td>
+<td>0</td>
+<td>39.9996 (= 100 kHz / 2.5 kHz)</td>
+</tr>
+</tbody>
+</table>
+<p>The AP stamps advance within each 12-sample IMEC packet and then step back, netting exactly 40 ticks
+per packet. A per-frame "did the clock advance" test would therefore fire twenty-five thousand times
+on a <em>perfectly healthy</em> ten-second recording. The span is exact on both bands, so span-versus-count
+is the comparison that holds — and it costs two timestamp reads per <strong>batch</strong>, nothing per sample.</p>
+<p><strong>Cost.</strong> Two loads and two stores per batch in <code>serializeAvailableData</code>, and one division at stop.
+Nothing was added to the 30 kHz loop.</p>
+<p><strong>When they disagree, believe the device clock.</strong> It is measuring the data; the wall clock is
+measuring the host.</p>
+<p>Both checks run on <strong>every</strong> stop, including a stop caused by <code>Disconnect</code> or <code>quit</code> — which used to
+skip the entire stop path, so the one session you most want them for was the one that never reported.</p>
+<hr />
 <h2 id="a-recording-also-carries-its-own-log">A recording also carries its own log<a class="headerlink" href="#a-recording-also-carries-its-own-log" title="Permanent link">#</a></h2>
 <p>Alongside the <code>.bin</code> files and their <code>.json</code> sidecars, a recording directory now contains
 <code>&lt;name&gt;_&lt;timestamp&gt;.log</code> -- a copy of the backend log for exactly the span of the recording, sharing
@@ -558,6 +697,10 @@ rationale and the format of a line: <a href="Logging.html"><code>Logging.md</cod
 <ul>
 <li><a href="#0-how-to-record-usage">0. How to record (usage)</a></li>
 <li><a href="#1-end-to-end-path">1. End-to-end path</a></li>
+<li><a href="#2-how-many-channels-all-of-them-on-every-profile-an-operator-can-pick">2. How many channels? All of them, on every profile an operator can pick</a><ul>
+<li><a href="#the-profiles-that-record-three-channels-and-why-they-stay-that-way">The profiles that record three channels, and why they stay that way</a></li>
+</ul>
+</li>
 <li><a href="#2-what-gets-written-and-where">2. What gets written, and where</a></li>
 <li><a href="#2a-the-sidecar-turning-counts-back-into-microvolts">2a. The sidecar: turning counts back into microvolts</a></li>
 <li><a href="#3-wiring-np10">3. Wiring (NP1.0)</a></li>
@@ -565,6 +708,11 @@ rationale and the format of a line: <a href="Logging.html"><code>Logging.md</cod
 <li><a href="#5-known-sharp-edges">5. Known sharp edges</a></li>
 <li><a href="#6-status-2026-06-25">6. Status (2026-06-25)</a></li>
 <li><a href="#7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)</a></li>
+<li><a href="#did-the-recording-get-everything-two-answers-and-which-to-believe">Did the recording get everything? Two answers, and which to believe</a><ul>
+<li><a href="#1-the-wall-clock-ratio-how-many">1. The wall-clock ratio — "how many"</a></li>
+<li><a href="#2-the-device-clock-span-where">2. The device-clock span — "where"</a></li>
+</ul>
+</li>
 <li><a href="#a-recording-also-carries-its-own-log">A recording also carries its own log</a></li>
 </ul>
 </div>

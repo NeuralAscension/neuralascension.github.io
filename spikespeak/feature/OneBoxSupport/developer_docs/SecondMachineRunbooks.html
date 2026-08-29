@@ -256,7 +256,18 @@ honestly" half has never been observed on a Windows box with nothing attached.</
 <hr />
 <h2 id="configuration-3-windows-onebox-pxie">Configuration 3 — Windows + OneBox + PXIe<a class="headerlink" href="#configuration-3-windows-onebox-pxie" title="Permanent link">#</a></h2>
 <p><strong>Proves:</strong> both transports coexist — slot enumeration, <code>mapBS</code>, and which basestation a profile
-picks. <strong>The fullest case, and never run as a configuration.</strong></p>
+picks. The fullest case of the five.</p>
+<blockquote>
+<p><strong>Partly run, 2026-08-29, 9/9 on the hardware-behaviour checks</strong> (enumeration sees both and reports
+itself ambiguous; a probe-agnostic profile asks rather than guesses, tagged
+<code>kind: "basestation-choice"</code>; <code>PXIe</code> connects and streams; <code>OneBox</code> fails for the right reason — a
+missing probe, the probe being on the PXIe — which is what proves the profile reached the box it
+named; and the PXIe still connects afterwards). Both suites were green in that hardware state.
+It found one defect, now fixed: a Disconnect left <code>deviceReady</code> true, so the OneBox failure was
+reported as <code>Still connected to ""</code> instead of <code>No Headstage detected on any port!</code>.</p>
+<p><strong>Still to do for a full pass:</strong> a clean <code>git clone</code>, and a probe on the OneBox so a OneBox connect
+can be shown to SUCCEED rather than only to fail correctly.</p>
+</blockquote>
 <p>Setup: OneBox on USB3 <strong>and</strong> PXIe chassis powered with the basestation seated, both at once. Power
 the chassis <strong>before</strong> launching — a chassis powered on afterwards is a documented cause of a
 confusing connect failure.</p>

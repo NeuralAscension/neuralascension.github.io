@@ -6138,7 +6138,208 @@ prerequisite a newcomer gives up on.</p>
   before any source was selected, so there was no <code>proc.rippledetector</code> to forward to and no echo
   could ever appear. It passed for a reason unrelated to the code under test. It now runs after
   connect <em>and</em> after play, with a positive control that a KNOWN action does echo.</li>
-</ul></article>
+</ul>
+<hr />
+<h2 id="68-what-the-clock-says-and-what-the-host-believes-2026-08-29">68. WHAT THE CLOCK SAYS, AND WHAT THE HOST BELIEVES  (2026-08-29)<a class="headerlink" href="#68-what-the-clock-says-and-what-the-host-believes-2026-08-29" title="Permanent link">#</a></h2>
+<p>Finishing #61/#62/#63 and running #52 configuration 3. Four defects, three of them found by
+<strong>running the thing rather than reading it</strong> — which is the through-line of the day.</p>
+<h3 id="68a-the-throughput-check-could-not-fire-on-the-profiles-that-record-everything">68a. The throughput check could not fire on the profiles that record everything<a class="headerlink" href="#68a-the-throughput-check-could-not-fire-on-the-profiles-that-record-everything" title="Permanent link">#</a></h3>
+<p>Measuring #63's time-in-session decay on PXIe + NP1.0 — a profile with no <code>channels:</code> list — the
+backend reported:</p>
+<pre><code>interp.npx.ap throughput 12904.60% of nominal (38706192 records in 10.0 s)
+</code></pre>
+<p>129× too high, and 129 is exactly (6 + 2·384) / 6. An <strong>empty filter means "write the whole row"</strong>
+(<code>Npx.cpp</code>: <code>if (filter.empty())</code> writes <code>sampleDimensions()</code> channels), but the check passed
+<code>activeRecordIndices.size()</code> — zero — into <code>recordFrameBytes</code>, which computed a frame consisting of
+nothing but its header.</p>
+<p><strong>The silly number is not the harm.</strong> Being inflated 129× it sat permanently above the 95 % threshold,
+so the check took the reassuring branch every single time. A band on one of these profiles could have
+dropped ninety percent of its samples and still reported 1290 %. The check was structurally incapable
+of firing on <code>Pxie.yaml</code> and <code>OneBox.yaml</code> — the probe-agnostic profiles, which are the defaults.</p>
+<p>The sidecar had it right all along, and <code>recordFrameBytes</code>' own doc comment had predicted the failure:</p>
+<blockquote>
+<p><em>"If those two ever disagreed, the check would report a shortfall that was really its own arithmetic
+error … do not let them separate again."</em></p>
+</blockquote>
+<p>They separated. Telling the next person not to duplicate a rule is weaker than not having two of it,
+so the rule is now <code>resolvePayloadChannels()</code>, called by both, and unit-tested. After the fix the
+same recording reads <strong>100.00 %</strong>.</p>
+<h3 id="68b-63s-continuity-check-and-why-it-is-a-span-not-a-step">68b. #63's continuity check — and why it is a span, not a step<a class="headerlink" href="#68b-63s-continuity-check-and-why-it-is-a-span-not-a-step" title="Permanent link">#</a></h3>
+<p>The remaining half of #63 was to say <strong>when</strong> samples were lost, where the size ratio says only how
+many. The design was settled by measurement rather than by preference. Real hardware, 10 s, PXIe +
+NP1.0:</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>tick deltas observed</th>
+<th>negative steps</th>
+<th>ticks/frame</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ap</code></td>
+<td>−8, −7, +4, +5</td>
+<td><strong>25 003 of 300 048</strong></td>
+<td>3.3333</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td>39, 40, 41</td>
+<td>0</td>
+<td>39.9996</td>
+</tr>
+</tbody>
+</table>
+<p>The AP stamps advance inside each 12-sample IMEC packet and then step back, netting exactly 40 ticks
+per packet. <strong>A per-frame "did the clock advance" test would fire twenty-five thousand times on a
+perfectly healthy ten-second recording</strong> — and this codebase already says a false alarm is worse than
+no alarm, because the next real one gets ignored.</p>
+<p>The <em>span</em> is exact on both bands, so the check compares frames written against what the batch's own
+tick span implies. Exact even where the per-frame deltas are not monotonic, localised to a tick
+position, and two loads plus two stores per <strong>batch</strong> — nothing per sample. Validated on hardware
+across four bands and two recordings: zero false alarms, and the arithmetic matches to under one
+frame. The gap-detection maths is a pure function with five unit cases, four of them built from real
+measured spans.</p>
+<h3 id="68c-a-disconnect-left-the-backend-believing-a-device-was-still-ready">68c. A Disconnect left the backend believing a device was still ready<a class="headerlink" href="#68c-a-disconnect-left-the-backend-believing-a-device-was-still-ready" title="Permanent link">#</a></h3>
+<p>Running #52 configuration 3 with both basestations attached, selecting the OneBox profile (the probe
+is on the PXIe, so it must fail) returned:</p>
+<pre><code>Still connected to &quot;&quot;. Disconnect before selecting another source.
+</code></pre>
+<p>Still connected to nothing. <code>teardownSource()</code> cleared <code>mSourceName</code> and broadcast <code>stateSource:""</code>
+but <strong>never called <code>setDeviceState(false)</code></strong>, so <code>mDeviceReady</code> stayed true. <code>onSourceSelection</code> reads
+that as <code>hadLiveSource</code>, so the next connect to fail for any reason was reported as a phantom conflict
+with an empty source name — and then <em>restored</em> that non-existent source with <code>setDeviceState(true)</code>.</p>
+<p>The real cause was masked completely. After the fix the same connect says what is actually wrong:
+<code>No Headstage detected on any port!</code></p>
+<p>It reproduces in sim, so it never needed hardware to find — only somebody to disconnect and then fail
+a connect. Covered in <code>command_surface.py</code>.</p>
+<h3 id="68d-52-configuration-3-run-99">68d. #52 configuration 3 — run, 9/9<a class="headerlink" href="#68d-52-configuration-3-run-99" title="Permanent link">#</a></h3>
+<p>The rig turned out to have <strong>both basestations attached</strong> (<code>1 PXIe module and 1 OneBox</code>,
+<code>ambiguous: true</code>), which is configuration 3 — the fullest of the five and the one never run. All nine
+checks pass:</p>
+<ul>
+<li>enumeration sees both, and reports itself ambiguous;</li>
+<li>a probe-agnostic profile <strong>asks</strong> which basestation instead of guessing, tagged
+  <code>kind: "basestation-choice"</code> so the frontend renders a picker rather than an error;</li>
+<li>selecting <code>PXIe</code> with both attached connects <strong>and streams</strong> the PXIe;</li>
+<li>selecting <code>OneBox</code> fails for the right reason — a missing probe — which is what proves the profile
+  reached the box it named rather than the first one found;</li>
+<li>and the PXIe still connects afterwards, so closing one did not disturb the other.</li>
+</ul>
+<p>One check was wrong before the code was: it looked for an event <em>named</em> <code>basestation-choice</code>, when
+the ask is a <code>guiStatus</code> carrying a <code>__BASESTATIONS__</code> sentinel. It reported a working mechanism as
+broken. Read the payload, not the event name.</p>
+<h3 id="68e-61-62-held-the-audio-device-fixed-and-the-ear-is-the-same-to-004-ms">68e. #61 / #62 — held the audio device fixed, and the ear is the same to 0.04 ms<a class="headerlink" href="#68e-61-62-held-the-audio-device-fixed-and-the-ear-is-the-same-to-004-ms" title="Permanent link">#</a></h3>
+<p>Yesterday's NP1.0/PXIe row could only say the ear differed <em>because the default audio device
+differed</em>. Sweeping every output device on the rig turns that into a controlled comparison:</p>
+<table>
+<thead>
+<tr>
+<th>host API</th>
+<th>device</th>
+<th>measured</th>
+<th>ring</th>
+<th>raw → ear</th>
+<th>§2, NP2.0/OneBox</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MME</strong></td>
+<td><strong>Sound Mapper (default)</strong></td>
+<td>98.08 ms</td>
+<td>16.96 ms</td>
+<td><strong>~116.04 ms</strong></td>
+<td><strong>~116.0 ms</strong></td>
+</tr>
+<tr>
+<td>WDM-KS</td>
+<td>SPDIF Out</td>
+<td>8.71 ms</td>
+<td>3.04 ms</td>
+<td>~12.7 ms</td>
+<td>—</td>
+</tr>
+<tr>
+<td>DirectSound</td>
+<td>Primary Sound Driver</td>
+<td>13.79 ms</td>
+<td>33.33 ms</td>
+<td>~48.1 ms</td>
+<td>~36.9 ms</td>
+</tr>
+</tbody>
+</table>
+<p>On the device <strong>both</strong> original sessions defaulted to, the ear is 116.04 ms against 116.0 ms — forty
+microseconds apart, across a different probe generation <em>and</em> a different transport. <code>source_lag</code> is
+1.00 ms on every device that opened, on both rigs.</p>
+<p>Between the two measured rows the experiment has now varied the probe generation, the transport, the
+band path and the audio device, and the two terms this system owns — source lag and frame interval —
+did not move: 1.00 ms and ~19 ms in every combination. <strong>The two remaining cells vary nothing that has
+not already been varied.</strong> Run them when a probe is being swapped anyway; a swap of their own buys a
+result that is already implied.</p>
+<p>The machine's device list has also changed since 2026-08-25 (six outputs, not nine; the NVIDIA/monitor
+entries are gone), so §2's indices do not correspond. Match rows by host API and device name.</p>
+<h3 id="68f-63s-decay-does-not-reproduce-here">68f. #63's decay does not reproduce here<a class="headerlink" href="#68f-63s-decay-does-not-reproduce-here" title="Permanent link">#</a></h3>
+<p>The second machine saw a band fall from 99.99 % at t+15 s to 65.8 % at t+90 s with the ADC disabled.
+On this rig, PXIe + NP1.0, 384 channels, same protocol:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>t+15 s</th>
+<th>t+90 s</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ap</code></td>
+<td>100.00 %</td>
+<td>100.00 %</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td>100.00 %</td>
+<td>100.10 %</td>
+</tr>
+</tbody>
+</table>
+<p>Both bands also report <code>continuous</code> against the probe clock. So the decay is <strong>not general</strong> — it did
+not reproduce on a different transport on the original machine. It remains unattributed between "that
+machine" and "the OneBox path"; separating those needs a probe on the OneBox, which is a physical
+move.</p>
+<h3 id="68g-channels-recorded-by-default-confirmed-and-now-enforced">68g. Channels recorded by default — confirmed, and now enforced<a class="headerlink" href="#68g-channels-recorded-by-default-confirmed-and-now-enforced" title="Permanent link">#</a></h3>
+<p>Asked directly, so audited across all 35 configs and verified against a real recording rather than
+only the YAML.</p>
+<p><strong>Every hardware profile the source picker offers records all 384 probe channels</strong> — <code>Neuropixels</code>,
+<code>OneBox</code>, <code>PXIe</code>, <code>PXIe + NI-DAQ</code>, <code>PXIe with NI-DAQ</code>. A recording block with no <code>channels:</code> key
+records the whole row, and none of them has one. The PXIe + NP1.0 recording above writes <strong>774-byte
+frames</strong> = <code>6 + 2·384</code>, which is the confirmation that matters.</p>
+<p>The <code>adc</code> / <code>nidaq</code> / <code>nidaq_di</code> lists (<code>[0..11]</code>, <code>[0..7]</code>) look like restrictions but are complete:
+those devices have exactly that many channels.</p>
+<p><strong>The three-channel profiles are deliberate and must stay.</strong> <code>NPX 1.0</code>, <code>NPX 2.0 Multishank</code>, the
+OneBox and ASAP variants and the two latency benches record <code>[1, 2, 3]</code> or <code>[1, 192, 196]</code>. They are
+<code>gui_hidden</code> and exist for latency benches and #63's ADC-throughput control, whose published
+78.1 % / 99.99 % pair is only reproducible against the three-channel pair. <strong>They remain selectable
+by exact name</strong>, which is how the OneBox latency matrix drove them — so a script that names one gets
+three channels by design.</p>
+<p>Now enforced by <code>python/tests/test_config_channels.py</code>, which fails if an operator-facing profile
+ever acquires a <code>channels:</code> list, and separately if a NEW profile records a subset without being
+declared exempt. The failure it guards is the worst kind available: a narrowed recording looks
+entirely normal afterwards — the sidecar honestly describes three columns, every converter honestly
+exports three — and the channels that were never written cannot be recovered.</p>
+<h3 id="68h-the-both-attached-check-is-now-symmetric">68h. The both-attached check is now symmetric<a class="headerlink" href="#68h-the-both-attached-check-is-now-symmetric" title="Permanent link">#</a></h3>
+<p>The first version hard-coded "PXIe has the probe, OneBox must fail", which is only today's wiring.
+<code>ripple_tools/verify_basestation_pair.py</code> now discovers which basestation holds the probe and asserts
+the pair: exactly one connects and streams, and the empty one fails for the honest reason. Move the
+probe to the other box and the same script verifies the mirror with no edit — 10/10 as run.</p>
+<p>The mirror is structural rather than coincidental: <code>"No Headstage detected on any port!"</code> is raised in
+the <strong>shared</strong> <code>NpInterface</code> base (<code>NpInterface.cpp:1907</code>). Only <code>detectProbePort()</code> is
+platform-specific — PXIe gates on <code>np_openPort</code> then <code>np_detectHeadStage</code>, the OneBox overrides it to
+call <code>np_detectHeadStage</code> directly over its two ports — and both failures converge on the same
+reporting path.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6549,6 +6750,17 @@ prerequisite a newcomer gives up on.</p>
 <li><a href="#67e-61-62-the-term-everyone-expected-to-differ-does-not">67e. #61 / #62 — the term everyone expected to differ does not</a></li>
 <li><a href="#67f-52-audited-against-the-evidence-and-it-cannot-close">67f. #52 — audited against the evidence, and it cannot close</a></li>
 <li><a href="#67g-two-test-authoring-notes-both-paid-for">67g. Two test-authoring notes, both paid for</a></li>
+</ul>
+</li>
+<li><a href="#68-what-the-clock-says-and-what-the-host-believes-2026-08-29">68. WHAT THE CLOCK SAYS, AND WHAT THE HOST BELIEVES (2026-08-29)</a><ul>
+<li><a href="#68a-the-throughput-check-could-not-fire-on-the-profiles-that-record-everything">68a. The throughput check could not fire on the profiles that record everything</a></li>
+<li><a href="#68b-63s-continuity-check-and-why-it-is-a-span-not-a-step">68b. #63's continuity check — and why it is a span, not a step</a></li>
+<li><a href="#68c-a-disconnect-left-the-backend-believing-a-device-was-still-ready">68c. A Disconnect left the backend believing a device was still ready</a></li>
+<li><a href="#68d-52-configuration-3-run-99">68d. #52 configuration 3 — run, 9/9</a></li>
+<li><a href="#68e-61-62-held-the-audio-device-fixed-and-the-ear-is-the-same-to-004-ms">68e. #61 / #62 — held the audio device fixed, and the ear is the same to 0.04 ms</a></li>
+<li><a href="#68f-63s-decay-does-not-reproduce-here">68f. #63's decay does not reproduce here</a></li>
+<li><a href="#68g-channels-recorded-by-default-confirmed-and-now-enforced">68g. Channels recorded by default — confirmed, and now enforced</a></li>
+<li><a href="#68h-the-both-attached-check-is-now-symmetric">68h. The both-attached check is now symmetric</a></li>
 </ul>
 </li>
 </ul>

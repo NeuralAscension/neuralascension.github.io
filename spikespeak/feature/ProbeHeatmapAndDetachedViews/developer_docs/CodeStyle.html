@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0 - SpikesPeak Docs</title>
+<title>Code style — the formatter, and why it has not been run yet - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Plans and open briefs / NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</span>
+  <span class="crumb">Developer Docs / Working on this repo / Code style — the formatter, and why it has not been run yet</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -89,15 +89,15 @@
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">5</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
-<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a class="active" href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a class="active" href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
@@ -133,134 +133,173 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="next-task-closed-loop-latency-on-the-onebox-np10-and-np20">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 <strong>and</strong> NP2.0<a class="headerlink" href="#next-task-closed-loop-latency-on-the-onebox-np10-and-np20" title="Permanent link">#</a></h1>
-<p><strong>Status:</strong> planned, agreed 2026-08-18. <strong>Blocked on nothing but the rig</strong> — the maintainer streams the
-synthetic ripple signal when back at work (2026-08-19).</p>
-<p><strong>The goal:</strong> closed-loop latency <em>recordings and measurements</em> for the ripple → stim path, with the probe
-on the <strong>OneBox</strong> rather than the PXIe basestation, for <strong>both</strong> NP1.0 and NP2.0.</p>
-<p>This is the OneBox counterpart of the PXIe latency work already in the log (§27–§30). Everything that
-matters there — the definition of latency, the analysis tooling, the ASAP delivery flag — carries over
-unchanged; what is new is the basestation underneath.</p>
+  <main class="content"><article class="markdown-body"><h1 id="code-style-the-formatter-and-why-it-has-not-been-run-yet">Code style — the formatter, and why it has not been run yet<a class="headerlink" href="#code-style-the-formatter-and-why-it-has-not-been-run-yet" title="Permanent link">#</a></h1>
+<p>Issue #24 asks for consistent formatting and suggests clang-format. <code>.clang-format</code> now exists and
+<strong>describes the style already in the tree</strong>. It has deliberately <strong>not</strong> been applied repo-wide;
+this page is the measurement and the plan, so that is a decision somebody makes rather than a diff
+that lands.</p>
 <hr />
-<h2 id="why-this-is-worth-doing">Why this is worth doing<a class="headerlink" href="#why-this-is-worth-doing" title="Permanent link">#</a></h2>
-<p>The closed loop is fully quantified on <strong>PXIe</strong> (§29/§30): sub-millisecond at every quorum level on both
-probes, NP1.0 0.94–0.98 ms and NP2.0 0.55–0.61 ms with ASAP delivery. Nothing equivalent exists for the
-OneBox, and the OneBox is a <em>different transport</em>: USB3/FTDI rather than PCIe/MXI. The open question is
-whether that transport costs latency, and how much.</p>
-<p>That is the whole point of the measurement — do <strong>not</strong> assume it matches PXIe.</p>
-<h2 id="rig-wiring-as-of-2026-08-24-and-why-it-changes-this-task">Rig wiring as of 2026-08-24 — and why it changes this task<a class="headerlink" href="#rig-wiring-as-of-2026-08-24-and-why-it-changes-this-task" title="Permanent link">#</a></h2>
-<p>Reported by the maintainer, ahead of the next hardware session:</p>
-<blockquote>
-<p>"npx 2.0 probe has been moved back to the onebox. both systems are powered but no probes on PXIe
-... as far as the SDR goes IO6 is connected to IO4 (IO0 to IO11 is the range). SMA on the onebox is
-connected to IO9 and trigger pin from the pi is connected to IO2"</p>
-</blockquote>
+<h2 id="1-the-style-was-measured-not-chosen">1. The style was measured, not chosen<a class="headerlink" href="#1-the-style-was-measured-not-chosen" title="Permanent link">#</a></h2>
+<p>A preset picked off the shelf would have rewritten almost everything. Every setting below was
+derived by counting what is actually here — 104 files, 25,843 lines:</p>
 <table>
 <thead>
 <tr>
-<th>line</th>
-<th>connected to</th>
-<th>what it buys</th>
+<th>setting</th>
+<th>evidence</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>IO2</strong></td>
-<td>Pi stim-server trigger pin</td>
-<td><strong>The stim pulse is captured on the OneBox's own ADC.</strong></td>
+<td><code>IndentWidth: 4</code>, <code>UseTab: Never</code></td>
+<td>9,664 lines indent by 4 (the 4,065 at 8 are nesting). <strong>Exactly one tab in the whole tree.</strong></td>
 </tr>
 <tr>
-<td><strong>IO9</strong></td>
-<td>OneBox SMA</td>
-<td>the SMA signal becomes readable as an ADC channel</td>
+<td><code>ColumnLimit: 100</code></td>
+<td>p50 = 37, p90 = 97, <strong>p95 = 100</strong>, p99 = 106. 1,237 lines exceed 100; only 92 exceed 110.</td>
 </tr>
 <tr>
-<td><strong>IO6 → IO4</strong></td>
-<td>loopback</td>
-<td>an end-to-end check of the ADC path with a known signal</td>
+<td><code>BreakBeforeBraces</code> with <code>AfterFunction: true</code></td>
+<td>638 function definitions open on the next line, 204 on the same.</td>
+</tr>
+<tr>
+<td><code>AlwaysBreakAfterReturnType: TopLevelDefinitions</code></td>
+<td><strong>414 definitions</strong> are written <code>bool</code> ⏎ <code>Class::method(...)</code>. The most distinctive thing about how this code looks, and clang-format expresses it exactly.</td>
+</tr>
+<tr>
+<td><code>PointerAlignment: Left</code></td>
+<td><code>Type* name</code> 338 vs <code>Type *name</code> 50; references 443 vs 22.</td>
 </tr>
 </tbody>
 </table>
-<p><strong>The IO2 connection is the interesting one.</strong> As written below, this task needs the <strong>NI-DAQ</strong> for
-the ground-truth capture: the probe stream and the stim pulse have to be sampled on a common clock,
-and the NI-DAQ was the only thing doing that. With the Pi's trigger on IO2, the OneBox ADC samples
-the stim pulse <em>itself</em> — on the same device, and the same acquisition, as the probe.</p>
-<p>If that holds up, it removes the NI-DAQ from the measurement entirely and with it the sync-alignment
-step that has already produced one wrong answer (the off-by-one in <code>align_timestamps</code>, §"Sync
-off-by-one" in the log — a whole-period shift that was invisible because the intervals still looked
-right). Two streams from one device need no alignment at all.</p>
-<p><strong>Not yet verified.</strong> Nobody has recorded through this wiring. Before trusting a latency number from
-it, confirm on the rig that:</p>
-<ol>
-<li>the ADC channel for IO2 actually shows the pulse, with an amplitude and width that match what the
-   Pi is asked to emit (the oscilloscope is the reference for width — the ADC cannot resolve it; see
-   the note in <code>Recording.md</code> §5);</li>
-<li>the ADC samples and the probe samples carry timestamps from the same clock, rather than two that
-   merely start together;</li>
-<li>the IO6 → IO4 loopback reads back what is driven, which is the cheapest way to prove the ADC path
-   before trusting anything measured through it.</li>
-</ol>
-<p>Until those three are done, keep the NI-DAQ capture as the reference and treat the ADC capture as
-the thing being validated, not the thing validating.</p>
+<p>Three things are switched <strong>off</strong> on purpose:</p>
+<ul>
+<li><strong><code>SortIncludes: false</code>.</strong> The tree mixes Qt, std, vendored SDK and local headers in an order that
+  is sometimes load-bearing — the Neuropixels and NI-DAQ SDK headers are order-sensitive. A
+  formatter reordering them is a compile error waiting to happen on a machine nobody is watching.</li>
+<li><strong><code>ReflowComments: false</code>.</strong> The comments <em>are</em> the documentation in this codebase, and many are
+  hand-wrapped tables and diagrams. Reflowing them destroys that, and it is the single change most
+  likely to make people distrust the formatter and turn it off.</li>
+<li><strong>No <code>.clang-tidy</code>.</strong> Formatting and linting are different arguments; conflating them means the
+  formatting change gets blocked on a lint debate.</li>
+</ul>
+<p>Written for <strong>clang-format 12</strong>, which is what ships with the VS 2019 toolchain this repo builds
+with:</p>
+<pre><code>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe
+</code></pre>
+<p>(<code>ReferenceAlignment</code> and <code>SortIncludes: Never</code> are 13+ and are not used.)</p>
 <hr />
-<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
-<ul>
-<li>The maintainer streams the <strong>synthetic ripple signal</strong> into the probe (the same playback used for the
-  PXIe runs). Nothing in this task generates the signal.</li>
-<li><strong>Stim server</strong> reachable — the Pi 3B+ at <code>stimserver@192.168.1.100</code>, UDP 8888 (see
-  <code>raspberrypi_pulsegenerator/</code>). It must be ARMED; the detector arms on connect.</li>
-<li><strong>NI-DAQ</strong> for the ground truth capture: latency is measured offline as
-  <strong>ripple threshold-crossing → the stim pulse on ai4</strong>, so the NI-DAQ must record alongside the probe.
-  ⚠️ This is the part that needs thought — see "The open question" below.</li>
-<li>Calibration CSVs for the NP1.0 probe (<code>22175723312</code>) are <strong>missing</strong>; it currently streams
-  UNCALIBRATED. Worth fixing before taking numbers that will be quoted.</li>
-</ul>
-<h2 id="the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST<a class="headerlink" href="#the-open-question-to-resolve-first" title="Permanent link">#</a></h2>
-<p>On a PXIe rig the probe and the NI-DAQ share a chassis and a sync line, which is what makes the offline
-<code>threshold-crossing → ai4</code> measurement meaningful. <strong>With the probe on the OneBox, work out how the NI-DAQ
-capture is synchronised to it before recording anything</strong>, because the whole measurement rests on that
-alignment:</p>
-<ul>
-<li>Does the existing NPX↔NI-DAQ sync-pulse alignment still hold when the probe is on USB?</li>
-<li>Or should the <strong>OneBox's own 12-channel ADC</strong> capture the stim pulse instead of the NI-DAQ, making the
-  measurement single-device and removing the cross-device sync entirely? The ADC is verified working
-  (0.000152588 V/count, §35.4) and records to <code>data.npx.adc</code> with a well-formed sidecar.</li>
-</ul>
-<p>The second option is the more attractive one and is probably the right answer — it collapses a two-clock
-problem into one clock. Decide deliberately; do not default to copying the PXIe recipe.</p>
-<p>Remember the sync off-by-one that cost 30+ minutes previously (§24): verify closed-loop timing
-<strong>event-by-event</strong>, never by nearest-neighbour matching on a periodic signal.</p>
-<h2 id="method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)<a class="headerlink" href="#method-mirrors-the-pxie-runs" title="Permanent link">#</a></h2>
+<h2 id="2-what-applying-it-would-cost-measured">2. What applying it would cost — measured<a class="headerlink" href="#2-what-applying-it-would-cost-measured" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>files that would change</td>
+<td><strong>103 of 104</strong></td>
+</tr>
+<tr>
+<td>lines that would change</td>
+<td><strong>9,429 of 25,843 — 36.5 % of the tree</strong></td>
+</tr>
+<tr>
+<td>worst single file</td>
+<td><code>NpInterface.cpp</code>, 1,324 lines</td>
+</tr>
+</tbody>
+</table>
+<p>Where that comes from, by ablation:</p>
+<table>
+<thead>
+<tr>
+<th>variant</th>
+<th>changed lines</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the config as written</td>
+<td>9,429</td>
+</tr>
+<tr>
+<td><code>ColumnLimit: 0</code> (never reflow code)</td>
+<td><strong>6,280</strong></td>
+</tr>
+<tr>
+<td><code>SpacesBeforeTrailingComments: 1</code></td>
+<td>9,387</td>
+</tr>
+<tr>
+<td><code>KeepEmptyLinesAtTheStartOfBlocks: true</code></td>
+<td>9,395</td>
+</tr>
+<tr>
+<td><code>AlignTrailingComments: false</code></td>
+<td>9,431</td>
+</tr>
+<tr>
+<td><code>BinPackParameters: false</code></td>
+<td>9,559</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Line reflow is a third of the diff; the other ~6,300 lines are irreducible.</strong> That residue is real
+style drift — the exact thing a formatter exists to remove — so shrinking the diff by setting
+<code>ColumnLimit: 0</code> would be buying a smaller number by giving up the rule most worth enforcing. The
+config keeps 100.</p>
+<p>Everything else is noise, which is the useful result: the config is a close description, and no
+single setting is fighting the codebase.</p>
+<hr />
+<h2 id="3-why-it-is-not-applied-yet">3. Why it is not applied yet<a class="headerlink" href="#3-why-it-is-not-applied-yet" title="Permanent link">#</a></h2>
+<p><strong>36.5 % of lines is a <code>git blame</code> event.</strong> Three things have to be true first, and none of them is
+about the formatter:</p>
 <ol>
-<li>Bring up <code>Npx1OneBox</code> / <code>Npx2OneBox</code>, confirm the detector fires on the synthetic signal.</li>
-<li>Record with the detector's resolved read-out channels plus the stim capture channel.</li>
-<li>Run the existing analysis: <code>ripple_tools/analyze_recording.py</code>, <code>latency_breakdown.py</code>,
-   <code>verify_quorum.py</code>. <code>sync.py</code> defaults to <code>match="auto"</code>.</li>
-<li>Repeat the quorum × delivery matrix if time allows; at minimum ASAP vs baseline on both probes.</li>
-<li>Compare against the PXIe numbers and state plainly whether USB3 costs latency.</li>
+<li><strong>No PR open across the same files.</strong> A reformat lands as a conflict in every in-flight branch.
+   <code>feature/ProbeHeatmapAndDetachedViews</code> is open now.</li>
+<li><strong>It goes in ALONE</strong>, as one commit that changes nothing but whitespace, so a reviewer can verify
+   that claim by rerunning the formatter rather than by reading 9,429 lines.</li>
+<li><strong><code>.git-blame-ignore-revs</code> gets that commit's SHA</strong>, and the repo is configured to use it:</li>
 </ol>
-<h2 id="deliverables">Deliverables<a class="headerlink" href="#deliverables" title="Permanent link">#</a></h2>
-<ul>
-<li>Recordings under <code>RecordingTests/&lt;date&gt;_onebox_closed_loop/</code>, raw <code>.bin</code> <strong>not committed</strong> (gitignored);
-  derived figures + metrics in that session's <code>analysis/</code>.</li>
-<li>A latency table for NP1.0 and NP2.0 on the OneBox, directly comparable to the PXIe matrix in §29/§30.</li>
-<li>A new dated section in <code>SpikesPeak_Status.md</code>.</li>
-</ul>
-<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">#</a></h2>
-<p><code>developer_docs/LatencyProfiling.md</code> (the definition, the per-stage <code>rippleLatency</code> instrumentation, and
-the <code>low_latency:</code> / ASAP flag), <code>RippleDetection.md</code>, <code>StimClosedLoop_Status.md</code>, and Status §27–§30 for
-the PXIe results this must be compared against.</p></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxClosedLoopLatency.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<p><code>bash
+   git config blame.ignoreRevsFile .git-blame-ignore-revs</code></p>
+<p>Without this, <code>git blame</code> on a third of the codebase points at the reformat instead of at the
+   change that actually introduced the line — which is how a formatting commit costs a team more
+   than the inconsistency did.</p>
+<hr />
+<h2 id="4-until-then-format-what-you-touch">4. Until then: format what you touch<a class="headerlink" href="#4-until-then-format-what-you-touch" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">&quot;C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
+</code></pre>
+<p><strong>Do not reformat a file you are only reading.</strong> A feature diff with 300 unrelated whitespace lines
+in it is a diff nobody reviews properly, and that is a worse outcome than inconsistent bracing.</p>
+<p>To check without writing:</p>
+<pre><code class="language-bash">clang-format --dry-run --Werror -style=file &lt;file&gt;
+</code></pre>
+<hr />
+<h2 id="5-the-staged-plan">5. The staged plan<a class="headerlink" href="#5-the-staged-plan" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Now</strong> — <code>.clang-format</code> and <code>.editorconfig</code> land; no code changes. <em>(done)</em></li>
+<li><strong>Merge the open PR.</strong></li>
+<li><strong>The reformat</strong>, alone, in one commit, immediately after a merge and before new work starts.
+   Add its SHA to <code>.git-blame-ignore-revs</code> in the <em>same</em> commit.</li>
+<li><strong>Then</strong> decide whether to enforce it — a CI check or a pre-commit hook. That is its own
+   decision, because a formatter that blocks a push at 2 a.m. on a rig is a formatter people
+   disable. A <code>--dry-run --Werror</code> check over <strong>changed files only</strong> is the version worth having.</li>
+</ol>
+<p>Not planned: reformatting <code>ext/</code> or <code>external/</code>. Those are vendored and must stay byte-comparable
+with upstream.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/CodeStyle.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#why-this-is-worth-doing">Why this is worth doing</a></li>
-<li><a href="#rig-wiring-as-of-2026-08-24-and-why-it-changes-this-task">Rig wiring as of 2026-08-24 — and why it changes this task</a></li>
-<li><a href="#prerequisites">Prerequisites</a></li>
-<li><a href="#the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST</a></li>
-<li><a href="#method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)</a></li>
-<li><a href="#deliverables">Deliverables</a></li>
-<li><a href="#reference">Reference</a></li>
+<li><a href="#1-the-style-was-measured-not-chosen">1. The style was measured, not chosen</a></li>
+<li><a href="#2-what-applying-it-would-cost-measured">2. What applying it would cost — measured</a></li>
+<li><a href="#3-why-it-is-not-applied-yet">3. Why it is not applied yet</a></li>
+<li><a href="#4-until-then-format-what-you-touch">4. Until then: format what you touch</a></li>
+<li><a href="#5-the-staged-plan">5. The staged plan</a></li>
 </ul>
 </div>
 </aside>

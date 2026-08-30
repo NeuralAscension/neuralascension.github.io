@@ -104,10 +104,14 @@
         <path d="M 500.0 1110.0 C 530.0 1110.0, 530.0 1435.0, 560.0 1435.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1175.0 C 530.0 1175.0, 530.0 1305.0, 560.0 1305.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1175.0 C 530.0 1175.0, 530.0 1370.0, 560.0 1370.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 1175.0 C 530.0 1175.0, 530.0 1435.0, 560.0 1435.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1240.0 C 530.0 1240.0, 530.0 1435.0, 560.0 1435.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1305.0 C 530.0 1305.0, 530.0 1175.0, 560.0 1175.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1370.0 C 530.0 1370.0, 530.0 1305.0, 560.0 1305.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 500.0 1370.0 C 530.0 1370.0, 530.0 1370.0, 560.0 1370.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 1435.0 C 530.0 1435.0, 530.0 1305.0, 560.0 1305.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 1435.0 C 530.0 1435.0, 530.0 1370.0, 560.0 1370.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 1435.0 C 530.0 1435.0, 530.0 1435.0, 560.0 1435.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
     </g>
     <g id="nodes">
         <rect x="40.0" y="80.0" width="200" height="45" rx="5" fill="#2d3748" stroke="#ed8936" stroke-width="2"/>

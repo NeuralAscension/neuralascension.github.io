@@ -64,12 +64,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
@@ -88,8 +89,9 @@
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
@@ -251,6 +253,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <td><strong>The things that are not what they look like</strong> — names that mean something else (<code>kHeadstageSamplingRate</code> is 100 kHz TICKS; <code>getDataByName</code> CREATES), what is actually running when, the ring-buffer commit-count invariant, the Windows/shell/build traps, and the recurring "announced REQUESTED state instead of CONFIRMED" defect class. Written from real time lost; keep adding.</td>
 </tr>
 <tr>
+<td><a href="CodeStyle.html"><code>CodeStyle.md</code></a></td>
+<td><strong>The formatter, and why it has not been run yet.</strong> <code>.clang-format</code> DESCRIBES the style already in the tree -- every setting derived by counting, not chosen from a preset: 4-space and exactly one tab in 25,843 lines, 100 columns at the measured p95, brace-on-next-line 638-to-204, and the <strong>414</strong> definitions written <code>bool</code> then <code>Class::method(...)</code>. Applying it would touch <strong>36.5 % of lines</strong>, of which reflow is only a third -- so it waits for an empty PR queue, lands alone, and takes a <code>.git-blame-ignore-revs</code> entry in the same commit. Include sorting and comment reflow are off on purpose, and the reasons are the interesting part.</td>
+</tr>
+<tr>
 <td><a href="ConfigReference.html"><code>ConfigReference.md</code></a></td>
 <td><strong>Every config key, and the much longer list of what is NOT one.</strong> 77 keys across every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
 </tr>
@@ -404,6 +410,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a></td>
 <td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag — now on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>). Numbers live in the Hardware Results page.</td>
+</tr>
+<tr>
+<td><a href="Profiling.html"><code>Profiling.md</code></a></td>
+<td><strong>Where the time actually goes — the profiling report.</strong> Load rather than latency: the frontend is <strong>~1.2 % of the main thread</strong> with no hot spot, the heatmap draw is <strong>flat in channel count</strong> (0.001 ms at 384 and at 1536 — one draw call either way), the backend sits at ~1.02 cores regardless of display mode, and AVX2 is <strong>2.89x</strong> in the filter while moving the whole NP1.0 backend by nothing (because NP1.0 gets LFP from the probe — the reconciliation is the interesting part). Also records the optimization deliberately <strong>not</strong> taken, and why no benchmark is in the gate.</td>
 </tr>
 </tbody>
 </table>

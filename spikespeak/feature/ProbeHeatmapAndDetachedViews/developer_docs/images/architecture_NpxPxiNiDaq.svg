@@ -21,6 +21,9 @@
         <path d="M 760.0 102.5 C 920.0 102.5, 920.0 135.0, 1080.0 135.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 760.0 167.5 C 920.0 167.5, 920.0 135.0, 1080.0 135.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
         <path d="M 760.0 232.5 C 920.0 232.5, 920.0 200.0, 1080.0 200.0" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 135.0 C 530.0 135.0, 530.0 102.5, 560.0 102.5" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 135.0 C 530.0 135.0, 530.0 167.5, 560.0 167.5" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+        <path d="M 500.0 200.0 C 530.0 200.0, 530.0 232.5, 560.0 232.5" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
     </g>
     <g id="nodes">
         <rect x="40.0" y="145.0" width="200" height="45" rx="5" fill="#2d3748" stroke="#ed8936" stroke-width="2"/>

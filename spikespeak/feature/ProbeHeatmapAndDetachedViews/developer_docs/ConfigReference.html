@@ -64,12 +64,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
@@ -88,8 +89,9 @@
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
@@ -1005,6 +1007,68 @@ are now stale by design. What moved:</p>
 </table>
 <p><strong>Notes.</strong> VERIFICATION METHOD: <code>grep -n 'has_child|ConstNodeRef|cfg\\[|getConfigValue|node\\['</code> over the whole of src/modules/neuropixels/ returns an EXHAUSTIVE list of config reads. Every claimed call site was opened and read. Nothing was removed as unconfirmable -- all 27 claimed keys exist and behave as described, with the parse-semantics corrections below. No key was missed: the grep produces no cfg read in these six classes that is not in the list. CORRECTIONS MADE (5): 1. <strong><code>source.npx.simadc</code> integer keys -- the parse story was wrong, and it hides a real bug.</strong> The claim said getConfigValue "ignores the return value, so a non-numeric scalar leaves the pre-seeded current value". It does not. <code>Utils::getConfigValue</code> (src/core/Utils.hpp:58-65) forwards to <code>c4::read_dec</code> (ext/rapidyaml/ext/c4core/src/c4/charconv.hpp:862-874), which does <code>*v = 0;</code> BEFORE the digit loop and returns false at the first non-digit. Consequences, all silent because the caller discards the bool: (a) <code>num_channels: 16x</code> yields 16 and is ACCEPTED (partial parse); (b) there is no overflow check, values wrap; (c) most importantly, <strong>read_dec does not accept negative numbers</strong>, so <code>sync_channel: -1</code> and <code>grounded_channel: -1</code> -- the documented "no sync channel" / "none" sentinels that the range checks <code>&gt;= -1</code> exist to admit -- parse to <strong>0</strong>, pass the range check, and silently select CHANNEL 0 instead. The -1 sentinel is unreachable from YAML. No shipped config uses -1, so nothing is broken today, but the range check is a lie about what the key accepts. Same helper, same defect, in NiDaqSimSource.cpp:162 and DisplayProcessor.cpp:120 (out of scope here). 2. <strong><code>adc_voltage_range</code> does not silently fall back to 5.0 on a bad value.</strong> ryml's <code>operator&gt;&gt;</code> (ext/rapidyaml/src/c4/yml/node.hpp:619-624) calls <code>_RYML_CB_ERR(tree_-&gt;m_callbacks, "could not deserialize value")</code> when <code>read()</code> fails, and <code>grep -rn 'set_callbacks|ryml::Callbacks|error_callback'</code> over src/ returns NOTHING -- no custom handler is installed -- so a malformed scalar hits ryml's DEFAULT error handler (abort/throw), not the local <code>double v = 5.0</code> seed. The 5.0 seed only matters as a duplicate of the member default, which is a real (if currently harmless) smell. 3. <strong><code>SimData2Source::applyNamedMap</code> accepts three spellings, not one.</strong> SimData2Source.cpp:337 tests <code>w == "default" || w == "banka" || w == "bank0"</code>, all three routing to loadDefaultImro(). The claim said "default" only. 4. <strong>Line-number fixes on NpInterface.cpp:</strong> the probe-mismatch warning block is at :1062-1073 (claimed :1059-1071); the buffer-binding branches driven by the DETECTED mProbeType are at :993 (NP1) and :1034 (NP2) (claimed :996/:1030). 5. <strong><code>source.npx.synthripples :: outputs</code> has no <code>.is_seq()</code> guard</strong> -- only <code>cfg.has_child("outputs")</code> (SynthRippleSource.cpp:461), unlike NpInterface.cpp:971 and OneBoxSource.cpp:131 which both check <code>is_seq()</code>. A scalar <code>outputs:</code> would be iterated as a childless node rather than rejected. CROSS-CHECK AGAINST ALL 28 SHIPPED CONFIGS (config/<em>.yaml, sources: blocks extracted and read in full): </em>Claimed keys NO shipped config uses (live but undocumented in configs):<em> - <code>imro_path</code> on source.npx.pxi and source.npx.onebox. Fully wired (read NpInterface.cpp:959, consumed :1731/:1747), set by zero config files. - <code>adc_voltage_range</code> on source.npx.onebox. Fully wired (OneBoxSource.cpp:162), set by zero config files, so every OneBox profile runs at the +/-5 V default. </em>Keys appearing in a shipped config for these modules that are NOT in the list -- both are DEAD, not missed:<em> - </em><em><code>outputs[].data</code></em><em> (<code>- data: "ap"</code> / <code>"lfp"</code> / <code>"raw"</code> / <code>"adc"</code>). Present under EVERY source in EVERY shipped config; read by no source. The three <code>"outputs"</code> call sites (NpInterface.cpp:971, OneBoxSource.cpp:131, SynthRippleSource.cpp:461) all read only the sibling <code>name</code>. The <code>data:</code> key IS live elsewhere -- in a PROCESSOR's <code>inputs:</code> list (DisplayProcessor.cpp:87+:94, NiDaqDisplayProcessor.cpp:59+:65 both require it) -- which is presumably why it was copied onto sources. Documentation only on a source node. - </em><em>The entire <code>outputs:</code> block on source.npx.simdata, source.npx.sim2 and source.npx.simadc.</em>* Those three classes never call <code>cfg.has_child("outputs")</code>; they hardcode their registry lookups ("data.npx.ap"+"data.npx.lfp" at SimDataSource.cpp:309-310, "data.npx.raw" at SimData2Source.cpp:259, "data.npx.adc" at SimOneBoxAdcSource.cpp:205). SimNpx1.yaml, SimNpx2.yaml, SimNpx1OneBox.yaml, SimNpx2OneBox.yaml and the rest declare them anyway. Inert. (Contrast source.npx.pxi/onebox/synthripples, where <code>outputs[].name</code> IS load-bearing -- so the block cannot be deleted repo-wide, only from the three sim sources.) - No other key. Note that <code>num_channels</code> / <code>sample_rate_hz</code> / <code>sync_channel</code> / <code>sync_drift_ppm</code> DO appear in SimNpx1NiDaq.yaml, SimNpx2NiDaq.yaml and SimNpx2NiDaqRipples.yaml, but under <code>source.nidaq.sim</code> (NiDaqSimSource.cpp:162), a different module -- not an npx source key. FIELDS THAT LOOK CONFIGURABLE AND ARE NOT (hardcoded struct members, no call site; verified by grepping for the plausible key spellings -- <code>ap_freq</code>, <code>ap_amplitude</code>, <code>lfp_freq</code>, <code>lfp_amplitude</code>, <code>sync_freq</code>, <code>sync_volts</code> all return zero hits in src/): - SimSignalProfile: numChannels(384), apFreqHz(10), apAmplitude(150), lfpFreqHz(4), lfpAmplitude(150) -- SimDataSource.hpp:46-50. - Sim2SignalProfile: numChannels(384), apFreqHz(10), apAmplitude(75), lfpFreqHz(4), lfpAmplitude(45) -- SimData2Source.hpp:43-47. - SimAdcProfile: syncFreqHz(1.0) and syncVolts(3.3) -- SimOneBoxAdcSource.hpp:57-58. The header comment at :48 claims "All parameters are YAML-editable"; these two are not (the other seven are). The comment is wrong and worth fixing. - SynthRippleSource has no signal knobs -- the waveform comes from the HDF5 file. Its file-side contract is dataset <code>"data"</code> (SynthRippleSource.cpp:289; 1-D [nSamples] broadcast to all channels, or 2-D [nSamples x nChannels]) plus attributes <code>sampling_rate</code> (int32, warns on mismatch -- :316-323, and again for the dual-band loader at :390-393) and <code>num_channels</code> (int32, optional, informational -- :326-331). HDF5 attributes, not YAML. PARSE-SEMANTICS GOTCHAS WORTH DOCUMENTING: - Booleans are compared as raw STRINGS against {"true","1","yes","on"} with NO case folding. <code>low_latency: True</code> or <code>inject_ripples: YES</code> evaluates to FALSE, silently. Five call sites share this idiom: NpInterface.cpp:952, SimDataSource.cpp:280 and :297, SimData2Source.cpp:229 and :246. (A sixth instance of the same idiom, inverted, lives in Configuration.cpp:110 for <code>gui_hidden</code>.) - Three different parsers are in use for numbers across these six sources -- <code>std::stod</code> in try/catch (warn + keep default), <code>ryml::read_dec</code> via getConfigValue (digits-only, zeroes-then-partial-parses, no warning), and bare <code>ryml operator&gt;&gt;</code> (aborts via the default callback). Only the first is actually safe. <code>adc_voltage_range</code> is the sole user of the third. - In NpInterface.cpp:971-982 the probe-type inference gives ".raw" unconditional precedence: the ".raw" branch overwrites expectedProbe every time, while the ".ap"/".lfp" branch is guarded by <code>expectedProbe == eUnknown</code>. A profile declaring both would always be classified NP2. - Order dependency in source.npx.simadc: <code>num_channels</code> is parsed first (:173) and its value bounds the <code>sync_channel</code> / <code>grounded_channel</code> clamps (:189, :194). Fixed in code, so YAML key ordering does not matter -- but a narrow <code>num_channels</code> silently rejects an otherwise valid <code>sync_channel</code>. SCOPE NOTE: two TOP-LEVEL (not source-level) keys touch how these sources are offered in the GUI, read in src/core/Configuration.cpp -- <code>sim_variant</code> (:87-90, groups a profile under the GUI's "Simulated Data" picker; used by 12+ shipped configs) and <code>gui_hidden</code> (:107-113, same bool-as-string idiom inverted: absent or "false"/"0"/"no"/"off" =&gt; visible), which keeps a headless-only validation profile out of the Source dropdown while leaving it CLI-selectable. Exactly two shipped configs set it: SimNpx1Ripples.yaml:6 and SimNpx2Ripples.yaml:6 -- so the example given in the original schema was right. Both belong to the config-manager module, not to any source. Likewise <code>data_name</code> (Npx.cpp:23-28) is read by NpxDataInterpreter::configure and by the recorder's <code>recordings:</code> entries, not by any source node.</p>
 <hr />
+<h2 id="outputs-on-a-source-what-is-live-and-what-was-removed"><code>outputs:</code> on a source — what is live, and what was removed<a class="headerlink" href="#outputs-on-a-source-what-is-live-and-what-was-removed" title="Permanent link">#</a></h2>
+<p><strong>Only <code>name</code> is read.</strong> <code>outputs[].data</code> was carried by every source in every shipped config and
+read by nothing; it was removed from <code>config/*.yaml</code> on 2026-08-30 (#70).</p>
+<p>The confusion it caused is worth stating, because the two blocks are visually identical:</p>
+<table>
+<thead>
+<tr>
+<th>block</th>
+<th><code>data:</code></th>
+<th><code>name:</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>a <strong>processor's</strong> <code>inputs:</code></td>
+<td><strong>live</strong> — it is the stream id (<code>DisplayProcessor</code>, <code>NiDaqDisplayProcessor</code> both require it)</td>
+<td>live</td>
+</tr>
+<tr>
+<td>a <strong>source's</strong> <code>outputs:</code></td>
+<td><strong>dead — removed</strong></td>
+<td>live</td>
+</tr>
+</tbody>
+</table>
+<p><code>data:</code> was presumably copied onto sources from the input shape. Unknown keys are ignored, so an
+operator's existing config that still carries it keeps working.</p>
+<h3 id="what-outputsname-actually-drives">What <code>outputs[].name</code> actually drives<a class="headerlink" href="#what-outputsname-actually-drives" title="Permanent link">#</a></h3>
+<p>It is not decoration, and it is more than a warning flag:</p>
+<table>
+<thead>
+<tr>
+<th>source</th>
+<th>what the name does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.pxi</code> (<code>NpInterface.cpp</code>)</td>
+<td>substring test on <code>.raw</code> vs <code>.ap</code>/<code>.lfp</code> sets the <strong>expected probe type</strong>, so a 1.0 left plugged into a 2.0 profile is warned about rather than silently streamed. Note <code>.raw</code> takes unconditional precedence: a profile declaring both is always classified NP2.</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox</code> (<code>OneBoxSource.cpp</code>)</td>
+<td><strong>the ADC stream is opt-in on this key.</strong> A <code>.adc</code> name enables it; <code>.adc.di</code> additionally enables the digital band. A probe-only OneBox profile pays nothing. This is a feature switch, not a hint.</td>
+</tr>
+<tr>
+<td><code>source.npx.synthripples</code></td>
+<td>exact-name match — <code>data.npx.ap</code> <strong>and</strong> <code>data.npx.lfp</code> together select the dual-band NP1 playback layout.</td>
+</tr>
+<tr>
+<td><code>source.npx.simdata</code>, <code>.sim2</code>, <code>.simadc</code></td>
+<td><strong>ignored entirely.</strong> These three never read <code>outputs:</code>; they hard-code their registry lookups. The block is inert but kept, so every source node has the same shape.</td>
+</tr>
+</tbody>
+</table>
+<p>An entry with no <code>name:</code> declares nothing and is now warned about at config load — on a OneBox
+profile that silently meant the ADC never started.</p>
+<h3 id="output-names-are-still-not-configurable">Output <em>names</em> are still not configurable<a class="headerlink" href="#output-names-are-still-not-configurable" title="Permanent link">#</a></h3>
+<p>The data-object name a source produces is a C++ literal in every case but <code>SynthRippleSource</code>
+(<code>LFPProcessor.hpp:20</code>, <code>SpikeBandProcessor.hpp:23</code>, <code>AudioProcessor.cpp:856</code>). <code>outputs[].name</code>
+<em>selects among</em> what a source can produce; it does not rename anything. Making outputs genuinely
+configurable is the open half of #70.</p>
 <h2 id="adding-a-key">Adding a key<a class="headerlink" href="#adding-a-key" title="Permanent link">#</a></h2>
 <ol>
 <li>Add the <code>cfg.has_child(...)</code> read in the processor's <code>configure()</code>, with a default that preserves
@@ -1048,6 +1112,11 @@ are now stale by design. What moved:</p>
 <li><a href="#sources-pxie-onebox-and-the-simulated-ones">Sources: PXIe, OneBox, and the simulated ones</a><ul>
 <li><a href="#config-keys_4">Config keys</a></li>
 <li><a href="#runtime-only-not-config-keys_4">Runtime only: NOT config keys</a></li>
+</ul>
+</li>
+<li><a href="#outputs-on-a-source-what-is-live-and-what-was-removed">outputs: on a source — what is live, and what was removed</a><ul>
+<li><a href="#what-outputsname-actually-drives">What outputs[].name actually drives</a></li>
+<li><a href="#output-names-are-still-not-configurable">Output names are still not configurable</a></li>
 </ul>
 </li>
 <li><a href="#adding-a-key">Adding a key</a></li>

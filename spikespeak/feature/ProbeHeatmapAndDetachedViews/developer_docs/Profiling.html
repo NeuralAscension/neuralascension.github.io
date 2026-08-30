@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SIMD dispatch — what AVX2 is worth, and when - SpikesPeak Docs</title>
+<title>Profiling — where the time actually goes - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Unsorted / SIMD dispatch — what AVX2 is worth, and when</span>
+  <span class="crumb">Developer Docs / Ripple detection and closed loop / Profiling — where the time actually goes</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -64,13 +64,13 @@
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
-<a href="Profiling.html">Profiling — where the time actually goes</a>
+<a class="active" href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
 <details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
@@ -103,12 +103,12 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup" open><summary>Unsorted<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
 <a href="DetachedViews.html">Detached view windows</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a class="active" href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -133,9 +133,15 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="simd-dispatch-what-avx2-is-worth-and-when">SIMD dispatch — what AVX2 is worth, and when<a class="headerlink" href="#simd-dispatch-what-avx2-is-worth-and-when" title="Permanent link">#</a></h1>
-<p>Issue #34 asked for runtime AVX2 detection with an operator override. This is what shipped, what it
-measures, and the one result that looked like a failure and was not.</p>
+  <main class="content"><article class="markdown-body"><h1 id="profiling-where-the-time-actually-goes">Profiling — where the time actually goes<a class="headerlink" href="#profiling-where-the-time-actually-goes" title="Permanent link">#</a></h1>
+<p>Measured on this machine, in the shipped code, on 2026-08-30. <strong>The headline is that there is no hot
+spot</strong>, which is a useful thing to have written down: it is what stops the next person optimizing
+something that does not matter.</p>
+<blockquote>
+<p><strong>This is the profiling report.</strong> For closed-loop <em>latency</em> — the per-stage breakdown from
+threshold crossing to stimulus out — see <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>, which
+answers a different question. This document is about <strong>load</strong>: CPU, GPU and where the frames go.</p>
+</blockquote>
 <table>
 <thead>
 <tr>
@@ -145,63 +151,142 @@ measures, and the one result that looked like a failure and was not.</p>
 </thead>
 <tbody>
 <tr>
-<td>Detection + tier</td>
-<td><code>src/core/CpuFeatures.hpp</code> / <code>.cpp</code></td>
+<td>Frontend profiler</td>
+<td><code>ripple_tools/profile_frontend.py</code> → <code>frontend_profile.json</code></td>
 </tr>
 <tr>
-<td>The dispatched filter</td>
-<td><code>src/core/Avx2Filter.cpp</code> — <code>addSample()</code> picks <code>addSampleAvx2()</code> or <code>addSampleScalar()</code></td>
+<td>Backend CPU</td>
+<td><code>ripple_tools/profile_backend.py</code> → <code>backend_profile.json</code></td>
 </tr>
 <tr>
-<td>Build rule</td>
-<td><code>SPIKESPEAK_AVX2_SOURCES</code> in <code>CMakeLists.txt</code></td>
-</tr>
-<tr>
-<td>Tests</td>
-<td><code>tests/test_cpufeatures.cpp</code>, and <code>tests/test_avx2filter.cpp</code> run on both paths</td>
-</tr>
-<tr>
-<td>Benchmark</td>
+<td>Filter microbenchmark</td>
 <td><code>tests/bench_filter.cpp</code> → <code>build/tests/bench_filter.exe</code></td>
+</tr>
+<tr>
+<td>Heatmap renderer benchmark</td>
+<td><code>ripple_tools/bench_heatmap.py</code> → <code>heatmap_bench.json</code></td>
 </tr>
 </tbody>
 </table>
+<p>All four are reproducible. None is registered with ctest — see §6.</p>
 <hr />
-<h2 id="1-the-bug-was-the-build-not-the-missing-check">1. The bug was the build, not the missing check<a class="headerlink" href="#1-the-bug-was-the-build-not-the-missing-check" title="Permanent link">#</a></h2>
-<p>Before this, the Linux build applied <code>-mavx2 -mfma</code> to the <strong>whole application target</strong>. GCC was
-therefore free to emit AVX2 anywhere — in Qt glue, in string handling, in code nobody wrote with
-vectors in mind. On a pre-Haswell CPU that binary does not degrade, it takes <strong><code>SIGILL</code></strong>, wherever
-the compiler happened to vectorise.</p>
-<p><strong>A runtime check added to a binary like that only moves the crash.</strong> So three things had to change
-together, none of which works alone:</p>
-<ol>
-<li>AVX2 applies to a <strong>named file list</strong>, so the rest of the binary is baseline x86-64.</li>
-<li>Every entry point into one of those files is guarded by <code>useAvx2()</code>.</li>
-<li>The guarded paths have a scalar twin.</li>
-</ol>
-<p><code>CpuFeatures.cpp</code> is deliberately <strong>absent</strong> from that list: it is the thing that decides whether
-AVX2 is safe to execute, so it has to run where AVX2 is not.</p>
-<p>Windows had the opposite situation and got away with it: no <code>/arch</code> flag at all, so MSVC emitted AVX2
-only where somebody had written <code>_mm256_*</code> by hand — correct by accident, and only until someone
-added a flag.</p>
-<h3 id="cpuid-is-not-sufficient">CPUID is not sufficient<a class="headerlink" href="#cpuid-is-not-sufficient" title="Permanent link">#</a></h3>
-<p><code>XCR0</code> is checked too. A CPU can report AVX2 while the OS has not enabled YMM state saving, in which
-case the upper register halves are not preserved across a context switch. That does not crash — it
-<strong>computes wrong answers, intermittently, under load</strong>, which is strictly worse.</p>
-<p>FMA is checked separately from AVX2, because <code>Avx2Filter</code>'s inner loop is <code>_mm256_fmadd_ps</code> and they
-are separate CPUID bits.</p>
-<hr />
-<h2 id="2-the-override">2. The override<a class="headerlink" href="#2-the-override" title="Permanent link">#</a></h2>
-<pre><code>SPIKESPEAK_SIMD=auto      the default: AVX2 when the CPU and OS both support it
-SPIKESPEAK_SIMD=scalar    force the portable path — for A/B, or to bisect a numerical difference
-SPIKESPEAK_SIMD=avx2      require it; falls back with a warning if the CPU cannot
+<h2 id="1-the-frontend-12-of-the-main-thread">1. The frontend: ~1.2 % of the main thread<a class="headerlink" href="#1-the-frontend-12-of-the-main-thread" title="Permanent link">#</a></h2>
+<p>Chrome's sampling profiler, 12 s per configuration, simulated NP1.0 with ripples, four columns.</p>
+<table>
+<thead>
+<tr>
+<th>configuration</th>
+<th>main thread busy</th>
+<th>real work</th>
+<th>of wall</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>traces, 4 columns</td>
+<td>18.2 %</td>
+<td>149.8 ms</td>
+<td><strong>1.25 %</strong></td>
+</tr>
+<tr>
+<td>heatmap, 4 columns</td>
+<td>18.1 %</td>
+<td>144.7 ms</td>
+<td><strong>1.21 %</strong></td>
+</tr>
+<tr>
+<td>heatmap, 4 columns, <strong>all 384 channels</strong></td>
+<td>18.2 %</td>
+<td>172.6 ms</td>
+<td><strong>1.44 %</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The 18 % "busy" figure is almost entirely <code>(native):(idle)</code> — the profiler counts the sample, not the
+work. Subtract it and the page is doing 1.2–1.4 % of one core.</p>
+<p>Everything else, in order, for the heaviest configuration:</p>
+<pre><code>(native):(program)                    99.4 ms   &lt;- V8 itself: parse, compile, internal
+NetworkClient.js:handleMessage        42.0 ms   &lt;- the binary decode. THE hot function.
+ChartColumn.js:pushHeatmapColumn      10.9 ms   &lt;- heatmap aggregation, 384 channels
+(native):(garbage collector)           8.8 ms
+(native):bufferSubData                 4.2 ms   &lt;- the actual GL upload
 </code></pre>
-<p>Requesting <code>avx2</code> on a machine that cannot run it <strong>falls back rather than refusing to start</strong>. An
-acquisition system that will not launch is worse than one that launches slower.</p>
+<p><strong><code>handleMessage</code> is the only thing in the frontend worth optimizing</strong>, and at 42 ms per 12 s it is
+0.35 % of a core. The renderer barely appears: <code>bufferSubData</code> is 4.2 ms and the draw calls do not
+make the list at all.</p>
+<h3 id="the-optimization-deliberately-not-taken">The optimization deliberately not taken<a class="headerlink" href="#the-optimization-deliberately-not-taken" title="Permanent link">#</a></h3>
+<p>Columns showing the same channel list each run their own gather out of the decoded frame. Sharing it
+across identical columns would save roughly <strong>1 ms/s</strong>.</p>
+<p>It was not done. It adds a cache keyed on the channel list to a path that runs 50 times a second, to
+save a thousandth of a core. The number is recorded here because <em>"we chose not to optimize this"</em> is
+only defensible with one.</p>
 <hr />
-<h2 id="3-what-it-is-worth-289">3. What it is worth: 2.89×<a class="headerlink" href="#3-what-it-is-worth-289" title="Permanent link">#</a></h2>
-<p><code>tests/bench_filter.cpp</code>, 384 channels through the LFP preset (2nd-order Bessel IIR), median of 12
-reps of one second of 30 kHz data:</p>
+<h2 id="2-the-heatmap-renderer-flat-in-channel-count">2. The heatmap renderer: flat in channel count<a class="headerlink" href="#2-the-heatmap-renderer-flat-in-channel-count" title="Permanent link">#</a></h2>
+<p><code>ripple_tools/bench_heatmap.py</code>, measured in the shipped renderer on an RTX 3060 Ti (ANGLE/D3D11).</p>
+<table>
+<thead>
+<tr>
+<th>channels</th>
+<th>upload per time bin</th>
+<th>draw per frame</th>
+<th>(traces, same column)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>384</td>
+<td>2.10 µs</td>
+<td><strong>0.0010 ms</strong></td>
+<td>0.0055 ms</td>
+</tr>
+<tr>
+<td>960</td>
+<td>5.15 µs</td>
+<td><strong>0.0005 ms</strong></td>
+<td>0.0040 ms</td>
+</tr>
+<tr>
+<td>1536</td>
+<td>7.85 µs</td>
+<td><strong>0.0005 ms</strong></td>
+<td>0.0040 ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The draw does not grow with channel count</strong> — four times the channels is the same single draw call
+of two triangles, and the difference between the rows is noise. What grows is the upload, linearly,
+because it is <code>channels × 4</code> bytes per time bin.</p>
+<p>At 1536 channels that is 7.85 µs per bin against a bin every ~10 ms: <strong>0.08 % of a core.</strong></p>
+<p>Total heatmap cost end to end is ~0.2 ms/s, and it moves the backend by <strong>+0.3 pp</strong> — which is
+within the noise of the two measurements either side of it.</p>
+<hr />
+<h2 id="3-the-backend-102-cores-and-the-simd-tier-barely-moves-it">3. The backend: 1.02 cores, and the SIMD tier barely moves it<a class="headerlink" href="#3-the-backend-102-cores-and-the-simd-tier-barely-moves-it" title="Permanent link">#</a></h2>
+<p><code>ripple_tools/profile_backend.py</code>, 20 s windows, simulated NP1.0 ripples:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>cores</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>traces, 4 columns</td>
+<td>1.036</td>
+</tr>
+<tr>
+<td>heatmap, 4 columns, all channels</td>
+<td>1.039</td>
+</tr>
+</tbody>
+</table>
+<p><strong>One core, near enough, and the display mode does not change it.</strong> That is the shape you want: the
+acquisition and processing cost is set by the source and the processor graph, not by what the
+browser happens to be drawing.</p>
+<hr />
+<h2 id="4-avx2-289-in-the-filter-and-a-null-result-that-is-not-one">4. AVX2: 2.89× in the filter, and a null result that is not one<a class="headerlink" href="#4-avx2-289-in-the-filter-and-a-null-result-that-is-not-one" title="Permanent link">#</a></h2>
+<p><code>build/tests/bench_filter.exe</code>, 384 channels through the LFP preset (2nd-order Bessel IIR), median
+of 12 reps of one second at 30 kHz:</p>
 <table>
 <thead>
 <tr>
@@ -224,109 +309,89 @@ reps of one second of 30 kHz data:</p>
 </tbody>
 </table>
 <p><strong>2.89×</strong>, saving 31.4 ms of CPU per second of filtered probe data.</p>
-<p>The benchmark is built with the suite so it cannot rot, but is <strong>not registered with ctest</strong>: it is a
-stopwatch, not an assertion, and a benchmark in the gate is a flaky test waiting for a busy machine.
-The tier is decided once per process by design, so it measures whichever tier it resolved to — run it
-twice.</p>
-<hr />
-<h2 id="4-the-result-that-looked-like-a-failure">4. The result that looked like a failure<a class="headerlink" href="#4-the-result-that-looked-like-a-failure" title="Permanent link">#</a></h2>
-<p>Measuring the <strong>whole backend</strong> under each tier on the NP1.0 ripple configuration:</p>
+<h3 id="the-end-to-end-measurement-said-zero-and-that-is-also-true">The end-to-end measurement said zero, and that is also true<a class="headerlink" href="#the-end-to-end-measurement-said-zero-and-that-is-also-true" title="Permanent link">#</a></h3>
+<p>Forcing each tier and measuring the <strong>whole backend</strong> on the NP1.0 ripple configuration:</p>
 <table>
 <thead>
 <tr>
 <th></th>
-<th></th>
+<th>cores</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>SPIKESPEAK_SIMD=avx2</code></td>
-<td>102.2 % of one core</td>
+<td>1.022</td>
 </tr>
 <tr>
 <td><code>SPIKESPEAK_SIMD=scalar</code></td>
-<td>101.9 % of one core</td>
+<td>1.019</td>
 </tr>
 </tbody>
 </table>
-<p><strong>No difference at all.</strong> Taken alone that says the dispatch bought nothing.</p>
-<p>It is a true measurement of a case where the filter barely runs. <strong>NP1.0 gets its LFP band from the
-probe</strong>, so <code>proc.lfp</code> is never provisioned (<code>ProcessorManager</code> requires <code>data.npx.raw</code> <em>and</em> no
-<code>data.npx.lfp</code>), and the ripple detector filters only its handful of detection channels. The
-vectorised filter was ~nothing of the load, so the flag moved ~nothing.</p>
-<p>That yields a falsifiable prediction: <strong>NP2.0 has no hardware LFP</strong>, so <code>proc.lfp</code> derives it — 384
-channels of IIR per sample — and the flag should move the process by roughly the 3 percentage points
-the microbenchmark implies.</p>
-<p>Measured, NP2.0 with the derived band switched on:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>SPIKESPEAK_SIMD=avx2</code></td>
-<td>109.4 % of one core</td>
-</tr>
-<tr>
-<td><code>SPIKESPEAK_SIMD=scalar</code></td>
-<td>113.2 % of one core</td>
-</tr>
-<tr>
-<td></td>
-<td><strong>+3.8 pp</strong></td>
-</tr>
-</tbody>
-</table>
-<p>Against ~3.1 pp implied by the microbenchmark. The prediction held.</p>
+<p>No difference. It is a true measurement of a case where the filter barely runs: <strong>NP1.0 gets its LFP
+band from the probe</strong>, so <code>proc.lfp</code> is never provisioned and the ripple detector filters only its
+handful of detection channels.</p>
+<p>That yields a falsifiable prediction — NP2.0 has no hardware LFP, so <code>proc.lfp</code> derives it, 384
+channels of IIR per sample, and the flag should move the process by roughly the 3 points the
+microbenchmark implies. Measured on NP2.0 with the derived band on: <strong>+3.8 pp</strong>.</p>
 <blockquote>
 <p><strong>The lesson is about benchmarks, not about AVX2.</strong> An end-to-end measurement answers "does this
-matter <em>in this configuration</em>", and it is easy to read the answer as "does this matter". The two
-differ by whatever fraction of the load the thing under test actually is. Both numbers belong in
-the record; neither alone is the story.</p>
+matter <em>in this configuration</em>", and it is easy to read the answer as "does this matter". Both
+numbers belong in the record; neither alone is the story.</p>
 </blockquote>
 <hr />
-<h2 id="5-the-gate-runs-both-paths-and-this-was-not-optional">5. The gate runs both paths, and this was not optional<a class="headerlink" href="#5-the-gate-runs-both-paths-and-this-was-not-optional" title="Permanent link">#</a></h2>
-<p><code>scripts/run_tests.py</code> runs the whole C++ suite a second time with <code>SPIKESPEAK_SIMD=scalar</code>.</p>
-<p><strong>Demonstrated rather than assumed:</strong> an off-by-one deliberately injected into the scalar twin left
-<strong>all 22 suites green</strong>, because this machine has AVX2 and never executes that body. The forced pass
-failed instantly and named the divergence.</p>
-<p>A single run is not a statement about the code — it is a statement about the CPU the run happened on.
-The fallback path is what executes on a machine without AVX2, and this is the only coverage it can
-ever get on a machine that has it. The second pass costs ~1.6 s.</p>
-<p>The pass is skipped when the machine has no AVX2 to disable, and says so rather than implying it
-proved something.</p>
+<h2 id="5-reproducing-all-of-it">5. Reproducing all of it<a class="headerlink" href="#5-reproducing-all-of-it" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python ripple_tools/profile_frontend.py
+python ripple_tools/profile_backend.py
+python ripple_tools/bench_heatmap.py
+build/tests/bench_filter.exe
+SPIKESPEAK_SIMD=scalar build/tests/bench_filter.exe
+</code></pre>
+<p><code>bench_filter</code> decides its tier <strong>once per process</strong> by design — the dispatch must not change under a
+running acquisition — so it measures whichever tier it resolved to. Run it twice.</p>
+<p>Each writes its JSON next to itself in <code>ripple_tools/</code>, so a re-run on another machine is directly
+comparable.</p>
 <hr />
-<h2 id="6-adding-another-dispatched-routine">6. Adding another dispatched routine<a class="headerlink" href="#6-adding-another-dispatched-routine" title="Permanent link">#</a></h2>
-<ol>
-<li>Put it in a file on <code>SPIKESPEAK_AVX2_SOURCES</code>.</li>
-<li>Give it a scalar twin <strong>over the same state</strong>. <code>Avx2Filter</code>'s twin is a transliteration sharing
-   <code>mX</code>/<code>mY</code>, so the filter's history lives in exactly one place; a twin with its own state is a
-   second history to keep in step by hand.</li>
-<li>Guard the entry point with <code>useAvx2()</code>. The branch is a load of a cached bool and is perfectly
-   predicted — do not reach for a function pointer, which costs an indirect call and hides both
-   bodies from the inliner.</li>
-<li>Cross-check the two against an <strong>independent</strong> implementation if one exists.
-   <code>tests/test_avx2filter.cpp</code> checks <code>Avx2Filter</code> against the separate scalar <code>SpikesPeak::Filter</code>,
-   so the scalar pass proves the twin against a third party rather than against itself.</li>
-<li>Do <strong>not</strong> call <code>useAvx2()</code> per sample. It is cheap, but a branch that can be hoisted out of a
-   30 kHz loop belongs outside it.</li>
-</ol></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/SimdDispatch.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<h2 id="6-why-none-of-these-is-in-the-test-gate">6. Why none of these is in the test gate<a class="headerlink" href="#6-why-none-of-these-is-in-the-test-gate" title="Permanent link">#</a></h2>
+<p><strong>A benchmark is a stopwatch, not an assertion.</strong> A benchmark inside the gate is a flaky test waiting
+for a busy machine — it would be the only suite whose result depended on what else the laptop was
+doing, and the failure mode is somebody adding a tolerance wide enough to make it pass, at which
+point it stops detecting anything.</p>
+<p>They are <strong>built</strong> with the suite so they cannot rot, and run by hand.</p>
+<p>If we ever want a benchmark that gates, it needs a different design: a recorded baseline, a tolerance
+justified against measured machine-to-machine variance, and somewhere to keep the history. That is a
+decision to make deliberately, not by adding <code>add_test</code>.</p>
+<hr />
+<h2 id="7-what-is-not-measured-here-and-should-be">7. What is NOT measured here, and should be<a class="headerlink" href="#7-what-is-not-measured-here-and-should-be" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>GPU utilization attributable to the browser process.</strong> Every GPU number above is a <em>draw-call
+  timing</em>, not a utilization figure. The renderer lives in a browser process separate from the
+  backend, which makes per-process GPU attribution on Windows genuinely awkward — and it is exactly
+  the axis a competitor comparison needs.</li>
+<li><strong>Anything under real hardware load.</strong> All of the above is simulated sources. The numbers should
+  hold — sim drives the same display processor, ring buffers, WebSocket and GUI — but "should" is not
+  "measured".</li>
+<li><strong>Multi-window cost.</strong> Each detached window is a full independent decode; the per-window cost is
+  known analytically (~3.08 MB/s per stream) and has not been profiled at 2 and 3 windows.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/Profiling.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-bug-was-the-build-not-the-missing-check">1. The bug was the build, not the missing check</a><ul>
-<li><a href="#cpuid-is-not-sufficient">CPUID is not sufficient</a></li>
+<li><a href="#1-the-frontend-12-of-the-main-thread">1. The frontend: ~1.2 % of the main thread</a><ul>
+<li><a href="#the-optimization-deliberately-not-taken">The optimization deliberately not taken</a></li>
 </ul>
 </li>
-<li><a href="#2-the-override">2. The override</a></li>
-<li><a href="#3-what-it-is-worth-289">3. What it is worth: 2.89×</a></li>
-<li><a href="#4-the-result-that-looked-like-a-failure">4. The result that looked like a failure</a></li>
-<li><a href="#5-the-gate-runs-both-paths-and-this-was-not-optional">5. The gate runs both paths, and this was not optional</a></li>
-<li><a href="#6-adding-another-dispatched-routine">6. Adding another dispatched routine</a></li>
+<li><a href="#2-the-heatmap-renderer-flat-in-channel-count">2. The heatmap renderer: flat in channel count</a></li>
+<li><a href="#3-the-backend-102-cores-and-the-simd-tier-barely-moves-it">3. The backend: 1.02 cores, and the SIMD tier barely moves it</a></li>
+<li><a href="#4-avx2-289-in-the-filter-and-a-null-result-that-is-not-one">4. AVX2: 2.89× in the filter, and a null result that is not one</a><ul>
+<li><a href="#the-end-to-end-measurement-said-zero-and-that-is-also-true">The end-to-end measurement said zero, and that is also true</a></li>
+</ul>
+</li>
+<li><a href="#5-reproducing-all-of-it">5. Reproducing all of it</a></li>
+<li><a href="#6-why-none-of-these-is-in-the-test-gate">6. Why none of these is in the test gate</a></li>
+<li><a href="#7-what-is-not-measured-here-and-should-be">7. What is NOT measured here, and should be</a></li>
 </ul>
 </div>
 </aside>

@@ -240,13 +240,41 @@ the distinction is why the click handler sends <code>ch</code> rather than the l
 <td>slider is 0–100 %</td>
 </tr>
 <tr>
+<td>boost</td>
+<td><code>setBoost</code></td>
+<td>1 .. 1000 ×</td>
+<td><strong>undocumented until 2026-08-30</strong> (issue #43). A post-gain multiplier for a quiet channel — it multiplies the <em>signal</em>, so it multiplies the noise floor with it, and at the top of its range it will clip. It is a listening aid, never a measurement.</td>
+</tr>
+<tr>
 <td>mute</td>
 <td><code>setEnabled</code></td>
 <td>bool</td>
 <td>distinct from "no channel selected"</td>
 </tr>
+<tr>
+<td>output device</td>
+<td><code>setDevice</code></td>
+<td>device index, or <code>-1</code> to follow the system default</td>
+<td>reopens the stream — see §3a</td>
+</tr>
 </tbody>
 </table>
+<h3 id="3a-switching-the-output-device-the-invariant-that-makes-it-work">3a. Switching the output device: the invariant that makes it work<a class="headerlink" href="#3a-switching-the-output-device-the-invariant-that-makes-it-work" title="Permanent link">#</a></h3>
+<p>Changing the device <strong>closes and reopens the PortAudio stream</strong>, and the source keeps filling the
+audio ring throughout that terminate/initialize/open sequence. <code>AudioWorker</code> therefore <strong>skips the
+read index to the current write head on every stream open</strong>:</p>
+<pre><code class="language-cpp">std::atomic&lt;int64&gt; samplesWritten;
+mAudioDataBuffer.getTotalSamplesAdded(samplesWritten);
+mAudioDataInd = samplesWritten;
+</code></pre>
+<p>Without it the reopened stream resumes from the stale read index and plays the gap back — audio
+permanently late by however long the switch took, and later after every switch.</p>
+<p>Issue #43 asked for exactly this compensation, and it was already there — but written for
+<em>first start</em>, before device selection existed, so it covered the switch <strong>by luck rather than by
+intent</strong>, was documented nowhere, and no test would have noticed its removal.
+<code>tests/gui/audio_panel.py</code> now asserts it via <code>source_lag_max_ms</code> after a device change.</p>
+<p>Discarding the gap is the right trade here: spike audio is a <strong>monitoring</strong> signal, and late audio
+is worse than missing audio. It would be the wrong trade for anything being recorded.</p>
 <p>Commands go out on <strong>binary id <code>0x218</code></strong> carrying JSON (<code>{"action": …, "value": …}</code>), which is what
 <code>AudioProcessor::slApHandleCommand</code> already subscribed to. State comes back as an <code>audioState</code> event,
 relayed by <code>WebSocketServer::slBroadcastAudioEvent</code> exactly like the ripple detector's events:</p>
@@ -427,7 +455,10 @@ stream open, which is why every caller closes first.</p>
 <ul>
 <li><a href="#1-the-signal-path">1. The signal path</a></li>
 <li><a href="#2-choosing-a-channel">2. Choosing a channel</a></li>
-<li><a href="#3-control-surface">3. Control surface</a></li>
+<li><a href="#3-control-surface">3. Control surface</a><ul>
+<li><a href="#3a-switching-the-output-device-the-invariant-that-makes-it-work">3a. Switching the output device: the invariant that makes it work</a></li>
+</ul>
+</li>
 <li><a href="#4-thread-safety">4. Thread safety</a></li>
 <li><a href="#5-both-probe-types-and-which-band-each-listens-to">5. Both probe types, and which band each listens to</a></li>
 <li><a href="#6-when-there-is-no-audio-device">6. When there is no audio device</a></li>

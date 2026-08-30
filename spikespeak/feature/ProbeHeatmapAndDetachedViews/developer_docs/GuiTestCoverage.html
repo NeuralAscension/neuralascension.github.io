@@ -198,7 +198,7 @@ coverage itself.</p>
 </tr>
 <tr>
 <td><code>heatmap_view</code></td>
-<td><strong>The heatmap column renders real data in honest units.</strong> Verifies the colourmaps NUMERICALLY against their published endpoints (a screenshot looked fine while viridis was rendering as mauve), that the legend IS the colour axis rather than a second opinion of it, that values reached microvolts (the ×100 display-unit factor was lost once and made a healthy probe look silent), that the window spans seconds not fractions of one, that pixels are actually painted and VARY, that the unimplemented statistics are disabled rather than silently showing peak-to-peak, and that switching back leaves the trace buffers intact. Reads pixels in the same task as a <code>paint()</code> — <code>preserveDrawingBuffer</code> is false, so a later read returns zeros and looks exactly like a renderer that draws nothing</td>
+<td><strong>The heatmap column renders real data in honest units.</strong> Verifies the colormaps NUMERICALLY against their published endpoints (a screenshot looked fine while viridis was rendering as mauve), that the legend IS the color axis rather than a second opinion of it, that values reached microvolts (the ×100 display-unit factor was lost once and made a healthy probe look silent), that the window spans seconds not fractions of one, that pixels are actually painted and VARY, that the unimplemented statistics are disabled rather than silently showing peak-to-peak, and that switching back leaves the trace buffers intact. Reads pixels in the same task as a <code>paint()</code> — <code>preserveDrawingBuffer</code> is false, so a later read returns zeros and looks exactly like a renderer that draws nothing</td>
 <td>1 source</td>
 </tr>
 <tr>
@@ -905,7 +905,7 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
   density, the depth slider and its paging buttons.</li>
 <li><strong>Toolbar controls' effects</strong> — Window (1/2/5/10 s) and Ch (Auto/20/…/120) change what is drawn;
   only their presence is checked, not their effect.</li>
-<li><strong>Recording dialog details</strong> — the Browse… native picker and the REC badge's truncation behaviour.
+<li><strong>Recording dialog details</strong> — the Browse… native picker and the REC badge's truncation behavior.
   The arm → record → stop state machine and the files on disk are covered by <code>record_flow</code>; the
   ripple sidecar on the GUI record path is covered by <code>ripple_sidecar</code>.</li>
 <li><strong>Backend → GUI direction.</strong> Everything in §4 is GUI → backend. The reverse (set via WebSocket,

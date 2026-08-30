@@ -160,7 +160,7 @@ toolbar. Opened from the ⧉ button in the view group.</p>
 <h2 id="1-it-is-the-same-page-with-a-flag">1. It is the same page with a flag<a class="headerlink" href="#1-it-is-the-same-page-with-a-flag" title="Permanent link">#</a></h2>
 <p><code>index.html?view=detached</code>. Not a second page.</p>
 <p>A separate <code>view.html</code> would need its own bootstrap, its own column construction and its own X-axis
-plumbing — a second implementation of the thing whose behaviour has to match the first <em>exactly</em>,
+plumbing — a second implementation of the thing whose behavior has to match the first <em>exactly</em>,
 because the entire point is that a detached column behaves identically to an attached one. The flag
 reuses all of it and hides what does not belong.</p>
 <p>The class goes on <code>&lt;html&gt;</code>, not <code>&lt;body&gt;</code>, so the stylesheet can hide the toolbar before the body
@@ -208,6 +208,128 @@ shutdown. Late joiners are already a first-class case — <code>sendStateSnapsho
 playing and recording state to a new socket.</p>
 <p>But each window is a full parse of ~3 MB/s per stream. That cost is real, and it is why this is a
 button and not the default.</p>
+<hr />
+<h2 id="2a-counting-the-windows-and-why-the-backend-is-not-asked">2a. Counting the windows — and why the backend is not asked<a class="headerlink" href="#2a-counting-the-windows-and-why-the-backend-is-not-asked" title="Permanent link">#</a></h2>
+<p>The front end knows how many windows are open. <code>webinterface/WindowRegistry.js</code> carries presence
+over a <strong>BroadcastChannel</strong>; the count shows as a badge on the detach button and in every window's
+<code>document.title</code>.</p>
+<h3 id="the-paradigm-chosen-against-two-alternatives">The paradigm, chosen against two alternatives<a class="headerlink" href="#the-paradigm-chosen-against-two-alternatives" title="Permanent link">#</a></h3>
+<p><strong>The winner does not change the data path. Not by one byte.</strong> Presence is a UI feature, not a
+throughput optimization, and saying otherwise would be the easiest thing in this document to get
+wrong.</p>
+<p>The numbers, from the emit path rather than from memory. One display packet is a 20 B header plus
+20 bins of <code>1 + 2 × 384</code> floats — min <em>and</em> max per channel — = <strong>61,540 B</strong>, emitted every 20 ms:</p>
+<table>
+<thead>
+<tr>
+<th>configuration</th>
+<th>streams</th>
+<th>per window</th>
+<th>3 windows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP2.0 (<code>raw</code>)</td>
+<td>1</td>
+<td>3.08 MB/s</td>
+<td>9.2 MB/s</td>
+</tr>
+<tr>
+<td>NP1.0 (<code>ap</code> + <code>lfp</code>)</td>
+<td>2</td>
+<td>6.15 MB/s</td>
+<td>18.5 MB/s</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>option</th>
+<th>verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>(A) status quo</strong> — no cross-window awareness</td>
+<td><strong>Runner-up, and genuinely close.</strong> Identical data path to the winner. Its only loss is that the operator cannot tell how many windows exist; <code>main.js</code> had confessed this in a comment for weeks — <em>"nothing would be tracking how many exist"</em>. An operational annoyance, not an acquisition defect.</td>
+</tr>
+<tr>
+<td><strong>(B) BroadcastChannel registry</strong></td>
+<td><strong>Winner.</strong> ~120 B per window per 2 s — <strong>200 B/s at three windows, 0.002 % of the data path</strong> — on a <code>setInterval</code>, touching neither the frame path nor the acquisition thread.</td>
+</tr>
+<tr>
+<td><strong>(C) relay</strong> — one window owns the socket and forwards</td>
+<td><strong>Loses on every axis.</strong> It does not save the decode (the expensive half is <code>Float32Array</code> → per-channel append, which every window still does). It replaces a kernel-handled loopback read with a <strong>structured-clone copy</strong> — <code>BroadcastChannel</code> accepts no transferables — of 61 kB, 50×/s, per receiver, on the owner's main thread: at three windows on NP1.0 that is <strong>7.4 MB/s of added main-thread copying to save ~0</strong>. <code>postMessage</code> with a transferable would avoid the copy but needs a handle, which <code>noopener</code> removed — and reintroducing it forfeits the context budget this whole design exists to protect. It also makes closing the owner window kill everyone's data.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-broadcastchannel-does-not-cost-the-isolation">Why BroadcastChannel does not cost the isolation<a class="headerlink" href="#why-broadcastchannel-does-not-cost-the-isolation" title="Permanent link">#</a></h3>
+<p><code>BroadcastChannel</code> delivery is scoped by <strong>origin</strong>, not by browsing-context group, opener
+relationship, or renderer process. <code>noopener</code> severs the JS handle and moves the popup to a new
+renderer; it has no bearing on whether two same-origin documents share a channel. So presence
+reaches across the severed handle <strong>without undoing the severing</strong> — which is exactly why
+<code>postMessage</code> and <code>window.opener</code> are disqualified and this is not.</p>
+<p>It is a built-in browser API. No library, no bundle, no vendored anything.</p>
+<h3 id="the-backend-cannot-produce-the-right-number-anyway">The backend cannot produce the right number anyway<a class="headerlink" href="#the-backend-cannot-produce-the-right-number-anyway" title="Permanent link">#</a></h3>
+<p>This is stronger than "the backend does not need to know". <code>m_clients</code> counts <strong>sockets</strong>.
+<code>scripts/run_gui_tests.py</code> opens one. <code>command_client.py</code> opens one. A backend-derived window count
+would read 2 with one browser open and a test harness attached. Windows are a browser-side fact, so
+they are counted browser-side — no new message, no broadcast on every connect, no work on the thread
+that runs acquisition.</p>
+<h3 id="mechanics">Mechanics<a class="headerlink" href="#mechanics" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>channel</td>
+<td><code>spikespeak-windows-v1</code> — versioned, so two builds during a hot reload do not count each other</td>
+</tr>
+<tr>
+<td>heartbeat</td>
+<td>2 s</td>
+</tr>
+<tr>
+<td>stale after</td>
+<td>6.5 s (three missed beats plus margin)</td>
+</tr>
+<tr>
+<td>leaving</td>
+<td><code>pagehide</code> → <code>bye</code>. <strong>Not <code>unload</code></strong> — deprecated, and already not fired in conditions Chrome ships. <code>pagehide</code> also covers the bfcache, which is the same thing from every other window's point of view; <code>pageshow</code> re-announces.</td>
+</tr>
+<tr>
+<td>a crash</td>
+<td>sends nothing, so the reap is the backstop — the only path that needs the timer at all</td>
+</tr>
+<tr>
+<td>ordering</td>
+<td>sorted by open time, id as tiebreak, computed independently and identically in every window, so "View 2" means the same window everywhere with nobody assigning it</td>
+</tr>
+</tbody>
+</table>
+<h3 id="addressing-which-is-the-half-that-is-not-just-a-count">Addressing, which is the half that is not just a count<a class="headerlink" href="#addressing-which-is-the-half-that-is-not-just-a-count" title="Permanent link">#</a></h3>
+<p><code>postTo(id, type, payload)</code> routes a small control message to one window. It earns its keep on the
+one thing <code>noopener</code> made impossible: a popup cannot be focused from the opener, because there is no
+handle. Clicking the count badge sends <code>identify</code> to every peer, and <strong>each window focuses itself</strong>.</p>
+<p>It carries presence and control only, never sample data — see (C) above for what routing data
+through it would cost.</p>
+<h3 id="one-real-scoping-limit">One real scoping limit<a class="headerlink" href="#one-real-scoping-limit" title="Permanent link">#</a></h3>
+<p>Same-<strong>origin</strong> means <code>http://localhost:8234</code> and <code>http://127.0.0.1:8234</code> would not see each other.
+Detached windows are immune: <code>openDetachedView()</code> builds its URL from <code>window.location.pathname</code>, so
+it inherits the opener's origin. Only a hand-typed second window could mismatch — and such a window
+cannot work today anyway, because <code>Config.WEBSOCKET_URL</code> is hardcoded to <code>ws://localhost:1234</code>.</p>
+<h3 id="why-the-badge-and-not-a-toolbar-chip">Why the badge, and not a toolbar chip<a class="headerlink" href="#why-the-badge-and-not-a-toolbar-chip" title="Permanent link">#</a></h3>
+<p><code>#sys-health</code> is the established chip idiom and it already carries a live count in <code>.sys-detail</code>, so
+a "Views · 2" chip would have matched the house style. It costs <strong>~104 px of toolbar row 1</strong>, and
+row 1 width is the scarce resource — it is what decides when groups fold away. A badge inside the
+button that creates the windows costs ~20 px and puts the number next to the control that changes
+it. The chip was the more conventional answer and the width decided against it.</p>
 <hr />
 <h2 id="3-what-a-detached-window-keeps-and-loses">3. What a detached window keeps and loses<a class="headerlink" href="#3-what-a-detached-window-keeps-and-loses" title="Permanent link">#</a></h2>
 <p><strong>Keeps:</strong> the columns, the per-column control band (including the heatmap controls), and the
@@ -257,6 +379,16 @@ legitimate request.</p></article>
 <li><a href="#1-it-is-the-same-page-with-a-flag">1. It is the same page with a flag</a></li>
 <li><a href="#2-noopener-is-the-load-bearing-detail">2. noopener is the load-bearing detail</a><ul>
 <li><a href="#the-price-stated-rather-than-buried">The price, stated rather than buried</a></li>
+</ul>
+</li>
+<li><a href="#2a-counting-the-windows-and-why-the-backend-is-not-asked">2a. Counting the windows — and why the backend is not asked</a><ul>
+<li><a href="#the-paradigm-chosen-against-two-alternatives">The paradigm, chosen against two alternatives</a></li>
+<li><a href="#why-broadcastchannel-does-not-cost-the-isolation">Why BroadcastChannel does not cost the isolation</a></li>
+<li><a href="#the-backend-cannot-produce-the-right-number-anyway">The backend cannot produce the right number anyway</a></li>
+<li><a href="#mechanics">Mechanics</a></li>
+<li><a href="#addressing-which-is-the-half-that-is-not-just-a-count">Addressing, which is the half that is not just a count</a></li>
+<li><a href="#one-real-scoping-limit">One real scoping limit</a></li>
+<li><a href="#why-the-badge-and-not-a-toolbar-chip">Why the badge, and not a toolbar chip</a></li>
 </ul>
 </li>
 <li><a href="#3-what-a-detached-window-keeps-and-loses">3. What a detached window keeps and loses</a></li>

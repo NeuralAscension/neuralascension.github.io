@@ -146,7 +146,7 @@ recording and needs the sync fit to share a clock with the probe. Everything els
 crossing → observed stimulus pulse — but the pulse is captured on an analog input of the <em>same device</em>
 as the probe, so both instants come from one 100 kHz hardware counter and <strong>no sync fit is involved</strong>.
 That removes the step where a periodic signal can be mis-paired (§24). Pass
-<code>--stim-band adc --stim-channel &lt;n&gt;</code> to the analyser; without it, it looks for a <code>nidaq</code> band, finds
+<code>--stim-band adc --stim-channel &lt;n&gt;</code> to the analyzer; without it, it looks for a <code>nidaq</code> band, finds
 none, and silently reports no closed-loop latency. Measured results and the two silent traps this path
 exposes: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html#onebox-usb3-transport-same-clock-capture"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
 </blockquote>
@@ -249,7 +249,7 @@ probe→detector path, not the shared network: NP2 derives <code>data.lfp</code>
 stream; NP1 waits on the hardware LFP band. See the NP2 upstream-latency note below.</p>
 <blockquote>
 <p><strong>Numbers published before 2026-07-21 were wrong</strong> — three offline clock/sync bugs (a ~10 ppm
-clock-scale ramp and two sync off-by-ones) inflated them. All are fixed and every recording re-analysed.
+clock-scale ramp and two sync off-by-ones) inflated them. All are fixed and every recording re-analyzed.
 The canonical write-up of the sync fit and all three bugs is in
 <a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> — read it before trusting any recorded
 latency. <strong>This doc does not re-derive them.</strong></p>
@@ -758,7 +758,7 @@ CDF, stage decomposition, per-trial stability); <code>plot_latency_compare.py</c
   all checks pass; aqua's contrast is &lt; 3:1 so it carries a direct label.</li>
 <li>dark (surface <code>#1a1a19</code>): the light violet step collides with blue on a dark surface (protan ΔE 1.9,
   normal ΔE 9.8 — hard fail), so dark uses a validated <strong>3-hue</strong> set (blue / aqua / orange) and encodes
-  the ripple band by <strong>lightness + dash</strong> rather than a fourth hue. Identity is never colour-alone.</li>
+  the ripple band by <strong>lightness + dash</strong> rather than a fourth hue. Identity is never color-alone.</li>
 </ul>
 <h2 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h2>
 <pre><code class="language-bash"># per-stage distributions (any config)

@@ -133,9 +133,9 @@
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="the-heatmap-column-time-channel-on-the-gpu">The heatmap column — time × channel, on the GPU<a class="headerlink" href="#the-heatmap-column-time-channel-on-the-gpu" title="Permanent link">#</a></h1>
 <p>A live-view column draws either <strong>traces</strong> or a <strong>heatmap</strong> of the same channels: time on one axis,
-channel on the other, colour carrying a per-bin statistic. It is the Open Ephys <code>probe-viewer</code> idea,
+channel on the other, color carrying a per-bin statistic. It is the Open Ephys <code>probe-viewer</code> idea,
 built to this codebase's rules.</p>
-<p><strong>This is not the probe-map heatmap.</strong> That is a different, still-unbuilt feature — colouring the
+<p><strong>This is not the probe-map heatmap.</strong> That is a different, still-unbuilt feature — coloring the
 <em>spatial</em> electrode map by activity, with no time axis, the way SpikeGLX's Shank Viewer does. See
 <a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a>. The two share a metric and nothing else.</p>
 <table>
@@ -179,7 +179,7 @@ built to this codebase's rules.</p>
 <hr />
 <h2 id="1-what-it-shows">1. What it shows<a class="headerlink" href="#1-what-it-shows" title="Permanent link">#</a></h2>
 <p><strong>Whatever stream the column's dropdown is on.</strong> The heatmap is a rendering mode, not a band: point
-the column at <code>ap</code>, <code>lfp</code>, <code>raw</code>, <code>adc</code> or <code>nidaq</code> and it colours that.</p>
+the column at <code>ap</code>, <code>lfp</code>, <code>raw</code>, <code>adc</code> or <code>nidaq</code> and it colors that.</p>
 <p><strong>Statistic: peak-to-peak per channel per time bin</strong>, in the stream's own units (µV for a probe band,
 V for NI-DAQ and the OneBox ADC).</p>
 <p><strong>Window: 8 seconds</strong>, newest at the right edge. Matches probe-viewer's <code>TRANSPORT_WINDOW_TIMEBASE</code>.</p>
@@ -187,6 +187,95 @@ V for NI-DAQ and the OneBox ADC).</p>
 moves a channel. The density dropdown gains an <strong>All</strong> option in heatmap mode: 384 traces in one
 column is unreadable, 384 rows of heatmap is the ordinary way to look at a probe, and on the GPU it
 is the same single draw call as 20.</p>
+<p><strong>Or every shank at once, ordered by depth</strong> — the shank dropdown gains <strong>All shanks · depth</strong>. See
+§1a.</p>
+<hr />
+<h2 id="1a-merged-shanks-ordered-by-depth">1a. Merged shanks, ordered by depth<a class="headerlink" href="#1a-merged-shanks-ordered-by-depth" title="Permanent link">#</a></h2>
+<p>On a multishank NP2.0 the shank dropdown offers <strong>All shanks · depth</strong>: every channel from every
+shank in one column, sorted by physical depth with the shallowest at the top.</p>
+<p><strong>Neither existing ordering can express this, and that is the whole point.</strong> Both sort by shank
+<em>first</em> — packed is <code>(shank, col, row)</code> and interleaved is <code>(shank, row, col)</code>, both built in
+<code>ImroManager.recomputeDepthOrdering()</code> — so each stacks one whole shank above the next and two
+electrodes at the same depth on different shanks land ~96 rows apart. Sorting by row first
+interleaves them:</p>
+<pre><code>                    packed / interleaved          merged · depth
+    top     shank 0, shallow → deep          all shanks at the shallowest row
+            shank 1, shallow → deep          all shanks one row down
+            shank 2, shallow → deep          …
+    bottom  shank 3, shallow → deep          all shanks at the tip
+</code></pre>
+<p>The comparator is <code>descending row</code>, then <code>shank</code>, then <code>column</code>:</p>
+<pre><code class="language-js">const depth = (c) =&gt; lv.isRef(c) ? Infinity : lv.rowOf(c);
+out.sort((a, b) =&gt; (depth(b) - depth(a))
+                || (lv.shankOf(a) - lv.shankOf(b))
+                || (lv.colOf(a) - lv.colOf(b)));
+</code></pre>
+<p>The tiebreaks are not decoration. <code>Array.prototype.sort</code> is stable only for <em>equal</em> keys, and "same
+depth, different shank" is exactly the case that must not be left to that guarantee — a total order
+is what makes two runs comparable. Reference channels are pinned to the shallow end with the same
+<code>Infinity</code> sentinel the packed ordering uses: a REF sitting at its nominal depth is a dead row in
+the middle of the data.</p>
+<h3 id="the-depth-model-is-faithful-the-lateral-one-is-not">The depth model is faithful; the lateral one is not<a class="headerlink" href="#the-depth-model-is-faithful-the-lateral-one-is-not" title="Permanent link">#</a></h3>
+<p>Ordering by depth is sound on both generations: <code>y</code> depends only on the row (<code>electrode &gt;&gt; 1</code>) and
+the shanks are tip-aligned, so equal rows really are equal depths. The <strong>x</strong> model is a
+simplification — NP1.0 electrodes actually stagger over four x positions (11, 27, 43, 59 µm) and the
+frontend's even = Left / odd = Right split flattens that to two columns. Which is precisely why this
+option orders by depth and says nothing about lateral position.</p>
+<h3 id="the-axis-becomes-micrometres">The axis becomes micrometres<a class="headerlink" href="#the-axis-becomes-micrometres" title="Permanent link">#</a></h3>
+<p>With shanks merged, an electrode number is the wrong label: numbering restarts per shank, so <code>e300</code>
+names up to four sites, and at any one height there are up to eight electrodes (4 shanks × 2
+columns). Naming one implies a precision the row does not have. So the ticks switch to <strong>depth in
+µm</strong> — <code>lv.rowPitchUm()</code>, <strong>20 µm on NP1.0</strong> and <strong>15 µm on NP2.0</strong>.</p>
+<p><strong>Two independent sources already in this repo agree on those numbers</strong>, which is why they are
+constants and not a guess:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>NP1.0</th>
+<th>NP2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vendored Open Ephys <code>Geometry.cpp:180</code> / <code>:267</code></td>
+<td><code>y = (i - i%2) * 10</code> → <strong>20 µm/row</strong></td>
+<td><code>y = (l - l%2) * 7.5</code> → <strong>15 µm/row</strong></td>
+</tr>
+<tr>
+<td><code>python/spikespeak_convert/spikeglx.py</code> <code>ProbeSpec</code> (from SpikeGLX's <code>IMROTbl</code>)</td>
+<td><code>z_pitch=20.0</code> (<code>:164</code>)</td>
+<td><code>z_pitch=15.0</code> (<code>:168</code>, <code>:173</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>spikeglx.py</code> computes <code>z = row * z_pitch</code> (<code>:144</code>) over <code>row = electrode // 2</code> (<code>:142</code>) — bit for
+bit the frontend's <code>e &gt;&gt; 1</code>.</p>
+<p><strong>Do not reach for <code>ROW_SPACING</code> or <code>NP2_SHANK_SPACING</code> in <code>ImroManager.js</code></strong> — those are canvas
+drawing units for the probe map, not microns, and they are 9 and 6. Do not import <code>shank_pitch</code>
+either: the ordering never compares lateral position.</p>
+<p><strong>It is distance from the probe TIP, not depth in tissue.</strong> Nothing in this codebase knows the
+insertion depth. The readout says <code>· from tip</code> for that reason; calling it depth would be free to
+write and impossible for the operator to catch.</p>
+<h3 id="why-it-is-an-option-on-the-shank-dropdown">Why it is an option on the <em>shank</em> dropdown<a class="headerlink" href="#why-it-is-an-option-on-the-shank-dropdown" title="Permanent link">#</a></h3>
+<p>Because a fourth heatmap control would widen the column band, and the band's width decides at how
+many columns the whole strip folds behind the reveal chip — the view selector alone moved that from
+four columns to three (§10). It would also mean editing <strong>six</strong> CSS area maps. And it belongs there
+on its merits: that dropdown <em>is</em> the "which shanks" control.</p>
+<p>It is offered only in heatmap mode, and only when <code>lv.shanks().length &gt; 1</code>. <strong>Traces cannot do it:</strong>
+the vertical offset is baked into the shared sample data, so one global ordering serves every trace
+column, and a merged-across-shank ordering would need a <em>third</em> baked series alongside the packed
+and interleaved ones. The heatmap has no such constraint — it permutes rows of a texture, which
+costs one upload.</p>
+<h3 id="cost-one-sort-cached-against-the-ordering-revision">Cost: one sort, cached against the ordering revision<a class="headerlink" href="#cost-one-sort-cached-against-the-ordering-revision" title="Permanent link">#</a></h3>
+<p><code>heatmapChannels()</code> is called from <code>syncHeatmap()</code>, which is called from <code>draw()</code>, which runs per
+frame. A 384-element sort per frame is the kind of cost that never shows up in a profile as one line
+and does show up in the total. So the permutation is cached, keyed on
+<code>imroLiveView.rev() + '|' + selectedColKey</code> — the ordering revision and the side filter, which are
+its only two inputs. <code>rev()</code> is bumped in <code>recomputeDepthOrdering()</code> and nowhere else, so the cache
+is rebuilt when a probe map is applied or cleared, and at no other time.</p>
+<p>Keying on <code>lvAtSlot</code> by identity would work today and stop working the moment somebody sorts in
+place; comparing contents is 384 elements on a per-frame path.</p>
 <hr />
 <h2 id="2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design<a class="headerlink" href="#2-peak-to-peak-was-free-and-that-decided-the-design" title="Permanent link">#</a></h2>
 <p>The display stream <strong>already carries min and max per channel per time bin</strong> — that is what makes a
@@ -204,7 +293,7 @@ is the honest statistic to take from this point in the pipeline.</p>
 the cost is a scan of at most four columns and a boolean.</p>
 <hr />
 <h2 id="3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context<a class="headerlink" href="#3-why-it-shares-the-columns-webgl2-context" title="Permanent link">#</a></h2>
-<p><strong>Not an optimisation. A hard constraint.</strong></p>
+<p><strong>Not an optimization. A hard constraint.</strong></p>
 <p>Chrome grants roughly <strong>16 WebGL2 contexts per renderer process</strong> and, when you exceed that, force-loses
 the <strong>oldest</strong> ones — <em>silently, asynchronously</em>, with <code>getContext</code> still returning non-null every
 time. Measured, not recalled: creating 40 contexts in one document returned non-null 40 times, killed
@@ -233,8 +322,8 @@ silently <strong>drop</strong> channels — and the one it drops could be the on
 display actively misleading rather than merely coarse. The shader loops over the channels inside its
 pixel and takes the maximum, bounded at 16 fetches.</p>
 <p>Averaging was rejected for the same reason: it hides a hot channel among quiet neighbours.</p>
-<h3 id="never-written-bins-are-their-own-colour">Never-written bins are their own colour<a class="headerlink" href="#never-written-bins-are-their-own-colour" title="Permanent link">#</a></h3>
-<p>The texture is initialised to <code>NaN</code> and the shader paints those in the plot-background colour.
+<h3 id="never-written-bins-are-their-own-color">Never-written bins are their own color<a class="headerlink" href="#never-written-bins-are-their-own-color" title="Permanent link">#</a></h3>
+<p>The texture is initialized to <code>NaN</code> and the shader paints those in the plot-background color.
 Painting them at the bottom of the ramp would draw a solid block of "silence" that is really "no data
 yet" — a lie the operator cannot see.</p>
 <hr />
@@ -249,10 +338,10 @@ burst together with the quiet milliseconds around it is precisely how you fail t
 <p>Aggregation also cuts the upload rate by the same factor, which is why the per-second cost is
 0.2 ms of CPU rather than 2 ms.</p>
 <hr />
-<h2 id="6-colour-and-the-legend">6. Colour, and the legend<a class="headerlink" href="#6-colour-and-the-legend" title="Permanent link">#</a></h2>
-<p><strong>The colourmap is a 256×1 RGB texture</strong>, sampled once per fragment by the hardware's own filtering
-unit. Colouring is free.</p>
-<p>Six maps, ordered perceptual-first because that is the dropdown order and the first is the default:</p>
+<h2 id="6-color-and-the-legend">6. Color, and the legend<a class="headerlink" href="#6-color-and-the-legend" title="Permanent link">#</a></h2>
+<p><strong>The colormap is a 256×1 RGB texture</strong>, sampled once per fragment by the hardware's own filtering
+unit. Coloring is free.</p>
+<p>Five maps. The dropdown order is the table order and the first is the default:</p>
 <table>
 <thead>
 <tr>
@@ -263,7 +352,7 @@ unit. Colouring is free.</p>
 <tbody>
 <tr>
 <td><strong>viridis</strong> (default)</td>
-<td>perceptually uniform, colour-blind safe</td>
+<td>perceptually uniform, color-blind safe</td>
 </tr>
 <tr>
 <td><strong>afmhot</strong></td>
@@ -273,12 +362,15 @@ unit. Colouring is free.</p>
 <td>inferno, magma, plasma</td>
 <td>perceptually uniform</td>
 </tr>
-<tr>
-<td>jet</td>
-<td>offered because people ask for it. Its cyan/yellow bands read as structure that is not in the data, and it is not colour-blind safe</td>
-</tr>
 </tbody>
 </table>
+<p><strong>Every map on the list is perceptually ordered, and that is a closed list rather than an
+oversight.</strong> <code>jet</code> was offered until 2026-08-30 and was removed at the operator's request. A rainbow
+map is not a neutral choice of palette: its cyan and yellow bands are <em>perceived</em> as edges, so it
+draws boundaries across smooth data and flattens the real gradient elsewhere, and it is not
+color-blind safe. Open Ephys' probe-viewer offers it; that is not an argument. Adding one back is
+an operator's decision, and it belongs at the end of <code>STOPS</code>, never first — the first entry is what
+every new column starts with.</p>
 <p>They are stored as <strong>nine published anchor stops each</strong>, interpolated to 256 entries — 36 strings.
 <code>afmhot</code> is reproduced <em>exactly</em> rather than approximately: matplotlib defines it piecewise-linearly
 with breakpoints at 0.25, 0.5 and 0.75, and all three fall on anchors.</p>
@@ -286,22 +378,22 @@ with breakpoints at 0.25, 0.5 and 0.75, and all three fall on anchors.</p>
 <p><strong>Anchors, not polynomial fits, and this was learned the hard way.</strong> The first version used
 coefficients written from memory. It rendered viridis as <strong>mauve</strong>: <code>readPixels</code> returned
 <code>[153,129,154]</code> where the map says <code>[59,82,139]</code>. A screenshot looked entirely plausible. A
-colourmap that is subtly wrong is worse than an obviously wrong one — nobody notices, and every
+colormap that is subtly wrong is worse than an obviously wrong one — nobody notices, and every
 judgement is made against a scale the legend misdescribes. Anchors are checkable by inspection:
 viridis really does run <code>#440154 → #FDE725</code>.</p>
 </blockquote>
 <h3 id="the-legend">The legend<a class="headerlink" href="#the-legend" title="Permanent link">#</a></h3>
-<p>A vertical colour bar with its two ends and midpoint labelled, plus the unit. It sits <strong>in</strong> the flex
+<p>A vertical color bar with its two ends and midpoint labeled, plus the unit. It sits <strong>in</strong> the flex
 row beside the plot rather than over it: overlaying would cover data, and the operator would have to
 move the thing they are trying to read.</p>
 <p><strong>It is painted from <code>colormapBytes()</code> — the same table the shader samples.</strong> A CSS gradient would
 have been fewer lines and a second source of truth; a legend that disagrees with its plot is worse
 than no legend.</p>
-<p>Open Ephys' probe-viewer <strong>has no colour key at all</strong> — verified by reading its source: the only
-callers of <code>getColourForNormalizedValueInScheme</code> are the three heat-cell writers, and there is no
-colour-bar widget. The operator reads a colour against two unlabelled spin boxes. SpikeGLX does have
-one (<code>ShankViewLut</code>), labelled 0 → range.</p>
-<h3 id="the-colour-axis-never-auto-ranges">The colour axis never auto-ranges<a class="headerlink" href="#the-colour-axis-never-auto-ranges" title="Permanent link">#</a></h3>
+<p>Open Ephys' probe-viewer <strong>has no color key at all</strong> — verified by reading its source: the only
+callers of <code>getColorForNormalizedValueInScheme</code> are the three heat-cell writers, and there is no
+color-bar widget. The operator reads a color against two unlabeled spin boxes. SpikeGLX does have
+one (<code>ShankViewLut</code>), labeled 0 → range.</p>
+<h3 id="the-color-axis-never-auto-ranges">The color axis never auto-ranges<a class="headerlink" href="#the-color-axis-never-auto-ranges" title="Permanent link">#</a></h3>
 <p>It is set by the operator, remembered per statistic, and fixed. A scale that moves on its own makes
 two moments of the same recording incomparable, which defeats the point of having a legend. SpikeGLX
 takes the same position; probe-viewer does too, but with nothing to read the number against.</p>
@@ -359,14 +451,14 @@ Each timed block is now 2000 uploads or 200 paints and the per-operation figure 
 you write a browser microbenchmark here, size it for the clock before you believe it.</p>
 </blockquote>
 <p><code>ripple_tools/plot_heatmap_comparison.py</code> renders the comparison against probe-viewer and SpikeGLX.
-Every competitor number on that figure is <strong>derived from source constants and labelled as such on the
+Every competitor number on that figure is <strong>derived from source constants and labeled as such on the
 figure itself</strong>; the only measured numbers are ours.</p>
 <hr />
 <h2 id="9-adding-a-statistic">9. Adding a statistic<a class="headerlink" href="#9-adding-a-statistic" title="Permanent link">#</a></h2>
 <p><code>Pk-Pk</code> works. <strong><code>RMS</code> and <code>Spike rate</code> are listed and disabled</strong>, because the browser cannot compute
 them: it receives per-bin min and max and nothing else. RMS needs every sample squared; a spike rate
 needs thresholding at 30 kHz. Offering them would relabel the legend and its units while the shader
-went on colouring by peak-to-peak — plausible-looking and wrong.</p>
+went on coloring by peak-to-peak — plausible-looking and wrong.</p>
 <p>To add one:</p>
 <ol>
 <li><strong>Compute it in the backend</strong>, over the band the audio path uses — <code>data.npx.ap</code> on NP1.0 (the
@@ -409,24 +501,42 @@ allocating nothing.</p>
   changes it.</li>
 <li><strong><code>preserveDrawingBuffer</code> is false.</strong> A <code>readPixels</code> from a later task returns zeros and is
   indistinguishable from a renderer that draws nothing. Call <code>paint()</code> and read in the same task.</li>
-<li><strong><code>parseInt('all')</code> is <code>NaN</code>, and <code>NaN|0</code> is <code>0</code>.</strong> The All option collapsed a column to one trace.</li>
+<li><strong><code>parseInt('all')</code> is <code>NaN</code>, and <code>NaN|0</code> is <code>0</code>.</strong> The All option collapsed a column to one trace.
+  The shank dropdown's <code>all</code> is deliberately <em>not</em> stored in <code>selectedShank</code> for the same reason: it
+  is a separate <code>mergeShanks</code> boolean, so every arithmetic use of <code>selectedShank</code> keeps working
+  without a guard.</li>
+<li><strong>An option that only exists in one mode has to be retired on the way out of it.</strong> <code>setViewMode()</code>
+  calls <code>refreshFilterOptions()</code> in <em>both</em> directions; a merge left selected after a switch back to
+  traces would render one shank while the control claimed all four.</li>
+<li><strong>No sim source in this repo is multishank.</strong> <code>SimulatedData2Source::loadDefaultImro</code> puts all 384
+  channels on shank 0, so the merge option never appears under sim and a test that only ran there
+  would be exercising its absence. <code>tests/gui/heatmap_spatial.py</code> injects a synthetic 4-shank
+  <code>imroLiveView</code> for the ordering and checks the real model separately; its docstring records the
+  gap that leaves (a real 4-shank probe, which needs hardware).</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/HeatmapView.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#1-what-it-shows">1. What it shows</a></li>
+<li><a href="#1a-merged-shanks-ordered-by-depth">1a. Merged shanks, ordered by depth</a><ul>
+<li><a href="#the-depth-model-is-faithful-the-lateral-one-is-not">The depth model is faithful; the lateral one is not</a></li>
+<li><a href="#the-axis-becomes-micrometres">The axis becomes micrometres</a></li>
+<li><a href="#why-it-is-an-option-on-the-shank-dropdown">Why it is an option on the shank dropdown</a></li>
+<li><a href="#cost-one-sort-cached-against-the-ordering-revision">Cost: one sort, cached against the ordering revision</a></li>
+</ul>
+</li>
 <li><a href="#2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design</a></li>
 <li><a href="#3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context</a></li>
 <li><a href="#4-the-ring-is-in-the-texture-and-nothing-scrolls">4. The ring is in the texture, and nothing scrolls</a><ul>
 <li><a href="#more-channels-than-pixels-take-the-max-never-a-sample">More channels than pixels: take the MAX, never a sample</a></li>
-<li><a href="#never-written-bins-are-their-own-colour">Never-written bins are their own colour</a></li>
+<li><a href="#never-written-bins-are-their-own-color">Never-written bins are their own color</a></li>
 </ul>
 </li>
 <li><a href="#5-aggregation-why-the-window-is-8-s-and-not-076-s">5. Aggregation: why the window is 8 s and not 0.76 s</a></li>
-<li><a href="#6-colour-and-the-legend">6. Colour, and the legend</a><ul>
+<li><a href="#6-color-and-the-legend">6. Color, and the legend</a><ul>
 <li><a href="#the-legend">The legend</a></li>
-<li><a href="#the-colour-axis-never-auto-ranges">The colour axis never auto-ranges</a></li>
+<li><a href="#the-color-axis-never-auto-ranges">The color axis never auto-ranges</a></li>
 </ul>
 </li>
 <li><a href="#7-units-the-factor-of-100-that-nearly-shipped">7. Units — the factor of 100 that nearly shipped</a></li>

@@ -51,7 +51,7 @@
     function run(to) { want = to; if (raf === null) raf = requestAnimationFrame(frame); }
 
     // Pointer AND keyboard: the nav mark sits inside a link, so a keyboard user tabbing to it gets
-    // the same behaviour rather than a dead shape.
+    // the same behavior rather than a dead shape.
     var trigger = host.closest("a") || host;
     trigger.addEventListener("mouseenter", function () { run(1); });
     trigger.addEventListener("mouseleave", function () { run(0); });

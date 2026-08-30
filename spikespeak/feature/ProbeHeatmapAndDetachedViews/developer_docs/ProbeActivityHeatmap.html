@@ -137,17 +137,17 @@ exists and people keep confusing the two.</strong></p>
 <blockquote>
 <h3 id="there-are-two-heatmaps-and-this-document-is-about-the-one-that-does-not-exist-yet">There are two heatmaps, and this document is about the one that does not exist yet<a class="headerlink" href="#there-are-two-heatmaps-and-this-document-is-about-the-one-that-does-not-exist-yet" title="Permanent link">#</a></h3>
 <p><strong>BUILT, 2026-08-30 — the TIME × CHANNEL heatmap.</strong> A live-view <em>column</em> can now be switched from
-traces to a scrolling raster: time on one axis, channel on the other, colour carrying peak-to-peak.
+traces to a scrolling raster: time on one axis, channel on the other, color carrying peak-to-peak.
 That is the Open Ephys <code>probe-viewer</code> model. It is documented in
 <a href="HeatmapView.html"><code>HeatmapView.md</code></a>, implemented in <code>webinterface/GlHeatmap.js</code>, and covered by
 <code>tests/gui/heatmap_view.py</code>.</p>
-<p><strong>THIS DOCUMENT is about the SPATIAL map</strong> — colouring the electrodes <em>on the probe map</em>, in their
+<p><strong>THIS DOCUMENT is about the SPATIAL map</strong> — coloring the electrodes <em>on the probe map</em>, in their
 real geometry, with no time axis. That is the SpikeGLX Shank Viewer model, and it is still unbuilt.</p>
 <p>They are different views of the same metric, and both are worth having: a raster shows you <em>when</em>,
 a spatial map shows you <em>where on the shank</em>.</p>
 <p><strong>What the built one hands this one for free:</strong> the metric pipeline. Per-channel per-bin values
 already reach the page (<code>NetworkClient</code>, one subtraction on min/max the display stream was already
-sending), the colourmaps already exist as verified 256-entry tables with a shared legend painter
+sending), the colormaps already exist as verified 256-entry tables with a shared legend painter
 (<code>GlHeatmap.js</code>: <code>colormapBytes()</code>, six maps, perceptual-first), and the units question is settled
 (display units are 100 µV — see <code>HeatmapView.md</code> §7). §2's "we already have the metric" is
 therefore <em>more</em> true than when it was written, not less.</p>
@@ -176,7 +176,7 @@ has prototyped it, measured it, or checked it against the culling and reactive-r
 <code>ProbeMap.js</code> actually implements.</strong> Whoever picks this up owns that spike; treat the paragraph you
 are reading as a lead, and re-derive §3 Decision 2 from scratch.</p>
 <p><strong>Worth weighing before committing to canvas 2D:</strong> SpikeGLX draws exactly this view on the GPU, all
-pads in ONE <code>glDrawArrays(GL_QUADS)</code> with a per-vertex colour array, and only touches a pad's colour
+pads in ONE <code>glDrawArrays(GL_QUADS)</code> with a per-vertex color array, and only touches a pad's color
 when the statistic updates rather than per frame. A canvas-2D fill per electrode is 384–1536
 <code>fillRect</code> calls per repaint. That may well be fine at probe-map refresh rates — the point is that
 it should be <em>measured</em> against the alternative rather than assumed, and <code>GlHeatmap.js</code> is now a
@@ -187,12 +187,12 @@ static selection. Instead, <strong>color the selected electrodes by live activit
 OpenEphys <em>ProbeViewer</em> heatmap, with the active sites "blinking"/glowing by activity level.</p>
 <blockquote>
 <p>References: the OpenEphys source we mirror is vendored at
-<code>Source-OpenEphys-Neuropixels-PXI/UI/</code> (<code>ProbeBrowser</code>, <code>ActivityView</code>, <code>ColourScheme</code>). Our probe map
+<code>Source-OpenEphys-Neuropixels-PXI/UI/</code> (<code>ProbeBrowser</code>, <code>ActivityView</code>, <code>ColorScheme</code>). Our probe map
 internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> and <code>webinterface/ImroManager.js</code>.</p>
 </blockquote>
 <hr />
 <h2 id="1-how-openephys-does-it-the-thing-to-match">1. How OpenEphys does it (the thing to match)<a class="headerlink" href="#1-how-openephys-does-it-the-thing-to-match" title="Permanent link">#</a></h2>
-<p>From <code>UI/ActivityView.cpp</code>, <code>UI/ProbeBrowser.cpp</code>, <code>UI/ColourScheme.cpp</code>, <code>UI/NeuropixInterface.cpp</code>:</p>
+<p>From <code>UI/ActivityView.cpp</code>, <code>UI/ProbeBrowser.cpp</code>, <code>UI/ColorScheme.cpp</code>, <code>UI/NeuropixInterface.cpp</code>:</p>
 <ul>
 <li><strong>Metric = per-electrode peak-to-peak amplitude</strong> (<code>max − min</code>) over a sliding window, in µV. <em>Not</em> RMS
   or spike rate. (<code>ActivityView.cpp</code> <code>calculatePeakToPeakValues</code> ~344-381.)</li>
@@ -201,7 +201,7 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
 <li><strong>Two modes:</strong> AP-band vs LFP-band activity (a combo box).</li>
 <li><strong>Optional pre-processing (both on by default):</strong> common-average reference (ADC-group-aware) + a
   300-6000 Hz Butterworth band-pass, applied before min/max.</li>
-<li><strong>Colormap = Inferno</strong> (matplotlib), a 256-step LUT (<code>ColourScheme.cpp</code>). Black→purple→orange→yellow —
+<li><strong>Colormap = Inferno</strong> (matplotlib), a 256-step LUT (<code>ColorScheme.cpp</code>). Black→purple→orange→yellow —
   already dark-mode friendly. (Viridis/Plasma/Magma/Jet also available.)</li>
 <li><strong>Normalization = fixed clim</strong>, <em>not</em> auto-scaling: <code>color = inferno(p2p / clim)</code>, clim selectable
   <strong>{250, 500, 750, 1000} µV</strong>, default <strong>500</strong>. No-data sites (sentinel <code>-1</code>) drawn <strong>gray (160,160,160)</strong>.</li>
@@ -260,7 +260,7 @@ removed. See the banner at the top.</p>
 <p>The heading below used to read "both are SciChart-native and confirmed available", and that was the
 entire argument for both options. SciChart was removed on 2026-08-27, so <strong>neither option is
 available and this decision cannot be taken as written.</strong> Options A and B are left in place because
-the <em>visual</em> question they frame is still the real one — recolour the existing selection map in
+the <em>visual</em> question they frame is still the real one — recolor the existing selection map in
 place, or add a separate full-probe heatmap panel — and that question is renderer-independent. The
 <em>mechanisms</em> named in them are not. Re-derive them against <code>webinterface/ProbeMap.js</code> (canvas 2D).
 Note in passing that Option C — dismissed below as unnecessary — is the only one of the three whose
@@ -362,7 +362,7 @@ reads that frame instead of deriving p2p. Steps 2-4 unchanged.</p>
 <li><strong>Render:</strong> ~~PaletteProvider recolor of the existing selection map (A) or a SciChart <code>UniformHeatmap</code>
    panel (B)?  <em>(lean A for "blink selected")</em>~~ <strong>Not answerable as posed — see §3 Decision 2.</strong> Both
    named mechanisms were removed with SciChart on 2026-08-27. The question that remains is the visual
-   one, "recolour the existing map in place, or add a separate full-probe heatmap panel", and it needs
+   one, "recolor the existing map in place, or add a separate full-probe heatmap panel", and it needs
    a costed canvas-2D spike behind it before it is worth putting to the operator.</li>
 <li><strong>Colormap:</strong> Inferno (match OpenEphys) — ok? Viridis alternative?</li>
 <li><strong>clim values + units:</strong> keep 250/500/750/1000 µV default 500? (pending units check)</li>

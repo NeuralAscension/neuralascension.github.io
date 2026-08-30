@@ -249,7 +249,7 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
   beside the depth readout, and below that the traces get the width instead. On a 1920-px screen
   that means the strip stays open at one and two columns and folds at three. (It used to need
   448 px and fold at four; the <strong>Traces / Heatmap</strong> switch added a control, and a heatmap column's
-  strip is wider again because it carries the statistic, colourmap and colour-scale controls.) Opening the
+  strip is wider again because it carries the statistic, colormap and color-scale controls.) Opening the
   <strong>ripple dock</strong> takes ~380 px off the live view, which is enough to push three columns over the
   line. Hover the chip to peek, click it or press <code>Ctrl+Shift+&lt;n&gt;</code> to pin it open. The depth
   readout (<code>e19 ↕ e0</code>, or <code>IO11 ↕ IO0</code> for the ADC) stays visible either way. In <strong>vertical</strong>
@@ -270,15 +270,15 @@ it mirrors the Record button's armed ring, but green). A disabled button (no sou
 <p><img alt="NP2 live view" src="images/np2_liveview.png" /></p>
 <hr />
 <h2 id="3a-heatmap-view-the-whole-probe-at-a-glance">3a. Heatmap view — the whole probe at a glance<a class="headerlink" href="#3a-heatmap-view-the-whole-probe-at-a-glance" title="Permanent link">#</a></h2>
-<p>Any column can be switched from traces to a <strong>heatmap</strong>: time across, channel down, colour showing
+<p>Any column can be switched from traces to a <strong>heatmap</strong>: time across, channel down, color showing
 how big the signal is. It shows the same channels the traces do, from the same band, so it is a
 different way of looking rather than a different thing to look at.</p>
 <p>Set the first dropdown in the column's control strip to <strong>Heatmap</strong>.</p>
 <p><img alt="A heatmap column beside a trace column" src="images/heatmap_column.png" /></p>
 <p><em>Left: 384 channels of the LFP band as a heatmap. The bright vertical stripes are the simulated
 ripple bursts, one every 2 seconds. Right: the same source as traces.</em></p>
-<p><strong>What the colour means.</strong> Peak-to-peak amplitude in each short slice of time — in <strong>µV</strong> for a probe
-band, <strong>V</strong> for NI-DAQ and the OneBox ADC. The colour bar beside the plot is the key, labelled with
+<p><strong>What the color means.</strong> Peak-to-peak amplitude in each short slice of time — in <strong>µV</strong> for a probe
+band, <strong>V</strong> for NI-DAQ and the OneBox ADC. The color bar beside the plot is the key, labeled with
 its top, middle and bottom.</p>
 <p><strong>The controls that appear in heatmap mode:</strong></p>
 <table>
@@ -291,29 +291,52 @@ its top, middle and bottom.</p>
 <tbody>
 <tr>
 <td><strong>Pk-Pk</strong></td>
-<td>the statistic. <em>RMS</em> and <em>Spike rate</em> are listed but greyed out — they need work in the backend that is not built yet, and showing them would mean colouring by peak-to-peak under the wrong label</td>
+<td>the statistic. <em>RMS</em> and <em>Spike rate</em> are listed but grayed out — they need work in the backend that is not built yet, and showing them would mean coloring by peak-to-peak under the wrong label</td>
 </tr>
 <tr>
 <td><strong>Viridis</strong></td>
-<td>the colourmap. Six of them; <code>Viridis</code> and <code>Afmhot</code> are the ones to reach for</td>
+<td>the colormap. Five of them; <code>Viridis</code> and <code>Afmhot</code> are the ones to reach for</td>
 </tr>
 <tr>
 <td>the number beside it</td>
-<td>the <strong>top of the colour scale</strong>. The bottom is always 0</td>
+<td>the <strong>top of the color scale</strong>. The bottom is always 0</td>
 </tr>
 <tr>
 <td><strong>Ch: All</strong></td>
 <td>heatmap mode adds an <strong>All</strong> option — the whole probe in one column, which is the usual way to look at one</td>
 </tr>
+<tr>
+<td><strong>Shank: All shanks · depth</strong></td>
+<td>multishank NP2.0 only — every shank in one column, ordered by depth. See below</td>
+</tr>
 </tbody>
 </table>
-<p><strong>Turn the scale down until you can see structure.</strong> The colour scale never adjusts itself: it stays
+<p><strong>Turn the scale down until you can see structure.</strong> The color scale never adjusts itself: it stays
 where you put it, so two moments of the same recording are comparable. If everything looks uniformly
 dark, the top of the scale is too high for this signal — try halving it.</p>
-<p><strong>Colourmap advice.</strong> <code>Viridis</code> (the default) and <code>Afmhot</code> get brighter steadily from one end to the
-other, so a difference you can see is a difference that is there. <code>Jet</code> is offered because people ask
-for it, but its cyan and yellow bands read as structure the data does not contain.</p>
+<p><strong>Every colormap here gets brighter steadily from one end to the other</strong>, so a difference you can
+see is a difference that is there. That is the whole reason the list is short: rainbow maps like
+<code>jet</code> — which other probe viewers offer — put visible cyan and yellow <em>edges</em> in the middle of smooth
+data, and they are not color-blind safe. <code>Viridis</code> is the default; <code>Afmhot</code> is the one to reach for
+if the figure has to survive being printed in grayscale.</p>
 <p><img alt="The same data in Inferno" src="images/heatmap_inferno.png" /></p>
+<h3 id="all-shanks-at-once-ordered-by-depth">All shanks at once, ordered by depth<a class="headerlink" href="#all-shanks-at-once-ordered-by-depth" title="Permanent link">#</a></h3>
+<p>On a <strong>multishank 2.0 probe</strong> the shank dropdown gains <strong>All shanks · depth</strong>. It puts every channel
+from every shank into one column and sorts them by how far up the shank they sit — shallowest at the
+top, tip at the bottom.</p>
+<p>The ordinary orderings put one whole shank above the next, so two electrodes at the same depth on
+different shanks end up about 96 rows apart and you compare them by eye across four separate blocks.
+This interleaves them instead: <strong>one row of the heatmap is one depth, across all four shanks.</strong> If
+you are looking for the depth at which something changes, this is the view for it.</p>
+<p>Two things to know about the axis:</p>
+<ul>
+<li>The tick labels switch to <strong>micrometres</strong>, because with the shanks merged an electrode number
+  would name up to four different sites.</li>
+<li>That number is <strong>distance from the probe tip</strong>, not depth in tissue — the software does not know
+  how far you inserted. The readout says <code>· from tip</code> to keep that straight.</li>
+</ul>
+<p>The option appears only in heatmap mode and only when the probe actually has more than one shank.
+Switching the column back to traces takes it away again, and puts you back on a single shank.</p>
 <p><strong>Switching back to traces loses nothing</strong> — the traces are still there, still scrolling, exactly
 where you left them.</p>
 <hr />
@@ -330,9 +353,18 @@ per-column strip including the heatmap.</p>
 <li><strong>Each window costs CPU.</strong> It receives and decodes its own copy of the data stream. Two or three
   windows is comfortable; a dozen is not, and nothing will stop you opening a dozen.</li>
 <li><strong>Close them when you are done.</strong> The backend shuts down when the <em>last</em> window closes, so a
-  forgotten view window keeps the rig up.</li>
+  forgotten view window keeps the rig up. Closing a view window while the main window is still open
+  does <strong>not</strong> stop the server.</li>
 <li>Extra windows cannot open further windows of their own.</li>
 </ul>
+<h3 id="finding-a-window-you-have-lost">Finding a window you have lost<a class="headerlink" href="#finding-a-window-you-have-lost" title="Permanent link">#</a></h3>
+<p>Once a second window is open, a small <strong>blue number appears on the ⧉ button</strong> — that is how many
+SpikesPeak windows are open in total. Every window also puts it in its own title bar, so the taskbar
+tells them apart: the main window reads <em>SpikesPeak (3 windows)</em> and the others <em>SpikesPeak — View 2
+of 2</em>.</p>
+<p><strong>Click the number</strong> and every other window raises itself and flashes a blue border for a second.
+That is the quick way to find the view you minimised on the other monitor — or to confirm that one
+you thought you closed is in fact still open, and still costing CPU.</p>
 <hr />
 <h2 id="4-select-which-channels-to-record">4. Select which channels to record<a class="headerlink" href="#4-select-which-channels-to-record" title="Permanent link">#</a></h2>
 <p>Switch the <strong>Select Recording Channels</strong> radio (works any time — before or during Play).</p>
@@ -408,8 +440,14 @@ order <strong>stop → pause → disconnect → quit</strong>. Never change/appl
 </ul>
 </li>
 <li><a href="#3-live-data-watch-the-signal">3. Live Data (watch the signal)</a></li>
-<li><a href="#3a-heatmap-view-the-whole-probe-at-a-glance">3a. Heatmap view — the whole probe at a glance</a></li>
-<li><a href="#3b-extra-view-windows">3b. Extra view windows</a></li>
+<li><a href="#3a-heatmap-view-the-whole-probe-at-a-glance">3a. Heatmap view — the whole probe at a glance</a><ul>
+<li><a href="#all-shanks-at-once-ordered-by-depth">All shanks at once, ordered by depth</a></li>
+</ul>
+</li>
+<li><a href="#3b-extra-view-windows">3b. Extra view windows</a><ul>
+<li><a href="#finding-a-window-you-have-lost">Finding a window you have lost</a></li>
+</ul>
+</li>
 <li><a href="#4-select-which-channels-to-record">4. Select which channels to record</a></li>
 <li><a href="#5-record">5. Record</a></li>
 <li><a href="#6-check-the-recording">6. Check the recording</a></li>

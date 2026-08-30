@@ -413,7 +413,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="Profiling.html"><code>Profiling.md</code></a></td>
-<td><strong>Where the time actually goes — the profiling report.</strong> Load rather than latency: the frontend is <strong>~1.2 % of the main thread</strong> with no hot spot, the heatmap draw is <strong>flat in channel count</strong> (0.001 ms at 384 and at 1536 — one draw call either way), the backend sits at ~1.02 cores regardless of display mode, and AVX2 is <strong>2.89x</strong> in the filter while moving the whole NP1.0 backend by nothing (because NP1.0 gets LFP from the probe — the reconciliation is the interesting part). Also records the optimization deliberately <strong>not</strong> taken, and why no benchmark is in the gate.</td>
+<td><strong>Where the time actually goes — the profiling report.</strong> Load rather than latency: the frontend is <strong>~1.2 % of the main thread</strong> with no hot spot, the heatmap draw is <strong>flat in channel count</strong> (0.001 ms at 384 and at 1536 — one draw call either way), the backend sits at ~1.02 cores regardless of display mode, and AVX2 is <strong>3.10x</strong> in the filter while moving the whole NP1.0 backend by nothing (because NP1.0 gets LFP from the probe — the reconciliation is the interesting part). Also records the optimization deliberately <strong>not</strong> taken, and why no benchmark is in the gate.</td>
 </tr>
 </tbody>
 </table>

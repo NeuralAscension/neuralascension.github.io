@@ -298,17 +298,30 @@ of 12 reps of one second at 30 kHz:</p>
 <tbody>
 <tr>
 <td><strong>AVX2</strong></td>
-<td><strong>554.5 ns</strong></td>
-<td>16.63 ms — 1.66 % of one core</td>
+<td><strong>498.8 ns</strong></td>
+<td>14.96 ms — 1.50 % of one core</td>
 </tr>
 <tr>
 <td>scalar</td>
-<td>1600.0 ns</td>
-<td>48.00 ms — 4.80 % of one core</td>
+<td>1547.3 ns</td>
+<td>46.42 ms — 4.64 % of one core</td>
 </tr>
 </tbody>
 </table>
-<p><strong>2.89×</strong>, saving 31.4 ms of CPU per second of filtered probe data.</p>
+<p><strong>3.10×</strong>, saving 31.5 ms of CPU per second of filtered probe data. Stable across three repeats:
+498.4 / 499.7 / 500.9 ns and 3.13 / 3.11 / 3.10.</p>
+<h3 id="it-was-289-until-the-dispatch-was-hoisted-and-that-is-the-interesting-part">It was 2.89× until the dispatch was hoisted, and that is the interesting part<a class="headerlink" href="#it-was-289-until-the-dispatch-was-hoisted-and-that-is-the-interesting-part" title="Permanent link">#</a></h3>
+<p><code>addSample</code> used to call <code>useAvx2()</code> per call. The header described that as <em>"a load of a cached
+bool"</em> — <strong>it was not</strong>. <code>useAvx2()</code> is a Meyers singleton in another translation unit, so every call
+was a real cross-TU call plus a guard-variable check, and with no LTO in this build the compiler
+could not see through it or inline <code>addSampleAvx2</code> behind it.</p>
+<p><code>addSample</code> runs <strong>once per 8 channels per sample</strong> — 1.44 M times a second per band at 30 kHz ×
+384 channels. Reading the tier once at load into a namespace-scope <code>const bool</code> took <strong>554.5 →
+498.8 ns</strong>, a 10 % gain on the vector path for a ten-minute change, and moved the ratio from 2.89× to
+3.10×.</p>
+<p>Two things worth taking from it: a comment asserting a performance property is worth exactly nothing
+until somebody measures it, and the same mistake was <strong>already fixed</strong> in <code>DisplayProcessor.cpp</code> — the
+pattern existed and this file had not been brought to it.</p>
 <h3 id="the-end-to-end-measurement-said-zero-and-that-is-also-true">The end-to-end measurement said zero, and that is also true<a class="headerlink" href="#the-end-to-end-measurement-said-zero-and-that-is-also-true" title="Permanent link">#</a></h3>
 <p>Forcing each tier and measuring the <strong>whole backend</strong> on the NP1.0 ripple configuration:</p>
 <table>
@@ -365,10 +378,14 @@ decision to make deliberately, not by adding <code>add_test</code>.</p>
 <hr />
 <h2 id="7-what-is-not-measured-here-and-should-be">7. What is NOT measured here, and should be<a class="headerlink" href="#7-what-is-not-measured-here-and-should-be" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>GPU utilization attributable to the browser process.</strong> Every GPU number above is a <em>draw-call
-  timing</em>, not a utilization figure. The renderer lives in a browser process separate from the
-  backend, which makes per-process GPU attribution on Windows genuinely awkward — and it is exactly
-  the axis a competitor comparison needs.</li>
+<li><strong>GPU utilization <em>in this document</em> is not measured</strong> — every GPU number above is a <em>draw-call
+  timing</em>. But it <strong>is</strong> measured elsewhere, and on real hardware:
+  <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a> §3a reports GPU utilization <em>and</em> board power at
+  480 live traces on a OneBox + NP2.0 (SciChart 38.0 ± 0.4 % / 19.8 W vs WebGL2 35.9 ± 0.2 % /
+  19.6 W). <strong>Read that as GPU parity: the win is CPU, roughly 4×.</strong> Do not quote a GPU saving — a
+  reviewer who checks the table will find 1.06× and 1 % power and discount everything around it.
+  What is genuinely missing is per-process GPU attribution <em>for a competitor comparison</em>, where the
+  renderer living in a browser process separate from the backend makes fair attribution awkward.</li>
 <li><strong>Anything under real hardware load.</strong> All of the above is simulated sources. The numbers should
   hold — sim drives the same display processor, ring buffers, WebSocket and GUI — but "should" is not
   "measured".</li>
@@ -386,6 +403,7 @@ decision to make deliberately, not by adding <code>add_test</code>.</p>
 <li><a href="#2-the-heatmap-renderer-flat-in-channel-count">2. The heatmap renderer: flat in channel count</a></li>
 <li><a href="#3-the-backend-102-cores-and-the-simd-tier-barely-moves-it">3. The backend: 1.02 cores, and the SIMD tier barely moves it</a></li>
 <li><a href="#4-avx2-289-in-the-filter-and-a-null-result-that-is-not-one">4. AVX2: 2.89× in the filter, and a null result that is not one</a><ul>
+<li><a href="#it-was-289-until-the-dispatch-was-hoisted-and-that-is-the-interesting-part">It was 2.89× until the dispatch was hoisted, and that is the interesting part</a></li>
 <li><a href="#the-end-to-end-measurement-said-zero-and-that-is-also-true">The end-to-end measurement said zero, and that is also true</a></li>
 </ul>
 </li>

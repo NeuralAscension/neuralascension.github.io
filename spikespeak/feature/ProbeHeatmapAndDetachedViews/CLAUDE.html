@@ -163,11 +163,18 @@ with). That means <strong>a red suite is easy to walk past. Do not.</strong> <co
 red fatal; <code>--fatal</code> does the same for the GUI runner.</p>
 <p>Full detail, including how to add a test and how to debug a failure:
 <strong><a href="developer_docs/Testing.html"><code>developer_docs/Testing.md</code></a></strong>.</p>
-<h3 id="one-command-for-both">One command for both<a class="headerlink" href="#one-command-for-both" title="Permanent link">#</a></h3>
+<h3 id="one-command-for-all-three">One command for all three<a class="headerlink" href="#one-command-for-all-three" title="Permanent link">#</a></h3>
 <pre><code class="language-bash">python scripts/run_all_tests.py
 </code></pre>
-<p>Runs the C++ suite and the GUI suite in order behind a live page with per-test progress and an ETA,
-because the GUI suite is eleven minutes long and used to print nothing at all until it finished.
+<p>Runs the <strong>C++ suite, the Python suite and the GUI suite</strong> in order, behind a live page with
+per-test progress and an ETA, because the GUI suite is eleven minutes long and used to print nothing
+at all until it finished.</p>
+<p>The <strong>Python suite</strong> (<code>python/tests</code>, 121 tests, ~2 s) covers the offline half — the converters, the
+loader's counts-to-microvolts scale, the config channel spec, and the sync pairing every published
+closed-loop latency passes through. <strong>It was not in the gate at all until 2026-08-30</strong>: it existed,
+it passed, and it ran only when somebody remembered. That is worse than no tests, because their
+existence reads as coverage. It runs before the GUI suite — two seconds, no browser, no backend —
+so a broken converter is found before an eleven-minute browser run, not after.
 <code>--no-browser</code> for scripted use (it then exits instead of holding the page open); <code>--fatal</code> to make
 a failure a non-zero exit.</p>
 <p><strong>Run it before you push, not just before you hand back.</strong> A red suite that reaches the remote is a
@@ -175,6 +182,7 @@ red suite for everyone who pulls.</p>
 <h3 id="before-you-hand-back">Before you hand back<a class="headerlink" href="#before-you-hand-back" title="Permanent link">#</a></h3>
 <ul>
 <li>[ ] <code>build.bat</code> (or <code>./build.sh</code>) → <strong>ALL N SUITES PASSED</strong></li>
+<li>[ ] <code>python -m unittest discover python/tests</code> → <strong>OK</strong> (or just run <code>run_all_tests.py</code>, which now does)</li>
 <li>[ ] <code>python scripts/run_gui_tests.py</code> → <strong>ALL N GUI TESTS PASSED</strong></li>
 <li>[ ] If you added a test, you <strong>proved it can fail</strong> — inject a regression, watch it go red, revert.
       An always-green test is worthless and worse than none, because it buys false confidence.</li>
@@ -263,7 +271,7 @@ your report -- not a footnote.</p>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#the-definition-of-green">THE DEFINITION OF GREEN</a><ul>
-<li><a href="#one-command-for-both">One command for both</a></li>
+<li><a href="#one-command-for-all-three">One command for all three</a></li>
 <li><a href="#before-you-hand-back">Before you hand back</a></li>
 </ul>
 </li>

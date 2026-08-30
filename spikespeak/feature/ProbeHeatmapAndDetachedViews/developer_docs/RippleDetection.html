@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Ripple detection and closed loop / Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a class="active" href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="ripple-sharp-wave-ripple-swr-detection-how-it-works-how-to-validate-it">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it<a class="headerlink" href="#ripple-sharp-wave-ripple-swr-detection-how-it-works-how-to-validate-it" title="Permanent link">#</a></h1>
+<p>The detector (<code>proc.rippledetector</code>, <code>src/modules/swr/RippleDetector.cpp</code>) fires when a hippocampal-ripple-band
+envelope crosses a z-score threshold. It is validated on <strong>both</strong> NP1.0 and NP2.0 — first in simulation
+(2026-07-07, <code>SpikesPeak_Status.md §20</code>) and now <strong>end-to-end on real hardware in saline</strong> driving the full
+closed loop (synthetic ripple → detection → Pi/AM 2300 → NI-DAQ ai4), sub-millisecond with ASAP delivery. Results:
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Saline bench validation
+is <strong>done</strong>; the next milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
+<h2 id="the-three-ripple-docs-read-the-right-one">The three ripple docs (read the right one)<a class="headerlink" href="#the-three-ripple-docs-read-the-right-one" title="Permanent link">#</a></h2>
+<p>To keep content in one place, the ripple documentation is split by audience — <strong>this doc does not repeat
+the other two</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Doc</th>
+<th>Owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>this doc</strong></td>
+<td>the detection <strong>algorithm</strong>, the per-probe <strong>data path</strong>, config keys, and offline validation</td>
+</tr>
+<tr>
+<td><a href="RippleGui.html"><code>RippleGui.md</code></a></td>
+<td>the GUI ↔ backend <strong>WS command/event contract</strong> (frontend/backend tables, the <code>rippleState</code> sync rule, stim-pulse preview, arm/disarm)</td>
+</tr>
+<tr>
+<td><a href="../user_docs/RippleDetection.html"><code>../user_docs/RippleDetection.md</code></a></td>
+<td>the <strong>user guide</strong> — how to <em>operate</em> the dock (pick channels, train, tune z live, read the columns, troubleshoot)</td>
+</tr>
+</tbody>
+</table>
+<p>The full closed loop running on an NP1 sim — LFP streaming into the detector (left) with two trained
+channels (e80, e160) and a confirmed fire in the dock (right):</p>
+<p><img alt="Ripple detection running: live LFP streaming plus the detection/stimulation dock with a confirmed fire" src="images/ripple_detection_module.png" /></p>
+<p><em>(Captured live over CDP from the <code>Simulated NPX 1.0 + Ripple Detection</code> source; the GUI is identical for a
+real probe. Step-by-step operation is in the user guide above.)</em></p>
+<h2 id="the-data-path-the-detector-runs-differently-per-probe">The data path — the detector runs DIFFERENTLY per probe<a class="headerlink" href="#the-data-path-the-detector-runs-differently-per-probe" title="Permanent link">#</a></h2>
+<p>The detector processes the LFP band at <strong>2.5 kHz</strong> (its ripple-band FIR + envelope filters are designed for
+2.5 kHz). Its input band, type, and decimation are <strong>config-driven</strong>, so it runs differently per probe:</p>
+<pre><code>NP1:  data.npx.lfp (int16, 2.5 kHz, native) ───────────────────► proc.rippledetector   (decimation 1)
+NP2:  data.npx.raw (int16, 30 kHz) ─► proc.lfp ─► data.lfp ─────► proc.rippledetector   (decimation 12)
+                                       (anti-alias low-pass, float 30 kHz)
+</code></pre>
+<ul>
+<li><strong>NP1 reads the native <code>data.npx.lfp</code> DIRECTLY</strong> (int16 → cast channel 0 to float), <code>decimation_factor: 1</code>.
+  <strong>No <code>proc.lfp</code>.</strong> Ripples live in the LFP band; the <strong>AP band must NOT be used</strong> — a real 1.0 probe
+  high-passes AP (~300 Hz), attenuating the 150-250 Hz ripple. Reading the native LFP directly (one cast, no
+  extra thread hop, no filter) is also the <strong>low-latency</strong> closed-loop path.</li>
+<li><strong>NP2</strong> has only the 30 kHz wideband <code>data.npx.raw</code>, so <code>proc.lfp</code> low-passes it (Bessel −3 dB @ 400 Hz —
+  the <strong>anti-alias filter, required before decimation</strong>, else 300 Hz-10 kHz spikes fold into the ripple band)
+  → <code>data.lfp</code> (float, 30 kHz), and the detector <strong>decimates ÷12 → 2.5 kHz</strong> (÷12, not ÷10, to land exactly on
+  NP1's native 2.5 kHz rate).</li>
+<li>Detector chain (both): ripple-band FIR (<code>RippleBandFilterCoefficients2_5kHz</code>, 150-250 Hz) → rectify →
+  envelope (<code>EnvelopeFilter2_5kHz</code>) → fire when envelope &gt; <code>mean + z·std</code> with a lockout. Filter taps + z /
+  latency tradeoffs follow <strong>Dutta et al. 2018 JNE</strong> (cited in the code). <strong>Detection electrodes are strictly
+  GUI-driven</strong> and the module starts with 0 channels by default, waiting for user selection.</li>
+<li><strong>Baseline warm-up ≈ 16 s, rate-aware:</strong> gate = <code>2500·decimation·baseline_gate_seconds</code> input samples (6 s on
+  both NP1@2.5 kHz and NP2@30 kHz) + <code>2500·baseline_duration_seconds</code> decimated samples (10 s) → first detection
+  ~16 s. A validation run must <strong>Play ≥ ~18 s</strong> (the detector runs on Play; recording not required).</li>
+</ul>
+<h2 id="procrippledetector-config-keys-all-optional-defaults-preserve-the-np2h5-behaviour"><code>proc.rippledetector</code> config keys (all optional; defaults preserve the NP2/h5 behaviour)<a class="headerlink" href="#procrippledetector-config-keys-all-optional-defaults-preserve-the-np2h5-behaviour" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>key</th>
+<th>default</th>
+<th>meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>input</code></td>
+<td><code>data.lfp</code></td>
+<td>data-object the detector consumes</td>
+</tr>
+<tr>
+<td><code>input_type</code></td>
+<td><code>float</code></td>
+<td><code>int16</code> (native <code>data.npx.lfp</code>) or <code>float</code> (derived <code>data.lfp</code>)</td>
+</tr>
+<tr>
+<td><code>decimation_factor</code></td>
+<td><code>12</code></td>
+<td>keep every Nth input sample → 2.5 kHz (NP1: 1, NP2: 12)</td>
+</tr>
+<tr>
+<td><code>auto_start</code></td>
+<td><code>false</code></td>
+<td><strong>default false (2026-07-08)</strong> — the module waits for a GUI/WS "Start"; a config may set <code>true</code> to auto-run on Play. (Flipped from <code>true</code> to fix "module enabled by default" on the h5-replay source.)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Note:</strong> All detection algorithm parameters (<code>quorum_count</code>, <code>coincidence_window_seconds</code>, <code>min_duration_seconds</code>, <code>baseline_duration_seconds</code>, <code>baseline_gate_seconds</code>, <code>z_score_threshold</code>, <code>lockout_seconds</code>) and the channel selection (<code>detection_electrodes</code>) are <strong>strictly GUI-driven</strong> and no longer supported in the YAML configuration. The detector initializes with 0 channels and default parameters, waiting for the GUI to send updates.
+| <code>debug_files</code> | <code>true</code> | <em>legacy</em> runtime toggle for the 3 per-sample waveform dumps — now <strong>AND-gated</strong> by the compile-time <code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code> (ships <strong>false</strong>), so no dumps are written on a stock build regardless of this key. See <a href="FilterDebugging.html"><code>FilterDebugging.md</code></a>. |</p>
+</blockquote>
+<p>All times are <strong>float seconds</strong> (most are ms-scale). Electrodes: NP1 = <code>channelId + 384·bank</code> (0..959);
+NP2 = <code>shank·1280 + electrodeId</code> (global). The source publishes its applied map as an <code>IChannelMap</code>
+(<code>src/core/IChannelMap.hpp</code> — probe-agnostic contract; Neuropixels ships the concrete <code>NpxChannelMap</code>, a future
+probe ships its own) to <code>ChannelMapService</code>, so selection follows the REAL map (a custom cross-bank/shank map resolves correctly, not
+just Bank-0 identity). The GUI sends electrodes to the backend via websockets, which resolves them to readout channels.</p>
+<p><strong>Multi-channel quorum + lockout.</strong> Each selected electrode runs its own detector (own baseline/threshold).
+A channel reports once per above-threshold episode, after staying above for <code>min_duration_seconds</code>. A <strong>true
+detection → <code>fire()</code></strong> requires <code>quorum_count</code> channels to report within <code>coincidence_window_seconds</code>. After a
+report a channel is locked for <code>lockout_seconds</code>; on a true stimulation ALL channels are locked until
+<code>t_stim + lockout_seconds</code> (a channel that crossed early is held longer — they re-activate together when
+stimulation begins). <code>quorum_count &gt; number of detection_electrodes</code> is an ERROR (configure fails, surfaced via
+<code>sigIpErrorOccurred</code>) — you may select more channels than the quorum, never fewer.</p>
+<blockquote>
+<p><strong>Per-sample dumps</strong> <code>lfp-data.bin</code> / <code>ripple-band-data.bin</code> / <code>envelope-data.bin</code> (each written <em>every
+processed sample</em>, 2.5 kHz × 3, synchronous I/O in the detection hot loop) are now gated by the
+compile-time <code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code> <strong>AND</strong> the runtime <code>debug_files</code> — the compile switch
+ships <strong>false</strong>, so a stock hardware build writes nothing and carries no latency cost. Flip the compile
+switch only for offline filter debugging. <code>ripple-detection-time.bin</code> (one write per detection) is
+unaffected. Full detail + the LFP-module analogue (<code>DEBUGGING_LFP_FILTERS</code>): <a href="FilterDebugging.html"><code>FilterDebugging.md</code></a>.</p>
+</blockquote>
+<h3 id="synthetic-testing-sources">Synthetic testing sources<a class="headerlink" href="#synthetic-testing-sources" title="Permanent link">#</a></h3>
+<p>SpikesPeak provides several mechanisms for generating and replaying synthetic ripples to test the detector without hardware. For complete details on the simulated NP1/NP2 pipelines and HDF5 playback configurations (including <code>.h5</code> file generation), see <a href="SyntheticSources.html">SyntheticSources.md</a>.</p>
+<h2 id="runbook-validate-detection-headlessly-no-hardware">Runbook — validate detection headlessly (no hardware)<a class="headerlink" href="#runbook-validate-detection-headlessly-no-hardware" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>⚠️ Channels + Start are now GUI/WS-driven.</strong> Since detection electrodes were removed from the configs (all
+params are GUI-driven), a plain <code>select … ; play ; sleep</code> <strong>detects nothing</strong> — the module starts with <strong>0
+channels</strong> and <code>auto_start</code> defaults <strong>false</strong>. Drive channel selection + Start over the WebSocket. The stock
+<code>spikespeak_cli.py</code> has no ripple verb, so use a small WS script (send raw JSON on ws://localhost:1234):</p>
+<p><code>{"command":"selectSource","value":"Simulated NPX 1.0 Ripples"}   # or the "… (GUI)" module config
+{"command":"setPlaying","value":true}
+{"command":"ripple","action":"setChannels","electrodes":[0,10,20]}
+{"command":"ripple","action":"setParam","name":"estimation_seconds","value":3}
+{"command":"ripple","action":"start"}                            # trains, then fires rippleDetected events</code>
+A ready-made harness lives in the session temp scripts (<code>rd_verify.py</code> pattern). Expected after ~gate+baseline:
+per-channel <code>rippleBaseline</code> (thresholds ≈ 50-60), then <code>rippleDetected</code> events on the injected bursts.</p>
+</blockquote>
+<pre><code class="language-powershell"># Legacy single-command runbook (STALE for detection now — kept for the streaming/debug-file path only):
+$env:PATH = &quot;C:\Qt\6.7.3\msvc2019_64\bin;&lt;repo&gt;\external\neuropixels\api\lib64\v4;&quot; + $env:PATH
+$work = &quot;&lt;build&gt;\bin\RippleTests\np1&quot;     # the detector writes its debug bins to CWD
+Start-Process &lt;build&gt;\bin\SpikesPeak.exe -WorkingDirectory $work -ArgumentList &quot;--no-browser&quot; `
+  -RedirectStandardOutput &quot;$work\stdout.log&quot; -RedirectStandardError &quot;$work\stderr.log&quot;
+# NOTE: the &quot;(play file)&quot; sources open a native QFileDialog on selection and CANNOT be driven headlessly;
+# use the non-play-file validation configs above for automated tests.
+</code></pre>
+<p>Debug artefacts in CWD: <code>ripple-detection-time.bin</code> (<code>[f32 ts]</code> per firing, always), and — when <code>debug_files</code> —
+<code>lfp-data.bin</code> / <code>ripple-band-data.bin</code> / <code>envelope-data.bin</code> (<code>[f32 ts][f32 value]</code> per decimated sample, ch0).</p>
+<p>Expected (2026-07-07, both geometries, <code>ripple_period_s: 2.0</code>): threshold ≈ 46-53, <strong>9 detections at ~17, 19,
+21, … 33 s</strong>, each ~15 ms before the injected burst centre, zero misses, zero false positives, none during the
+16 s warm-up. Verified log lines: NP1 <code>input data.npx.lfp ( int16 ) decimation 1 baseline gate 6 s ( 15000
+samples)</code>; NP2 <code>Deriving data.lfp from data.npx.raw</code> + <code>input data.lfp ( float ) decimation 12</code>.</p>
+<h2 id="hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia">Hardware — validated in saline (2026-07-21), ready for in vivo (under anesthesia)<a class="headerlink" href="#hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia" title="Permanent link">#</a></h2>
+<p>Play a synthetic ripple signal into <strong>saline</strong> with the probe in the bath. The real-probe configs carry
+<code>proc.rippledetector</code>: <strong>NP1</strong> (<code>Npx1PxiNiDaq.yaml</code>) → <code>input: data.npx.lfp</code>, <code>input_type: int16</code>,
+<code>decimation_factor: 1</code>, <strong>no proc.lfp</strong>; <strong>NP2</strong> (<code>NpxPxiNiDaq.yaml</code>) → <code>proc.lfp</code> + <code>input: data.lfp</code>,
+<code>decimation_factor: 12</code>. The detector's physical output is the <code>StimulatorClient</code> UDP <code>fire</code> → <strong>Raspberry
+Pi 3B+ / AM Systems 2300</strong> → biphasic pulse captured on <strong>NI-DAQ ai4</strong> (an ESP32-S3-ETH firmware twin
+exists but the Pi is the production server).</p>
+<p><strong>The full closed loop is validated on both probes</strong> across the quorum × delivery matrix (1000 detections
+per cell), sub-millisecond with ASAP delivery — synthetic ripple → detection → Pi/AM 2300 → ai4. Results,
+figures and the per-probe detail: <strong><a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a></strong>
+(tabbed NP1.0 / NP2.0). Saline is done; the next milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
+<h2 id="validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)<a class="headerlink" href="#validate-from-a-saved-recording-post-hoc-no-live-capture" title="Permanent link">#</a></h2>
+<p><code>ripple_tools/analyze_recording.py &lt;recdir&gt;</code> reconstructs the <strong>EXACT</strong> online detector from a recorded
+band and, if the NI-DAQ captured the Pi-GPIO stim pulses, quantifies the closed loop (signal-chain,
+per-channel detection, NI-DAQ pulses, closed-loop overlay, latency).</p>
+<blockquote>
+<p><strong>NP2 reproduction — use the exact chain, NOT the old approximation.</strong> The detector runs on <code>data.lfp</code>,
+which the backend derives from <code>raw</code> by a <strong>2nd-order Bessel low-pass (−3 dB @ 400 Hz)</strong> then decimates
+÷12. The offline analysis replays <em>that exact filter</em> (coefficients in <code>src/core/Common.hpp</code>). An earlier
+approximation — <code>raw ÷12</code> windowed-sinc <strong>plus a DC-removal the detector never does</strong> — gave the wrong
+scale and multi-ms offsets and is <strong>wrong; do not reintroduce it.</strong> Full exact-reproduction recipe (all
+six steps) + the three clock/sync bugs found in the analysis path:
+<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>.</p>
+</blockquote>
+<p>NP1 reads the recorded <code>lfp</code> directly (decimation 1). Both probes' sidecar metadata is correct as of
+2026-07-20 (NP2 carries <code>"band":"raw"</code> / <code>sample_rate_hz: 30000</code>; NP1 carries <code>ap</code>/<code>lfp</code> + 30000/2500 —
+an earlier NP2 record-metadata bug that wrote the band as the filename with <code>sample_rate_hz: 0</code> is fixed).</p>
+<h2 id="the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (<code>&lt;name&gt;/&lt;name&gt;_ripple.json</code>) — and the race that used to break it<a class="headerlink" href="#the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it" title="Permanent link">#</a></h2>
+<p>On record START the backend drops a sidecar <strong>inside the recording folder</strong>, beside the band files (<code>RippleDetector::slWriteRippleSidecar</code>,
+queued from <code>RecordProcessor::setRecording</code> — the single point both the GUI Record button and the
+WebSocket <code>setRecording</code> command pass through; before 2026-08-27 only the WebSocket path wrote it, so
+browser-driven sessions lost their detection channels and their trained baselines) recording which
+electrodes the detector ran on, their read-out
+channels, the per-electrode <code>mu</code> / <code>sigma</code> / <code>threshold</code> / <code>z</code>, the detector params, the <code>stim</code> pulse train,
+and <code>baselines_trained</code>.</p>
+<p><strong>It used to be a one-shot snapshot, and that was a bug.</strong> A recording can legitimately start <em>before</em> the
+baselines finish training — <code>wait_baselines</code> can return on a stale event, and training takes
+<code>estimation_seconds</code>. When that happened the sidecar froze <code>threshold: 0, trained: false</code> <strong>forever</strong>, even
+though the detector trained correctly seconds later. This hit NP1 test 1 (2026-07-20) and all three NP2
+tests (2026-07-16); NP1 tests 2 and 3 were fine, which is the tell that the <em>writer</em> was never broken — it
+was a race.</p>
+<p>Now the recording target is remembered (<code>mSidecarDir</code>/<code>mSidecarName</code>) and the sidecar is <strong>rewritten when the
+last detection channel finishes training</strong>, then the target is cleared on record stop
+(<code>slClearRippleSidecar</code>) so a finished recording is never touched again. Check <code>baselines_trained</code> before
+trusting the thresholds in an old sidecar; if it is <code>false</code>, take the thresholds from the WS capture
+(<code>analyze_recording.py --ws &lt;capture&gt;.jsonl</code>) instead.</p>
+<p><strong>It also used to land one directory too high.</strong> <code>RecordProcessor</code> nests every band into
+<code>&lt;dir&gt;/&lt;name&gt;/</code>; the sidecar was written to <code>&lt;dir&gt;/</code>. Copying or archiving "the recording folder" therefore
+left the detection channels and trained thresholds behind, and <code>analyze_recording.py</code> — whose <code>recdir</code>
+argument is the folder holding the <code>.bin.json</code>s — could not auto-discover it, so <code>--ripple-sidecar</code> had to
+be passed by hand. Fixed 2026-08-28; the analysis tools read <strong>both</strong> layouts and print which one they
+found, because every recording made before that date still has the old one.</p>
+<h2 id="the-event-log-namename_eventsjsonl-what-actually-happened">The event log (<code>&lt;name&gt;/&lt;name&gt;_events.jsonl</code>) — what actually happened<a class="headerlink" href="#the-event-log-namename_eventsjsonl-what-actually-happened" title="Permanent link">#</a></h2>
+<p>The sidecar records what a session was <strong>configured</strong> with. Until 2026-08-28 nothing recorded what it
+<strong>did</strong>: <code>rippleDetected</code>, <code>rippleLatency</code> and <code>rippleStimFired</code> were emitted only as live WebSocket
+messages, so unless someone happened to be capturing the socket, a closed-loop recording could not
+afterwards say when the loop fired or how long it took. Neither export format carried it either.</p>
+<p>Those three events now append to <code>&lt;name&gt;_events.jsonl</code> in the recording folder, one JSON object per line,
+flushed as they are written — a session that ends badly still has its events up to the last complete
+line. The file is opened lazily on the first event and closed on record stop.</p>
+<p><strong>Only those three.</strong> <code>rippleEnvelope</code> streams at ~25 Hz to drive the live plot and is fully recomputable
+from the recorded band, so writing it would put a file append on the detection path to store something
+the recording already contains — both halves of that are against the rules in <code>CLAUDE.md</code>. A detection is
+a decision the online quorum made against a trained baseline, and a stim time is an event in the world:
+neither can be recovered offline, which is the test for what belongs here.</p>
+<p>Covered by the <code>ripple_sidecar</code> GUI test, which provokes detections at <code>z = 0</code> and reads the file back.</p>
+<h2 id="are-the-filters-actually-right">Are the filters actually right?<a class="headerlink" href="#are-the-filters-actually-right" title="Permanent link">#</a></h2>
+<p>Yes — validated 2026-07-20 to float32 rounding (relative error ~2e-7, correlation 1.000000000) by re-running
+the 26-tap ripple FIR and 10-tap envelope FIR offline over the backend's own dumped input and comparing
+against its own output. The per-sample <code>.bin</code> dumps that make this possible are now behind compile-time
+switches that ship <strong>false</strong>. See <a href="FilterDebugging.html"><code>FilterDebugging.md</code></a>.</p>
+<h2 id="known-limitations-todo">Known limitations / TODO<a class="headerlink" href="#known-limitations-todo" title="Permanent link">#</a></h2>
+<ul>
+<li>The detection notification/cowsay currently runs in the detection loop; it should move to a separate thread
+  that drives the ripple GUI, off the hot path (planned with the GUI, <code>SpikesPeak_Status.md §19.1</code>).</li>
+<li>Ripple-detection <strong>GUI</strong> (DONE — see RippleGui.md) and <strong>2-D HDF5 per-channel playback</strong> (DONE 2026-07-08 —
+  <code>SynthRippleSource</code> + <code>gen_synthetic_ripples.py</code>, verified: the 2-D file fires the detector; format above).
+  Remaining follow-up: a <code>.bin</code>+<code>.json</code> recording → playback <code>.h5</code> converter (replay a REAL recording). File playback via <code>QFileDialog</code> is now complete.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/RippleDetection.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-three-ripple-docs-read-the-right-one">The three ripple docs (read the right one)</a></li>
+<li><a href="#the-data-path-the-detector-runs-differently-per-probe">The data path — the detector runs DIFFERENTLY per probe</a></li>
+<li><a href="#procrippledetector-config-keys-all-optional-defaults-preserve-the-np2h5-behaviour">proc.rippledetector config keys (all optional; defaults preserve the NP2/h5 behaviour)</a><ul>
+<li><a href="#synthetic-testing-sources">Synthetic testing sources</a></li>
+</ul>
+</li>
+<li><a href="#runbook-validate-detection-headlessly-no-hardware">Runbook — validate detection headlessly (no hardware)</a></li>
+<li><a href="#hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia">Hardware — validated in saline (2026-07-21), ready for in vivo (under anesthesia)</a></li>
+<li><a href="#validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)</a></li>
+<li><a href="#the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (&lt;name&gt;/&lt;name&gt;_ripple.json) — and the race that used to break it</a></li>
+<li><a href="#the-event-log-namename_eventsjsonl-what-actually-happened">The event log (&lt;name&gt;/&lt;name&gt;_events.jsonl) — what actually happened</a></li>
+<li><a href="#are-the-filters-actually-right">Are the filters actually right?</a></li>
+<li><a href="#known-limitations-todo">Known limitations / TODO</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

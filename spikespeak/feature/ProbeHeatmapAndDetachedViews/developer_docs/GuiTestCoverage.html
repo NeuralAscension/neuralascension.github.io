@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GUI test coverage — what is checked, and what is not - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Testing / GUI test coverage — what is checked, and what is not</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup" open><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a class="active" href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="gui-test-coverage-what-is-checked-and-what-is-not">GUI test coverage — what is checked, and what is not<a class="headerlink" href="#gui-test-coverage-what-is-checked-and-what-is-not" title="Permanent link">#</a></h1>
+<p>The GUI is a unit and it gets tested. This page is the inventory: every aspect currently covered,
+the behavior the tests recorded, and — kept deliberately prominent — the aspects that are <strong>not</strong>
+covered yet, so nobody mistakes a green run for complete coverage.</p>
+<p>Run them:</p>
+<pre><code class="language-bash">python scripts/run_gui_tests.py
+</code></pre>
+<p>Mechanics, conventions and how to add a test live in <a href="Testing.html"><code>Testing.md</code></a> §3. This page is the
+coverage itself.</p>
+<hr />
+<h2 id="1-the-suites">1. The suites<a class="headerlink" href="#1-the-suites" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Suite</th>
+<th>Covers</th>
+<th>Combinations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>layout_matrix</code></td>
+<td>Columns × ripple dock × orientation; the fold rule in its operands, one-line strips, uniform headers, toolbar rows, depth readout, render</td>
+<td><strong>16</strong></td>
+</tr>
+<tr>
+<td><code>stream_options</code></td>
+<td>Every stream option on every sim source × 2 columns; units, labels, depth, independence</td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>ripple_params</code></td>
+<td>Every editable ripple/stim parameter, GUI → <strong>backend</strong> round trip</td>
+<td>10</td>
+</tr>
+<tr>
+<td><code>toolbar_layout</code></td>
+<td>Toolbar folding across viewport widths; nothing lost, never &gt;2 rows</td>
+<td>15 widths</td>
+</tr>
+<tr>
+<td><code>live_view</code></td>
+<td>Traces render, streams labeled, strips collapse/pin, pin survives rebuild, vertical</td>
+<td>~20 checks</td>
+</tr>
+<tr>
+<td><code>band_dependency</code></td>
+<td>Derived bands auto-provisioned on 2.0 (available, not running), selectable once on, the LFP &lt;-&gt; ripple dependency in both directions, and the disconnected state</td>
+<td>24 checks, 2 sources</td>
+</tr>
+<tr>
+<td><code>error_paths</code></td>
+<td>What the GUI does when things GO WRONG: a refused select, a refused play, a source that cannot load, controls that must be disabled rather than inert</td>
+<td>11 checks</td>
+</tr>
+<tr>
+<td><code>audio_panel</code></td>
+<td>The audio monitor: device enumeration, follow-the-default vs pinned, the picker round trip through the backend, threshold/mute</td>
+<td>15 checks</td>
+</tr>
+<tr>
+<td><code>sim_picker</code></td>
+<td>The <strong>Simulated Data</strong> picker cascade: two systems at step 1, either system reaching either probe, the filter actually excluding the other system's scenarios, and the wildcard rule (a config declaring no basestation appears under BOTH)</td>
+<td>13 checks</td>
+</tr>
+<tr>
+<td><code>heatmap_view</code></td>
+<td><strong>The heatmap column renders real data in honest units.</strong> Verifies the colourmaps NUMERICALLY against their published endpoints (a screenshot looked fine while viridis was rendering as mauve), that the legend IS the colour axis rather than a second opinion of it, that values reached microvolts (the ×100 display-unit factor was lost once and made a healthy probe look silent), that the window spans seconds not fractions of one, that pixels are actually painted and VARY, that the unimplemented statistics are disabled rather than silently showing peak-to-peak, and that switching back leaves the trace buffers intact. Reads pixels in the same task as a <code>paint()</code> — <code>preserveDrawingBuffer</code> is false, so a later read returns zeros and looks exactly like a renderer that draws nothing</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>detached_view</code></td>
+<td><strong>An extra view window is live, powerless over the rig, and costs the opener nothing.</strong> Asserts <code>window.opener === null</code> — the PROPERTY <code>noopener</code> buys — rather than the symptom of a shared context pool, because eviction only happens past ~16 contexts and the symptom-based version could not fail at realistic column counts. Also: its own WebSocket with live streams, repainting columns, transport/record/tabs/probe-map absent, view-shape controls present. Needs <code>userGesture=True</code> (Chrome silently blocks ungestured <code>window.open</code>) and a second CDP target</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>command_surface</code></td>
+<td><strong>The control surface answers back.</strong> An unrecognized WebSocket command is reported to the SENDER over the socket (not merely logged, which no script reads); a KNOWN command missing its <code>value</code> is reported as malformed rather than as a typo; <code>Disconnect</code> works without a <code>value</code>; an unknown <em>ripple</em> action produces NO <code>rippleState</code> echo (it used to return a plausible ACK), guarded by a positive control that a known action DOES echo; and a refused <code>selectSource</code> never broadcasts the requested source name at all (#51 — asserting only the end state is what let that survive twice). Runs with no browser</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>teardown_while_recording</code></td>
+<td><strong>A recording ended by Disconnect is closed through the STOP path, not dropped.</strong> Nothing called <code>setRecording(false)</code> on teardown, so the short-recording check, the ripple sidecar rewrite and the event-log flush were all skipped for any session that ended with Disconnect or <code>quit</code>. Asserts the throughput/SHORT line the stop path emits — files alone would look identical either way. Runs with no browser</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>ripple_sidecar</code></td>
+<td>A recording started from the GUI Record BUTTON carries its ripple provenance — driving the operator's QWebChannel path, not the WebSocket command, because the WebSocket path passed even with the bug present. Asserts the sidecar is written, that it sits <strong>inside</strong> the recording folder with the bands (a recursive glob passed either way), and that <code>&lt;name&gt;_events.jsonl</code> records the detections while excluding the continuous envelope. Provokes detections at <code>z = 0</code> and waits for one before recording, so the event assertions cannot pass on an empty file</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td>The recording state machine from the buttons an operator presses: idle -&gt; armed -&gt; recording, that ARMED writes nothing, and what actually reached the disk</td>
+<td>20 checks</td>
+</tr>
+<tr>
+<td><code>shrink_window</code></td>
+<td>Every supported width x dock open/closed: never &gt;2 toolbar rows, nothing folded without a reachable chip, and the below-minimum refusal</td>
+<td>7 widths x 2</td>
+</tr>
+<tr>
+<td><code>probe_map</code></td>
+<td>The probe channel map DRAWS, on a 1.0 and on a 4-shank 2.0 (shank shafts, routed vs available electrodes, electrode-number labels -- asserted by reading canvas pixels back, because a canvas has no DOM to check and an empty one photographs perfectly); that probe identity comes from <code>probeType</code> and NOT the part-number string, on synthetic payloads the simulator cannot produce; and that an NP1.0 click/drag assigns exactly the electrodes it covers</td>
+<td>2 probes</td>
+</tr>
+</tbody>
+</table>
+<p>All drive a <strong>real browser</strong> over CDP against a <strong>real backend</strong> on a simulated source. No hardware.</p>
+<p>All thirteen drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is now the
+only one, so there is no renderer to select. During the transition off SciChart the whole suite was
+run under <strong>both</strong> renderers and was green under both; that is the evidence that removing SciChart
+changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+<p>The harness refuses to run at all unless a column has a live WebGL2 context (<code>tests/gui/_harness.py</code>,
+after play). That check is coverage in its own right: a renderer whose context failed to create draws
+a blank box, which is indistinguishable from a rig sending nothing, and every assertion below would
+then be measuring an empty canvas and passing.</p>
+<p>Every suite writes its own screenshots into <code>developer_docs/images/gui/</code> as it runs, so the images on
+this page are produced by the same run that made the assertions — they cannot drift from the
+behavior being claimed. Only the frames <strong>embedded below</strong> are tracked in git; the rest (all 16
+matrix cells, the 820px toolbar, the live-view frames) are regenerated by any run of
+<code>python scripts/run_gui_tests.py</code>, and are gitignored so a run does not add ~14 MB of churn.</p>
+<table>
+<thead>
+<tr>
+<th>suite</th>
+<th>frames</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>layout_matrix</code></td>
+<td><code>matrix_&lt;axis&gt;_&lt;n&gt;col_dock&lt;on\|off&gt;.png</code> — all 16</td>
+</tr>
+<tr>
+<td><code>toolbar_layout</code></td>
+<td><code>toolbar_1920.png</code>, <code>toolbar_1280.png</code>, <code>toolbar_820.png</code> (cropped to the bar)</td>
+</tr>
+<tr>
+<td><code>stream_options</code></td>
+<td><code>stream_ap_band.png</code>, <code>stream_lfp_band.png</code>, <code>stream_onebox_adc_sdr.png</code> (no <code>raw</code> frame — see §4a)</td>
+</tr>
+<tr>
+<td><code>live_view</code></td>
+<td><code>live_2col.png</code>, <code>live_3col.png</code>, <code>live_vertical.png</code></td>
+</tr>
+<tr>
+<td><code>ripple_params</code></td>
+<td><code>ripple_dock_params.png</code></td>
+</tr>
+<tr>
+<td><code>band_dependency</code></td>
+<td><code>band_dependency_modal.png</code></td>
+</tr>
+<tr>
+<td><code>audio_panel</code></td>
+<td><code>audio_panel.png</code></td>
+</tr>
+<tr>
+<td><code>sim_picker</code></td>
+<td><code>picker_source_menu.png</code></td>
+</tr>
+<tr>
+<td><code>record_flow</code></td>
+<td><code>record_recording_toolbar.png</code> (cropped to the bar)</td>
+</tr>
+<tr>
+<td><code>shrink_window</code></td>
+<td><code>shrink_min_width.png</code></td>
+</tr>
+<tr>
+<td><code>error_paths</code></td>
+<td><code>error_refused_select.png</code> (cropped to the bar)</td>
+</tr>
+<tr>
+<td><code>probe_map</code></td>
+<td><code>probe_map_np1.png</code>, <code>probe_map_np2.png</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-toolbar-folding">The toolbar, folding<a class="headerlink" href="#the-toolbar-folding" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>1920 px — everything inline</th>
+<th>1280 px — <code>view</code> + <code>source</code> folded</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="toolbar at 1920" src="images/gui/toolbar_1920.png" /></td>
+<td><img alt="toolbar at 1280" src="images/gui/toolbar_1280.png" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-bands">The bands<a class="headerlink" href="#the-bands" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>AP</th>
+<th>LFP</th>
+<th>OneBox ADC (SDR)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="AP band" src="images/gui/stream_ap_band.png" /></td>
+<td><img alt="LFP band" src="images/gui/stream_lfp_band.png" /></td>
+<td><img alt="ADC" src="images/gui/stream_onebox_adc_sdr.png" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-ripple-dock-after-every-parameter-has-been-driven">The ripple dock, after every parameter has been driven<a class="headerlink" href="#the-ripple-dock-after-every-parameter-has-been-driven" title="Permanent link">#</a></h3>
+<p><img alt="ripple dock" src="images/gui/ripple_dock_params.png" /></p>
+<hr />
+<h3 id="the-source-picker-open">The source picker, open<a class="headerlink" href="#the-source-picker-open" title="Permanent link">#</a></h3>
+<p><img alt="source menu" src="images/gui/picker_source_menu.png" /></p>
+<h3 id="what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right">What the operator sees when it goes wrong, and when it goes right<a class="headerlink" href="#what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>a refused select — the bar stays truthful</th>
+<th>a confirmed recording — solid, not pulsing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><img alt="refused select" src="images/gui/error_refused_select.png" /></td>
+<td><img alt="recording" src="images/gui/record_recording_toolbar.png" /></td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-narrowest-supported-width-dock-open">The narrowest supported width, dock open<a class="headerlink" href="#the-narrowest-supported-width-dock-open" title="Permanent link">#</a></h3>
+<p><img alt="minimum width" src="images/gui/shrink_min_width.png" /></p>
+<hr />
+<h2 id="2-the-layout-matrix-14-columns-dock-orientation">2. The layout matrix — 1–4 columns × dock × orientation<a class="headerlink" href="#2-the-layout-matrix-14-columns-dock-orientation" title="Permanent link">#</a></h2>
+<p>The combinatorial case hand-testing misses. Every cell asserts: the requested column count exists,
+the toolbar never exceeds <strong>2 rows</strong>, every column renders, <strong>the depth readout is never folded
+away</strong>, any collapsed strip still has a visible reveal chip, every expanded control strip is <strong>one
+line</strong> in a <strong>46 px</strong> header, and every column in the cell agrees with its siblings about both.</p>
+<table>
+<thead>
+<tr>
+<th>axis</th>
+<th style="text-align: right;">cols</th>
+<th>dock</th>
+<th style="text-align: right;">toolbar rows</th>
+<th style="text-align: right;">strips collapsed</th>
+<th>first canvas</th>
+<th style="text-align: right;">dock width</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">1</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/1</td>
+<td>1903×884</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">2</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/2</td>
+<td>934×884</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">3</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/3</td>
+<td>610×884 ‡</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">4</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>4/4</strong></td>
+<td>449×894</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">1</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/1</td>
+<td>1523×884</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">2</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/2</td>
+<td>744×884</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">3</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>3/3</strong></td>
+<td>484×894</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>horizontal</td>
+<td style="text-align: right;">4</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;"><strong>4/4</strong></td>
+<td>354×894</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">1</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/1</td>
+<td>1903×884</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">2</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/2</td>
+<td>1903×417</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">3</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/3</td>
+<td>1903×261</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">4</td>
+<td>closed</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/4</td>
+<td>1903×155</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">1</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/1</td>
+<td>1523×884</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">2</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/2</td>
+<td>1523×417</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">3</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/3</td>
+<td>1523×233</td>
+<td style="text-align: right;">381</td>
+</tr>
+<tr>
+<td>vertical</td>
+<td style="text-align: right;">4</td>
+<td><strong>open</strong></td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0/4</td>
+<td>1523×127</td>
+<td style="text-align: right;">381</td>
+</tr>
+</tbody>
+</table>
+<p>‡ recorded before 2026-08-25, when this cell collapsed and its header was 36 px. Expanding the
+strip does not change the column's width and gives ~10 px of its height back to the header, which is
+where every other expanded row's 884 comes from. Marked for re-measurement rather than guessed at
+further — the next run rewrites this table's numbers and all sixteen frames together.</p>
+<p>The three cells that still collapse — 4 columns either way, and 3 columns with the dock <strong>open</strong> —
+collapse for a different reason than the table recorded. Not because four is more than two, but
+because 470 px, 379 px and 507 px of column leave less than the band's 448 px. 3 columns with the
+dock <strong>shut</strong> is 628 px, and that is the cell that flipped.</p>
+<h3 id="the-fold-rule-and-why-the-test-states-it-in-operands">The fold rule, and why the test states it in operands<a class="headerlink" href="#the-fold-rule-and-why-the-test-states-it-in-operands" title="Permanent link">#</a></h3>
+<p><code>ChartColumn.fitStrips()</code>: the control strip has exactly <strong>one authored shape — one row</strong> — and it
+collapses behind its reveal chip <strong>if and only if that row does not fit beside the depth readout</strong>.</p>
+<pre><code>need     = .column-controls scrollWidth
+         = 108+80+64+84+80 (five fixed slots) + 4×4 px gaps + 7 px padding a side + 1 px border
+         = 448 px
+avail    = .column-header clientWidth − .page-info offsetWidth − 24
+collapse = need &gt; avail
+</code></pre>
+<p>Column count and orientation are <strong>not</strong> inputs. They were until 2026-08-25, when the rule read
+<code>(!vertical &amp;&amp; nCols &gt; 2) || doesNotFit</code>, and on a 1920×1080 monitor both halves were wrong:</p>
+<ul>
+<li><strong>3 columns, dock shut: 448 px needed, 477 px available — it fits — and <code>nCols &gt; 2</code> collapsed it
+  anyway.</strong> Every control in the band went behind the chip while the header had room to spare.</li>
+<li><strong>2 columns in a 1080 px window did not collapse; they stacked.</strong> A <code>@container</code> tier had already
+  dropped the band to its two-row shape, so the fit test measured <em>that</em> (274 px), found it fitting
+  in 377 px, and left it stacked. The thing being measured depended on the measurement's own answer.
+  A two-row strip is not a degraded state, it is the one shape nobody wants, and it was shipping.</li>
+</ul>
+<p>The twelve <code>@container</code> tiers that authored the three shapes are deleted. Header height is 46 px
+expanded, ~36 px collapsed, and nothing in between.</p>
+<p><strong>The test now asserts <code>collapsed == !(oneRowNeed &lt;= avail)</code>, both operands read from live layout,
+instead of a table of expected collapse counts — because a count is display-dependent and an operand
+is not.</strong> The suite runs full-screen on whichever monitors are attached: three columns are 628 px
+each on the 1920 landscape screen and the band fits; the same three columns on the 1080 portrait
+screen do not. A number written into the test is therefore either wrong on one of the two displays
+attached to this rig, or quietly tuned to whichever one last ran green. Stated in its own operands
+the assertion holds on both — and it does not go stale when a control's fixed slot width changes.</p>
+<p>Measured after the change (1920×1080, NPX 2.0 sim):</p>
+<table>
+<thead>
+<tr>
+<th>horizontal</th>
+<th style="text-align: right;">column width</th>
+<th>strip</th>
+<th style="text-align: right;">header</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 column, dock shut</td>
+<td style="text-align: right;">1894 px</td>
+<td>one row</td>
+<td style="text-align: right;">46 px</td>
+</tr>
+<tr>
+<td>2 columns, dock shut</td>
+<td style="text-align: right;">945 px</td>
+<td>one row</td>
+<td style="text-align: right;">46 px</td>
+</tr>
+<tr>
+<td>3 columns, dock shut</td>
+<td style="text-align: right;">628 px</td>
+<td>one row</td>
+<td style="text-align: right;">46 px</td>
+</tr>
+<tr>
+<td>4 columns, dock shut</td>
+<td style="text-align: right;">470 px</td>
+<td><strong>collapsed</strong></td>
+<td style="text-align: right;">36 px</td>
+</tr>
+<tr>
+<td>2 columns, dock open</td>
+<td style="text-align: right;">763 px</td>
+<td>one row</td>
+<td style="text-align: right;">46 px</td>
+</tr>
+<tr>
+<td>3 columns, dock open</td>
+<td style="text-align: right;">507 px</td>
+<td><strong>collapsed</strong></td>
+<td style="text-align: right;">36 px</td>
+</tr>
+<tr>
+<td>4 columns, dock open</td>
+<td style="text-align: right;">379 px</td>
+<td><strong>collapsed</strong></td>
+<td style="text-align: right;">36 px</td>
+</tr>
+</tbody>
+</table>
+<p>Swept by width at 2 columns, the band survives 1920, 1600, 1400, 1300 and 1280 px of window and
+collapses at 1200, 1150, 1100 and 1080 — at 1200 px it needs 448 px and 437 px is available.
+<strong>Width is what makes a column too small, not column count.</strong> That is why <code>live_view</code>'s collapse case
+narrows the window at three columns rather than adding a fourth: adding columns no longer proves
+anything about the fold path.</p>
+<p>Vertical never collapses at any row count, which is now a <em>consequence</em> rather than an exemption: a
+stacked row is 1530–1894 px wide, so 448 px always fits.</p>
+<p><strong>The decision is made once per row and applied to every column</strong> (<code>fitStrips()</code> is static). Two
+reasons, both paid for. <code>.column-container</code> is <code>flex:1 1 0</code> and Chrome distributes the remainder in
+1/64 px LayoutUnits while <code>clientWidth</code> rounds to an integer, so siblings at 601.98 and 602.02 report
+601 and 602 and can land on opposite sides of the threshold — one collapsed column beside an expanded
+one is two header heights in one row and traces starting at different Y. And the measurement has to
+drop <code>strip-collapsed</code> to read the in-flow width; per column that is N class flips per frame, each
+one a size change the chart-area <code>ResizeObserver</code> picks up, which calls straight back in. It took the
+page down during development.</p>
+<p><strong>The collapsed reveal overlay keeps the old narrow three-row template on purpose.</strong> It is
+<code>position:absolute</code>, so its rows cost neither header height nor trace height — and <code>#view-data</code> is
+<code>overflow:hidden</code>, which clips an absolutely-positioned descendant, so a 448 px overlay in a column
+too narrow to hold one would have its right-hand controls destroyed on the last column: 275 px worth
+at 1080 px with the dock open and four columns.</p>
+<h3 id="three-assertions-the-matrix-was-not-making">Three assertions the matrix was not making<a class="headerlink" href="#three-assertions-the-matrix-was-not-making" title="Permanent link">#</a></h3>
+<p><strong>The strip is one line, on both axes.</strong> <code>stripH &lt;= 40</code> for every column that is not collapsed. The
+band must fit on one row or collapse; stacking is a bug, not a fallback.</p>
+<p><strong>The header is one strip tall, on both axes.</strong> <code>headerH &lt;= 52</code> for every column that is not
+collapsed — a one-line strip gives ~46 px, and every pixel over that is taken from the traces.</p>
+<p>Both of these existed before, gated behind <code>if vertical:</code>, and that gate is exactly why a two-row
+<em>horizontal</em> strip ran green for months: the one axis where the band was stacking was the one axis
+nobody measured. They stay scoped to expanded columns, because a collapsed reveal is an overlay whose
+rows cost no height.</p>
+<p><strong>Every column in a cell agrees with its siblings</strong> — same <code>headerH</code>, same collapse state (a pinned
+column excepted; a pin is the operator's explicit override). Uniformity used to be structural: one
+container query, one tier, every column. Under a measurement it is not guaranteed at all, and the
+LayoutUnit rounding above is a live way to lose it, so what CSS used to enforce is now asserted. A
+row that disagrees with itself means two siblings measured differently, which points at
+<code>fitStrips()</code> having run per column rather than per row.</p>
+<p><strong>Horizontal, 4 columns, dock open</strong> — the tightest cell in the matrix: 379 px of column against a
+448 px band.</p>
+<p><img alt="horizontal, 4 columns, ripple dock open" src="images/gui/matrix_horizontal_4col_dockon.png" /></p>
+<p><strong>Vertical, 4 rows, dock open</strong> — the same content at ~1530 px of row, so the band fits and stays
+expanded:</p>
+<p><img alt="vertical, 4 rows, ripple dock open" src="images/gui/matrix_vertical_4col_dockon.png" /></p>
+<p>All sixteen frames are in <code>developer_docs/images/gui/matrix_&lt;axis&gt;_&lt;n&gt;col_dock&lt;on|off&gt;.png</code>, rewritten
+by every run of the suite.</p>
+<hr />
+<h2 id="3-stream-options-the-right-view-for-the-right-band">3. Stream options — the right view for the right band<a class="headerlink" href="#3-stream-options-the-right-view-for-the-right-band" title="Permanent link">#</a></h2>
+<p>Every option in every column's stream selector, on both simulated sources, checked for unit, channel
+labels and depth readout. Selecting a band is the most-used control in the application and the
+easiest to get subtly wrong: the traces keep drawing while the labels or units belong to another band.</p>
+<table>
+<thead>
+<tr>
+<th>source</th>
+<th>options</th>
+<th>unit</th>
+<th>labels</th>
+<th>depth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Simulated NPX 1.0 (OneBox)</td>
+<td><code>AP Band</code></td>
+<td>µV</td>
+<td><code>39R 38L 37R</code></td>
+<td><code>e39 ↕ e0</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>LFP Band</code></td>
+<td>µV</td>
+<td><code>39R 38L 37R</code></td>
+<td><code>e39 ↕ e0</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>OneBox ADC (SDR)</code></td>
+<td>V/row</td>
+<td><code>IO11 IO10 IO9</code></td>
+<td><code>IO11 ↕ IO0</code></td>
+</tr>
+<tr>
+<td>Simulated NPX 2.0 Multishank</td>
+<td><code>RAW Band</code></td>
+<td>µV</td>
+<td><code>39R 38L 37R</code></td>
+<td><code>e39 ↕ e0</code></td>
+</tr>
+</tbody>
+</table>
+<p>Also asserted: the two columns are <strong>independent</strong> (driving one to the first option and the other to
+the last must leave both where they were put), and every selection still renders.</p>
+<hr />
+<h2 id="4-parameter-round-trip-gui-backend">4. Parameter round trip — GUI → backend<a class="headerlink" href="#4-parameter-round-trip-gui-backend" title="Permanent link">#</a></h2>
+<p>A field that accepts a value and never delivers it is the worst kind of GUI bug, because it looks
+like it worked. Every parameter below is set in the GUI and then confirmed <strong>on a separate WebSocket
+connection</strong>, so the assertion cannot be satisfied by frontend state alone.</p>
+<table>
+<thead>
+<tr>
+<th>parameter</th>
+<th>control</th>
+<th>set to</th>
+<th>GUI holds</th>
+<th>backend reports</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>channels required (quorum)</td>
+<td><code>#rd-quorum</code></td>
+<td>2</td>
+<td>2</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>parameter-estimation (training) s</td>
+<td><code>#rd-est</code></td>
+<td>12.000</td>
+<td>12.000</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>min time above threshold</td>
+<td><code>#rd-mindur</code></td>
+<td>0.030</td>
+<td>0.030</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>lockout after detection</td>
+<td><code>#rd-lock</code></td>
+<td>0.350</td>
+<td>0.350</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>coincidence window</td>
+<td><code>#rd-window</code></td>
+<td>0.075</td>
+<td>0.075</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>stim phase width (µs)</td>
+<td><code>#rd-stim-phase</code></td>
+<td>80</td>
+<td>80</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>stim inter-phase gap (µs)</td>
+<td><code>#rd-stim-gap</code></td>
+<td>15</td>
+<td>15</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>stim frequency (Hz)</td>
+<td><code>#rd-stim-freq</code></td>
+<td>120</td>
+<td>120</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>stim train length (ms)</td>
+<td><code>#rd-stim-total</code></td>
+<td>250</td>
+<td>250</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>per-channel z-score</td>
+<td><code>.rd-z</code></td>
+<td>0 / 5 / 0.00</td>
+<td>0.00 / 5.00 / 0.00</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>The last row is the <strong>§44 regression guard</strong>: a per-channel z of <code>0</code> used to snap silently back to
+<code>3.00</code>, because <code>parseFloat("0") || DEFAULTS.z</code> is <code>3.0</code> and <code>0</code> is falsy. Zero is the natural value
+to reach for when deliberately provoking detections, and it was unreachable through the GUI.</p>
+<p><strong>Quorum needs two channels.</strong> Setting quorum to 2 with one detection channel is clamped to 1 — that
+is correct behavior, not a bug, and the test adds two electrodes before asking. The first version of
+this test did not, and reported the clamp as a defect.</p>
+<hr />
+<h2 id="4a-fixed-a-refused-source-select-reported-itself-as-a-switch">4a. FIXED — a REFUSED source select reported itself as a switch<a class="headerlink" href="#4a-fixed-a-refused-source-select-reported-itself-as-a-switch" title="Permanent link">#</a></h2>
+<p><em>(This section previously recorded this as "a source switch after streaming fails". That diagnosis
+was wrong. It is kept, corrected, because the wrong version was acted on and the correction is the
+useful part.)</em></p>
+<h3 id="what-was-recorded-and-why-it-was-wrong">What was recorded, and why it was wrong<a class="headerlink" href="#what-was-recorded-and-why-it-was-wrong" title="Permanent link">#</a></h3>
+<p>The claim was that <strong>once acquisition has run, switching to another source fails</strong> — that the previous
+source's resources were not released after being started. The two-minute WebSocket experiment that
+would have tested it was never run. It was run on 2026-08-24:</p>
+<pre><code>select NP1 -&gt; play -&gt; pause -&gt; Disconnect -&gt; select NP2   -&gt;  deviceReady:true, streams fine
+</code></pre>
+<p><strong>The switch after streaming works.</strong> Nothing is left un-released.</p>
+<h3 id="what-was-actually-happening">What was actually happening<a class="headerlink" href="#what-was-actually-happening" title="Permanent link">#</a></h3>
+<p><code>MainController::handleConnectRequest</code> <strong>refuses</strong> a connect while a source is still selected. That is
+correct — silently tearing down a live probe because someone brushed the source dropdown is not
+something an acquisition system should do. The defect was that the refusal was <em>reported as a switch</em>:</p>
+<pre><code>select NP1 -&gt; play -&gt; select NP2   (no Disconnect)
+    stateSource : Simulated NPX 2.0 Multishank      &lt;- the GUI is told the switch succeeded
+    deviceReady : false
+    guiStatus   : Could not connect &quot;…&quot; The hardware was not detected, or is in use by another program
+</code></pre>
+<p><code>onSourceSelection</code> broadcasts <code>stateSource</code> with the REQUESTED name before attempting the connect —
+it has to go out early, because the browser's QWebChannel bind is keyed on it — and nothing put it
+back. The GUI's own picker sends <code>selectSource</code> with no Disconnect first, so this was the ordinary
+operator path, not a corner case.</p>
+<p>So the source picker showed the new source while the OLD source's streams kept flowing. In the GUI
+that presented as "the stream list did not follow the switch": the bands on offer were the previous
+source's, and selecting one rendered a fallback view with <code>19, 18, 17</code> labels and a <code>CH 19 ↕ CH 0</code>
+depth readout instead of <code>19R 18L 17R</code> / <code>e19 ↕ e0</code>. <strong>A recording taken in that state would carry the
+wrong band.</strong></p>
+<p>This is the same family as §41/#18 — announcing REQUESTED state rather than CONFIRMED state — on a
+path that family did not cover.</p>
+<h3 id="the-fix">The fix<a class="headerlink" href="#the-fix" title="Permanent link">#</a></h3>
+<p>A refused select now restores what actually holds: the previous source name, <code>deviceReady: true</code>, and
+the optional modules' state (which the browser had dropped when it saw the phantom source change).
+The message becomes actionable — <em>"Still connected to X. Disconnect before selecting another
+source."</em> — instead of a hardware diagnosis for hardware that is fine.</p>
+<p><strong>An earlier version of this page blamed the frontend</strong>, claiming <code>dataStore.knownStreams</code> was never
+cleared on a source change. That was also wrong: <code>clearStreamsForNewSource()</code> exists in <code>main.js</code> and
+is wired into <code>updateViewForSource()</code>. The frontend did the right thing with what it was told; it was
+being told the switch worked. Two wrong diagnoses on one defect is the reason
+<a href="AgentTraps.html"><code>AgentTraps.md</code></a> exists.</p>
+<h3 id="the-harness-bug-it-was-masking">The harness bug it was masking<a class="headerlink" href="#the-harness-bug-it-was-masking" title="Permanent link">#</a></h3>
+<p><code>tests/gui/_harness.py</code> never sent a Disconnect before <code>selectSource</code>, so under the shared-backend
+runner a test could reuse a backend that still had a source, have its select refused, and run against
+the <strong>previous test's</strong> source — a dozen unrelated failures about labels and units. It worked by
+accident until then: the backend auto-quits ~2 s after its last WebSocket client leaves, so each test
+usually got a fresh one. "Usually" was the bug. The harness now disconnects first, which is also what
+a real operator does.</p>
+<hr />
+<h2 id="4b-two-things-every-test-now-does">4b. Two things every test now does<a class="headerlink" href="#4b-two-things-every-test-now-does" title="Permanent link">#</a></h2>
+<p><strong>Every test asserts the page threw nothing.</strong> <code>Gui.check_clean()</code> reads a collector installed via
+<code>Page.addScriptToEvaluateOnNewDocument</code> — so it is in place before any application script runs — that
+records uncaught exceptions, unhandled promise rejections, failed resource loads and <code>console.error</code>
+calls. A GUI can look perfectly correct in a screenshot while throwing on every frame, and not one of
+the layout or render assertions in this suite would notice. Collected in the page rather than off the
+CDP event stream because <code>python/tools/cdp.py</code>'s <code>send()</code> loops until it sees its own message id and
+discards everything else, so events never reach the harness.</p>
+<p><strong>The toolbar is measured on the HEAVIEST toolbar, not the lightest.</strong> <code>toolbar_layout</code> used to run
+only on the harness default, which is a 1.0 source — and a 1.0 source has no derived bands. The
+1080 px floor had therefore been established against the fewest buttons the application can show. It
+now sweeps both:</p>
+<table>
+<thead>
+<tr>
+<th>toolbar</th>
+<th>modules present</th>
+<th>folds to 1080 px</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.0 (light)</td>
+<td>ripple</td>
+<td>✅ 2 rows, <code>tb-peek-view</code> from 1280</td>
+</tr>
+<tr>
+<td>2.0 (heavy)</td>
+<td><strong>Bands</strong>, audio, ripple</td>
+<td>✅ identical</td>
+</tr>
+</tbody>
+</table>
+<p>That measurement is why the floor stayed at 1080 when the Bands button was added rather than being
+widened: consolidating the two band buttons into one paid for the new one. <strong>Running that sweep is
+also what found the audio button appearing on 1.0 sources</strong>, where no shipped profile declares
+<code>proc.audio</code> at all.</p>
+<hr />
+<h2 id="5-what-is-not-covered-yet">5. What is NOT covered yet<a class="headerlink" href="#5-what-is-not-covered-yet" title="Permanent link">#</a></h2>
+<p>Stated plainly so a green run is not mistaken for completeness:</p>
+<ul>
+<li><strong>System-state panel.</strong> The tables, the <code>This run</code> vs <code>Total</code> columns, the stalled vocabulary, and
+  whether the counters actually advance. This is the surface that reported a healthy rig for three
+  and a half minutes during the 2026-08-20 incident, so it is the <strong>highest-value gap</strong>.</li>
+<li><strong>Probe map tab</strong> — bank buttons, edit vs select-recording-channels modes, <code>Apply Map to Hardware</code>,
+  <code>.imro</code> load/save.</li>
+<li><strong>Per-column controls beyond the stream selector</strong> — shank, L+R/Left/Right, µV scale, channel
+  density, the depth slider and its paging buttons.</li>
+<li><strong>Toolbar controls' effects</strong> — Window (1/2/5/10 s) and Ch (Auto/20/…/120) change what is drawn;
+  only their presence is checked, not their effect.</li>
+<li><strong>Recording dialog details</strong> — the Browse… native picker and the REC badge's truncation behaviour.
+  The arm → record → stop state machine and the files on disk are covered by <code>record_flow</code>; the
+  ripple sidecar on the GUI record path is covered by <code>ripple_sidecar</code>.</li>
+<li><strong>Backend → GUI direction.</strong> Everything in §4 is GUI → backend. The reverse (set via WebSocket,
+  assert the GUI reflects it) is not covered.</li>
+<li><strong>Error and fault surfaces</strong> — the hardware-error modal, the processor-fault relay, the source
+  stall banner.</li>
+<li><strong>Real hardware.</strong> Every GUI test runs on a simulated source by design.</li>
+</ul>
+<h2 id="6-conventions-these-tests-follow">6. Conventions these tests follow<a class="headerlink" href="#6-conventions-these-tests-follow" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Set state, never assume it.</strong> Orientation and dock state persist in the reused browser profile.
+  Both were assumed once; both produced a suite that passed while testing the opposite of its labels.</li>
+<li><strong>Verify the toggle took.</strong> A click that silently does nothing is how <code>layout_matrix</code> passed 16/16
+  while never opening the dock.</li>
+<li><strong>Exclude hidden-but-laid-out elements.</strong> Folded groups are <code>position:absolute; visibility:hidden</code>,
+  so they still contribute to <code>scrollWidth</code> and bounding boxes. A naive overflow check reports them
+  as clipped controls — it did, and a phantom bug was one step from being written up.</li>
+<li><strong>CDP resizing does not fire <code>resize</code>.</strong> <code>Emulation.setDeviceMetricsOverride</code> changes
+  <code>window.innerWidth</code> and re-evaluates CSS media queries, but the page never receives a <code>resize</code>
+  event — so anything driven by <code>window.onresize</code> or a <code>ResizeObserver</code> never runs, and the page
+  settles into a stable, <em>wrong</em> layout. Measured:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">resize events</th>
+<th>toolbar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>override → 1280</td>
+<td style="text-align: right;">0</td>
+<td>189 px, 4 rows, no compact class</td>
+</tr>
+<tr>
+<td>+ <code>dispatchEvent(new Event('resize'))</code></td>
+<td style="text-align: right;">1</td>
+<td>101 px, 2 rows, <code>tb-compact-2</code></td>
+</tr>
+</tbody>
+</table>
+<p>This cost an hour and produced a convincing false regression: the toolbar appeared to have stopped
+  folding at every width below 1300, and the application was never at fault — the harness was
+  resizing in a way no real browser does. <code>Gui.width()</code> now dispatches the event, which <strong>restores
+  fidelity rather than masking a bug</strong>: a real window resize emits it natively.</p>
+<ul>
+<li>
+<p><strong>Do not "fix" a failure by waiting longer.</strong> The same symptom was first blamed on timing and given
+  a poll-until-stable loop. It polled to a stable <em>wrong</em> answer. Settling helps a race; it cannot
+  help an event that is never delivered. Prove which one you have before changing the sleep.</p>
+</li>
+<li>
+<p><strong>Prove a new test can fail.</strong> Inject a regression, watch it go red, revert. <code>toolbar_layout</code> was
+  validated by hiding <code>#tb-peek-source</code> while folded: it reported <code>UNREACHABLE</code> at all seven folded
+  widths.</p>
+</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/GuiTestCoverage.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-suites">1. The suites</a><ul>
+<li><a href="#the-toolbar-folding">The toolbar, folding</a></li>
+<li><a href="#the-bands">The bands</a></li>
+<li><a href="#the-ripple-dock-after-every-parameter-has-been-driven">The ripple dock, after every parameter has been driven</a></li>
+<li><a href="#the-source-picker-open">The source picker, open</a></li>
+<li><a href="#what-the-operator-sees-when-it-goes-wrong-and-when-it-goes-right">What the operator sees when it goes wrong, and when it goes right</a></li>
+<li><a href="#the-narrowest-supported-width-dock-open">The narrowest supported width, dock open</a></li>
+</ul>
+</li>
+<li><a href="#2-the-layout-matrix-14-columns-dock-orientation">2. The layout matrix — 1–4 columns × dock × orientation</a><ul>
+<li><a href="#the-fold-rule-and-why-the-test-states-it-in-operands">The fold rule, and why the test states it in operands</a></li>
+<li><a href="#three-assertions-the-matrix-was-not-making">Three assertions the matrix was not making</a></li>
+</ul>
+</li>
+<li><a href="#3-stream-options-the-right-view-for-the-right-band">3. Stream options — the right view for the right band</a></li>
+<li><a href="#4-parameter-round-trip-gui-backend">4. Parameter round trip — GUI → backend</a></li>
+<li><a href="#4a-fixed-a-refused-source-select-reported-itself-as-a-switch">4a. FIXED — a REFUSED source select reported itself as a switch</a><ul>
+<li><a href="#what-was-recorded-and-why-it-was-wrong">What was recorded, and why it was wrong</a></li>
+<li><a href="#what-was-actually-happening">What was actually happening</a></li>
+<li><a href="#the-fix">The fix</a></li>
+<li><a href="#the-harness-bug-it-was-masking">The harness bug it was masking</a></li>
+</ul>
+</li>
+<li><a href="#4b-two-things-every-test-now-does">4b. Two things every test now does</a></li>
+<li><a href="#5-what-is-not-covered-yet">5. What is NOT covered yet</a></li>
+<li><a href="#6-conventions-these-tests-follow">6. Conventions these tests follow</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

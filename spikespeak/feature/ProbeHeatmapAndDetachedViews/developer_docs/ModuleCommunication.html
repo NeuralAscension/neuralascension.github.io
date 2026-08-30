@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Module Communication (frontend ⇄ backend commands) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Architecture and contracts / SpikesPeak — Module Communication (frontend ⇄ backend commands)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup" open><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a class="active" href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-module-communication-frontend-backend-commands">SpikesPeak — Module Communication (frontend ⇄ backend commands)<a class="headerlink" href="#spikespeak-module-communication-frontend-backend-commands" title="Permanent link">#</a></h1>
+<p>How the browser UI sends <strong>commands</strong> to backend modules, and the <strong>one standard</strong> every module
+should follow: a per-module <code>Q_INVOKABLE</code> exposed over QWebChannel ("Option A"). This doc covers the
+two modules migrated to the standard so far — the <strong>Neuropixels source</strong> and the <strong>Recording sink</strong> —
+and gives the general recipe for the rest.</p>
+<blockquote>
+<p>Wider context: <a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a> §7 (the
+Option A decision) and §3 (the WebSocket multiplexing). For the recording data path specifically,
+see <a href="Recording.html"><code>Recording.md</code></a>.</p>
+</blockquote>
+<hr />
+<h2 id="1-the-transport-one-websocket-three-multiplexed-channels">1. The transport: one WebSocket, three multiplexed channels<a class="headerlink" href="#1-the-transport-one-websocket-three-multiplexed-channels" title="Permanent link">#</a></h2>
+<p>The backend serves the UI over HTTP <code>:8234</code> and opens the system browser; <strong>all</strong> backchannel traffic
+rides one WebSocket on <code>:1234</code> (<code>NetworkClient.js</code> ⇄ <code>WebSocketServer.cpp</code>), split three ways:</p>
+<table>
+<thead>
+<tr>
+<th>Channel</th>
+<th>Direction</th>
+<th>Carries</th>
+<th>Entry point</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>(a) Binary waveform stream</strong></td>
+<td>C++ → JS</td>
+<td>decimated samples for the live view</td>
+<td><code>broadcastData</code> → <code>NetworkClient.handleMessage</code> (ArrayBuffer)</td>
+</tr>
+<tr>
+<td><strong>(b) JSON app commands</strong></td>
+<td>JS → C++</td>
+<td><code>setPlaying</code>, <code>selectSource</code>, <code>Disconnect</code> (global app verbs)</td>
+<td>id <code>0x1000</code> → <code>onTextMessageReceived</code></td>
+</tr>
+<tr>
+<td><strong>(c) QWebChannel RPC</strong></td>
+<td>JS ⇄ C++</td>
+<td><strong>per-module commands</strong> (the standard) + C++→JS events</td>
+<td><code>Q_INVOKABLE</code> on a registered object</td>
+</tr>
+</tbody>
+</table>
+<p>Channel (b) is the small set of <strong>global</strong> verbs that aren't owned by any one module. Channel (c) is
+where <strong>module</strong> commands live. (A legacy binary command id <code>0x1001</code> used to carry recording toggles
+through a <code>CommandDispatcher</code>; it has been <strong>removed</strong> in favour of (c) — see §4.)</p>
+<p>C++→JS <strong>events</strong> (e.g. <code>deviceReady</code>, <code>recordingStatus</code>) are plain JSON text messages the server
+pushes to every client (<code>WebSocketServer::setDeviceState</code> / <code>broadcastStatusEvent</code>); <code>NetworkClient</code>
+dispatches them by their <code>event</code> field.</p>
+<hr />
+<h2 id="2-the-standard-per-module-q_invokable-over-qwebchannel-option-a">2. The standard: per-module <code>Q_INVOKABLE</code> over QWebChannel (Option A)<a class="headerlink" href="#2-the-standard-per-module-q_invokable-over-qwebchannel-option-a" title="Permanent link">#</a></h2>
+<p><strong>Every module command is a <code>Q_INVOKABLE</code> method on the module's own QObject, exposed over
+QWebChannel.</strong> The browser binds the object and calls the method directly — there is <strong>no central
+command router</strong> to edit when you add a module. Adding a camera with <code>setExposure()</code> is just: declare
+the invokable, register the object, bind it in JS.</p>
+<p>The lifecycle has four steps, all already in place for both example modules:</p>
+<pre><code> (1) REGISTER            (2) BIND                  (3) INVOKE                  (4) TEARDOWN
+ C++: onSourceSelection  JS: on &quot;deviceReady&quot;      JS: obj.method(args[,cb])   C++: on &quot;Disconnect&quot;
+ mWebChannel             new QWebChannel(...)       →  C++ Q_INVOKABLE runs     mWebChannel
+   -&gt;registerObject(       bind channel.objects                                   -&gt;deregisterObject(
+     &quot;registry.name&quot;,       by name substring                                       obj)
+     obj)                   to window.&lt;global&gt;
+</code></pre>
+<h3 id="21-registration-c-websocketserveronsourceselection">2.1 Registration (C++, <code>WebSocketServer::onSourceSelection</code>)<a class="headerlink" href="#21-registration-c-websocketserveronsourceselection" title="Permanent link">#</a></h3>
+<p>When a source is selected, the server resolves the profile's registry names and registers each
+module object under its <strong>registry name</strong>:</p>
+<ul>
+<li>the <strong>source</strong> object (e.g. <code>source.npx.pxi</code>) — always;</li>
+<li>the <strong>recorder</strong> processor (e.g. <code>proc.npx.recorder</code>) — if the profile has one.</li>
+</ul>
+<p><code>registerObject(name, obj)</code> only introspects the meta-object and stores a pointer; the object may live
+on any thread (see §5).</p>
+<h3 id="22-binding-js-networkclienthandlemessage-on-deviceready">2.2 Binding (JS, <code>NetworkClient.handleMessage</code> on <code>deviceReady</code>)<a class="headerlink" href="#22-binding-js-networkclienthandlemessage-on-deviceready" title="Permanent link">#</a></h3>
+<p>Once the device reports ready, the client builds <strong>one</strong> <code>QWebChannel</code> and binds each backend object to
+a <code>window.*</code> global by a <strong>registry-name substring</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Object (registry name)</th>
+<th>Substring match</th>
+<th>Global</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.pxi</code></td>
+<td><code>"npx"</code> <strong>and not</strong> <code>"recorder"</code></td>
+<td><code>window.activeNpxModule</code></td>
+</tr>
+<tr>
+<td><code>proc.npx.recorder</code>, <code>proc.nidaq.recorder</code>, …</td>
+<td><code>"recorder"</code> (<strong>all</strong> matches)</td>
+<td><code>window.activeRecorders</code> (array)</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Both the source and the recorder names contain <code>"npx"</code>, so the source match explicitly excludes
+<code>"recorder"</code>. <strong>Recording is the multi-instance case:</strong> a profile can configure several recorders
+(one per data source — e.g. NPX <em>and</em> NI-DAQ), so the binding collects <strong>all</strong> <code>"recorder"</code> objects
+into an array, and the single Record button fans out to every one (§4). Keep registry names
+substring-distinguishable when you add modules.</p>
+</blockquote>
+<h3 id="23-invocation-js">2.3 Invocation (JS)<a class="headerlink" href="#23-invocation-js" title="Permanent link">#</a></h3>
+<pre><code class="language-js">// no return value needed -&gt; just call it (recording fans out to every bound recorder)
+window.activeRecorders.forEach(r =&gt; r.setRecording(true));
+
+// return value needed -&gt; pass a callback (QWebChannel delivers the result async)
+window.activeNpxModule.applyMapToHardware((ok) =&gt; { /* ok is the C++ bool */ });
+</code></pre>
+<h3 id="24-teardown-c-disconnect">2.4 Teardown (C++, <code>Disconnect</code>)<a class="headerlink" href="#24-teardown-c-disconnect" title="Permanent link">#</a></h3>
+<p><code>deregisterObject</code> for the source(s) and the recorder; the recorder pointer is tracked in
+<code>mRecorderProc</code> so it can be deregistered and its error signal disconnected.</p>
+<hr />
+<h2 id="3-module-a-neuropixels-source-sourcenpxpxi">3. Module A — Neuropixels source (<code>source.npx.pxi</code>)<a class="headerlink" href="#3-module-a-neuropixels-source-sourcenpxpxi" title="Permanent link">#</a></h2>
+<p>The reference implementation of Option A. Six <code>Q_INVOKABLE</code>s on <code>NeuropixelsSource</code> (<code>NpInterface.hpp</code>)
+drive the IMRO panel:</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Returns</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>getImroAsJson()</code></td>
+<td><code>QString</code></td>
+<td>serialize the current map → JSON for the UI</td>
+</tr>
+<tr>
+<td><code>updateImroFromJson(json)</code></td>
+<td><code>bool</code></td>
+<td>validate + atomically replace the map</td>
+</tr>
+<tr>
+<td><code>applyMapToHardware()</code></td>
+<td><code>bool</code></td>
+<td>push the map to the probe</td>
+</tr>
+<tr>
+<td><code>getImroAsImroText()</code></td>
+<td><code>QString</code></td>
+<td><code>.imro</code> text for client-side download</td>
+</tr>
+<tr>
+<td><code>loadImroFromText(text)</code></td>
+<td><code>bool</code></td>
+<td>parse <code>.imro</code> contents (read client-side) into the map</td>
+</tr>
+<tr>
+<td><code>saveImroToFile(path)</code></td>
+<td><code>bool</code></td>
+<td>server-side write (programmatic; UI uses the download instead)</td>
+</tr>
+</tbody>
+</table>
+<p>Bound to <code>window.activeNpxModule</code>; called from <code>ImroManager.js</code>. <code>NeuropixelsSource</code> lives on the <strong>main
+thread</strong> (only its acquisition worker is on a separate thread), so its invokables run directly and may
+return values synchronously (§5).</p>
+<p>File I/O for these stays in the browser (read via <code>&lt;input type=file&gt;</code>, write via <code>Blob</code> download) — see
+the architecture review §7.5. Never open a modal dialog inside a <code>Q_INVOKABLE</code>.</p>
+<hr />
+<h2 id="4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder">4. Module B — Recording sink (<code>proc.npx.recorder</code>, <code>proc.nidaq.recorder</code>, …)<a class="headerlink" href="#4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder" title="Permanent link">#</a></h2>
+<p>Migrated to Option A (was a <code>0x1001</code> binary command through <code>CommandDispatcher</code>). One invokable on
+<code>RecordProcessor</code> (<code>RecordProcessor.hpp</code>):</p>
+<pre><code class="language-cpp">Q_INVOKABLE void setRecording(bool enable);   // open (true) / close (false) the output files
+</code></pre>
+<ul>
+<li><strong>Multiple recorders, one button.</strong> A profile can configure several <code>RecordProcessor</code> instances —
+  e.g. <code>config/NpxPxiNiDaq.yaml</code> has <code>proc.npx.recorder</code> (records <code>data.npx.raw</code>) <strong>and</strong>
+  <code>proc.nidaq.recorder</code> (records <code>data.nidaq.raw</code>). <code>WebSocketServer::onSourceSelection</code> registers
+  <strong>every</strong> one; <code>NetworkClient</code> binds them all into <code>window.activeRecorders</code>; <code>AppController.toggleRecord()</code>
+  calls <code>setRecording(...)</code> on <strong>each</strong>. This restores the old <code>0x1001</code> behaviour, where the broadcast
+  hit every recorder subscriber. (The old single-<code>activeRecorder</code> binding only drove the last recorder —
+  a regression that's now fixed.)</li>
+<li><strong>Per-recorder, per-stream config — including channel selection — lives in the YAML.</strong> Each recorder's
+  <code>recordings:</code> list names a <code>data_name</code>, a <code>data_interpreter_name</code>, an <code>output_filename</code>, and an optional
+  <code>channels: [...]</code>. That channel list becomes the <code>filter</code> passed to the interpreter's
+  <code>serializeAvailableData</code>, so e.g. <code>channels: [0, 3]</code> records only NI-DAQ channels 0 and 3. Each module
+  supplies its own interpreter (<code>interp.npx.raw</code> → <code>NpxDataInterpreter</code>, <code>interp.nidaq.raw</code> →
+  <code>NiDaqDataInterpreter</code>), so formats stay independent. (The long-term generalisation — one recorder, many
+  interpreters — is <code>SpikesPeak_Status.md</code> §11.1.)</li>
+<li><strong>Workflow unchanged for the user:</strong> the Record button is enabled only while playing, so it's still
+  <em>Play first, then Record</em> (the recorder reads the live buffer).</li>
+<li><strong>No return value.</strong> Opening files is asynchronous (it's marshaled to the recorder's worker thread,
+  §5), so success/failure can't come back through the call. Instead the backend pushes a
+  <strong><code>recordingStatus</code></strong> event:</li>
+</ul>
+<p><code>RecordProcessor::applyRecordingState  --(open fails)--&gt;  emit sigIpErrorOccurred(msg)
+     -&gt; WebSocketServer::slBroadcastRecordingError
+        -&gt; broadcastStatusEvent("recordingStatus", msg, "error")   // JSON text to all clients
+           -&gt; NetworkClient: window.guiStatus(msg,"error")  +  window.onRecordingError(msg)
+              -&gt; toolbar turns red; main.js reverts the optimistic "recording" button state</code></p>
+<p>This <strong>request (invokable) + outcome (event)</strong> split is the recommended shape for any module command
+whose work is async or happens off the GUI thread.</p>
+<hr />
+<h2 id="5-thread-safety-the-one-rule-that-bites">5. Thread-safety — the one rule that bites<a class="headerlink" href="#5-thread-safety-the-one-rule-that-bites" title="Permanent link">#</a></h2>
+<p><strong>QWebChannel invokes <code>Q_INVOKABLE</code>s with <code>Qt::DirectConnection</code></strong> — i.e. on the GUI / transport
+(main) thread, <strong>regardless of the object's thread affinity</strong>. So:</p>
+<ul>
+<li><strong>Main-thread objects</strong> (the NPX source): invokables run on the main thread. Fine to touch state and
+  return a value synchronously.</li>
+<li><strong>Worker-thread objects</strong> (every <code>IProcessor</code> sink — <code>ProcessorManager</code> does <code>moveToThread</code>): the
+  invokable body still runs on the <strong>main</strong> thread, so it must <strong>not</strong> touch state owned by the worker
+  thread directly. <strong>Marshal onto the object's own thread first:</strong></li>
+</ul>
+<p><code>cpp
+  Q_INVOKABLE void setRecording(bool enable) {
+      QMetaObject::invokeMethod(this,
+          [this, enable]() { applyRecordingState(enable); },
+          Qt::QueuedConnection);   // hops to THIS object's thread; runs after the marshal
+  }</code></p>
+<p>This is why <code>setRecording</code> returns <code>void</code> and reports outcomes via an event (§4): the real work
+  (<code>applyRecordingState</code>) runs later, on the recorder's thread, where it can safely open/close files
+  without racing the <code>slProcessAvailableData</code> timer slot.</p>
+<p>Rule of thumb: <strong>return a value only from a main-thread object's invokable.</strong> For a threaded sink, make
+the invokable <code>void</code> + marshal + emit a status event.</p>
+<hr />
+<h2 id="6-recipe-add-a-command-to-a-new-module">6. Recipe — add a command to a new module<a class="headerlink" href="#6-recipe-add-a-command-to-a-new-module" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Declare</strong> a <code>Q_INVOKABLE</code> on the module's QObject (<code>Q_OBJECT</code> required). Return a value only if the
+   object lives on the main thread; otherwise make it <code>void</code>.</li>
+<li><strong>(Worker-thread objects)</strong> marshal the body to the object's own thread with
+   <code>QMetaObject::invokeMethod(this, functor, Qt::QueuedConnection)</code>.</li>
+<li><strong>Register</strong> the object in <code>WebSocketServer::onSourceSelection</code> via
+   <code>mWebChannel-&gt;registerObject("registry.name", obj)</code>, and <strong>deregister</strong> it in the <code>Disconnect</code>
+   handler. (Sources are already handled by the generic loop; a new sink needs a line like the
+   recorder's.)</li>
+<li><strong>Bind</strong> it in <code>NetworkClient.handleMessage</code>'s <code>deviceReady</code> callback:
+   <code>window.activeX = channel.objects[keys.find(k =&gt; k.includes("yourname"))]</code>. Keep the registry name
+   substring-distinguishable from the others.</li>
+<li><strong>Call</strong> it from your frontend code: <code>window.activeX.method(args[, cb])</code>.</li>
+<li><strong>Async outcome?</strong> Emit a signal the server relays as a JSON <code>event</code> (mirror <code>recordingStatus</code>), and
+   handle it in <code>NetworkClient</code> → <code>window.guiStatus</code> / a UI hook.</li>
+</ol>
+<hr />
+<h2 id="7-not-on-the-standard-yet-to-migrate-later">7. Not on the standard yet (to migrate later)<a class="headerlink" href="#7-not-on-the-standard-yet-to-migrate-later" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Global app verbs</strong> (<code>setPlaying</code>, <code>selectSource</code>, <code>Disconnect</code>) still ride channel (b) JSON id
+  <code>0x1000</code>. These are app-level, not module-level, so they may legitimately stay — but a future cleanup
+  could route them through a dedicated controller object's invokables too.</li>
+<li><strong><code>AudioProcessor</code></strong> still subscribes to a <code>CommandDispatcher</code> id (<code>0x218</code>). The <code>CommandDispatcher</code>
+  infrastructure remains (it's generic); migrating Audio to a <code>setX()</code> invokable is the same recipe as
+  §6. The recording migration removed the <strong>only</strong> UI-facing <code>CommandDispatcher</code> user.</li>
+<li><strong><code>IDataSource::handleWebCommand</code></strong> (the legacy fire-and-forget JSON hook) still exists as a no-op
+  default with a known routing gap (architecture review §7.4); prefer <code>Q_INVOKABLE</code>.</li>
+</ul>
+<h2 id="8-control-cli-channel-b-json-as-a-scripting-surface">8. Control CLI — channel (b) JSON as a scripting surface<a class="headerlink" href="#8-control-cli-channel-b-json-as-a-scripting-surface" title="Permanent link">#</a></h2>
+<p><code>python/spikespeak_cli.py</code> drives the app headlessly over the same WebSocket, using <strong>channel (b) JSON
+<code>0x1000</code> commands</strong> (not QWebChannel). <code>WebSocketServer::onTextMessageReceived</code> handles the CLI verbs —
+<code>listConfigs</code>, <code>setProbeMap</code>, <code>setRecording</code>, <code>quit</code> — alongside the existing global verbs (§7).</p>
+<p>Deliberate divergence from Option A: <strong>recording and IMRO get a JSON command path here in addition to
+their QWebChannel path.</strong> <code>setRecording</code> fans out to <code>mRecorderProcs</code> by invoking each recorder's
+<code>setRecording</code> Q_INVOKABLE by name (<code>QMetaObject::invokeMethod(..., Qt::DirectConnection, …)</code> — the same
+thread + method the browser hits via QWebChannel); <code>setProbeMap</code> calls <code>IDataSource::applyNamedMap</code>
+(NPX override). This keeps the CLI <strong>QWebChannel-free</strong> (a Python client would otherwise have to speak
+the QWebChannel protocol). The GUI still uses the QWebChannel path; both call the same backend methods.</p>
+<p>State-mirror events (<code>stateSource</code> / <code>statePlaying</code> / <code>stateRecording</code>, via <code>broadcastJson</code>) let a
+watching browser reflect a CLI-driven session without re-sending commands. Full reference:
+<a href="ControlCLI.html">ControlCLI.md</a>.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/ModuleCommunication.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-transport-one-websocket-three-multiplexed-channels">1. The transport: one WebSocket, three multiplexed channels</a></li>
+<li><a href="#2-the-standard-per-module-q_invokable-over-qwebchannel-option-a">2. The standard: per-module Q_INVOKABLE over QWebChannel (Option A)</a><ul>
+<li><a href="#21-registration-c-websocketserveronsourceselection">2.1 Registration (C++, WebSocketServer::onSourceSelection)</a></li>
+<li><a href="#22-binding-js-networkclienthandlemessage-on-deviceready">2.2 Binding (JS, NetworkClient.handleMessage on deviceReady)</a></li>
+<li><a href="#23-invocation-js">2.3 Invocation (JS)</a></li>
+<li><a href="#24-teardown-c-disconnect">2.4 Teardown (C++, Disconnect)</a></li>
+</ul>
+</li>
+<li><a href="#3-module-a-neuropixels-source-sourcenpxpxi">3. Module A — Neuropixels source (source.npx.pxi)</a></li>
+<li><a href="#4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder">4. Module B — Recording sink (proc.npx.recorder, proc.nidaq.recorder, …)</a></li>
+<li><a href="#5-thread-safety-the-one-rule-that-bites">5. Thread-safety — the one rule that bites</a></li>
+<li><a href="#6-recipe-add-a-command-to-a-new-module">6. Recipe — add a command to a new module</a></li>
+<li><a href="#7-not-on-the-standard-yet-to-migrate-later">7. Not on the standard yet (to migrate later)</a></li>
+<li><a href="#8-control-cli-channel-b-json-as-a-scripting-surface">8. Control CLI — channel (b) JSON as a scripting surface</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

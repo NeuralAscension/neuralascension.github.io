@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spike audio — listening to a channel's AP band - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Signal processing / Spike audio — listening to a channel's AP band</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup" open><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a class="active" href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spike-audio-listening-to-a-channels-ap-band">Spike audio — listening to a channel's AP band<a class="headerlink" href="#spike-audio-listening-to-a-channels-ap-band" title="Permanent link">#</a></h1>
+<p>Monitor one channel through the speakers. The raw signal is band-passed to the spike band, passed
+through a threshold that silences everything small, and played. Spikes become audible clicks; the
+threshold is what separates them from hiss.</p>
+<p>Modelled on <a href="https://bitbucket.org/mkarlsso/trodes/src/master/">Trodes</a>
+(<code>Trodes/src-threads/audioThread.cpp</code>), which does this well and whose approach is worth matching.</p>
+<p><img alt="The audio monitor panel" src="images/audio_monitor_panel.png" /></p>
+<hr />
+<h2 id="1-the-signal-path">1. The signal path<a class="headerlink" href="#1-the-signal-path" title="Permanent link">#</a></h2>
+<p>Everything runs in the backend (<code>src/modules/audio/AudioProcessor.cpp</code>); the panel only sets four
+values and renders what the backend confirms.</p>
+<pre><code>data.npx.raw ──► band-pass 300–6000 Hz ──► digital diode (±threshold) ──► interpolate 30k→44.1k
+                 (2nd-order Bessel)                                       ──► × volume ──► speakers
+</code></pre>
+<p><strong>Input is <code>data.npx.raw</code>.</strong> For a Neuropixels <strong>2.0</strong> probe that is the only stream there is — NP2
+has no separate hardware AP band — so the AP band heard here is <em>derived by these filters</em>, using the
+same filter code as the rest of the pipeline. That is exactly what makes this work on 2.0.</p>
+<p><strong>The band is AP/spike, not LFP.</strong> <code>AudioProcessor::initData()</code> previously called
+<code>setDefaultLFPFilterCoefs()</code> with a <code>TODO</code> noting it was the wrong band, and it was: an LFP-filtered
+signal carries no unit activity, so the monitor had nothing to play. It now uses
+<code>setDefaultSpikeBandFilterCoefs()</code> — <code>SpikeBandFilterCoefficients30kHz</code> in <code>src/core/Common.hpp</code>.</p>
+<p>Bessel rather than Butterworth for the same reason Trodes uses one: near-linear phase, so a spike
+keeps its shape instead of ringing. Designed with
+<code>scipy.signal.bessel(2, [300, 6000], btype="bandpass", norm="mag", fs=30000)</code>. <code>norm="mag"</code> matters —
+it puts the −3 dB points on 300 Hz and 6000 Hz (measured 300 / 5993 Hz, unity peak gain), where the
+default <code>norm="phase"</code> drifts them to 374 / 5052 Hz and audibly thins the low end.</p>
+<p>Measured response, dB relative to peak:</p>
+<table>
+<thead>
+<tr>
+<th>50 Hz</th>
+<th>100 Hz</th>
+<th>300 Hz</th>
+<th>1 kHz</th>
+<th>3 kHz</th>
+<th>6 kHz</th>
+<th>10 kHz</th>
+<th>14 kHz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>−28.1</td>
+<td>−16.3</td>
+<td><strong>−3.0</strong></td>
+<td>−0.1</td>
+<td>−0.4</td>
+<td><strong>−3.0</strong></td>
+<td>−12.8</td>
+<td>−41.3</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The digital diode.</strong> Everything within ±threshold collapses to silence and the rest shifts toward
+zero:</p>
+<pre><code class="language-cpp">if (v &gt;= 0.0f) v = std::max(v - thresh, 0.0f);
+else           v = std::min(v + thresh, 0.0f);
+</code></pre>
+<p>This is Trodes' shape (<code>audioThread.cpp</code> lines 206–211) and the reason a spike monitor sounds like
+discrete clicks rather than continuous noise. Threshold is in <strong>ADC counts</strong>.</p>
+<p><strong>Interpolation and volume.</strong> Linear interpolation from the 30 kHz source to the 44.1 kHz output,
+then volume. Gain is applied in float and clamped: it used to be an integer multiply into an <code>int16</code>,
+so a volume above unity wrapped a loud spike to the opposite rail — a crack in the speaker at exactly
+the moment the signal was most interesting.</p>
+<hr />
+<h2 id="2-choosing-a-channel">2. Choosing a channel<a class="headerlink" href="#2-choosing-a-channel" title="Permanent link">#</a></h2>
+<p><strong>You pick a channel by clicking its label in the live view</strong>, not from inside the panel. That is
+where the channels actually are, and the choice is made by looking at traces.</p>
+<p><code>ChartColumn.js</code> routes a label click to the audio monitor when <code>document.body</code> carries the
+<code>audio-open</code> class — the same idiom the ripple dock already uses to claim label clicks. The class is
+set by <code>AudioModule.toggle()</code>. Precedence is audio first, then ripple: if you opened the audio panel,
+a click means "listen to this".</p>
+<p>The channel being listened to is drawn with <code>.channel-label.listening</code> (green, glowing), so the sound
+is always attributable to a visible trace rather than to a number remembered from another panel.</p>
+<p><img alt="The panel over the live view, with the listened-to channel highlighted" src="images/audio_monitor_inview.png" /></p>
+<p>The index sent to the backend is the <strong>read-out channel</strong>, which is what <code>AudioProcessor</code> indexes into
+<code>data.npx.raw</code>. The label may <em>display</em> an electrode number (<code>16L</code>); those are not the same thing and
+the distinction is why the click handler sends <code>ch</code> rather than the label text.</p>
+<hr />
+<h2 id="3-control-surface">3. Control surface<a class="headerlink" href="#3-control-surface" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>control</th>
+<th>command</th>
+<th>range</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>channel</td>
+<td><code>setChannel</code></td>
+<td><code>-1</code> .. <code>num_channels-1</code></td>
+<td><code>-1</code> = nothing selected (the startup state)</td>
+</tr>
+<tr>
+<td>threshold</td>
+<td><code>setThreshold</code></td>
+<td>0 .. 400 counts</td>
+<td>slider max is deliberately modest — a spike is tens to low hundreds of counts</td>
+</tr>
+<tr>
+<td>volume</td>
+<td><code>setGain</code></td>
+<td>0 .. 1</td>
+<td>slider is 0–100 %</td>
+</tr>
+<tr>
+<td>mute</td>
+<td><code>setEnabled</code></td>
+<td>bool</td>
+<td>distinct from "no channel selected"</td>
+</tr>
+</tbody>
+</table>
+<p>Commands go out on <strong>binary id <code>0x218</code></strong> carrying JSON (<code>{"action": …, "value": …}</code>), which is what
+<code>AudioProcessor::slApHandleCommand</code> already subscribed to. State comes back as an <code>audioState</code> event,
+relayed by <code>WebSocketServer::slBroadcastAudioEvent</code> exactly like the ripple detector's events:</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;audioState&quot;,&quot;enabled&quot;:true,&quot;channel&quot;:16,&quot;threshold&quot;:25,&quot;gain&quot;:0.5,
+ &quot;num_channels&quot;:384,&quot;band&quot;:&quot;AP / spike, 300-6000 Hz&quot;,&quot;available&quot;:true}
+</code></pre>
+<p>The panel <strong>renders confirmed state, never its own request</strong> (issue #18). Every control writes
+optimistically and is corrected by the next <code>audioState</code>. <code>available:false</code> means no output device was
+found; the panel says so rather than pretending to work.</p>
+<p>Sliders fire on <code>input</code>, not <code>change</code>, so dragging is audible as you drag — finding a threshold is a
+listening task, and applying only on release makes it guesswork. The render skips writing back to a
+slider that currently has focus, so the backend's echo cannot fight your finger.</p>
+<hr />
+<h2 id="4-thread-safety">4. Thread safety<a class="headerlink" href="#4-thread-safety" title="Permanent link">#</a></h2>
+<p>The live values are <code>std::atomic</code> on <code>AudioProcessor</code>, written from the main thread (command
+dispatch) and read once per sample on the processor thread. Atomics rather than a lock because the
+read is on the audio path and must never block; a torn combination of channel and threshold is not
+worth preventing — it means one sample used the previous threshold.</p>
+<p>With no channel selected the filter is still stepped with zeros, so selecting a channel does not dump
+a stale filter history into the speaker as a click.</p>
+<hr />
+<h2 id="5-both-probe-types-and-which-band-each-listens-to">5. Both probe types, and which band each listens to<a class="headerlink" href="#5-both-probe-types-and-which-band-each-listens-to" title="Permanent link">#</a></h2>
+<p><strong>Every probe source gets audio.</strong> <code>ProcessorManager</code> auto-provisions <code>proc.audio</code> for any source
+with a probe band, so a profile does not have to declare it — and a profile that does still wins.</p>
+<p>Which band it listens to is decided from what the probe actually streams:</p>
+<table>
+<thead>
+<tr>
+<th>probe</th>
+<th>band</th>
+<th>filtered?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1.0</strong></td>
+<td><code>data.npx.ap</code></td>
+<td><strong>No.</strong> The probe high-passes its own AP band; that <em>is</em> the spike band.</td>
+</tr>
+<tr>
+<td><strong>2.0</strong></td>
+<td><code>data.npx.raw</code></td>
+<td><strong>Yes</strong> — 2nd-order Bessel band-pass 300–6000 Hz. There is no AP stream to take.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Filtering a band that is already the AP band is not neutral</strong>, which is why this is a decision and
+not an unconditional filter: it would high-pass an already high-passed signal and low-pass it at
+6 kHz on top. Audibly duller, for nothing. The filter state is still stepped on the unfiltered path,
+so switching sources does not start from a stale history.</p>
+<p>Until 2026-08-24 the processor read <code>data.npx.raw</code> unconditionally, so <strong>1.0 rigs had no spike audio
+at all</strong> — not because 1.0 cannot do it, but because nobody had generalised the input. A 1.0 probe is
+arguably the <em>better</em> case: its AP band comes off the probe already banded, so the monitor costs one
+memory read per sample and no filtering whatsoever.</p>
+<p>A profile can override both:</p>
+<pre><code class="language-yaml">  - name: &quot;proc.audio&quot;
+    input: &quot;data.npx.ap&quot;     # optional: which band to listen to
+    filter: false            # optional: apply the 300-6000 Hz band-pass to it or not
+</code></pre>
+<p>The <code>input_channels</code> block seeds the initial threshold and volume. It does <strong>not</strong> set the listening
+channel — that is an operator decision made against real traces, not something a YAML file can know.</p>
+<p><code>audioState</code> reports <code>input_band</code> and <code>filtered</code>, so the panel says which of the two it is doing
+rather than a generic "AP / spike".</p>
+<hr />
+<h2 id="6-when-there-is-no-audio-device">6. When there is no audio device<a class="headerlink" href="#6-when-there-is-no-audio-device" title="Permanent link">#</a></h2>
+<p><strong>A missing output device does not stop acquisition.</strong> It used to: <code>Pa_Initialize()</code> failing made
+<code>configure()</code> return false, <code>ProcessorManager</code> treats a failed configure as fatal and abandons the
+whole graph, so a machine with no speakers — or one whose device was held exclusively by something
+else — <strong>could not connect a probe</strong> on any profile that listed <code>proc.audio</code>. The profile was
+correct. The speakers were missing. Acquisition has to survive that.</p>
+<p>The distinction <code>configure()</code> now draws is:</p>
+<table>
+<thead>
+<tr>
+<th>what failed</th>
+<th>weight</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>validateConfig()</code> — the profile is wrong</td>
+<td><strong>fatal</strong>, as before</td>
+<td>nothing can fix itself; the config needs editing</td>
+</tr>
+<tr>
+<td><code>Pa_Initialize()</code> — this machine has no audio</td>
+<td><strong>degraded</strong></td>
+<td>the monitor is a convenience laid over acquisition</td>
+</tr>
+</tbody>
+</table>
+<p>In the degraded case the processor still exists and still behaves like one: it subscribes to command
+id <code>0x218</code>, arms its start report and ticks every 200 ms so the liveness monitor is not staring at a
+processor that never turns, and it answers state queries with</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;audioState&quot;,&quot;available&quot;:false,&quot;unavailable_reason&quot;:&quot;...&quot;,&quot;...&quot;:&quot;...&quot;}
+</code></pre>
+<p>The panel greys itself out and <strong>says why</strong>. "Audio unavailable" with no reason is the kind of
+message that gets reported as a bug against the wrong component.</p>
+<p>Both halves matter and both were bugs: reporting ready, because <code>MainController</code> does not start the
+sources until every processor has, so a silent processor hangs the start outright; and ticking,
+because a processor that never calls <code>noteCycle()</code> is reported as <strong>stalled</strong> (issue #16) for
+working exactly as intended.</p>
+<hr />
+<h2 id="7-which-output-device-the-sound-comes-out-of">7. Which output device the sound comes out of<a class="headerlink" href="#7-which-output-device-the-sound-comes-out-of" title="Permanent link">#</a></h2>
+<p>A machine has several. This rig reports <strong>fourteen</strong> output devices across MME, DirectSound, WASAPI
+and WDM-KS — the same three physical outputs, enumerated once per host API. So "audio is on" is not
+a useful thing for the panel to say; <em>which</em> device is playing is.</p>
+<h3 id="following-the-system-default-actually-follows-it">Following the system default actually follows it<a class="headerlink" href="#following-the-system-default-actually-follows-it" title="Permanent link">#</a></h3>
+<p><strong><code>Pa_GetDefaultOutputDevice()</code> is not good enough, and this is the whole point of the feature.</strong> It
+returns a <strong>concrete endpoint</strong> — measured here on 2026-08-24, index 1, <em>"ASUS VE278 (NVIDIA High
+Definition Audio)"</em> via MME — and a stream opened on a concrete endpoint keeps playing to that
+endpoint no matter what the operator later chooses in Windows. Changing your output device did
+nothing.</p>
+<p>Index 0 on the same machine was <strong>"Microsoft Sound Mapper - Output"</strong>: Windows' virtual endpoint that
+routes to whatever the current default is, and moves the instant the user changes it. So in
+follow-the-default mode <code>AudioWorker::findDefaultFollower()</code> opens the <strong>follower</strong> and falls back to
+the plain default only when there is none.</p>
+<p>That buys real-time adaptation for free — no polling, no re-initialisation, no gap in the audio:</p>
+<table>
+<thead>
+<tr>
+<th>platform</th>
+<th>follower endpoint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows MME</td>
+<td><code>Microsoft Sound Mapper - Output</code></td>
+</tr>
+<tr>
+<td>Windows DirectSound</td>
+<td><code>Primary Sound Driver</code></td>
+</tr>
+<tr>
+<td>Linux</td>
+<td><code>pipewire</code>, <code>pulse</code>, or ALSA's <code>default</code></td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>none known — falls back to <code>Pa_GetDefaultOutputDevice()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>It is matched by NAME, because PortAudio has no flag for it.</strong> That is a heuristic and it is
+allowed to miss: when it does, the behaviour is exactly what it was before, and the operator can
+still pin any device explicitly.</p>
+<h3 id="picking-one-explicitly">Picking one explicitly<a class="headerlink" href="#picking-one-explicitly" title="Permanent link">#</a></h3>
+<p>The panel lists every output device with its host API, plus <em>"System default (follows your OS
+setting)"</em>. Choosing one sends <code>{"action":"setDevice","value":&lt;index&gt;}</code> on id <code>0x218</code>; <code>-1</code> goes back
+to following. The picker paints what the <strong>backend confirms</strong>, never the click — a device whose
+format is unsupported is refused, and showing the operator a selection that is producing no sound is
+precisely the failure this codebase keeps having (issue #18 family).</p>
+<h3 id="when-the-device-goes-away">When the device goes away<a class="headerlink" href="#when-the-device-goes-away" title="Permanent link">#</a></h3>
+<p><code>AudioWorker::slAwWatchDevice()</code> polls <code>Pa_IsStreamActive()</code> once a second. A stream whose device has
+been unplugged, disabled, or taken exclusively by another program stops without an error anywhere —
+the monitor simply goes silent for the rest of the session. The watchdog notices, re-enumerates, and
+reopens on whatever the machine offers now. The same path picks up speakers plugged in <strong>after</strong> the
+session started.</p>
+<p>Re-enumerating means <code>Pa_Terminate()</code> + <code>Pa_Initialize()</code>: PortAudio snapshots the device list at
+initialisation and there is no portable notification that it changed. That is only legal with no
+stream open, which is why every caller closes first.</p>
+<hr />
+<h2 id="8-known-gaps">8. Known gaps<a class="headerlink" href="#8-known-gaps" title="Permanent link">#</a></h2>
+<ul>
+<li>~~NP1.0 is unsupported~~ — <strong>fixed 2026-08-24</strong>; it reads the probe's own AP band. See §5.</li>
+<li><strong>Mono only.</strong> One channel feeds both output channels. Trodes supports a reference channel
+  subtraction (<code>listenRefHWChan</code>) and a notch filter; neither is implemented here.</li>
+<li><strong>Nobody has heard it move.</strong> <code>tests/gui/audio_panel.py</code> proves the backend opens the <em>follower</em>
+  endpoint and that the picker round-trips through the backend — which is what makes following
+  possible — but that sound is audible, and that changing the Windows output device really moves it,
+  needs a person with speakers.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/SpikeAudio.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-signal-path">1. The signal path</a></li>
+<li><a href="#2-choosing-a-channel">2. Choosing a channel</a></li>
+<li><a href="#3-control-surface">3. Control surface</a></li>
+<li><a href="#4-thread-safety">4. Thread safety</a></li>
+<li><a href="#5-both-probe-types-and-which-band-each-listens-to">5. Both probe types, and which band each listens to</a></li>
+<li><a href="#6-when-there-is-no-audio-device">6. When there is no audio device</a></li>
+<li><a href="#7-which-output-device-the-sound-comes-out-of">7. Which output device the sound comes out of</a><ul>
+<li><a href="#following-the-system-default-actually-follows-it">Following the system default actually follows it</a></li>
+<li><a href="#picking-one-explicitly">Picking one explicitly</a></li>
+<li><a href="#when-the-device-goes-away">When the device goes away</a></li>
+</ul>
+</li>
+<li><a href="#8-known-gaps">8. Known gaps</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

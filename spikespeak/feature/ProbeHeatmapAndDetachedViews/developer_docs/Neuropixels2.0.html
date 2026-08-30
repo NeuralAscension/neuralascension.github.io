@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Neuropixels 2.0 support (Task 3 runbook) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Probes and DAQ hardware / SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup" open><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a class="active" href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-neuropixels-20-support-task-3-runbook">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)<a class="headerlink" href="#spikespeak-neuropixels-20-support-task-3-runbook" title="Permanent link">#</a></h1>
+<p>What exists, what's stubbed, and the order to finish <strong>NP2.0 multishank</strong> channel selection +
+recording. The canonical hardware reference is the vendored OpenEphys plugin at
+<code>Source-OpenEphys-Neuropixels-PXI/</code> (read it before writing hardware code).</p>
+<blockquote>
+<p>Background: NP1.0 model + IMRO is in [<code>../SpikesPeak_Status.md</code>]; the live waveform view (which
+is <strong>already</strong> wired for 4 shanks) is in [<code>LiveDataView.md</code>].</p>
+</blockquote>
+<hr />
+<h2 id="0-parity-target-the-2026-07-06-infrastructure-np20-must-work-with-updated-2026-07-06">0. PARITY TARGET — the 2026-07-06 infrastructure NP2.0 must work with (updated 2026-07-06)<a class="headerlink" href="#0-parity-target-the-2026-07-06-infrastructure-np20-must-work-with-updated-2026-07-06" title="Permanent link">#</a></h2>
+<p>Since this runbook was first written, a large hardware-free stack was built for NP1.0 (Status §13–§14).
+NP2.0 must reach <strong>parity</strong> with it — do NOT just make 2.0 stream; make all of this work for 2.0 too:</p>
+<ul>
+<li><strong>Record-channel selection UI (parts 4+5)</strong> — <code>Recording.md §7</code>. The probe viewer has a mode radio
+  (Edit Map | <strong>Select Recording Channels</strong>). Record mode + the map EDITOR are <strong>currently NP1-only</strong>
+  (as of 2026-07-06 <code>ImroManager.js</code> gated the NP1 path on <code>probeIdStr === "0"</code>; it now branches on
+  <code>probeGen()</code>/<code>probeType</code> — see §7 and the <code>probeGen()</code> header comment, and do not reintroduce a
+  <code>probeIdStr</code> test. <code>renderRecordSelection</code> uses <code>channelId + 384*bank</code>
+  and excludes ch 191; <code>renderElectrodeMap</code>'s NP2 else-branch is a <strong>placeholder</strong> = Gap 3 below). Extend
+  both to the <strong>4-shank</strong> geometry (electrode = <code>electrodeId</code>, shank-aware; no NP1 modulo-384, no ch191
+  rule). The committed selection is <code>window.recordChannels = {npx:[...], nidaq:[...]}</code> (read-out channels);
+  <code>main.js</code> routes each list to its recorder by name. The backend recorder is <strong>probe-agnostic</strong> already.</li>
+<li><strong>Simulated 2.0 source (its OWN class)</strong> — per the corrected per-module design (<code>SimDataLinux.md</code>), do
+  NOT reuse <code>SimDataSource</code> (that's NP1 ap/lfp). Add <code>source.npx.sim2</code> modelled on <code>SimDataSource.{hpp,cpp}</code>
+  but writing int16 into <strong><code>data.npx.raw</code></strong> (NP2 is ONE raw buffer, not ap/lfp) with a default 2.0 IMRO map
+  (shank/electrodeId). <strong>"2.0 + LFP":</strong> NP2 has no hardware LFP band — derive it with <strong><code>proc.lfp</code></strong>
+  (LFPProcessor consumes <code>data.npx.raw</code> → <code>data.lfp</code>), exactly how <code>NpxSynthRipples.yaml</code> wires
+  <code>proc.lfp</code> + <code>proc.rippledetector</code>. Add a <code>SimNpx2.yaml</code> config tagged <code>sim_variant:</code> so it joins the
+  <strong>"Simulated Data" picker</strong> (<code>main.js showSimPicker</code>, backend <code>ConfigManager::getSimVariant</code>).</li>
+<li><strong>Simulated NI-DAQ</strong> — <code>NiDaqSimSource</code> (<code>source.nidaq.sim</code>) + the NI-DAQ record grid already exist and
+  are probe-independent; a <code>SimNpx2NiDaq.yaml</code> (2.0 + NI-DAQ) should Just Work once the 2.0 sim exists.</li>
+<li><strong>Recorder override</strong> — <code>RecordProcessor::setRecording(bool,dir,name, QVariantList channels)</code> overrides
+  the YAML <code>channels:</code> per session; <code>interp.npx.raw</code> records 2.0. Confirm the <code>.bin.json</code> sidecar +
+  <code>spikespeak_postprocess</code> read it.</li>
+<li><strong>Shutdown / launch</strong> — fixed in <code>main.cpp</code> (no quit-hang, no <code>startTimer</code> warning; dedicated browser
+  app-window). Don't regress these.</li>
+</ul>
+<p><strong>Net for NP2.0:</strong> the three HARDWARE gaps below (§4) PLUS (a) a simulated 2.0 source + derived LFP config,
+and (b) extending the record-selection MODE + EDITOR (Gap 3) to 4-shank so custom-channel recording works
+for 2.0 just like 1.0.</p>
+<hr />
+<h2 id="1-the-probe-variants">1. The probe variants<a class="headerlink" href="#1-the-probe-variants" title="Permanent link">#</a></h2>
+<p><code>ProbeType</code> enum (NpInterface) — set by <code>detectProbe()</code> from the product number (NpInterface.cpp:~989):</p>
+<p>Probe identity is the <strong><code>ProbeType</code> enum</strong> — 1 = NP1.0, 2 = NP2.0 single-shank, 3 = NP2.0 multishank —
+set by <code>detectProbe()</code> from the part number and sent verbatim to the GUI, where
+<code>ImroManager.probeGen()</code> branches on it. <strong>Never pattern-match <code>probeIdStr</code></strong>: it is the part-resolved
+imro type id, so the shipping 4-shank part reports <code>2013</code>/<code>2014</code> and only the prototypes report
+<code>24</code>/<code>21</code> (see <code>Npx2Scale.hpp</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>imro type id (informational)</th>
+<th>product #</th>
+<th>shanks</th>
+<th>electrodes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>eNpx1</code></td>
+<td><code>"0"</code> / <code>PRB*</code> / <code>NP1*</code></td>
+<td>—</td>
+<td>1</td>
+<td>960</td>
+</tr>
+<tr>
+<td><code>eNpx2SingleShank</code></td>
+<td><code>2003</code> / <code>2004</code> (commercial) · <code>21</code> (NP2000 prototype)</td>
+<td>NP200x</td>
+<td>1</td>
+<td>1280</td>
+</tr>
+<tr>
+<td><code>eNpx2MultiShank</code></td>
+<td><code>2013</code> / <code>2014</code> (commercial) · <code>24</code> (NP2010 prototype)</td>
+<td>NP201/NP202</td>
+<td><strong>4</strong></td>
+<td>1280/shank</td>
+</tr>
+</tbody>
+</table>
+<p>NP2 geometry (used by the live view): within-shank electrode <code>e</code> → column <code>e&amp;1</code> (even=Left, odd=Right),
+row <code>e&gt;&gt;1</code>. <strong>384 read-out channels</strong> as on NP1. ⚠️ The electrode↔channel wiring is <strong>NOT</strong> NP1's
+modulo-384: within a shank the <strong>bank</strong> = <code>electrode_local / 384</code> sets the range, but the <strong>channel</strong>
+for an electrode comes from a <strong>per-shank block-permutation lookup table</strong>. The exact tables, geometry,
+np_* call sequence, and IMRO format are documented in <a href="OpenEphys-NP2-Reference.html"><code>OpenEphys-NP2-Reference.md</code></a>
+(distilled from the vendored plugin) — read it before writing the default map / apply / editor.</p>
+<hr />
+<h2 id="2-imro-entry-formats-all-parsedserialized-already">2. IMRO entry formats (all parsed/serialized already)<a class="headerlink" href="#2-imro-entry-formats-all-parsedserialized-already" title="Permanent link">#</a></h2>
+<p>From <code>parseImroContent</code> (NpInterface.cpp:~597-667) and <code>serializeImro</code> (~1291-1301):</p>
+<pre><code>NP1            (channelId bank refId apGain lfGain apFilter)     # 6 fields
+NP2 multishank (channelId shank bank refId electrodeId)         # 5 fields   &lt;-- Task 3 focus
+NP2 singleshank(channelId bank refId electrodeId)               # 4 fields ; shank implicitly 0, bank=bitmask
+</code></pre>
+<p>NP2 has <strong>no per-channel gain or AP-filter</strong> fields (fixed-gain probe) — that's the big API difference
+from NP1.</p>
+<hr />
+<h2 id="3-what-already-works-do-not-rebuild">3. What ALREADY works (do NOT rebuild)<a class="headerlink" href="#3-what-already-works-do-not-rebuild" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Where</th>
+<th>State</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Probe-type detection</td>
+<td><code>detectProbe()</code> NpInterface.cpp:~989</td>
+<td>sets <code>eNpx2MultiShank</code> from NP201/NP202/MS</td>
+</tr>
+<tr>
+<td>IMRO <strong>parse</strong> (all 3 formats)</td>
+<td><code>parseImroContent</code> ~597-667</td>
+<td>done; atomic validate-then-commit</td>
+</tr>
+<tr>
+<td>IMRO <strong>serialize</strong> (all 3)</td>
+<td><code>serializeImro</code> ~1291-1301</td>
+<td>done; save/load round-trips</td>
+</tr>
+<tr>
+<td>IMRO <strong>→ JSON</strong> for UI</td>
+<td><code>getImroAsJson</code> ~1363-1376</td>
+<td>emits <code>shank</code>/<code>bank</code>/<code>refId</code>/<code>electrodeId</code> for NP2</td>
+</tr>
+<tr>
+<td>Acq start ref loop</td>
+<td><code>startAcq</code> NP2 branch ~1182-1187</td>
+<td><code>np_setReference(slot,port,dock,channel,shank,refId,0)</code> per channel</td>
+</tr>
+<tr>
+<td><strong>Live waveform view</strong></td>
+<td><code>ImroManager.recomputeDepthOrdering</code> + <code>ChartColumn</code></td>
+<td>reads <code>ch.shank</code>/<code>ch.electrodeId</code>; 4 shank dropdown; depth/L-R bands. <strong>Untested</strong> — needs a real 2.0 map flowing. See LiveDataView.md.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-whats-missing-the-task-3-work">4. What's MISSING (the Task 3 work)<a class="headerlink" href="#4-whats-missing-the-task-3-work" title="Permanent link">#</a></h2>
+<h3 id="gap-1-loaddefaultimro-builds-no-channels-for-np2-npinterfacecpp548-552">Gap 1 — <code>loadDefaultImro</code> builds NO channels for NP2  <em>(NpInterface.cpp:548-552)</em><a class="headerlink" href="#gap-1-loaddefaultimro-builds-no-channels-for-np2-npinterfacecpp548-552" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">else if (mProbeType == ProbeType::eNpx2MultiShank) {
+    mCurrentImro.probeIdStr = &quot;24&quot;;
+    mCurrentImro.probeType = ProbeType::eNpx2MultiShank;
+    // ... build 2.0 defaults ...        &lt;-- STUB: mCurrentImro.channels stays EMPTY
+}
+</code></pre>
+<p><strong>Consequence:</strong> a connected 2.0 probe yields an <strong>empty</strong> map ⇒ <code>getImroAsJson</code> returns 0 channels ⇒
+the probe-map editor and the live view have nothing to show. <strong>This is the first thing to fix</strong> — build
+the 384-channel default (e.g. shank 0, electrodes 0-383, a sensible <code>refId</code>; no gain/apFilter). Cross-
+check the default against <code>OpenEphys/Probes/Neuropixels2.cpp</code> (its default IMRO) and <code>Geometry.cpp</code>.</p>
+<h3 id="gap-2-applyimrotohardware-is-empty-for-np2-npinterfacecpp745-746">Gap 2 — <code>applyImroToHardware</code> is empty for NP2  <em>(NpInterface.cpp:745-746)</em><a class="headerlink" href="#gap-2-applyimrotohardware-is-empty-for-np2-npinterfacecpp745-746" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">else if (mProbeType == ProbeType::eNpx2MultiShank) {
+    // NP 2.0 hardware calls will be mapped here later   &lt;-- STUB
+}
+</code></pre>
+<p>Implement the per-channel push, mirroring the NP1 block above it but with the NP2 API: <code>np_selectElectrode(slot,port,dock, channel, shank, bank)</code> (same signature, real <code>shank</code>), <code>np_setReference(...,
+shank, refId, refBank)</code>, <strong>no</strong> <code>np_setGain</code>/<code>np_setAPCornerFrequency</code>. Then the existing
+<code>np_writeProbeConfiguration(... read_check=true)</code> verify in <code>applyMapToHardware</code> applies unchanged.
+<strong>Reference:</strong> <code>OpenEphys/Probes/Neuropixels2.cpp</code> — <code>selectElectrodes()</code> / <code>setAllReferences()</code> /
+<code>writeConfiguration()</code> show the exact call order for 2.0.</p>
+<h3 id="gap-3-js-probe-map-editor-for-np2-is-a-placeholder-imromanagerjs-renderelectrodemap-else-branch-649-665">Gap 3 — JS probe-map EDITOR for NP2 is a placeholder  <em>(ImroManager.js <code>renderElectrodeMap</code> else-branch, ~649-665)</em><a class="headerlink" href="#gap-3-js-probe-map-editor-for-np2-is-a-placeholder-imromanagerjs-renderelectrodemap-else-branch-649-665" title="Permanent link">#</a></h3>
+<p>Currently just draws a static 4-shank × 1280 dot grid — <strong>no labels, no click/drag selection, no
+reference handling</strong>. Needs the NP1 selection UX (click electrode → route channel; drag-box → contiguous
+window; presets; reserved/reference sites) re-done for the <strong>4-shank</strong> geometry and the NP2
+channel↔electrode wiring. <strong>Reference:</strong> <code>OpenEphys/UI/NeuropixInterface.cpp</code> + <code>UI/ProbeBrowser.cpp</code>
+(their interactive shank/electrode selector) and <code>Formats/IMRO.h</code>.</p>
+<hr />
+<h2 id="5-suggested-order-of-work">5. Suggested order of work<a class="headerlink" href="#5-suggested-order-of-work" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Default map (Gap 1)</strong> → connect a 2.0 probe, confirm <code>detectProbe</code> → <code>eNpx2MultiShank</code>, then build
+   the default in <code>loadDefaultImro</code>. Now <code>getImroAsJson</code> returns 384 channels.</li>
+<li><strong>Verify the live view (this session's untested code)</strong> with that real map: shank dropdown shows 4
+   shanks, L/R bands, depth order, electrode+side labels. Fix anything the NP2 path surfaces.</li>
+<li><strong>Hardware apply (Gap 2)</strong> → implement the NP2 <code>applyImroToHardware</code>; confirm a custom map reaches
+   HW (<code>writeProbeConfiguration</code> read-check VERIFIED OK, the diagnostic the NP1 path logs).</li>
+<li><strong>Editor (Gap 3)</strong> → build the 4-shank selection UI so a user can pick electrodes per shank.</li>
+<li><strong>Recording (Task 2 carries over)</strong> → the recorder is probe-agnostic; confirm NP2 records via
+   <code>interp.npx.*</code>. See [<code>Recording.md</code>].</li>
+</ol>
+<hr />
+<h2 id="6-reference-map-openephys-files-for-each-piece">6. Reference map — OpenEphys files for each piece<a class="headerlink" href="#6-reference-map-openephys-files-for-each-piece" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Read in <code>Source-OpenEphys-Neuropixels-PXI/</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NP2 hardware call sequence (select/reference/write)</td>
+<td><code>Probes/Neuropixels2.cpp</code> / <code>.h</code></td>
+</tr>
+<tr>
+<td>Electrode geometry, banks, default selection</td>
+<td><code>Probes/Geometry.cpp</code> / <code>.h</code></td>
+</tr>
+<tr>
+<td>IMRO read/write semantics</td>
+<td><code>Formats/IMRO.h</code></td>
+</tr>
+<tr>
+<td>Interactive shank/electrode selection UI (to mirror in JS)</td>
+<td><code>UI/NeuropixInterface.cpp</code>, <code>UI/ProbeBrowser.cpp</code></td>
+</tr>
+<tr>
+<td>Vendor API signatures (<code>np_selectElectrode</code>, <code>np_setReference</code>, …)</td>
+<td><code>API/NeuropixAPI.h</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-status-2026-07-06-done-built-verified-on-the-windows-box">7. Status (2026-07-06 — DONE, built + verified on the Windows box)<a class="headerlink" href="#7-status-2026-07-06-done-built-verified-on-the-windows-box" title="Permanent link">#</a></h2>
+<ul>
+<li>NP2.0 <strong>multishank</strong>: <strong>all three gaps in §4 are now CLOSED</strong> and the pipeline is at PARITY with the 1.0
+  path. See <code>SpikesPeak_Status.md §15</code> for the full write-up + verification. Summary:</li>
+<li><strong>Gap 1 (default map)</strong> — <code>loadDefaultImro()</code> builds the 384-ch shank-0/Bank-A default via a NEW shared
+    <code>Np2::electrodeToChannel</code> helper in <code>Npx.hpp</code> (the OpenEphys Geometry.cpp permutation tables). The NP2
+    <code>initBasestation</code> branch now LOADS that map (it previously only set references, leaving the map empty).</li>
+<li><strong>Gap 2 (hardware apply)</strong> — <code>applyImroToHardware()</code> NP2 branch: disconnect all 4 shank switches
+    (<code>NONE_REF</code>) once, then per-channel <code>np_selectElectrode(...,shank,bank)</code> + <code>np_setReference(...,shank,...)</code>,
+    no gain/filter. Mirrors <code>Neuropixels2.cpp</code>.</li>
+<li><strong>Gap 3 (editor)</strong> — <code>ImroManager.js</code> <code>renderElectrodeMap</code> NP2 branch is now a full interactive 4-shank
+    editor (click/drag select, Shank + Bank A-D presets); record-mode selection (<code>renderRecordSelection</code> /
+    <code>appliedRecordInfo</code>) is 4-shank + shank-aware (no ch191 rule). A JS <code>NP2_electrodeToChannel</code> mirrors the
+    C++ helper (node self-test PASS).</li>
+<li><strong>Simulated 2.0 source</strong> — NEW <code>SimData2Source.{hpp,cpp}</code> (<code>source.npx.sim2</code>) writes <code>data.npx.raw</code>; configs
+    <code>SimNpx2.yaml</code> / <code>SimNpx2NiDaq.yaml</code> (tagged <code>sim_variant</code>). Derived LFP via <code>proc.lfp</code>.</li>
+<li><strong>VERIFIED:</strong> the simulated 2.0 source streams + records + drives the 4-shank live view / editor / record
+  selection (headless CLI + CDP screenshots, zero JS errors); NP1 hardware regression clean.</li>
+<li><strong>VERIFIED on real hardware (2026-07-15/16 → 2026-07-21):</strong> a real 2.0 multishank was subsequently plugged
+  into the Windows rig. Streaming, pause/play, and <strong>Bank apply</strong> (<code>writeProbeConfiguration</code> VERIFIED OK) are
+  verified (see the <em>Real-2.0-hardware streaming robustness</em> subsection below and Status §23); recording and the
+  full ripple→stimulation <strong>closed loop</strong> are validated across the quorum × delivery matrix at 1000
+  detections/cell (Status §24, §30; <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</li>
+<li>Single-shank (<code>eNpx2SingleShank</code>) parses/serializes but otherwise still follows the old gaps (not built).</li>
+</ul>
+<h3 id="refinements-2026-07-07-see-spikespeak_statusmd-1718">Refinements (2026-07-07) — see <code>SpikesPeak_Status.md §17–§18</code><a class="headerlink" href="#refinements-2026-07-07-see-spikespeak_statusmd-1718" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Mapping VERIFIED vs the official manual</strong> (<code>Neuropixels_2-0_User_Manual_V1-0-6/</code>): <code>Np2::electrodeToChannel</code>
+  matches all 5,120 rows of the Electrode-Channel <code>.xlsx</code> (Figs 35+37). The <strong>electrode</strong> number is a
+  physical site (<code>row=e&gt;&gt;1</code> = depth, <code>col=e&amp;1</code>, El0=tip); the <strong>channel</strong> number is the amplifier index with
+  no physical meaning; the <code>.xlsx</code> channel→electrode is deliberately SCRAMBLED (the block permutation).</li>
+<li><strong>Labels 0-3</strong> (shanks + banks) to match the manual/<code>.imro</code>/hardware (were OpenEphys-style A-D).</li>
+<li><strong><code>.imro</code> / map VALIDATION</strong> = <code>Np2::isConsistentEntry</code> (in <code>Npx.hpp</code>): rejects any entry where channel ≠
+  <code>electrodeToChannel(shank,electrode)</code>, bank ≠ <code>electrode/384</code>, out-of-range, or duplicate channel — in
+  <code>parseImroContent</code> + <code>updateImroFromJson</code> (both hardware <code>NpInterface.cpp</code> and sim <code>SimData2Source.cpp</code>).</li>
+<li><strong>Probe-type mismatch dialog:</strong> <code>NeuropixelsSource::initDataSource</code> infers the profile's expected probe
+  from its output data and emits <code>sigGuiStatus(...,"probe-mismatch")</code> → <code>main.js showProbeMismatch</code> modal.</li>
+<li><strong>Per-shank rectangles + tips</strong> in the NP2 editor (<code>ImroManager.js setShankVisuals</code> / <code>np2Shafts</code>/<code>np2Tips</code>).</li>
+<li>Record-mode selection is restricted to the applied (streamable) electrodes; edit-mode clicks always yield a
+  valid map (each of 384 channels reads one electrode). GUI test harness: <code>python/tools/gui_scenarios.py</code>.</li>
+</ul>
+<h3 id="real-20-hardware-streaming-robustness-2026-07-1516-built-verified-on-a-live-np2-multishank">Real-2.0-hardware streaming robustness (2026-07-15/16 — built + VERIFIED on a live NP2 multishank)<a class="headerlink" href="#real-20-hardware-streaming-robustness-2026-07-1516-built-verified-on-a-live-np2-multishank" title="Permanent link">#</a></h3>
+<p>First real 2.0 multishank plugged into the Windows rig. Streaming worked on a fresh connect but <strong>pause/play</strong>
+and <strong>pick-channels (Bank apply)</strong> froze the live view (IMEC <strong>blue LED</strong> = FPGA streaming but host not
+reading, or display frozen while the FIFO stayed healthy). Four independent bugs, all now fixed + verified live
+(CDP-driven visible browser, 6/6 interleaved pause/play + Bank 0/1/2/3 applies advancing, <strong>0 FIFO stalls</strong>):
+1. <strong>FPGA-read stall on (re)play</strong> — <code>NeuropixelsSource::startAcq</code> fired <code>np_setSWTrigger</code> immediately after
+   <code>mWorkerThread-&gt;start()</code>, i.e. BEFORE the worker's read loop existed → the FPGA streamed into a FIFO nobody
+   drained (blue LED). Now the trigger is gated on the worker's <code>sigDswStartedAcquiring</code> (QueuedConnection,
+   fires after <code>mTimer-&gt;start()</code>), so the reader is always up first. A throttled FIFO diagnostic
+   (<code>[Npx2MSProbe] FIFO: read N | available M | headroom H … STALL</code>) makes any recurrence visible in the log.
+2. <strong>Ring desync after a worker recreate</strong> — <code>applyMapToHardware()</code> does <code>stopAcq()</code>→write→<code>startAcq()</code>, which
+   destroys + recreates the source worker. <code>Npx2MSProbe</code> started <code>mCurrWriteInd = 0</code>, so the new worker wrote
+   at ring position 0 while the persistent consumers (display/ripple/LFP) kept reading at the old high index →
+   stale/garbage data. <strong><code>Npx1Probe</code> already seeds its write index from <code>getTotalSamplesAdded()</code>; NP2 was
+   missing it.</strong> Added the same seed to the <code>Npx2MSProbe</code> ctor (no-op on first worker).
+3. <strong>Display frozen after a reconfigure</strong> — <code>np_setSWTrigger</code> re-firing on a map apply RESETS the probe packet
+   <code>Timestamp</code> toward 0, but <code>DisplayProcessor</code> binned by that hardware timestamp with a latched
+   <code>gotFirstTimestamp</code>, so the new low timestamps never exceeded the old (high) <code>timebinEndTimestamp</code> →
+   <code>advanceBucket()</code> never ran, no frames emitted (samples consumed but never shown). <code>slDpGenerateDisplayData</code>
+   now detects the &gt;1-bin backwards jump and re-baselines the timebin, so display resumes automatically with no
+   manual pause/play. (Pause/play had hidden this by rebuilding the processor state — and only recovered once
+   fix #2 also landed.) Shared with NP1.
+4. <strong>NP2 raw traces drift off-screen</strong> — the <code>raw</code> wideband carries a large, slowly-drifting electrode DC
+   offset; the probe display path drew samples straight at <code>yOffset+sample</code> (0-centred assumption, true only
+   for the hardware-high-passed AP band), so the trace drifted below its row within minutes → blank view.
+   <code>NetworkClient.js</code> now AC-couples <code>streamId === 'raw'</code> (slow min/max-midpoint baseline, same tracker as the
+   NI-DAQ path, clamped to the row band). Frontend-only. NP1 <code>ap</code>/<code>lfp</code> untouched.
+- Files: <code>NpInterface.cpp</code> (#1 startAcq gate + FIFO log; #2 <code>Npx2MSProbe</code> ctor seed),
+  <code>DisplayProcessor.cpp</code> (#3 timebin re-baseline), <code>webinterface/NetworkClient.js</code> (#4). Rebuild the
+  <code>build-Desktop_…-Release</code> tree (<code>rebuild.bat</code> = vcvars64 + <code>cmake --build</code>); frontend is copy-to-served-tree
+  + reload. Verified by CDP screenshot at the time (screenshots are transient — see the screenshot policy in <code>README.md</code>).</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/Neuropixels2.0.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#0-parity-target-the-2026-07-06-infrastructure-np20-must-work-with-updated-2026-07-06">0. PARITY TARGET — the 2026-07-06 infrastructure NP2.0 must work with (updated 2026-07-06)</a></li>
+<li><a href="#1-the-probe-variants">1. The probe variants</a></li>
+<li><a href="#2-imro-entry-formats-all-parsedserialized-already">2. IMRO entry formats (all parsed/serialized already)</a></li>
+<li><a href="#3-what-already-works-do-not-rebuild">3. What ALREADY works (do NOT rebuild)</a></li>
+<li><a href="#4-whats-missing-the-task-3-work">4. What's MISSING (the Task 3 work)</a><ul>
+<li><a href="#gap-1-loaddefaultimro-builds-no-channels-for-np2-npinterfacecpp548-552">Gap 1 — loadDefaultImro builds NO channels for NP2 (NpInterface.cpp:548-552)</a></li>
+<li><a href="#gap-2-applyimrotohardware-is-empty-for-np2-npinterfacecpp745-746">Gap 2 — applyImroToHardware is empty for NP2 (NpInterface.cpp:745-746)</a></li>
+<li><a href="#gap-3-js-probe-map-editor-for-np2-is-a-placeholder-imromanagerjs-renderelectrodemap-else-branch-649-665">Gap 3 — JS probe-map EDITOR for NP2 is a placeholder (ImroManager.js renderElectrodeMap else-branch, ~649-665)</a></li>
+</ul>
+</li>
+<li><a href="#5-suggested-order-of-work">5. Suggested order of work</a></li>
+<li><a href="#6-reference-map-openephys-files-for-each-piece">6. Reference map — OpenEphys files for each piece</a></li>
+<li><a href="#7-status-2026-07-06-done-built-verified-on-the-windows-box">7. Status (2026-07-06 — DONE, built + verified on the Windows box)</a><ul>
+<li><a href="#refinements-2026-07-07-see-spikespeak_statusmd-1718">Refinements (2026-07-07) — see SpikesPeak_Status.md §17–§18</a></li>
+<li><a href="#real-20-hardware-streaming-robustness-2026-07-1516-built-verified-on-a-live-np2-multishank">Real-2.0-hardware streaming robustness (2026-07-15/16 — built + VERIFIED on a live NP2 multishank)</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

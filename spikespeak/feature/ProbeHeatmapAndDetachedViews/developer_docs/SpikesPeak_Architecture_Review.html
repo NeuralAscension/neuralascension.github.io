@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Architectural Review & Audit - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Start here / SpikesPeak — Architectural Review & Audit</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a class="active" href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
+<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<a href="DetachedViews.html">Detached view windows</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-architectural-review-audit">SpikesPeak — Architectural Review &amp; Audit<a class="headerlink" href="#spikespeak-architectural-review-audit" title="Permanent link">#</a></h1>
+<p><strong>Scope:</strong> Qt/C++ acquisition backend + JavaScript web frontend
+<strong>Core review date:</strong> 2026-06-23 · <strong>Completion pass:</strong> 2026-07-21 (§11)
+<strong>Frontend rendering:</strong> hand-written WebGL2 traces (<code>GlRenderer.js</code>) + a canvas-2D probe map (<code>ProbeMap.js</code>); no charting library
+<strong>Build:</strong> CMake (Ninja) + MSVC 2019 + Qt 6.7.3, C++20, Release <code>/Ox</code> (Windows hardware box); GCC + Qt 6.7+ (Linux sim box)</p>
+<blockquote>
+<p><strong>State note.</strong> §1–§10 are the original 2026-06-23 architecture review (hosting, threading, data plane,
+factory/registry, QWebChannel command model) and remain accurate for the <strong>core</strong>. Since then the system
+grew a second probe, a full ripple→stimulation closed loop, an NI-DAQ source, and latency
+instrumentation, and was validated end-to-end on real hardware. <strong>§11 is the 2026-07-21 completion pass</strong>
+that brings the review up to date and records the current status: <strong>both probes validated end-to-end in
+saline; ready for in-vivo testing under anesthesia.</strong> Read §1–§10 for how the core works, then §11 for
+everything built on top. <strong>Changed since:</strong> the vendored SciChart.js bundle was removed on
+2026-08-27 and the live view is now drawn by <code>webinterface/GlRenderer.js</code>; the measurement that
+justified that is <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+<p><strong>Companion guides:</strong> <a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a>,
+<a href="AddingASinkModule.html"><code>AddingASinkModule.md</code></a>, and <a href="README.html"><code>README.md</code></a> (onboarding +
+parallel-work map). Read those to <em>extend</em> the system; read this to <em>understand</em> it.</p>
+</blockquote>
+<hr />
+<h2 id="1-executive-summary">1. Executive Summary<a class="headerlink" href="#1-executive-summary" title="Permanent link">#</a></h2>
+<p>SpikesPeak is a real-time electrophysiology acquisition app. A Qt/C++ backend reads
+Neuropixels (or simulated) data on dedicated worker threads, fans it out to independent
+processor threads (display decimation, disk recording, sharp-wave-ripple detection), and
+pushes display data to a <strong>browser UI</strong> over a <strong>single WebSocket on port 1234</strong>.</p>
+<p>Crucially, <strong>the UI is not embedded.</strong> The backend runs a tiny static HTTP server on
+<strong>port 8234</strong> (<code>main.cpp:40-80,251-253</code>) and opens the page in the user's <strong>system default
+browser</strong> via <code>QDesktopServices::openUrl</code> (<code>main.cpp:266</code>). The C++ process is a
+<code>QApplication</code> (Qt Widgets linked), so it can show <strong>native desktop dialogs</strong> even though
+its UI lives in an external browser. This matters for file I/O (§9).</p>
+<p>The WebSocket is <strong>triple-multiplexed</strong>:</p>
+<ol>
+<li><strong>Binary frames</strong> — decimated min/max waveform batches (C++ → JS), drawn by the WebGL2 renderer
+   (<code>GlRenderer.js</code>).</li>
+<li><strong>Application commands/events</strong> — small JSON control messages (<code>selectSource</code>, <code>setPlaying</code>,
+   <code>deviceReady</code>, …) framed inside a 4-byte binary header.</li>
+<li><strong>QWebChannel RPC</strong> — Qt's object-bridge protocol, letting JS call C++ <code>Q_INVOKABLE</code>
+   methods directly (the IMRO probe-map editor: read / update / apply / save).</li>
+</ol>
+<hr />
+<h2 id="2-component-map">2. Component Map<a class="headerlink" href="#2-component-map" title="Permanent link">#</a></h2>
+<pre><code>   ┌──────────────────────────── C++ BACKEND (QApplication, main thread) ───────────────────────────┐
+   │                                                                                                 │
+   │  Neuropixels HW ─► Npx1Probe / Npx2MSProbe   (WORKER THREAD &quot;NpxWorkerThread&quot;, QTimer @1ms)     │
+   │                          │  np_readElectrodeData / np_readPackets → demux superframes           │
+   │                          ▼                                                                       │
+   │             CircularBuffer&lt;int16, PacketInfo&gt;   data.npx.ap / .lfp / .raw  (Registry)           │
+   │             (single producer, MANY independent consumers — semaphore per consumer)              │
+   │              ┌────────────────────────┬─────────────────────────────┬───────────────────────┐  │
+   │              ▼                        ▼                             ▼                          │
+   │    DisplayProcessor          RecordProcessor                 RippleDetector                    │
+   │   (PROC THREAD, QTimer@20ms)  (PROC THREAD, QTimer@50ms)   (PROC THREAD, blocking sem-loop)     │
+   │    AVX2 min/max decimation    IDataInterpreter→QFile        IIR ripple-band+envelope, z-score   │
+   │      │ emit sigIpDataReady       writes recordings to disk    → StimulatorClient + 2 out-bufs    │
+   │      ▼ (QByteArray)                                                                              │
+   │  WebSocketServer::broadcastData ──────────────────────────────────► sendBinaryMessage          │
+   │                                                                                                 │
+   │  JS ─► selectSource ─► WebSocketServer::onSourceSelection (registers source obj on QWebChannel) │
+   │  JS ─► setPlaying  ──► WebSocketServer::setPlaying (connect/disconnect broadcast signal)        │
+   │  JS ◄─ QWebChannel RPC ◄─ WebSocketTransport (per client)  ⇄  NeuropixelsSource Q_INVOKABLEs     │
+   └─────────────────────────────────────────────────────────────────────────────────────────────────┘
+                 ▲  ws://localhost:1234 (data + commands + QWebChannel)        ▲ http://localhost:8234 (static UI)
+                 │                                                             │
+   ┌─────────────┴─────────────────── JS FRONTEND (external browser) ─────────┴───────────────────────┐
+   │  NetworkClient  — socket, binary parse, QWebChannel transport, deviceReady→bind                  │
+   │  DisplayProcessor frames ─► NetworkClient ─► ChartColumn.gl (GlColumnRenderer, WebGL2)            │
+   │  ImroManager    — probe-map editor on ProbeMap (canvas 2D), drives window.activeNpxModule         │
+   │  main.js        — AppController: UI wiring, source/play/record/columns/window                     │
+   └───────────────────────────────────────────────────────────────────────────────────────────────────┘
+</code></pre>
+<p><strong>Key C++ files:</strong> <code>src/main.cpp</code>, <code>src/core/MainController.{hpp,cpp}</code>,
+<code>src/core/SourceManager.{hpp,cpp}</code>, <code>src/core/ProcessorManager.{hpp,cpp}</code>,
+<code>src/core/WebSocketServer.{hpp,cpp}</code>, <code>src/core/WebSocketTransport.{hpp,cpp}</code>,
+<code>src/core/Registry.{hpp,cpp}</code>, <code>src/core/ObjectFactory.hpp</code>, <code>src/core/CircularBuffer.hpp</code>,
+<code>src/core/Utils.cpp</code> (<code>registerBuiltInTypes</code>), the <code>IData/IDataSource/IProcessor/IDataInterpreter</code>
+interfaces, <code>src/modules/neuropixels/{NpInterface,DisplayProcessor,SimDataSource}.{hpp,cpp}</code>,
+<code>src/modules/recording/RecordProcessor.{hpp,cpp}</code>, <code>src/modules/swr/RippleDetector.{hpp,cpp}</code>.</p>
+<p><strong>Key JS files:</strong> <code>webinterface/{NetworkClient,ImroManager,main,DataStore,Config,ChartColumn}.js</code>,
+<code>webinterface/index.html</code>.</p>
+<hr />
+<h2 id="3-process-hosting-model">3. Process &amp; Hosting Model<a class="headerlink" href="#3-process-hosting-model" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th>Detail</th>
+<th>Citation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>App object</td>
+<td><code>QApplication</code> (Widgets + Gui linked) — enables native dialogs</td>
+<td><code>main.cpp:201</code>; root <code>CMakeLists.txt:100-110</code></td>
+</tr>
+<tr>
+<td>UI delivery</td>
+<td>Static HTTP server on <strong>:8234</strong> serves <code>../webinterface</code></td>
+<td><code>main.cpp:40-80, 251-253</code></td>
+</tr>
+<tr>
+<td>UI launch</td>
+<td><code>QDesktopServices::openUrl("http://localhost:8234")</code> → <strong>system browser</strong></td>
+<td><code>main.cpp:256-269</code></td>
+</tr>
+<tr>
+<td>Backchannel</td>
+<td><code>WebSocketServer</code> on <strong>:1234</strong>, <code>QHostAddress::Any</code>, <code>NonSecureMode</code></td>
+<td><code>main.cpp:246-249</code>, <code>WebSocketServer.cpp:34</code></td>
+</tr>
+<tr>
+<td>HW gating</td>
+<td><code>NPX_HW_ENABLED</code> (Windows) compiles <code>NpInterface.cpp</code>; else NPX stubs</td>
+<td>root <code>CMakeLists.txt:126,156-162</code>; <code>neuropixels/CMakeLists.txt:13-21</code></td>
+</tr>
+<tr>
+<td>Console</td>
+<td>A console is attached for <code>qDebug()</code> logging (also tee'd to <code>output.log</code>)</td>
+<td><code>main.cpp:87-102,152-176</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Implication:</strong> browser dialogs (<code>alert</code>, <code>prompt</code>) run in the user's browser, but any file
+the backend writes lands on the <strong>machine running SpikesPeak</strong>. Native <code>QFileDialog</code> /
+<code>QMessageBox</code> are valid and idiomatic here and pop on that same machine's desktop.</p>
+<hr />
+<h2 id="4-module-system-factory-registry-config">4. Module System (factory + registry + config)<a class="headerlink" href="#4-module-system-factory-registry-config" title="Permanent link">#</a></h2>
+<p>Everything pluggable is a named, registered object created lazily by a singleton factory.</p>
+<ul>
+<li><strong>Factory</strong> (<code>ObjectFactory&lt;tBase&gt;</code>, <code>ObjectFactory.hpp</code>): one singleton per base type
+  (<code>IData</code>, <code>IDataSource</code>, <code>IProcessor</code>, <code>IDataInterpreter</code>). <code>registerClass&lt;T&gt;(name, args…)</code>
+  stores a creator lambda (ctor args captured by value); <code>createObjectByName</code> <code>new</code>s on first
+  request; duplicate names are ignored with a warning.</li>
+<li><strong>Registration</strong> (<code>Utils.cpp registerBuiltInTypes()</code>, called from <code>main.cpp:193</code>): the single
+  place every built-in module is declared — <code>registerDataSource&lt;T&gt;("source.x", ctorArgs)</code>,
+  <code>registerData&lt;CircularBuffer&lt;D,A&gt;&gt;("data.x")</code>, <code>registerProcessor&lt;T&gt;("proc.x")</code>,
+  <code>registerDataInterpreter&lt;T&gt;("interp.x")</code>. HW sources are wrapped in <code>#ifdef NPX_HW_ENABLED</code> /
+  <code>NIDAQ_HW_ENABLED</code>.</li>
+<li><strong>Registries</strong> (<code>Registry.hpp/.cpp</code>): <code>getSourceRegistry()/getProcessorRegistry()/
+  getDataRegistry()/getDataInterpreterRegistry()</code>. <code>getXByName()</code> lazily constructs + caches;
+  <code>clearRegistry()</code> tears down on disconnect.</li>
+<li><strong>Config</strong> (<code>config/*.yaml</code>, parsed by <code>parseAllConfigs</code>, <code>main.cpp:104-127,218-219</code>): a
+  profile is <code>name:</code> (the UI dropdown label) + <code>sources:</code> + <code>processors:</code>. Each child has a
+  <code>name:</code> equal to a <strong>registry name</strong>, plus module-specific keys. Example
+  (<code>config/Npx1Pxi.yaml</code>):</li>
+</ul>
+<p><code>yaml
+  name: "NPX 1.0"
+  sources:
+    - name: "source.npx.pxi"
+      outputs: [ { data: "ap", name: "data.npx.ap" }, { data: "lfp", name: "data.npx.lfp" } ]
+  processors:
+    - name: "proc.npx.display"
+      inputs:  [ { data: "ap", name: "data.npx.ap" }, { data: "lfp", name: "data.npx.lfp" } ]
+    - name: "proc.npx.recorder"
+      recordings:
+        - { data_name: "data.npx.ap",  data_interpreter_name: "interp.npx.ap",  output_filename: "npx_ap_recording" }
+        - { data_name: "data.npx.lfp", data_interpreter_name: "interp.npx.lfp", output_filename: "npx_lfp_recording" }</code></p>
+<hr />
+<h2 id="5-data-pipeline-threading-model">5. Data-Pipeline Threading Model<a class="headerlink" href="#5-data-pipeline-threading-model" title="Permanent link">#</a></h2>
+<p>One producer thread → N independent consumer threads, orchestrated by <code>MainController</code> →
+<code>SourceManager</code> (sources) + <code>ProcessorManager</code> (processors).</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Thread</th>
+<th>Cadence</th>
+<th>Start / Stop</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HW read (<code>Npx1Probe</code>/<code>Npx2MSProbe</code>)</td>
+<td><code>NpxWorkerThread</code> (<code>HighPriority</code>)</td>
+<td><code>QTimer</code> @ <strong>1 ms</strong> <code>PreciseTimer</code></td>
+<td><code>QThread::started</code>→<code>slStartAcquiringData</code>; <code>sigNpsRequestDaqStop</code>→<code>slStopAcquiringData</code>; <code>stopAcq()</code> does <code>quit()</code>+<code>wait(2000)</code></td>
+</tr>
+<tr>
+<td>Display decimation</td>
+<td>per-processor thread</td>
+<td><code>QTimer</code> @ <strong>~20 ms</strong> (config)</td>
+<td><code>ProcessorManager::setupProcThread</code>: <code>started</code>→<code>slIpStartProcessor</code>; <code>sigPmStopProcessing</code>→<code>slIpStopProcessor</code></td>
+</tr>
+<tr>
+<td>Disk recording</td>
+<td>per-processor thread</td>
+<td><code>QTimer</code> @ <strong>50 ms</strong></td>
+<td>same; final flush on stop</td>
+</tr>
+<tr>
+<td>Ripple detection</td>
+<td>per-processor thread</td>
+<td><strong>blocking semaphore loop</strong> (no QTimer)</td>
+<td><code>started</code>→<code>slIpStartProcessor</code>→<code>doRippleDetectionLoop</code>; <code>mQuitProcessing</code> atomic exits loop</td>
+</tr>
+<tr>
+<td>WS broadcast</td>
+<td><strong>main thread</strong></td>
+<td>per Display batch</td>
+<td><code>sigIpDataReady</code>→<code>broadcastData</code> via <code>Qt::AutoConnection</code> (queued) (<code>WebSocketServer.cpp:122-149</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Start ordering (important).</strong> On play, <code>MainController::handlePlayRequest</code>
+(<code>MainController.cpp:124-145</code>) wires <code>ProcessorManager::sigPmProcessorsStarted</code> →
+<code>SourceManager::slSmStartSources</code>, then calls <code>startProcessors()</code>. So <strong>all consumers start and
+report <code>sigIpStarted</code> before the producer (<code>startAcq</code>) ever commits</strong> — a consumer is always
+registered before the producer notifies it. A new sink <strong>must</strong> emit <code>sigIpStarted(name)</code> when
+ready, or play never proceeds (the manager waits for every processor, <code>ProcessorManager.cpp:132-142</code>).</p>
+<p><strong>Start ordering is now bounded and confirmed (issue #11, 2026-08-20).</strong> Three changes to the same
+mechanism, because "waits for every processor" used to mean <em>waits forever</em>:</p>
+<ul>
+<li><strong>Readiness is keyed on the sender object, not the reported name.</strong> Processors emit hardcoded
+  labels (<code>"display"</code>, <code>"recorder"</code>, <code>"ripple"</code>) unrelated to their registry key, and every
+  <code>RecordProcessor</code> emits <code>"recorder"</code> -- so a dual-recorder profile reports one name for two
+  processors.</li>
+<li><strong>An 8 s watchdog</strong> (<code>ProcessorManager::kStartupTimeoutMs</code>) names whoever never checked in, stops
+  the pipeline and reports it, instead of hanging silently. A cycle declared failed stays failed.</li>
+<li><strong>Acquisition state is announced only when confirmed.</strong> <code>handlePlayRequest</code> returning <code>true</code> means
+  the request was accepted, not that anything is running;
+  <code>MainController::sigMcAcquisitionStateChanged</code> is the single source of truth for clients.</li>
+</ul>
+<p>Every processor's <code>sigIpErrorOccurred</code> is also relayed generically to the GUI, tagged with its
+registry key. Full detail, including why a separate error thread is the wrong shape for this:
+<a href="Fdir.html"><code>Fdir.md</code></a>.</p>
+<p><strong>Thread affinity.</strong> Source and processor <em>objects</em> live in the main thread (created under
+<code>MainController</code>); processors are then <code>moveToThread</code>'d to their own <code>QThread</code>
+(<code>ProcessorManager.cpp:70-104</code>); a HW source additionally moves its <em>worker</em> to <code>NpxWorkerThread</code>.
+The <code>NeuropixelsSource</code> object itself stays on the main GUI thread — which is why its QWebChannel
+<code>Q_INVOKABLE</code>s may safely show modal dialogs (§9).</p>
+<h3 id="51-module-detail-sinks">5.1 Module detail (sinks)<a class="headerlink" href="#51-module-detail-sinks" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>DisplayProcessor</strong> (<code>Npx::DisplayProcessor : IProcessor</code>). Binds streams by registry name
+  into per-stream <code>StreamState</code> (<code>DisplayProcessor.hpp</code>), <strong>polls</strong> <code>getTotalSamplesAdded()</code>
+  (non-blocking; no consumer registration), computes <strong>AVX2 min/max decimation</strong> into time bins,
+  and emits <code>sigIpDataReady(QByteArray)</code> per batch — the only processor wired to the WS broadcast.</li>
+<li><strong>RecordProcessor</strong> (<code>Recording::RecordProcessor : IProcessor</code>). Does not touch CircularBuffers
+  directly; delegates to an <code>IDataInterpreter</code> per <code>recordings:</code> entry (<code>updateReadMarkers()</code>
+  idle, <code>serializeAvailableData()</code> while recording) and writes timestamped files via <code>QFile</code>.
+  Recording toggles via the <code>setRecording(bool)</code> <code>Q_INVOKABLE</code> over QWebChannel (Option A), the same
+  per-module pattern as the NPX source — see <a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a>. (Was
+  binary command id <code>0x1001</code>; migrated 2026-06-25.)</li>
+<li><strong>RippleDetector</strong> (<code>RippleDetector : IProcessor</code>). The real-time DSP path. Registers as a
+  <strong>blocking consumer</strong> of an LFP buffer (<code>addWaitingConsumer</code>), runs a synchronous loop on the
+  consumer semaphore, applies an <strong>IIR ripple-band then envelope filter</strong> (<code>src/core/Filter</code>),
+  maintains a rolling <strong>mean/σ baseline</strong> (<code>DetectionParams</code>, <code>RippleDetector.hpp:28-50</code>),
+  detects <code>envelope &gt; mean + z·σ</code> (default z = 5) outside a lockout, fires a <code>StimulatorClient</code>,
+  and <strong>produces</strong> two of its own output buffers (decimated ripple-band + envelope) as a new
+  <code>addProducer</code>.</li>
+</ul>
+<hr />
+<h2 id="6-circularbuffer-fan-out-srccorecircularbufferhpp">6. CircularBuffer Fan-Out (<code>src/core/CircularBuffer.hpp</code>)<a class="headerlink" href="#6-circularbuffer-fan-out-srccorecircularbufferhpp" title="Permanent link">#</a></h2>
+<p><code>CircularBuffer&lt;tData, tAux&gt; : IData</code> — <strong>single producer, multi-consumer</strong> ring, the mechanism
+that lets Display/Record/Ripple read the same stream concurrently.</p>
+<ul>
+<li><strong>Producer:</strong> <code>setCapacity(numSamples, numDims)</code>; <code>addProducer(int32&amp; id)</code> (currently caps at
+  ONE producer — <code>commitWrite</code> ignores <code>producerId &gt; 0</code>); write into
+  <code>getDataStart()</code>/<code>getAuxDataStart()</code> at <code>index % sampleCapacity()</code>; publish with
+  <code>commitWrite(id, n)</code> → bumps <code>mSamplesWritten</code> and <code>release(n)</code>s <strong>every</strong> consumer semaphore.</li>
+<li><strong>Polling consumer</strong> (Display, Record): <code>getTotalSamplesAdded(atomic&amp;)</code> → <code>available = total −
+  myReadInd</code>; read <code>constDataAt(i)</code> / <code>constAuxDataAt(i)</code>; never blocks.</li>
+<li><strong>Blocking consumer</strong> (Ripple): <code>addWaitingConsumer(int32&amp; id)</code> (allocates a per-consumer
+  <code>QSemaphore</code>); <code>waitForAvailable(id, ms, &amp;got)</code> blocks until the producer commits.</li>
+<li>Each consumer keeps an <strong>independent read index</strong>, so consumers never disturb each other.</li>
+</ul>
+<p>(NP1's <code>Npx1Probe</code> demuxes hardware superframes — 12 AP + 1 LFP each — into <code>data.npx.ap</code> and
+<code>data.npx.lfp</code> and commits both per tick.)</p>
+<hr />
+<h2 id="7-qwebchannel-surface-the-per-module-command-decision">7. QWebChannel Surface &amp; the Per-Module Command Decision<a class="headerlink" href="#7-qwebchannel-surface-the-per-module-command-decision" title="Permanent link">#</a></h2>
+<h3 id="71-catalog-q_invokable-on-neuropixelssource">7.1 Catalog — <code>Q_INVOKABLE</code> on <code>NeuropixelsSource</code><a class="headerlink" href="#71-catalog-q_invokable-on-neuropixelssource" title="Permanent link">#</a></h3>
+<blockquote>
+<p>Since 2026-06-25 <code>RecordProcessor</code> also exposes an invokable (<code>setRecording(bool)</code>), so this is no
+longer the only invokable class. See <a href="ModuleCommunication.html"><code>ModuleCommunication.md</code></a> for the full
+per-module command standard and the recorder example.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Method</th>
+<th>const</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>QString getImroAsJson()</code></td>
+<td>✅</td>
+<td>Serialize <code>mCurrentImro</code> → JSON for the UI</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>bool updateImroFromJson(const QString&amp;)</code></td>
+<td>❌</td>
+<td>Validate + atomically replace <code>mCurrentImro</code> (range-checked)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>bool applyMapToHardware()</code></td>
+<td>❌</td>
+<td>Push <code>mCurrentImro</code> to the API + <code>np_writeProbeConfiguration</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>QString getImroAsImroText()</code></td>
+<td>✅</td>
+<td>Serialize <code>mCurrentImro</code> to <code>.imro</code> <strong>text</strong> for the browser to download client-side (§9) — the UI Save path</td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>bool loadImroFromText(const QString&amp;)</code></td>
+<td>❌</td>
+<td>Parse .imro file <em>contents</em> (read client-side by the browser) into <code>mCurrentImro</code>; atomic + NP1-validated. UI re-fetches + re-renders; Apply pushes to HW</td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>bool saveImroToFile(const QString&amp; filepath)</code></td>
+<td>✅</td>
+<td><strong>Server-side</strong> write to an explicit path (programmatic/scripts/configured saves). The UI does <em>not</em> use it</td>
+</tr>
+</tbody>
+</table>
+<p>Declared in <code>NpInterface.hpp</code> ("Frontend / WebChannel Hooks"). No <code>Q_PROPERTY</code> is exposed. Only
+<code>NeuropixelsSource</code> (registry <code>source.npx.pxi</code>, <strong>real hardware</strong>) exposes invokables, so the
+IMRO panel is inert for <code>Simulated Data</code> etc.</p>
+<h3 id="72-registration-discovery">7.2 Registration &amp; discovery<a class="headerlink" href="#72-registration-discovery" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>Per-source, dynamic.</strong> On <code>selectSource</code>, <code>onSourceSelection</code> resolves the config's child
+  registry name(s) and calls <code>mWebChannel-&gt;registerObject(actualSourceName, sourceObj)</code>
+  (<code>WebSocketServer.cpp:63-77</code>); <code>Disconnect</code> deregisters (<code>:195-208</code>).</li>
+<li><strong>JS binds by substring.</strong> After <code>deviceReady === true</code> <strong>and</strong> the source name contains
+  <code>"NPX"</code>, <code>NetworkClient</code> builds a <code>QWebChannel</code> and binds
+  <code>window.activeNpxModule = channel.objects[key.includes("npx")]</code>, then calls
+  <code>initProbeMap(activeNpxModule)</code> (<code>NetworkClient.js:385-417</code>).</li>
+</ul>
+<h3 id="73-frontend-cross-reference-via-the-qwebchannel-proxy">7.3 Frontend cross-reference (via the QWebChannel proxy)<a class="headerlink" href="#73-frontend-cross-reference-via-the-qwebchannel-proxy" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>JS call site (<code>ImroManager.js</code>)</th>
+<th>Targets</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npxBackend.getImroAsJson(cb)</code></td>
+<td>#1</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npxBackend.updateImroFromJson(json, cb)</code> (click/drag/bank edits)</td>
+<td>#2</td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>npxBackend.applyMapToHardware(cb)</code> (Apply Map)</td>
+<td>#3</td>
+<td>✅ migrated off legacy <code>socket.send</code></td>
+</tr>
+<tr>
+<td><code>npxBackend.getImroAsImroText(cb)</code> (Save .imro)</td>
+<td>#4</td>
+<td>✅ client-side download (§9)</td>
+</tr>
+<tr>
+<td><code>npxBackend.loadImroFromText(text, cb)</code> (Load .imro)</td>
+<td>#5</td>
+<td>✅ client-side file read (§7.5)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-architectural-decision-per-module-commands-ride-qwebchannel-option-a">7.4 Architectural decision — per-module commands ride QWebChannel (Option A)<a class="headerlink" href="#74-architectural-decision-per-module-commands-ride-qwebchannel-option-a" title="Permanent link">#</a></h3>
+<p><strong>Decision (2026-06-23): per-source web commands are exposed as <code>Q_INVOKABLE</code> methods over
+QWebChannel.</strong> This is the project standard going forward, because it preserves the
+multi-source/sink architecture cleanly: each source registers <em>its own</em> object under <em>its own</em>
+registry name and exposes <em>its own</em> invokables, so adding a new module (e.g. a camera under
+<code>source.camera.usb</code> with <code>setExposure()</code> / <code>getFrameRate()</code>) needs <strong>no edit to any central
+command router</strong> — registration + the existing <code>registerObject</code> loop do it.</p>
+<p>Consequently the legacy JSON command hook was removed from <code>NeuropixelsSource</code>: the
+<code>handleWebCommand</code> override (the <code>applyMap</code> / <code>saveImro</code> / <code>updateImro</code> branches) <strong>duplicated</strong>
+the invokables <strong>and was unreachable</strong> — <code>WebSocketServer::onTextMessageReceived</code>
+(<code>WebSocketServer.cpp:187-231</code>) only routes to <code>handleWebCommand</code> in its <code>else</code> branch (messages
+<strong>without</strong> a <code>"command"</code> field), while the override early-returned <strong>unless</strong> a <code>"command"</code>
+field was present. Mutually exclusive ⇒ dead code. It is gone; the four invokables are the single
+path.</p>
+<p><strong>The generic hook still exists</strong> as <code>IDataSource::handleWebCommand</code> (a no-op default,
+<code>IDataSource.hpp:22-24</code>), and <code>WebSocketServer</code> still calls it for <code>"command"</code>-less messages, so a
+future module that wants a <em>fire-and-forget JSON command bus</em> can override it — but that path has
+the routing gap above and would need it fixed first (forward unknown <code>command</code> values to the
+active source). Prefer <code>Q_INVOKABLE</code> for anything needing a return value; see
+<a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a> §"Per-source web commands".</p>
+<h3 id="75-file-io-convention-who-writes-the-file-browser-vs-backend">7.5 File I/O convention — who writes the file, browser vs backend<a class="headerlink" href="#75-file-io-convention-who-writes-the-file-browser-vs-backend" title="Permanent link">#</a></h3>
+<p>The external-browser model splits file I/O two ways. <strong>The deciding question: who produces the bytes,
+and how much / how continuously?</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>Browser-written</strong> (client-side)</th>
+<th><strong>Backend-written</strong> (server-side)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Use for</strong></td>
+<td>small, one-shot, config-shaped data</td>
+<td>large, continuous, real-time data streams</td>
+</tr>
+<tr>
+<td><strong>Examples</strong></td>
+<td><code>.imro</code> channel maps (a few KB of text)</td>
+<td>recordings (AP ≈ MB/s, gigabytes)</td>
+</tr>
+<tr>
+<td><strong>Who writes</strong></td>
+<td>the <strong>browser</strong>, via the File System Access API <code>showSaveFilePicker</code> (or a <code>Blob</code> + <code>&lt;a download&gt;</code> fallback)</td>
+<td>the <strong>backend</strong>, <code>QFile</code> straight to disk on the SpikesPeak machine</td>
+</tr>
+<tr>
+<td><strong>Path</strong></td>
+<td>browser picks + writes; the backend never learns a path (the API deliberately hides absolute paths)</td>
+<td>the backend needs a <strong>real path</strong> on its own machine</td>
+</tr>
+<tr>
+<td><strong>Picker</strong></td>
+<td>the browser's own Save-As picker</td>
+<td>a <strong>native Qt dialog on the backend</strong> (see below)</td>
+</tr>
+<tr>
+<td><strong>Reference</strong></td>
+<td><code>getImroAsImroText()</code> ⇄ <code>ImroManager.js</code> Save</td>
+<td><code>RecordProcessor::setRecording(…, dir, name)</code> ⇄ record modal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why the divergence:</strong> a <code>.imro</code> map is a tiny string the C++ side produces once and hands to the
+browser to save wherever the user likes — perfect for the browser's picker, no backend path involved.
+A <strong>recording</strong> is the opposite: the backend generates it continuously at full rate and must write it
+directly to disk (routing gigabytes through the browser to write client-side would be wasteful and
+<strong>unreliable</strong> — a throttled/backgrounded tab would drop samples). So recording needs a real backend
+path, which a browser picker <strong>cannot</strong> provide (the File System Access API exposes a folder's <em>name</em>
+but never its absolute path).</p>
+<ul>
+<li><strong>Reading a file → client-side.</strong> <code>&lt;input type="file"&gt;</code> + <code>FileReader</code> → the file <strong>text</strong> to a
+  synchronous C++ <code>Q_INVOKABLE</code> parser (commit <strong>atomically</strong>: parse into locals → validate → assign).
+  Reference: <code>loadImroFromText()</code> ⇄ <code>ImroManager.js</code> Load.</li>
+<li><strong>Writing small/config files → client-side.</strong> The backend returns text from a <code>Q_INVOKABLE</code>; the
+  browser writes it (picker/download). Reference: <code>getImroAsImroText()</code> ⇄ Save.</li>
+<li><strong>Writing large/continuous data → backend, with a native folder picker.</strong> The recorder writes to a
+  directory the user chose. The <strong>Browse…</strong> button in the record modal sends a <code>pickDirectory</code> command
+  (over id <code>0x1000</code>); <code>WebSocketServer</code> opens <code>QFileDialog::getExistingDirectory</code> and returns the path
+  in a <code>directoryPicked</code> event. Because this backend is a <strong>windowless</strong> server, the dialog is opened
+  the <strong>safe</strong> way — <strong>deferred</strong> (<code>QTimer::singleShot(0)</code>, so its modal event loop never re-enters the
+  WebSocket/QWebChannel machinery), forced <code>DontUseNativeDialog</code>, relying on <code>setQuitOnLastWindowClosed(false)</code>.
+  (A modal dialog opened <em>synchronously</em> inside a <code>Q_INVOKABLE</code> crashed and exited the app — §9; that is
+  why config files went client-side and why the recording picker uses the deferred pattern.) The dialog
+  appears on the machine running SpikesPeak (the localhost setup); a typed path also works.</li>
+</ul>
+<p><strong>Rule of thumb:</strong> a <code>Q_INVOKABLE</code> must return promptly. Anything that blocks or spins an event
+loop (modal dialogs, long hardware ops) is deferred or moved off the dispatch.</p>
+<hr />
+<h2 id="8-frontend-state-rendering-summary">8. Frontend State &amp; Rendering (summary)<a class="headerlink" href="#8-frontend-state-rendering-summary" title="Permanent link">#</a></h2>
+<ul>
+<li><code>main.js</code> <code>AppController</code> owns UI wiring + the <code>NetworkClient</code>; columns/window/play/record.</li>
+<li>Live waveforms: <code>NetworkClient</code> parses and bakes y, then hands each batch to <code>ChartColumn.gl</code> — a
+  <code>GlColumnRenderer</code> (WebGL2) per column in <code>#view-data</code>, which holds the only copy of the samples.
+  <code>DataStore</code> keeps per-channel <em>display state</em> (offsets, zoom, color), not samples.</li>
+<li>Probe map: <code>ImroManager.initProbeMap(npxBackend)</code> builds a canvas-2D <code>ProbeMap</code> of probe
+  geometry in <code>#view-map</code>, fetches IMRO via <code>getImroAsJson</code>, supports <strong>click-select / free-form drag /
+  bank presets</strong> (a drag assigns exactly the electrodes it covers and channels outside the run keep
+  what they had; the Bank 0/1/2 buttons still fill all 384 at one depth; channel = electrode % 384,
+  bank = electrode / 384; reserved channel 191 drawn amber) that push back via
+  <code>updateImroFromJson</code>, and <strong>Apply / Save / Load</strong> via the invokables above (Load reads the file
+  client-side — §7.5).</li>
+<li>The probe-map ↔ live-data tab bar (<code>#main-tabs</code>) is hidden on every source change and revealed by
+  <code>initProbeMap</code> when a probe map actually exists — the source's <em>name</em> is never consulted (it used to
+  test <code>sourceName.includes("NPX")</code>, which the hardware profiles <code>OneBox</code>/<code>PXIe</code>/<code>Neuropixels</code> all
+  fail and every simulated profile still passes). <code>selectMainTab('map'|'data')</code> owns both the visible
+  panel and the highlighted tab: connecting a probe opens the map, confirmed streaming switches to
+  Live Data, and pausing does not switch back.</li>
+<li>A toolbar <strong>status display</strong> (<code>#status-display</code>, right of Record) shows human-readable lifecycle +
+  IMRO events (connecting, probe found, apply/load/save, play/record) via <code>window.guiStatus</code> →
+  <code>AppController.setStatus</code>; everything also mirrors to the console (<code>[STATUS] …</code>).</li>
+</ul>
+<hr />
+<h2 id="9-save-pipeline-getimroasimrotext-2026-06-24">9. Save Pipeline — <code>getImroAsImroText</code> (2026-06-24)<a class="headerlink" href="#9-save-pipeline-getimroasimrotext-2026-06-24" title="Permanent link">#</a></h2>
+<p><strong>History (three iterations):</strong>
+1. Save "did nothing" — browser <code>prompt()</code> blind-typing a server path + silent failure.
+2. A C++-driven <code>QFileDialog</code> opened <strong>synchronously</strong> in the <code>Q_INVOKABLE</code> → its nested event loop
+   <strong>re-entered</strong> the non-re-entrant QWebChannel machinery → <strong>crash</strong> ("saving shuts off").
+3. Deferring the dialog (<code>QTimer::singleShot(0)</code>) fixed the crash, but the dialog was the windowless
+   server's <strong>only</strong> window, so closing it tripped <code>quitOnLastWindowClosed</code> and <strong>exited the app</strong>.</p>
+<p><strong>Fix (current): Save is fully client-side.</strong> <code>getImroAsImroText()</code> (a <code>Q_INVOKABLE</code>) returns the
+<code>.imro</code> <strong>text</strong>; <code>ImroManager.js</code> saves it via the browser's native <strong>Save-As picker</strong>
+(<code>showSaveFilePicker</code>, with a <code>Blob</code>-download fallback) so the user chooses folder + filename. No
+server dialog, no nested loop, nothing to close — symmetric with the client-side Load (§7.5). Defensively,
+<code>main.cpp</code> now also <code>setQuitOnLastWindowClosed(false)</code> so no future transient dialog can exit the
+app. <code>saveImroToFile(path)</code> survives as a <strong>server-side</strong> writer for explicit paths
+(programmatic/scripts), unused by the UI; both share <code>serializeImro()</code>.</p>
+<p><strong>Lesson:</strong> in a windowless server with an external-browser UI, keep UI file I/O <strong>in the browser</strong>
+(upload to read, download to write) — never open a modal dialog inside a <code>Q_INVOKABLE</code>.</p>
+<hr />
+<h2 id="10-prior-review-findings-remediation-status">10. Prior-Review Findings — Remediation Status<a class="headerlink" href="#10-prior-review-findings-remediation-status" title="Permanent link">#</a></h2>
+<p>All flagged in the 2026-06-22 static review; addressed in the current working tree (cited by
+symbol, since <code>NpInterface.cpp</code> line numbers drift):</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Issue</th>
+<th>Status</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1</td>
+<td>Destructor didn't stop worker while streaming</td>
+<td><strong>Fixed</strong></td>
+<td><code>~NeuropixelsSource</code> <code>eStreaming</code>→<code>stopAcq()</code> then <code>closeDataSource()</code>; <code>stopAcq()</code> <code>quit()</code>+<code>wait(2000)</code></td>
+</tr>
+<tr>
+<td>H2</td>
+<td>Uninitialized member pointers</td>
+<td><strong>Fixed</strong></td>
+<td>ctor init list nulls <code>mRawData/mApData/mLfpData/mNpxProbeWorker/mWorkerThread</code></td>
+</tr>
+<tr>
+<td>M1</td>
+<td>Basestation leaked on partial init failure</td>
+<td><strong>Fixed</strong></td>
+<td><code>closeDataSource()</code> on every post-<code>initBasestation</code> failure path in <code>initDataSource</code></td>
+</tr>
+<tr>
+<td>M2</td>
+<td><code>QTimer</code> nulled without delete</td>
+<td><strong>Fixed</strong></td>
+<td><code>mTimer-&gt;deleteLater()</code> in both probe <code>slStopAcquiringData</code></td>
+</tr>
+<tr>
+<td>M3</td>
+<td><code>mProducerId</code> never assigned</td>
+<td><strong>Resolved</strong></td>
+<td><code>addProducer(id&amp;)</code> writes it back; documented inline</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>UI IMRO reached HW unvalidated</td>
+<td><strong>Fixed</strong></td>
+<td><code>updateImroFromJson</code> range-checks channel/bank/shank; commits atomically</td>
+</tr>
+<tr>
+<td>L1</td>
+<td>HW return codes unchecked</td>
+<td><strong>Fixed</strong></td>
+<td><code>applyImroToHardware</code> checks each <code>np_*</code> result</td>
+</tr>
+<tr>
+<td>L2</td>
+<td>~144 MB unused static array</td>
+<td><strong>Fixed</strong></td>
+<td>commented out with rationale (<code>NpInterface.cpp</code> top)</td>
+</tr>
+<tr>
+<td>L3</td>
+<td>Shared function-local <code>static</code> superframes</td>
+<td><strong>Fixed</strong></td>
+<td>per-instance <code>mSuperframes</code> member</td>
+</tr>
+<tr>
+<td>L4</td>
+<td>SingleShank save gap + uninit <code>ImroChannel</code></td>
+<td><strong>Fixed</strong></td>
+<td>inline initializers; SS branch in <code>saveImroToFile</code>/<code>parseImroFile</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="remaining-latent-not-regressions">Remaining / latent (not regressions)<a class="headerlink" href="#remaining-latent-not-regressions" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>NUM_CHANNELS</code> (384) hard-coded</strong> on both sides of the binary protocol (not negotiated).</li>
+<li><strong><code>handleWebCommand</code> routing gap</strong> (§7.4) — only matters if a future module revives the JSON
+  command bus; the IMRO path no longer uses it.</li>
+<li><strong><code>saveImroToFile</code> serializes using <code>mProbeType</code></strong> (hardware type) not <code>mCurrentImro.probeType</code>
+  — identical for a connected probe; unify if foreign maps can ever be loaded.</li>
+<li><strong>CircularBuffer is single-producer</strong> (<code>addProducer</code> caps at 1, <code>commitWrite</code> ignores id &gt; 0).
+  Multi-producer is a TODO in the source.</li>
+</ul>
+<hr />
+<h2 id="11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21">11. Completion pass — closed loop, NP2, NI-DAQ, latency (2026-06-23 → 2026-07-21)<a class="headerlink" href="#11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21" title="Permanent link">#</a></h2>
+<p>Everything in §1–§10 still holds. This section completes the review with what was built on top of that
+core and validated on real hardware. Deep dives are cross-linked; this is the architectural map.</p>
+<h3 id="111-a-second-probe-neuropixels-20-multishank">11.1 A second probe — Neuropixels 2.0 multishank<a class="headerlink" href="#111-a-second-probe-neuropixels-20-multishank" title="Permanent link">#</a></h3>
+<p><code>Npx2MSProbe</code> (<code>src/modules/neuropixels/NpInterface.{hpp,cpp}</code>) is the NP2 sibling of <code>Npx1Probe</code>: same
+worker-thread + <code>QTimer</code> acquisition model (§5), producing a single 30 kHz wideband <code>data.npx.raw</code> (NP1
+demuxes into <code>ap</code>+<code>lfp</code>; NP2 has one raw band). <code>NeuropixelsSource::startAcq</code> branches on <code>mProbeType</code>
+to construct one or the other. Geometry/mapping and what is wired vs stubbed: <a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a>.
+The probe-agnostic channel map is published through <code>ChannelMapService</code> (<code>src/core/IChannelMap.hpp</code>) so a
+consumer resolves electrodes → read-out channels against the <em>real</em> applied map, not a Bank-0 identity.</p>
+<h3 id="112-ripple-detection-matured-into-a-closed-loop-dsp">11.2 Ripple detection matured into a closed-loop DSP<a class="headerlink" href="#112-ripple-detection-matured-into-a-closed-loop-dsp" title="Permanent link">#</a></h3>
+<p><code>RippleDetector</code> (§5.1) is now a full sharp-wave-ripple detector, not a stub: a <strong>per-probe input path</strong>
+(NP1 reads native <code>data.npx.lfp</code> directly, decimation 1; NP2 derives <code>data.lfp</code> via a <code>proc.lfp</code> Bessel
+low-pass then decimates ÷12 — both land at 2.5 kHz), a ripple-band + envelope FIR chain, a per-channel
+mean+z·σ baseline, and a <strong>multi-channel quorum / coincidence / lockout</strong> state machine. Channels and all
+detection parameters are <strong>strictly GUI/WS-driven</strong> (removed from YAML); the module starts with 0 channels
+and waits. On record start it writes a <strong>ripple sidecar</strong> (<code>slWriteRippleSidecar</code>, <code>Q_INVOKABLE</code>) capturing
+the resolved channels + trained thresholds. Algorithm + the per-probe rationale: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>;
+GUI: <a href="RippleGui.html"><code>RippleGui.md</code></a>; threading: <a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a>.</p>
+<h3 id="113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq">11.3 The stimulation path — detect → fire → Pi → AM 2300 → NI-DAQ<a class="headerlink" href="#113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq" title="Permanent link">#</a></h3>
+<p>On a confirmed quorum detection the detector calls <code>StimulatorClient</code>
+(<code>src/modules/stimulation/StimulatorClient.{hpp,cpp}</code>), which sends a UDP <code>fire</code> datagram (default
+<code>192.168.1.100:8888</code>) to a <strong>Raspberry Pi 3B+</strong> running the pulse generator, which drives an <strong>AM Systems
+2300</strong> to emit a biphasic pulse. The Pi ACKs <code>fired</code> off its real-time path; the client stamps send/ACK
+times (<code>mLastFireSendUs</code>/<code>mLastAckUs</code>) and the GUI's STIM LED lights only on a confirmed fire. The
+delivered pulse is captured on <strong>NI-DAQ ai4</strong>, which is how the closed loop is measured (§11.5). Stim
+target is retargetable live (<code>setStimServer</code>); pulse params (phase/gap/freq/train) are GUI-editable. An
+ESP32-S3-ETH firmware twin exists (<code>esp32s3eth_am2300_pulsegenerator/</code>) but the production server is the
+Pi. Bring-up: <code>raspberrypi_pulsegenerator/README.md</code>; closed-loop history: <code>../SpikesPeak_Status.md</code> §21–§30.</p>
+<h3 id="114-ni-daq-as-a-first-class-source">11.4 NI-DAQ as a first-class source<a class="headerlink" href="#114-ni-daq-as-a-first-class-source" title="Permanent link">#</a></h3>
+<p><code>source.nidaq</code> (<code>src/modules/nidaq/NiDaqInterface.*</code>) streams a PXI-6133 (differential only) as
+<code>data.nidaq.raw</code> (analog volts) with a parallel DI/O stream, wired by YAML like any other source (§4). It
+carries the shared ~1 Hz sync TTL on ai0 and the stim pulse on ai4. Its single-reservation failure mode
+and the 2026-07 robustness fixes are in <a href="NiDaq.html"><code>NiDaq.md</code></a>. Recording writes <code>nidaq</code> (<code>ai0..ai7</code>) and
+<code>nidaq_di</code> bands alongside the probe bands.</p>
+<h3 id="115-latency-instrumentation-the-asap-delivery-flag">11.5 Latency instrumentation + the ASAP delivery flag<a class="headerlink" href="#115-latency-instrumentation-the-asap-delivery-flag" title="Permanent link">#</a></h3>
+<p>The detector emits a per-stage <strong><code>rippleLatency</code></strong> WS event after every confirmed stimulus (sample-proc,
+detector-backlog, detect→send, send→ACK). <strong>Closed-loop latency</strong> is defined as <em>threshold crossing → ai4
+pulse</em> and measured offline against the NI-DAQ recording. The one architectural lever found was <strong>delivery
+granularity</strong>: a source's poll cadence sets how stale the oldest sample in a delivered block is. The opt-in
+<strong><code>low_latency: true</code></strong> YAML flag drives <code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency()</code>, dropping the
+acquisition <code>QTimer</code> interval from 1 ms to 0 (poll every event-loop pass). It is <strong>per-source</strong>, so only a
+config that closes a loop pays the CPU cost. Result: sub-millisecond closed loop on both probes. Method:
+<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>; numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
+<h3 id="116-the-commandevent-model-today-and-what-is-still-a-todo">11.6 The command/event model today — and what is still a TODO<a class="headerlink" href="#116-the-commandevent-model-today-and-what-is-still-a-todo" title="Permanent link">#</a></h3>
+<p>§7 chose <strong>Option A</strong>: per-module frontend commands ride <code>Q_INVOKABLE</code> over QWebChannel. That is now the
+standard across <em>multiple</em> modules — the NPX sources and <code>RecordProcessor</code> register their own object
+at select time (<code>WebSocketServer.cpp:280, :361</code>), so adding a module needs no central-router edit. The
+ripple detector is <strong>not</strong> web-registered: its <code>Q_INVOKABLE</code> sidecar methods are queued to it from
+<code>RecordProcessor::setRecording</code>, which is the one point the GUI Record button and the WebSocket
+command share. Alongside it:</p>
+<ul>
+<li><strong>Data-plane "subscription" is config-driven</strong> and is the only subscription initialized from YAML: a
+  processor's <code>configure()</code> reads its <code>input(s):</code> names and registers as a <code>CircularBuffer</code> consumer
+  (<code>addWaitingConsumer</code>/polling); sources <code>addProducer</code>. The YAML wires who-consumes-what by registry name.</li>
+<li><strong>Inter-module events are plain Qt signals/slots</strong> (<code>sigIpStarted/Stopped/DataReady/ErrorOccurred</code>,
+  <code>sigRippleEvent</code>, <code>sigGuiStatus</code>), <code>connect()</code>-ed imperatively in <code>ProcessorManager</code>/<code>WebSocketServer</code> —
+  there is <strong>no event bus</strong>.</li>
+<li>A partial <strong><code>CommandDispatcher</code></strong> singleton (<code>src/core/CommandDispatch.hpp</code>, <code>addSubscriber</code> /
+  <code>executeCallbacks</code>) provides a runtime command pub/sub, but it is <strong>command-only, code-registered, and
+  has exactly one subscriber</strong> (<code>AudioProcessor.cpp:491</code>, hard-coded id <code>0x218</code>); it is being superseded by
+  <code>Q_INVOKABLE</code>.</li>
+</ul>
+<p><strong>So the long-standing goal "processors subscribe to any commands/events, config-initialized +
+runtime-modifiable" (<code>todo.txt:5–6</code>) is NOT yet a unified mechanism.</strong> It is approximated by the four
+paths above (config-wired data plane + Qt signals + <code>Q_INVOKABLE</code> web commands + the single-use
+<code>CommandDispatcher</code>). A true generic event/command bus, declarable in YAML and mutable at runtime, remains
+the open design item.</p>
+<h3 id="117-offline-analysis-the-sync-machinery">11.7 Offline analysis + the sync machinery<a class="headerlink" href="#117-offline-analysis-the-sync-machinery" title="Permanent link">#</a></h3>
+<p>A Python post-processing stack (<code>python/spikespeak_postprocess</code>, <code>ripple_tools/</code>) reconstructs the exact
+detector from a recording and measures the closed loop, warping NI-DAQ time onto the NPX clock via the
+shared sync train. Three clock/sync bugs that silently corrupted latency were found and fixed (a ~10 ppm
+clock-scale ramp and two whole-period off-by-ones); the aligner now pairs robustly at either end and warns
+on a count mismatch. This is the reference for any recorded-timing work: <a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>.</p>
+<h3 id="118-status">11.8 Status<a class="headerlink" href="#118-status" title="Permanent link">#</a></h3>
+<p>Both probes are validated <strong>end-to-end on real hardware in saline</strong> — synthetic ripple → detection →
+Pi/AM 2300 → NI-DAQ ai4 — across the full quorum × delivery matrix (1000 detections/cell), sub-millisecond
+with ASAP. Saline bench validation is <strong>done</strong>; the next milestone is <strong>in-vivo recording under
+anesthesia</strong>, run by the user. Dated log: <code>../SpikesPeak_Status.md</code>.</p>
+<hr />
+<h2 id="12-appendix-files-examined">12. Appendix — Files Examined<a class="headerlink" href="#12-appendix-files-examined" title="Permanent link">#</a></h2>
+<p><strong>C++:</strong> <code>main.cpp</code>, <code>MainController.{hpp,cpp}</code>, <code>SourceManager.{hpp,cpp}</code>,
+<code>ProcessorManager.cpp</code>, <code>WebSocketServer.{hpp,cpp}</code>, <code>WebSocketTransport.cpp</code>, <code>Registry.hpp</code>,
+<code>ObjectFactory.hpp</code>, <code>CircularBuffer.hpp</code>, <code>Utils.cpp</code>, <code>IData.hpp</code>, <code>IDataSource.hpp</code>,
+<code>IProcessor.hpp</code>, <code>IDataInterpreter.hpp</code>, <code>NpInterface.{hpp,cpp}</code>, <code>DisplayProcessor.hpp</code>,
+<code>RecordProcessor.hpp</code>, <code>RippleDetector.hpp</code>, <code>SimDataSource.hpp</code>; build files + <code>config/*.yaml</code>.</p>
+<p><strong>JS/HTML:</strong> <code>NetworkClient.js</code>, <code>ImroManager.js</code>, <code>main.js</code>, <code>index.html</code>.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/SpikesPeak_Architecture_Review.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-executive-summary">1. Executive Summary</a></li>
+<li><a href="#2-component-map">2. Component Map</a></li>
+<li><a href="#3-process-hosting-model">3. Process &amp; Hosting Model</a></li>
+<li><a href="#4-module-system-factory-registry-config">4. Module System (factory + registry + config)</a></li>
+<li><a href="#5-data-pipeline-threading-model">5. Data-Pipeline Threading Model</a><ul>
+<li><a href="#51-module-detail-sinks">5.1 Module detail (sinks)</a></li>
+</ul>
+</li>
+<li><a href="#6-circularbuffer-fan-out-srccorecircularbufferhpp">6. CircularBuffer Fan-Out (src/core/CircularBuffer.hpp)</a></li>
+<li><a href="#7-qwebchannel-surface-the-per-module-command-decision">7. QWebChannel Surface &amp; the Per-Module Command Decision</a><ul>
+<li><a href="#71-catalog-q_invokable-on-neuropixelssource">7.1 Catalog — Q_INVOKABLE on NeuropixelsSource</a></li>
+<li><a href="#72-registration-discovery">7.2 Registration &amp; discovery</a></li>
+<li><a href="#73-frontend-cross-reference-via-the-qwebchannel-proxy">7.3 Frontend cross-reference (via the QWebChannel proxy)</a></li>
+<li><a href="#74-architectural-decision-per-module-commands-ride-qwebchannel-option-a">7.4 Architectural decision — per-module commands ride QWebChannel (Option A)</a></li>
+<li><a href="#75-file-io-convention-who-writes-the-file-browser-vs-backend">7.5 File I/O convention — who writes the file, browser vs backend</a></li>
+</ul>
+</li>
+<li><a href="#8-frontend-state-rendering-summary">8. Frontend State &amp; Rendering (summary)</a></li>
+<li><a href="#9-save-pipeline-getimroasimrotext-2026-06-24">9. Save Pipeline — getImroAsImroText (2026-06-24)</a></li>
+<li><a href="#10-prior-review-findings-remediation-status">10. Prior-Review Findings — Remediation Status</a><ul>
+<li><a href="#remaining-latent-not-regressions">Remaining / latent (not regressions)</a></li>
+</ul>
+</li>
+<li><a href="#11-completion-pass-closed-loop-np2-ni-daq-latency-2026-06-23-2026-07-21">11. Completion pass — closed loop, NP2, NI-DAQ, latency (2026-06-23 → 2026-07-21)</a><ul>
+<li><a href="#111-a-second-probe-neuropixels-20-multishank">11.1 A second probe — Neuropixels 2.0 multishank</a></li>
+<li><a href="#112-ripple-detection-matured-into-a-closed-loop-dsp">11.2 Ripple detection matured into a closed-loop DSP</a></li>
+<li><a href="#113-the-stimulation-path-detect-fire-pi-am-2300-ni-daq">11.3 The stimulation path — detect → fire → Pi → AM 2300 → NI-DAQ</a></li>
+<li><a href="#114-ni-daq-as-a-first-class-source">11.4 NI-DAQ as a first-class source</a></li>
+<li><a href="#115-latency-instrumentation-the-asap-delivery-flag">11.5 Latency instrumentation + the ASAP delivery flag</a></li>
+<li><a href="#116-the-commandevent-model-today-and-what-is-still-a-todo">11.6 The command/event model today — and what is still a TODO</a></li>
+<li><a href="#117-offline-analysis-the-sync-machinery">11.7 Offline analysis + the sync machinery</a></li>
+<li><a href="#118-status">11.8 Status</a></li>
+</ul>
+</li>
+<li><a href="#12-appendix-files-examined">12. Appendix — Files Examined</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

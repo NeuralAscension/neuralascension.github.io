@@ -52,9 +52,10 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
 <a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
@@ -600,6 +601,59 @@ that matches.</p>
 same run: source lag + ring depth + the <em>measured</em> latency. Both describe one session. The measured
 form is the one this page argues for and the one used throughout above.</p>
 </blockquote>
+<h2 id="5b-what-promised-and-measured-actually-are-and-what-neither-of-them-is">5b. What "promised" and "measured" actually are — and what neither of them is<a class="headerlink" href="#5b-what-promised-and-measured-actually-are-and-what-neither-of-them-is" title="Permanent link">#</a></h2>
+<p>Added 2026-08-30, after the 100 ms gap between the two columns was (rightly) called suspicious.</p>
+<h3 id="promised-is-a-compile-time-constant-not-a-device-property">"Promised" is a compile-time constant, not a device property<a class="headerlink" href="#promised-is-a-compile-time-constant-not-a-device-property" title="Permanent link">#</a></h3>
+<p>Every DirectSound row in §2 reads <strong>exactly</strong> 120.00 ms. That is not a coincidence and not a
+device spec:</p>
+<pre><code class="language-c">/* ext/portaudio/src/hostapi/dsound/pa_win_ds.c:159 */
+#define PA_DS_WIN_WDM_DEFAULT_LATENCY_    (.120)
+</code></pre>
+<p><code>PaWinDs_GetMinLatencySeconds()</code> → <code>PaWinDS_GetMinSystemLatencySeconds()</code> returns that constant for
+every Windows 2000+ system, for every DirectSound device, and it becomes
+<code>defaultLowOutputLatency</code> → our <code>suggestedLatency</code> → the stream's reported <code>outputLatency</code>.</p>
+<p><strong>So the device never promised 120 ms and never beat it by 100 ms.</strong> PortAudio's DirectSound backend
+simply does not report a per-device latency. (It is overridable by the <code>PA_MIN_LATENCY_MSEC</code>
+environment variable — which is the tell that it was always a knob, not a measurement.)</p>
+<p>The earlier framing of this table as "advertised is anti-correlated with reality" was wrong in a way
+worth naming: <strong>a constant cannot be anti-correlated with anything.</strong> It carries no information.</p>
+<h3 id="measured-is-better-and-is-still-portaudio-grading-its-own-homework">"Measured" is better, and is still PortAudio grading its own homework<a class="headerlink" href="#measured-is-better-and-is-still-portaudio-grading-its-own-homework" title="Permanent link">#</a></h3>
+<p><code>output_latency_measured_ms</code> is <code>timeInfo-&gt;outputBufferDacTime - timeInfo-&gt;currentTime</code>, read inside
+the callback — how far ahead of <em>now</em> this buffer is scheduled to be heard, on the host API's own
+clock. That is a real per-buffer quantity and it is the right one to rank by.</p>
+<p>But it is <strong>still self-reported</strong>. For DirectSound it derives from the play cursor, whose
+granularity is coarse and which some drivers report optimistically. Nothing in this document has
+ever been checked against a microphone, a scope, or any instrument outside the process.</p>
+<h3 id="what-that-does-and-does-not-invalidate">What that does and does not invalidate<a class="headerlink" href="#what-that-does-and-does-not-invalidate" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>the ranking</strong> between host APIs, and therefore <code>hostApiRank()</code> and the device policy</td>
+<td><strong>stands</strong> — every row is the same self-report mechanism, so the comparison is apples-to-apples</td>
+</tr>
+<tr>
+<td>the <em>relative</em> claim "MME is 5–10× worse than anything else"</td>
+<td><strong>stands</strong>, and it is the robust finding</td>
+</tr>
+<tr>
+<td>the <strong>absolute</strong> <code>raw → ear</code> milliseconds</td>
+<td><strong>unverified.</strong> It is a sum of self-reported terms, and it is quoted as though it were an acoustic measurement</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-actually-settle-it">How to actually settle it<a class="headerlink" href="#how-to-actually-settle-it" title="Permanent link">#</a></h3>
+<p>The same instrument-level method the competitor benchmark needs (#75): play a known impulse through
+the audio path and capture it <strong>externally</strong> — a microphone into a second DAQ channel, or a scope on
+the line output — alongside the trigger that produced it. One afternoon, and it converts the whole
+ear column from self-report into measurement. Until then, quote the ranking, not the absolute
+number.</p>
+<hr />
 <h2 id="5a-still-not-measured">5a. Still not measured<a class="headerlink" href="#5a-still-not-measured" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -666,6 +720,13 @@ is exactly what made the first NP1.0/PXIe row uninterpretable until it was re-ru
 <li><a href="#5-measured-np10-on-pxie-2026-08-28">5. Measured, NP1.0 on PXIe (2026-08-28)</a><ul>
 <li><a href="#what-this-settles">What this settles</a></li>
 <li><a href="#held-the-device-fixed-and-the-ear-is-the-same-to-004-ms">Held the device fixed, and the ear is the same to 0.04 ms</a></li>
+</ul>
+</li>
+<li><a href="#5b-what-promised-and-measured-actually-are-and-what-neither-of-them-is">5b. What "promised" and "measured" actually are — and what neither of them is</a><ul>
+<li><a href="#promised-is-a-compile-time-constant-not-a-device-property">"Promised" is a compile-time constant, not a device property</a></li>
+<li><a href="#measured-is-better-and-is-still-portaudio-grading-its-own-homework">"Measured" is better, and is still PortAudio grading its own homework</a></li>
+<li><a href="#what-that-does-and-does-not-invalidate">What that does and does not invalidate</a></li>
+<li><a href="#how-to-actually-settle-it">How to actually settle it</a></li>
 </ul>
 </li>
 <li><a href="#5a-still-not-measured">5a. Still not measured</a></li>

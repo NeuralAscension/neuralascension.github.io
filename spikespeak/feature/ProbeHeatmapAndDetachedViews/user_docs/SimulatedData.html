@@ -105,13 +105,14 @@
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="../developer_docs/DetachedViews.html">Detached view windows</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -440,9 +441,12 @@ conda run -n sp python scripts\gen_synthetic_ripples.py --probe 1.0 --duration 6
 <p>It emits per-channel bandpassed-noise background + a <strong>depth-weighted</strong> ripple train (strongest mid-probe,
 detectable on every channel). Args: <code>--probe {1.0,2.0}</code>, <code>--duration</code>, <code>--num_channels</code>, <code>--peak</code>, <code>--noise_std</code>,
 <code>--ripple_event_freq</code>, <code>--depth_floor</code>, <code>--ripple_low_freq</code>, <code>--ripple_high_freq</code>, <code>--sampling_rate</code>, <code>--no_compress</code>.
-The <code>--probe 1.0</code> path high-passes the AP band (300 Hz) and low-passes+decimates the LFP band (400 Hz, ÷12) — so
-the 150–250 Hz ripple survives in the LFP band (which the detector reads) and is attenuated in AP, exactly as on
-real hardware. Output <code>.h5</code> files are git-ignored — regenerate as needed, and copy them next to the exe under
+The <code>--probe 1.0</code> path high-passes the AP band (300 Hz, first-order and causal — a model of the probe, not an
+analysis filter) and low-passes+decimates the LFP band (400 Hz, ÷12) — so the 150–250 Hz ripple is strongest in
+the LFP band (which the detector reads) and <strong>also present in AP at about 60%</strong>, as on real hardware. It is
+attenuated there by ~5 dB, not removed; measured on a recording, a burst configured at 100 counts arrives in the
+AP band at 59.5. See <a href="../developer_docs/SimulatedSignals.html"><code>SimulatedSignals.md</code></a> for the model, the
+assumptions behind it, and how to re-verify it. Output <code>.h5</code> files are git-ignored — regenerate as needed, and copy them next to the exe under
 <code>&lt;build&gt;/data/</code> if you run the built tree from elsewhere.</p>
 <p><strong>Conda environment:</strong> the scripts need only <strong>numpy, scipy, h5py</strong> (the dev box's <code>sp</code> env is a broader analysis
 env, but those three are all that's required). Set it up with:</p>

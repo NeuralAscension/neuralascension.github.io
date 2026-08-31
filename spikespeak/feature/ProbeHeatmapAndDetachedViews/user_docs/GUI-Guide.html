@@ -105,13 +105,14 @@
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="../developer_docs/DetachedViews.html">Detached view windows</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -280,8 +281,10 @@ how big the signal is. It shows the same channels the traces do, from the same b
 different way of looking rather than a different thing to look at.</p>
 <p>Set the first dropdown in the column's control strip to <strong>Heatmap</strong>.</p>
 <p><img alt="A heatmap column beside a trace column" src="images/heatmap_column.png" /></p>
-<p><em>Left: 384 channels of the LFP band as a heatmap. The bright vertical stripes are the simulated
-ripple bursts, one every 2 seconds. Right: the same source as traces.</em></p>
+<p><em>Both columns show the </em><em>LFP band</em><em> of the same simulated NP1.0 source. Left: all 384 channels as a
+heatmap — the bright vertical stripes are the ripple bursts, one every 2 seconds. Right: 20 of those
+same channels as traces, in the same top-to-bottom order, so a channel does not move when you switch
+a column between the two views.</em></p>
 <p><strong>What the color means.</strong> Peak-to-peak amplitude in each short slice of time — in <strong>µV</strong> for a probe
 band, <strong>V</strong> for NI-DAQ and the OneBox ADC. The color bar beside the plot is the key, labeled with
 its top, middle and bottom.</p>
@@ -324,7 +327,9 @@ see is a difference that is there. That is the whole reason the list is short: r
 <code>jet</code> — which other probe viewers offer — put visible cyan and yellow <em>edges</em> in the middle of smooth
 data, and they are not color-blind safe. <code>Viridis</code> is the default; <code>Afmhot</code> is the one to reach for
 if the figure has to survive being printed in grayscale.</p>
-<p><img alt="The same data in Inferno" src="images/heatmap_inferno.png" /></p>
+<p><img alt="The same view with the heatmap in Inferno" src="images/heatmap_inferno.png" /></p>
+<p><em>The same two columns, with the heatmap's colormap switched to <code>Inferno</code>. Only the color changed —
+same band, same channels, same order.</em></p>
 <h3 id="all-shanks-at-once-ordered-by-depth">All shanks at once, ordered by depth<a class="headerlink" href="#all-shanks-at-once-ordered-by-depth" title="Permanent link">#</a></h3>
 <p>On a <strong>multishank 2.0 probe</strong> the shank dropdown gains <strong>All shanks · depth</strong>. It puts every channel
 from every shank into one column and sorts them by how far up the shank they sit — shallowest at the

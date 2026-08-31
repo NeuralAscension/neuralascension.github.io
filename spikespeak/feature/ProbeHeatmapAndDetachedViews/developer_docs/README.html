@@ -105,13 +105,14 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="DetachedViews.html">Detached view windows</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -401,6 +402,10 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 <tr>
 <td><a href="RippleDetection.html"><code>RippleDetection.md</code></a></td>
 <td>The SWR detection algorithm + the NP1 vs NP2 detector input paths (native LFP vs derived <code>data.lfp</code>).</td>
+</tr>
+<tr>
+<td><a href="SimulatedSignals.html"><code>SimulatedSignals.md</code></a></td>
+<td><strong>What the fake probes emit in each band.</strong> The NP1.0 300 Hz/500 Hz band-split model, why a 200 Hz ripple appears in the <strong>AP band too</strong> (at ~60% — "attenuates" is not "eliminates"), the 15× disagreement between the live simulator and the play-file generator that this fixed, and how to verify it end-to-end. Also: recording <code>.bin</code> frames carry a <strong>6-byte header</strong> — reshaping without it yields convincing garbage.</td>
 </tr>
 <tr>
 <td><a href="RippleGui.html"><code>RippleGui.md</code></a></td>

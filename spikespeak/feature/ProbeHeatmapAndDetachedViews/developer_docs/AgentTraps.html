@@ -105,13 +105,14 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="DetachedViews.html">Detached view windows</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -144,7 +145,7 @@ chat logs do not survive, do not move between machines, and do not reach the nex
 <p>If you lose time to something not on this list, <strong>add it</strong>. That is the point of the file.</p>
 <blockquote>
 <p>Scope note: this is the "you will misread this" list. Repo rules live in
-<a href="../CLAUDE.html"><code>CLAUDE.md</code></a>, how to test lives in <a href="Testing.html"><code>Testing.md</code></a>, and the map of
+<code>CLAUDE.md</code>, how to test lives in <a href="Testing.html"><code>Testing.md</code></a>, and the map of
 everything is <a href="README.html"><code>README.md</code></a>.</p>
 </blockquote>
 <hr />
@@ -629,7 +630,72 @@ CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
   matching on the label makes one processor's readiness stand in for another's.</li>
 </ul>
 <p>The rule, cheap to apply and expensive to skip: <strong>the GUI renders what the backend confirmed.</strong> If
-you are about to write frontend state from a click handler, stop and make the backend say it instead.</p></article>
+you are about to write frontend state from a click handler, stop and make the backend say it instead.</p>
+<hr />
+<h2 id="7-a-filter-is-not-a-brick-wall">7. A filter is not a brick wall<a class="headerlink" href="#7-a-filter-is-not-a-brick-wall" title="Permanent link">#</a></h2>
+<p><code>generateApSample</code> used to inject <strong>no</strong> ripple into the simulated AP band, on this reasoning:</p>
+<blockquote>
+<p><em>"NO ripple here: on a real 1.0 probe the AP band is high-passed (~300 Hz), which attenuates the
+150-250 Hz ripple band"</em></p>
+</blockquote>
+<p>The premise is correct and the conclusion does not follow. A first-order 300 Hz corner passes
+<strong>0.55</strong> of a 200 Hz signal — <em>attenuates</em> by 5 dB, which is not <em>removes</em>. The simulated AP band was
+therefore silent where a real one plainly shows ripples.</p>
+<p>The play-file generator had the same bug from the opposite direction: it <em>did</em> filter, with
+<code>sosfiltfilt(butter(4, 300))</code>. Zero-phase filtering applies the response <strong>twice</strong>, so a 4th-order
+design rolls off like an 8th-order one and the ripple came out at <strong>0.0375</strong>. Two simulators, both
+claiming "as on real hardware", disagreeing by 15×.</p>
+<p><strong>The general form:</strong> a band edge is a slope, not a wall, and neighbouring-band content survives it
+by a computable amount. Whenever a comment justifies dropping a signal because a filter "removes" or
+"attenuates" it, compute the gain. And <strong><code>filtfilt</code> is an analysis tool, not a hardware model</strong> — it
+doubles the effective order and is acausal, neither of which a probe can do.</p>
+<p>The deeper trap is that both claims lived in <strong>prose</strong>, where nothing could contradict them. The
+model now sits in <code>src/modules/neuropixels/SimBandResponse.hpp</code> and
+<code>scripts/np1_band_model.py</code>, both deliberately free of heavy dependencies so
+they are cheap to test, with a cross-language test comparing them. See
+<a href="SimulatedSignals.html"><code>SimulatedSignals.md</code></a>.</p>
+<hr />
+<h2 id="8-recording-bin-frames-have-a-6-byte-header">8. Recording <code>.bin</code> frames have a 6-byte header<a class="headerlink" href="#8-recording-bin-frames-have-a-6-byte-header" title="Permanent link">#</a></h2>
+<p>A recording is <strong>not</strong> a flat <code>[samples × channels]</code> int16 array. Each frame is</p>
+<pre><code>[6-byte header][num_channels × int16]
+</code></pre>
+<p>and the sidecar's <code>frame.bytes</code> is the stride. <code>np.fromfile(...).reshape(-1, nch)</code> therefore
+<strong>silently produces garbage that looks like data</strong>: full-scale ±32768 rails, std ~7700, and
+peak-finding that returns plausible "bursts" at almost-but-not-quite the right spacing. It cost a
+whole analysis round before the raw min/max were looked at.</p>
+<p>Use the reader in <code>ripple_tools/fair_ab.py</code>:</p>
+<pre><code class="language-python">raw = np.fromfile(path, dtype=np.uint8)
+n   = len(raw) // fb
+ch  = raw[:n*fb].reshape(n, fb)[:, 6:].copy().view(np.int16).reshape(n, nch)
+</code></pre>
+<p><strong>The tell:</strong> simulated counts should be in the hundreds. If a band is railing at ±32768, you are
+reading the header as signal.</p>
+<hr />
+<h2 id="9-revert-the-regression-then-rebuild">9. Revert the regression, then REBUILD<a class="headerlink" href="#9-revert-the-regression-then-rebuild" title="Permanent link">#</a></h2>
+<p>Proving a new test can fail means injecting a regression, watching it go red, and reverting. The
+step that is easy to skip is the <strong>rebuild after the revert</strong> — the source is clean, <code>git status</code>
+agrees, and <code>bin/SpikesPeak.exe</code> still contains the regression.</p>
+<p>This burned a full record-and-analyse cycle: the measurement said the AP band carried no ripple, and
+it was measuring a binary built from the brick-wall injection. The analysis was right; the binary was
+stale. <strong>After reverting an injected regression, rebuild before measuring anything.</strong></p>
+<hr />
+<h2 id="10-a-running-gate-has-moments-with-no-backend-process">10. A running gate has moments with no backend process<a class="headerlink" href="#10-a-running-gate-has-moments-with-no-backend-process" title="Permanent link">#</a></h2>
+<p><code>run_all_tests.py</code> is a ~15 minute run, and the backend <strong>auto-quits about 2 s after the last
+WebSocket client disconnects</strong>. Between two GUI tests there is therefore a real window in which the
+suite is very much still running and <code>tasklist | grep SpikesPeak</code> returns <strong>nothing</strong>.</p>
+<p>Reading that as "the gate has finished" and starting a second one is expensive and the symptom is
+misleading: two gates fight over ports 1234/8234 and over the browser profiles, and what you see is
+<strong>every GUI test failing</strong>, in sequence, on unrelated assertions — <code>audio_panel</code>, <code>band_dependency</code>,
+<code>command_surface</code>, <code>detached_view</code> — with <code>[harness] reusing the backend on :1234</code> in the log and
+CDP dying mid-<code>Runtime.evaluate</code> (<code>ConnectionAbortedError 10053</code>) as the other run's teardown takes
+the browser away. It reads exactly like "my frontend change broke page load".</p>
+<p>Worse, if the second thing you do is <code>build.bat</code>, you have also swapped <code>bin/SpikesPeak.exe</code> under a
+live run.</p>
+<p><strong>Ask the task, not the process table.</strong> A backgrounded gate reports completion; wait for that.
+<code>4 of 4 unrelated GUI tests failing</code> is far more often a second runner than a real regression --
+check for a concurrent run BEFORE reading the failures. And note the corollary: <code>run_all_tests.py</code>
+exits 0 whatever happened unless you pass <strong><code>--fatal</code></strong>, so an exit code of 0 from a run whose output
+you did not capture is not evidence of anything.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AgentTraps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -649,6 +715,10 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing">5h. A WIN32 binary has no stdout, so redirecting it captures nothing</a></li>
 <li><a href="#5i-the-simulator-uses-the-prototype-part-id-the-hardware-reports-the-real-one">5i. The simulator uses the PROTOTYPE part id; the hardware reports the real one</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
+<li><a href="#7-a-filter-is-not-a-brick-wall">7. A filter is not a brick wall</a></li>
+<li><a href="#8-recording-bin-frames-have-a-6-byte-header">8. Recording .bin frames have a 6-byte header</a></li>
+<li><a href="#9-revert-the-regression-then-rebuild">9. Revert the regression, then REBUILD</a></li>
+<li><a href="#10-a-running-gate-has-moments-with-no-backend-process">10. A running gate has moments with no backend process</a></li>
 </ul>
 </div>
 </aside>

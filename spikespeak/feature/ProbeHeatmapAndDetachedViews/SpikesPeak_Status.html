@@ -105,13 +105,14 @@
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="developer_docs/DetachedViews.html">Detached view windows</a>
 <a href="developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -272,6 +273,26 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S65</td>
 <td>2026-08-28</td>
 <td><strong>The morning of an in-vivo session</strong>: the recording sidecar and the live view disagreed about microvolts; a GUI-started recording wrote no ripple sidecar; the tab bar highlighted one panel over another; and the SpikeGLX export described a prototype probe with fabricated geometry. Plus #50 and #59 closed, and the first conversion documentation</td>
+</tr>
+<tr>
+<td>S66</td>
+<td>2026-08-28</td>
+<td><strong>A recording now carries its own provenance</strong>: the two operator-facing gaps §65g warned about, closed</td>
+</tr>
+<tr>
+<td>S67</td>
+<td>2026-08-28</td>
+<td><strong>The control surface answers back</strong>: #51, #63, #64, #61/#62 — three of them the same defect wearing different clothes</td>
+</tr>
+<tr>
+<td>S68</td>
+<td>2026-08-29</td>
+<td><strong>What the clock says, and what the host believes</strong>: finishing #61/#62/#63 and #52 configuration 3; four defects</td>
+</tr>
+<tr>
+<td>S69</td>
+<td>2026-08-31</td>
+<td><strong>A filter is not a brick wall</strong>: the simulated AP band carried NO ripple because "attenuates" was implemented as "eliminates" — a 300 Hz first-order corner passes 55% of a 200 Hz ripple, and the play-file generator disagreed with the live simulator by 15x. Plus the figure that started it, per-column time bases, and a detachable ripple dock</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -6347,7 +6368,140 @@ probe to the other box and the same script verifies the mirror with no edit — 
 the <strong>shared</strong> <code>NpInterface</code> base (<code>NpInterface.cpp:1907</code>). Only <code>detectProbePort()</code> is
 platform-specific — PXIe gates on <code>np_openPort</code> then <code>np_detectHeadStage</code>, the OneBox overrides it to
 call <code>np_detectHeadStage</code> directly over its two ports — and both failures converge on the same
-reporting path.</p></article>
+reporting path.</p>
+<hr />
+<h2 id="69-a-filter-is-not-a-brick-wall-2026-08-31">69. A FILTER IS NOT A BRICK WALL  (2026-08-31)<a class="headerlink" href="#69-a-filter-is-not-a-brick-wall-2026-08-31" title="Permanent link">#</a></h2>
+<p>Started as a complaint about a figure and ended in the signal model. The operator looked at the
+heatmap page in the user docs and asked why the report showed the <strong>AP</strong> view when the heatmap
+presumably showed <strong>LFP</strong>. Both halves of the answer were defects.</p>
+<h3 id="69a-the-figure-was-comparing-two-unrelated-things">69a. The figure was comparing two unrelated things<a class="headerlink" href="#69a-the-figure-was-comparing-two-unrelated-things" title="Permanent link">#</a></h3>
+<p><code>user_docs/images/heatmap_column.png</code> was shot by hand, and <code>tests/gui/heatmap_view.py</code> only ever
+sets <strong>column 0</strong>. So the left column was an LFP heatmap of 384 channels and the right column was
+whatever the source defaults to — the <strong>AP band</strong>, 20 channels, e20–e39. The caption said <em>"Right:
+the same source as traces"</em>, which is literally true and reads as <em>the same data drawn two ways</em> —
+contradicting the feature's actual claim, that a heatmap shows the same channels in the same order.</p>
+<p>Both figures are now a <strong>product of the test</strong> (<code>python tests/gui/heatmap_view.py --figures</code>), which
+sets both columns explicitly. A hand-shot figure has no way to be wrong-and-noticed.</p>
+<p>The claim itself was also <strong>asserted in prose and nowhere checked</strong>. It is now an assertion: at a
+given density with shanks unmerged, <code>heatmapChannels()</code> returns <code>visibleChannels.slice()</code>, so the
+test compares the two lists elementwise.</p>
+<h3 id="69b-attenuates-had-been-implemented-as-eliminates">69b. "Attenuates" had been implemented as "eliminates"<a class="headerlink" href="#69b-attenuates-had-been-implemented-as-eliminates" title="Permanent link">#</a></h3>
+<p>The operator's real point: a 300 Hz high-pass does not remove a 150–250 Hz oscillation, so ripples
+must appear in <strong>both</strong> bands. The simulator injected the burst into the LFP band only, justified by
+a comment in <code>generateApSample</code> that got the premise right and the conclusion wrong.</p>
+<p>A first-order 300 Hz corner passes <strong>0.5547</strong> of a 200 Hz signal — −5.1 dB. Relative to the LFP band
+(itself down 0.9285 from its own 500 Hz low-pass) the AP band carries <strong>0.597</strong>.</p>
+<p>The corner is not a guess: the vendor API exposes exactly one control for it,
+<code>setAPCornerFrequency(..., bool disable_high_pass)</code>, documented as <em>"true for disabling the 300Hz
+high-pass cut-off filter"</em>. <strong>The filter ORDER is an assumption</strong> — imec publishes corners, not
+orders — and first order is both the conservative choice (a steeper filter attenuates more) and the
+physically likely one for a per-channel stage repeated 384 times.</p>
+<h3 id="69c-and-the-two-simulators-disagreed-by-15">69c. And the two simulators disagreed by 15×<a class="headerlink" href="#69c-and-the-two-simulators-disagreed-by-15" title="Permanent link">#</a></h3>
+<p>Chasing 69b turned up the other half. <code>scripts/gen_synthetic_ripples.py</code> <strong>did</strong> filter the AP band —
+with <code>sosfiltfilt(butter(4, 300, 'high'))</code>. Zero-phase filtering applies the response twice, so a
+4th-order design rolled off like an 8th-order one. Measured: <strong>0.0375</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>path</th>
+<th>AP gain at 200 Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>live simulator (before)</td>
+<td>0 — no ripple injected at all</td>
+</tr>
+<tr>
+<td>play-file generator (before)</td>
+<td>0.0375</td>
+</tr>
+<tr>
+<td>both (now)</td>
+<td><strong>0.5547</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Both files said <em>"as on real hardware"</em>. Neither number was reachable from the other file, and each
+path was internally consistent, so nothing could go red.</p>
+<p><strong><code>filtfilt</code> is an analysis tool, not a hardware model.</strong> It doubles the effective order and is
+acausal; a probe can do neither.</p>
+<h3 id="69d-what-was-actually-built">69d. What was actually built<a class="headerlink" href="#69d-what-was-actually-built" title="Permanent link">#</a></h3>
+<ul>
+<li><code>src/modules/neuropixels/SimBandResponse.hpp</code> — the model, free of Qt and the vendor API so it is
+  cheap to test. <code>tests/test_simbandresponse.cpp</code>, 7 cases.</li>
+<li><code>scripts/np1_band_model.py</code> — the Python half, deliberately <strong>separate from the generator</strong>, which
+  imports <code>h5py</code> and therefore cannot be imported by the gate's Python. That is not hypothetical: it
+  is precisely why the drift survived.</li>
+<li><code>python/tests/test_band_response.py</code> — pins the same numbers, asserts the filter is <strong>causal</strong> (an
+  impulse test <code>sosfiltfilt</code> fails), and parses the constants out of the C++ header so changing one
+  side alone goes red.</li>
+<li><code>rippleAmplitude</code> is now defined as the burst peak <strong>in the LFP band</strong>, so the LFP band — and every
+  validated detector threshold — is bit-for-bit unchanged. The AP band gains signal; nothing loses it.</li>
+</ul>
+<p><strong>Verified end to end on a recording</strong>, not just in unit tests:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">measured</th>
+<th style="text-align: right;">expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AP burst amplitude</td>
+<td style="text-align: right;">59.5 counts</td>
+<td style="text-align: right;">59.7 (<code>0.597 × 100</code>)</td>
+</tr>
+<tr>
+<td>AP / LFP ratio</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">0.597</td>
+</tr>
+<tr>
+<td>burst interval</td>
+<td style="text-align: right;">2.00 s</td>
+<td style="text-align: right;">2.0</td>
+</tr>
+<tr>
+<td>AP burst over its own in-band noise floor</td>
+<td style="text-align: right;">43×</td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p>The ratio scatters while the amplitude does not, because the LFP band's in-band noise floor is 3.5×
+the AP band's (4.99 vs 1.41 counts): same per-sample noise, a twelfth of the bandwidth.</p>
+<h3 id="69e-two-traps-that-cost-real-time-now-written-down">69e. Two traps that cost real time, now written down<a class="headerlink" href="#69e-two-traps-that-cost-real-time-now-written-down" title="Permanent link">#</a></h3>
+<p>Both are in <code>developer_docs/AgentTraps.md</code>:</p>
+<ul>
+<li><strong>Recording <code>.bin</code> frames carry a 6-byte header.</strong> <code>np.fromfile(...).reshape(-1, nch)</code> produces
+  garbage that <em>looks like data</em> — full-scale rails, plausible "bursts" at almost-right spacing. The
+  tell is amplitude: simulated counts should be in the hundreds, not railing at ±32768.</li>
+<li><strong>Revert the regression, then REBUILD.</strong> Proving a test can fail leaves the regression in
+  <code>bin/SpikesPeak.exe</code> after the source is clean. A record-and-measure cycle was spent measuring a
+  brick-wall binary; the analysis was right and the binary was stale.</li>
+</ul>
+<h3 id="69f-time-bases-and-a-dock-that-leaves">69f. Time bases, and a dock that leaves<a class="headerlink" href="#69f-time-bases-and-a-dock-that-leaves" title="Permanent link">#</a></h3>
+<p>Three operator requests came out of the same session, all about ambiguity the figure exposed.</p>
+<p><strong>The heatmap's span was a hardcoded 8 s</strong> (<code>HEATMAP_WINDOW_SEC</code>; <code>heatmapWindowSec</code> was never
+assigned) with <strong>no control and no label</strong>, while trace columns follow the toolbar's control, default
+<strong>1 s</strong>. Two columns of the same probe, x axes differing by 8×, nothing on screen saying so. Now: the
+span is <strong>selectable per column</strong>, and <strong>every column names its own time base</strong> in the readout — in
+both view modes, because a label that appears in only one mode is a label nobody learns to look for.</p>
+<p>The readout is one element with a re-applied suffix rather than a sibling span: <code>.page-info</code> is
+<code>grid-area: depth</code>, so a second element with that class would have rendered <em>on top of</em> the depth
+readout.</p>
+<p><strong>Toolbar "Window" → "Time".</strong> Since detached windows landed, "Window" read as "which window".</p>
+<p><strong>The ripple dock detaches.</strong> One <code>⧉</code> button in the dock header, which becomes <code>⧉ Dock</code> in the
+detached window — one control, two directions, in the place the operator already found it. The
+detached window is <code>?view=ripple</code> and builds <strong>zero</strong> ChartColumns: Chrome allows ~16 WebGL contexts
+per renderer process and force-loses the oldest silently, so contexts allocated in a window that
+never shows them would blank a live view the operator <em>is</em> watching. It registers as its own
+<code>ripple</code> role so it does not take a number in the operator's "View 2 of 3". Closing it by any route —
+redock, the X, a crashed tab — restores the in-page dock, because the main window keys on the peer
+set rather than on the redock message.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6769,6 +6923,15 @@ reporting path.</p></article>
 <li><a href="#68f-63s-decay-does-not-reproduce-here">68f. #63's decay does not reproduce here</a></li>
 <li><a href="#68g-channels-recorded-by-default-confirmed-and-now-enforced">68g. Channels recorded by default — confirmed, and now enforced</a></li>
 <li><a href="#68h-the-both-attached-check-is-now-symmetric">68h. The both-attached check is now symmetric</a></li>
+</ul>
+</li>
+<li><a href="#69-a-filter-is-not-a-brick-wall-2026-08-31">69. A FILTER IS NOT A BRICK WALL (2026-08-31)</a><ul>
+<li><a href="#69a-the-figure-was-comparing-two-unrelated-things">69a. The figure was comparing two unrelated things</a></li>
+<li><a href="#69b-attenuates-had-been-implemented-as-eliminates">69b. "Attenuates" had been implemented as "eliminates"</a></li>
+<li><a href="#69c-and-the-two-simulators-disagreed-by-15">69c. And the two simulators disagreed by 15×</a></li>
+<li><a href="#69d-what-was-actually-built">69d. What was actually built</a></li>
+<li><a href="#69e-two-traps-that-cost-real-time-now-written-down">69e. Two traps that cost real time, now written down</a></li>
+<li><a href="#69f-time-bases-and-a-dock-that-leaves">69f. Time bases, and a dock that leaves</a></li>
 </ul>
 </li>
 </ul>

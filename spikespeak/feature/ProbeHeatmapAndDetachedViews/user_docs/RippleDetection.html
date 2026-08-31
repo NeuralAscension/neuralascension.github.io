@@ -105,13 +105,14 @@
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
 <a href="../developer_docs/DetachedViews.html">Detached view windows</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
 <a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -289,8 +290,12 @@ channels keep their baselines; only the <strong>new</strong> channel trains ("tr
 <h2 id="5-reading-the-display-sections-3-4">5. Reading the display (sections ③ + ④)<a class="headerlink" href="#5-reading-the-display-sections-3-4" title="Permanent link">#</a></h2>
 <blockquote>
 <p><strong>⚡ To SEE ripples in the Live Data view, pick the right band.</strong> Each column has a <strong>band dropdown</strong>
-(top-left of the column). Ripples live in the <strong>LFP band</strong> on NP1 (the AP band is high-passed and carries no
-ripples) and in the <strong>RAW band</strong> on NP2 / play-file. In the LFP/RAW band the ripple bursts show as periodic
+(top-left of the column). Ripples are clearest in the <strong>LFP band</strong> on NP1, and in the <strong>RAW band</strong> on
+NP2 / play-file. They are <em>also</em> present in the NP1 <strong>AP band</strong>, at roughly 60% of the LFP band's
+amplitude: the probe's AP high-pass sits at 300 Hz, and a first-order corner attenuates a 150–250 Hz
+ripple by about 5 dB rather than removing it. So an AP-band column is a valid place to see a ripple —
+it is just a noisier one, because the spiking band is in there with it. The <strong>detector</strong> always reads
+the LFP band. In the LFP/RAW band the ripple bursts show as periodic
 denser vertical bands across channels — but the <strong>clearest</strong> view of a ripple is the per-channel <strong>envelope</strong>
 in the dock, which spikes above the dashed threshold on every detection. (Tip: a <strong>~2 s Window</strong> and a
 <strong>~600 µV Scale</strong> separate the traces nicely and make each ripple burst stand out as a bright vertical band —

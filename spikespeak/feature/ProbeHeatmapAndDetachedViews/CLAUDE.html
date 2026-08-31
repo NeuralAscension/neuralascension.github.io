@@ -85,8 +85,9 @@
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
 <a href="developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
 <a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
@@ -104,9 +105,10 @@
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Unsorted<span class="navcount">6</span></summary>
 <a href="developer_docs/DetachedViews.html">Detached view windows</a>
 <a href="developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 <a href="developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
@@ -187,6 +189,14 @@ red suite for everyone who pulls.</p>
 <li>[ ] <code>python scripts/run_gui_tests.py</code> → <strong>ALL N GUI TESTS PASSED</strong></li>
 <li>[ ] If you added a test, you <strong>proved it can fail</strong> — inject a regression, watch it go red, revert.
       An always-green test is worthless and worse than none, because it buys false confidence.</li>
+<li>[ ] <strong>If you fixed a bug whose shape you have seen before, write down the RULE, not the fix.</strong>
+      A test about the bug catches that bug; a test about the rule makes the whole class
+      unwritable. This repo had the same defect four times — announcing REQUESTED state instead of
+      CONFIRMED (#16/#18, #51, and two more found on 2026-08-30) — because each fix was tested
+      where it happened rather than everywhere it could happen.
+      <strong>The trigger is the second occurrence.</strong> See
+      <a href="developer_docs/InvariantTests.html"><code>developer_docs/InvariantTests.md</code></a>, and
+      <code>tests/gui/state_consistency.py</code> for the worked example.</li>
 <li>[ ] Nothing left running: no <code>SpikesPeak.exe</code>, no stray browser, ports 1234/8234 free.</li>
 </ul>
 <hr />

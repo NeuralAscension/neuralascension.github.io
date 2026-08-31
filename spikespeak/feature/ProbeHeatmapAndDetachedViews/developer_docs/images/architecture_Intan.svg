@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1580.0" height="185.0" style="background-color: #1a1a1a;">
+    <text x="40" y="40" fill="#fff" font-family="sans-serif" font-size="20" font-weight="bold">SpikesPeak Architecture: Intan</text>
+    <g id="legend">
+        <rect x="40" y="15" width="15" height="15" rx="3" fill="#2d3748" stroke="#ed8936" stroke-width="1"/>
+        <text x="60" y="27" fill="#ccc" font-family="sans-serif" font-size="12">Config</text>
+        <rect x="160" y="15" width="15" height="15" rx="3" fill="#2a4365" stroke="#4299e1" stroke-width="1"/>
+        <text x="180" y="27" fill="#ccc" font-family="sans-serif" font-size="12">DataSource</text>
+        <rect x="280" y="15" width="15" height="15" rx="3" fill="#22543d" stroke="#48bb78" stroke-width="1"/>
+        <text x="300" y="27" fill="#ccc" font-family="sans-serif" font-size="12">Data</text>
+        <rect x="400" y="15" width="15" height="15" rx="3" fill="#44337a" stroke="#9f7aea" stroke-width="1"/>
+        <text x="420" y="27" fill="#ccc" font-family="sans-serif" font-size="12">DataInterpreter</text>
+        <rect x="520" y="15" width="15" height="15" rx="3" fill="#742a2a" stroke="#f56565" stroke-width="1"/>
+        <text x="540" y="27" fill="#ccc" font-family="sans-serif" font-size="12">Processor</text>
+        <rect x="640" y="15" width="15" height="15" rx="3" fill="#1a202c" stroke="#a0aec0" stroke-width="1"/>
+        <text x="660" y="27" fill="#ccc" font-family="sans-serif" font-size="12">Sink</text>
+    </g>
+    <g id="edges">
+        <path d="M 240.0 102.5 C 270.0 102.5, 270.0 102.5, 300.0 102.5" fill="none" stroke="#666" stroke-width="2" opacity="0.6"/>
+    </g>
+    <g id="nodes">
+        <rect x="40.0" y="80.0" width="200" height="45" rx="5" fill="#2d3748" stroke="#ed8936" stroke-width="2"/>
+        <text x="140.0" y="98.5" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">Intan.yaml</text>
+        <text x="140.0" y="112.5" fill="#ccc" font-family="sans-serif" font-size="10" text-anchor="middle">(Intan (MicroZed) — not implemented yet)</text>
+        <rect x="300.0" y="80.0" width="200" height="45" rx="5" fill="#2a4365" stroke="#4299e1" stroke-width="2"/>
+        <text x="400.0" y="106.5" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">source.intan.microzed</text>
+    </g>
+</svg>

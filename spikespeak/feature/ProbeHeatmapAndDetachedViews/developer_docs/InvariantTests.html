@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Logging — format, severity, and what to write - SpikesPeak Docs</title>
+<title>Invariant tests — making a defect class unwritable - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Architecture and contracts / Logging — format, severity, and what to write</span>
+  <span class="crumb">Developer Docs / Testing / Invariant tests — making a defect class unwritable</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -42,10 +42,10 @@
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
-<details class="navgroup" open><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
-<a class="active" href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
 </details>
 <details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
@@ -85,9 +85,9 @@
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup" open><summary>Testing<span class="navcount">4</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
-<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a class="active" href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 </details>
@@ -136,141 +136,189 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="logging-format-severity-and-what-to-write">Logging — format, severity, and what to write<a class="headerlink" href="#logging-format-severity-and-what-to-write" title="Permanent link">#</a></h1>
+  <main class="content"><article class="markdown-body"><h1 id="invariant-tests-making-a-defect-class-unwritable">Invariant tests — making a defect class unwritable<a class="headerlink" href="#invariant-tests-making-a-defect-class-unwritable" title="Permanent link">#</a></h1>
+<p>A practice this repo arrived at by having the same bug four times. It is <strong>not</strong> textbook TDD, and
+the difference is the point.</p>
+<hr />
+<h2 id="1-the-observation-that-produced-it">1. The observation that produced it<a class="headerlink" href="#1-the-observation-that-produced-it" title="Permanent link">#</a></h2>
+<p>Four separate defects, one shape: <strong>the system announced what was REQUESTED instead of what was
+CONFIRMED.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>#16 / #18</strong></td>
+<td>the GUI asserted its own state instead of the server's — the play button claimed to be streaming before the command had been sent</td>
+</tr>
+<tr>
+<td><strong>#51</strong></td>
+<td>a refused source switch broadcast the <em>requested</em> source name, so a client that reacts to state changes acted on a rig it did not have</td>
+</tr>
+<tr>
+<td>2026-08-30</td>
+<td>a <strong>failed</strong> connect left <code>source</code> naming the thing that failed, next to <code>acquisition: no_source</code></td>
+</tr>
+<tr>
+<td>2026-08-30</td>
+<td><code>Disconnect</code> cleared the state but not the <strong>name</strong>, so a disconnected rig kept reporting its last source</td>
+</tr>
+</tbody>
+</table>
+<p>Each was found, fixed, and tested. And the next one appeared somewhere the previous fix did not
+reach — because <strong>each test was written about the bug, not about the rule the bug broke.</strong></p>
+<p>The last two were only reachable at all because a source was added that <em>deliberately fails to
+connect</em>. Nothing else in the suite fails a connect with no source held, so that path had never been
+exercised in the project's history.</p>
+<hr />
+<h2 id="2-what-an-invariant-test-is">2. What an invariant test is<a class="headerlink" href="#2-what-an-invariant-test-is" title="Permanent link">#</a></h2>
+<p><strong>Write down the property that must always hold, and check it at every transition — rather than
+asserting the output of the function you just wrote.</strong></p>
+<p><code>tests/gui/state_consistency.py</code> is the worked example. It does not test a bug. It says:</p>
+<pre><code>I1  acquisition == &quot;no_source&quot;  &lt;=&gt;  source is empty
+I2  playing  =&gt;  acquisition == &quot;acquiring&quot;  (and therefore a source is held)
+I3  a REFUSED connect leaves `source` exactly as it was before
+I4  a SUCCESSFUL connect leaves `source` equal to what was asked for
+I5  Disconnect leaves no source
+</code></pre>
+<p>I1 is load-bearing because it is a <strong>biconditional</strong>: it fails in both directions — a name without a
+source, <em>and</em> a source without a name. A one-directional check would have caught the 2026-08-30 pair
+and missed their inverse.</p>
+<p>The effect is that a future connect path which publishes a name before the connect succeeds <strong>cannot
+pass</strong>, whatever source it belongs to and whoever writes it. The defect class stops being
+representable.</p>
+<hr />
+<h2 id="3-how-this-differs-from-textbook-tdd">3. How this differs from textbook TDD<a class="headerlink" href="#3-how-this-differs-from-textbook-tdd" title="Permanent link">#</a></h2>
+<p>They are compatible, and they are not the same thing.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>textbook TDD</th>
+<th>invariant tests</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>unit</strong></td>
+<td>the function or class about to be written</td>
+<td>the <strong>defect class</strong>, across whatever code can produce it</td>
+</tr>
+<tr>
+<td><strong>written</strong></td>
+<td>before the implementation, red then green</td>
+<td>when a class of bug is identified — often <em>after</em> the second instance</td>
+</tr>
+<tr>
+<td><strong>scope</strong></td>
+<td>this behaviour</td>
+<td>every path that could violate the rule, including code not written yet</td>
+</tr>
+<tr>
+<td><strong>fails when</strong></td>
+<td>the feature is missing or wrong</td>
+<td><em>any</em> code violates the rule, including code added years later by someone who never read the ticket</td>
+</tr>
+</tbody>
+</table>
+<p>Textbook TDD would have produced a test for <code>handleConnectRequest</code>. That is useful, and it would
+<strong>not</strong> have caught the <code>Disconnect</code> instance — different function, same rule.</p>
+<p>The other way round: an invariant test does not drive the design of a unit and is a poor tool for
+that. It is not a replacement for ordinary tests; it is the thing you add when you notice a
+<em>pattern</em>.</p>
 <blockquote>
-<p>Issue #2. Companion to <a href="Fdir.html"><code>Fdir.md</code></a>, which consumes this log through <code>ErrorLog</code>.</p>
+<p><strong>The rule of thumb: the second time a bug of the same shape appears, stop fixing bugs and write
+down the rule.</strong></p>
 </blockquote>
-<h2 id="1-the-line">1. The line<a class="headerlink" href="#1-the-line" title="Permanent link">#</a></h2>
-<p>Every message goes through <code>logMessages()</code> in <code>src/main.cpp</code> and comes out identically on the console
-and in <code>output.log</code>, so a pasted terminal screenshot and the file can be compared line for line:</p>
-<pre><code>22:44:33.291  DEBUG  [proc.rippledetector]   RippleDetector.cpp:753    [RippleDetector] resolved ...
-|             |      |                       |                        |
-time          level  thread                  origin                   the message as written
-</code></pre>
+<hr />
+<h2 id="4-what-makes-one-worth-writing">4. What makes one worth writing<a class="headerlink" href="#4-what-makes-one-worth-writing" title="Permanent link">#</a></h2>
+<p>Not everything deserves this treatment. The ones that pay:</p>
 <ul>
-<li><strong>Time</strong> is time-of-day only. The date is written once in the file header, not on every line:
-  this log is read live in a terminal beside the running rig, and a repeated date pushes the actual
-  message off the right of the window for no information. The header also carries the build, because
-  a log pasted into an issue is much less useful without knowing what produced it.</li>
-<li><strong>Thread</strong> matters more here than in most programs. Every processor and every acquisition loop runs
-  on its own <code>QThread</code>, and <code>ProcessorManager::setupProcThread</code> names them, so this answers "which
-  loop said that?" -- previously guesswork from the message prefix alone. Real values include
-  <code>main</code>, <code>proc.rippledetector</code>, <code>proc.npx.recorder</code>, <code>NpxWorkerThread</code>, <code>OneBoxAdcThread</code>.</li>
-<li><strong>Origin</strong> is <code>file:line</code>, which requires <code>QT_MESSAGELOGCONTEXT</code> -- set in <code>CMakeLists.txt</code>, because
-  Qt strips the context in release builds and every line would otherwise read "unknown" in the one
-  configuration that actually runs on the rig. The function name is deliberately omitted: Qt gives
-  the full mangled signature, which is far wider than it is useful.</li>
-<li><strong>Thread and origin are padded</strong> to fixed widths (22 and 26). A ragged column is not a cosmetic
-  complaint: if the message does not start at the same column on every line you cannot scan down it.
-  22 fits the widest real thread name; anything longer pushes its own line out rather than being
-  truncated, since losing a thread name to save a column is the wrong trade.</li>
+<li><strong>A rule that spans several call sites.</strong> If it can only be broken in one function, an ordinary
+  test on that function is cheaper and clearer.</li>
+<li><strong>A rule with no local symptom.</strong> These bugs did not crash, throw, or log. The state was merely
+  <em>wrong</em>, and every surface reported it confidently.</li>
+<li><strong>A rule a newcomer would not know.</strong> "Announce confirmed state, never requested" is not
+  discoverable from the code; it is discoverable from four postmortems.</li>
+<li><strong>A rule where the failure is expensive.</strong> A recording labelled with the wrong source is not
+  recoverable after the fact.</li>
 </ul>
-<p>The main thread is identified from <code>gMainThread</code>, captured in <code>main()</code>. Comparing against
-<code>QCoreApplication::instance()-&gt;thread()</code> does not work for the earliest messages -- type registration
-runs before the application object exists, so every startup line printed a raw handle instead.</p>
-<h2 id="2-severity-goes-in-the-level-not-in-the-text">2. Severity goes in the LEVEL, not in the text<a class="headerlink" href="#2-severity-goes-in-the-level-not-in-the-text" title="Permanent link">#</a></h2>
-<p>This is the half of issue #2 that was actually causing damage.</p>
-<p>The codebase used to write faults as <code>qDebug() &lt;&lt; "[MAIN] ERROR: No Headstage detected on any port!"</code>
--- severity in the <em>string</em>, at DEBUG level. 42 lines did this (32 "ERROR", 10 "WARNING"). Anything
-filtering or routing by <code>QtMsgType</code> therefore saw a debug message and treated a hardware failure as
-chatter, and <code>ErrorLog</code> had to match on the text to find faults at all.</p>
+<p>The existing suite already has several, written before this page named the practice:</p>
 <table>
 <thead>
 <tr>
-<th>use</th>
-<th>when</th>
+<th>test</th>
+<th>the invariant</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>qDebug()</code></td>
-<td>tracing and detail. The default; no user ever needs to see it.</td>
+<td><code>tests/gui/state_consistency.py</code></td>
+<td>reported state is never internally inconsistent</td>
 </tr>
 <tr>
-<td><code>qInfo()</code></td>
-<td>milestones a user would recognise -- "probe initialised", "recording started".</td>
+<td><code>tests/gui/detached_view.py</code></td>
+<td><code>window.opener === null</code> — asserts the <strong>property</strong> (<code>noopener</code>), not the symptom (contexts surviving), because the symptom is invisible below ~16 contexts</td>
 </tr>
 <tr>
-<td><code>qWarning()</code></td>
-<td>something failed and was handled or reported. <strong>Most "ERROR:" messages belong here.</strong></td>
+<td><code>tests/gui/heatmap_view.py</code></td>
+<td>every offered colormap is perceptually ordered — a named deny-list, so a rainbow map cannot come back</td>
 </tr>
 <tr>
-<td><code>qCritical()</code></td>
-<td>something failed that prevents the operation and is worth interrupting for.</td>
+<td><code>tests/test_configuration.cpp</code></td>
+<td>a name is an identity: no duplicate processor, source or config names</td>
+</tr>
+<tr>
+<td><code>python/tests/test_sync_pairing.py</code></td>
+<td>a pairing offset is never a whole sync period — the failure with identical intervals, identical ppm and identical residual</td>
+</tr>
+<tr>
+<td><code>scripts/run_tests.py</code> scalar pass</td>
+<td>the portable SIMD path is <em>executed</em>, not merely compiled</td>
 </tr>
 </tbody>
 </table>
-<p>Keep the <code>[Subsystem]</code> prefix -- it names the component, which the thread and file columns do not
-always make obvious, and the GUI shows that raw text in dialogs.</p>
-<p><code>ErrorLog</code> still matches on text as well as level. That is a <strong>safety net, not the mechanism</strong>: the
-convention above is a convention, not a compiler rule, and the next mis-levelled line will be written
-eventually. See <a href="Fdir.html"><code>Fdir.md</code></a> section 5.</p>
-<h2 id="3-two-log-files-on-purpose">3. Two log files, on purpose<a class="headerlink" href="#3-two-log-files-on-purpose" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>file</th>
-<th>lifetime</th>
-<th>what it is for</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>output.log</code> (next to the exe's working dir)</td>
-<td><strong>truncated on every start</strong></td>
-<td>watching the rig live; the current session only</td>
-</tr>
-<tr>
-<td><code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;timestamp&gt;.log</code></td>
-<td>open only while a recording runs</td>
-<td><strong>provenance</strong> for the data beside it</td>
-</tr>
-</tbody>
-</table>
-<p><code>output.log</code> is opened with <code>"w"</code>, so it never survives a restart. That is fine for its job -- it is
-the file you tail in a terminal while working -- but it means it can never answer "what was the rig
-doing when this recording was written?" for data you come back to weeks later.</p>
-<p>So a recording gets <strong>its own copy of the log</strong>, written by <code>RecordingLog</code> into the recording
-directory, sharing the recording's timestamp:</p>
-<pre><code>RecordingTests/logdemo/
-    logdemo_20260819_231117.log        &lt;- this
-    logdemo_raw_20260819_231117.bin
-    logdemo_raw_20260819_231117.bin.json
-    logdemo_adc_20260819_231117.bin
-    logdemo_adc_20260819_231117.bin.json
-</code></pre>
-<p>It carries the same formatted lines as <code>output.log</code>, so the two are comparable line for line, plus a
-dated header and footer.</p>
-<p><strong>It covers the recording, not the session -- deliberately.</strong> Only the source that was connected while
-recording appears in it; nothing from before Record was pressed, and nothing after it stopped. This is
-a design decision, not a limitation waiting to be fixed: the file's value is that <em>everything in it
-pertains to the data next to it</em>. If you want the whole session, including sources you connected and
-dropped beforehand, that is what <code>output.log</code> is for -- copy it out before restarting, because the
-next start will truncate it.</p>
-<p><code>RecordingLog::start()</code> is idempotent. A profile can have several recorders (NPX + NI-DAQ) and each
-calls <code>applyRecordingState</code>; the first opens the file and the rest are no-ops, and the first stop
-closes it. One button drives them as a group -- if that ever changes, this needs a reference count
-rather than a flag. Failing to open the log is logged and otherwise ignored: a recording must never
-fail because its provenance file could not be written.</p>
-<h2 id="4-what-not-to-do">4. What NOT to do<a class="headerlink" href="#4-what-not-to-do" title="Permanent link">#</a></h2>
-<ul>
-<li><strong>Do not log per sample or per acquisition cycle.</strong> <code>logMessages()</code> <code>fflush</code>es both sinks on every
-  message; at 1 ms cadence that is a syscall pair per tick on the hot path. Use the throttled
-  <code>IDataSourceWorker::reportStreamError()</code> for a sustained streaming fault -- it fires after 3
-  consecutive failures then at most once per 5 s.</li>
-<li><strong>Do not put severity in the string and leave the level at debug.</strong> That is exactly what this issue
-  fixed.</li>
-<li><strong>Do not strip the <code>[Subsystem]</code> prefix</strong> to save width. The columns tell you where a line came from
-  mechanically; the prefix tells you which subsystem <em>claims</em> it, and the GUI shows it verbatim.</li>
-</ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/Logging.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<hr />
+<h2 id="5-writing-one">5. Writing one<a class="headerlink" href="#5-writing-one" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Name the class, not the instance.</strong> "Announced requested state instead of confirmed" — not
+   "<code>handleConnectRequest</code> set <code>mSourceName</code> too early".</li>
+<li><strong>State the rule as a predicate over observable state</strong>, so it can be checked anywhere rather
+   than only where the bug was.</li>
+<li><strong>Check it at every transition</strong>, not only after the operation that was broken. Both 2026-08-30
+   bugs were in transitions nobody had thought to check.</li>
+<li><strong>Make it biconditional where the rule is.</strong> Half a rule catches half the bugs.</li>
+<li><strong>Include a path that fails on purpose.</strong> The reason two of these bugs survived for months is
+   that failure paths were never exercised — there was no way to fail a connect without unplugging
+   hardware. <code>IntanSource</code> refusing is now that path, and it earns its keep every run.</li>
+<li><strong>Prove it can fail</strong>, like any test here — inject the violation, watch it go red, revert. An
+   invariant test that cannot fail is worse than none, because its scope makes it look like broad
+   coverage.</li>
+</ol>
+<hr />
+<h2 id="6-the-failure-paths-deserve-a-source-of-their-own">6. The failure paths deserve a source of their own<a class="headerlink" href="#6-the-failure-paths-deserve-a-source-of-their-own" title="Permanent link">#</a></h2>
+<p>The most reusable thing to come out of this: <strong>a source that refuses on purpose is test
+infrastructure, not a placeholder.</strong></p>
+<p><code>IntanSource</code> returns false from <code>initDataSource</code> having touched nothing, which makes the
+refused-connect path runnable on any machine, with no hardware, every single gate run. Two real bugs
+fell out of it within minutes of it existing.</p>
+<p>If a future subsystem has a failure path that can only be reached by breaking real hardware, that is
+a sign it needs an equivalent — something that fails cleanly and deliberately, wired in like
+anything else.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/InvariantTests.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-line">1. The line</a></li>
-<li><a href="#2-severity-goes-in-the-level-not-in-the-text">2. Severity goes in the LEVEL, not in the text</a></li>
-<li><a href="#3-two-log-files-on-purpose">3. Two log files, on purpose</a></li>
-<li><a href="#4-what-not-to-do">4. What NOT to do</a></li>
+<li><a href="#1-the-observation-that-produced-it">1. The observation that produced it</a></li>
+<li><a href="#2-what-an-invariant-test-is">2. What an invariant test is</a></li>
+<li><a href="#3-how-this-differs-from-textbook-tdd">3. How this differs from textbook TDD</a></li>
+<li><a href="#4-what-makes-one-worth-writing">4. What makes one worth writing</a></li>
+<li><a href="#5-writing-one">5. Writing one</a></li>
+<li><a href="#6-the-failure-paths-deserve-a-source-of-their-own">6. The failure paths deserve a source of their own</a></li>
 </ul>
 </div>
 </aside>

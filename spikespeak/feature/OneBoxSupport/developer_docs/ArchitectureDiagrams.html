@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Logging — format, severity, and what to write - SpikesPeak Docs</title>
+<title>Architecture diagrams — generated, not drawn - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Architecture and contracts / Logging — format, severity, and what to write</span>
+  <span class="crumb">Developer Docs / Unsorted / Architecture diagrams — generated, not drawn</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -42,10 +42,10 @@
 <a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
 <a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
 </details>
-<details class="navgroup" open><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
 <a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
 <a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
-<a class="active" href="Logging.html">Logging — format, severity, and what to write</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
 </details>
 <details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
 <a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
@@ -113,8 +113,8 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+<details class="navgroup" open><summary>Unsorted<span class="navcount">1</span></summary>
+<a class="active" href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -141,141 +141,203 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="logging-format-severity-and-what-to-write">Logging — format, severity, and what to write<a class="headerlink" href="#logging-format-severity-and-what-to-write" title="Permanent link">#</a></h1>
+  <main class="content"><article class="markdown-body"><h1 id="architecture-diagrams-generated-not-drawn">Architecture diagrams — generated, not drawn<a class="headerlink" href="#architecture-diagrams-generated-not-drawn" title="Permanent link">#</a></h1>
+<p>Every pipeline picture in these docs is produced by <strong><code>scripts/make_architecture.py</code></strong>, which reads
+the code and the configs and emits SVG. Nothing here is hand-drawn, and nothing hand-drawn is
+allowed back in: the predecessor was a PlantUML description that drifted as modules were added and,
+because nothing rendered it during the build, <strong>shipped invisible</strong> — the book referenced an SVG
+that was never produced.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Generator</td>
+<td><code>scripts/make_architecture.py</code></td>
+</tr>
+<tr>
+<td>Inputs</td>
+<td><code>src/core/Utils.cpp</code> (the registry) + every <code>config/*.yaml</code> + a small provisioned-wiring table</td>
+</tr>
+<tr>
+<td>Output</td>
+<td><code>developer_docs/images/architecture.svg</code> + one per config, <strong>git-ignored</strong></td>
+</tr>
+<tr>
+<td>Committed copy</td>
+<td><code>images/architecture.svg</code>, for the repo README only — refreshed by the docs build</td>
+</tr>
+<tr>
+<td>Run</td>
+<td><code>python scripts/build_docs.py</code> (regenerates, then refreshes the committed copy)</td>
+</tr>
+<tr>
+<td>Verify</td>
+<td><code>python scripts/make_architecture.py --check --out-dir developer_docs/images</code></td>
+</tr>
+<tr>
+<td>Test</td>
+<td><code>python/tests/test_architecture_current.py</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-what-it-draws">1. What it draws<a class="headerlink" href="#1-what-it-draws" title="Permanent link">#</a></h2>
+<p>Six <strong>stages</strong>, as horizontal bands, top to bottom:</p>
+<pre><code>CONFIG  →  DATASOURCE  →  DATA  →  DATAINTERPRETER  →  PROCESSOR  →  SINK
+</code></pre>
+<p>Read it downward: a profile selects a source, the source publishes named bands, an interpreter
+serialises a band, a processor consumes it, and a sink is a file a recording writes.</p>
+<p><strong>Node types are colored, not labeled by shape.</strong> The legend at the top carries the mapping. A
+config box shows its <strong>filename</strong> on the first line and its internal <code>name:</code> on the second, because
+a config's identity is that <code>name:</code> field and never the filename — the GUI and CLI select the name.</p>
+<hr />
+<h2 id="2-where-the-edges-come-from-and-the-one-place-they-do-not">2. Where the edges come from, and the one place they do not<a class="headerlink" href="#2-where-the-edges-come-from-and-the-one-place-they-do-not" title="Permanent link">#</a></h2>
+<p>Most edges are parsed straight out of the YAML:</p>
+<table>
+<thead>
+<tr>
+<th>edge</th>
+<th>from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Config → DataSource</td>
+<td><code>sources:</code> entries</td>
+</tr>
+<tr>
+<td>DataSource → Data</td>
+<td>each source's <code>outputs:</code></td>
+</tr>
+<tr>
+<td>Data → Processor</td>
+<td>a processor's <code>inputs:</code> or <code>input:</code></td>
+</tr>
+<tr>
+<td>Data → DataInterpreter → Processor → Sink</td>
+<td>the recorder's <code>recordings:</code> blocks</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Three processors are wired by C++ instead, and the parser cannot see that.</strong> <code>proc.lfp</code>,
+<code>proc.spike</code> and <code>proc.audio</code> are auto-provisioned by <code>ProcessorManager</code>, so profiles never mention
+their inputs. Before 2026-09-01 they were therefore drawn as <strong>orphans</strong> — boxes with no line
+touching them — which reads as <em>"connected to nothing"</em> when the truth is <em>"connected by code this
+parser does not read"</em>. The operator spotted it in the picture, which is the only place it was
+visible.</p>
+<p>They are now supplied by an explicit table in the generator, <code>AUTO_PROVISIONED</code>:</p>
+<table>
+<thead>
+<tr>
+<th>processor</th>
+<th>input</th>
+<th>output</th>
+<th>provisioned when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>proc.lfp</code></td>
+<td><code>data.npx.raw</code></td>
+<td><code>data.lfp</code></td>
+<td>source has raw and <strong>no</strong> native lfp — i.e. a 2.0</td>
+</tr>
+<tr>
+<td><code>proc.spike</code></td>
+<td><code>data.npx.raw</code></td>
+<td><code>data.spike</code></td>
+<td>same</td>
+</tr>
+<tr>
+<td><code>proc.audio</code></td>
+<td><code>data.npx.ap</code>, else <code>data.npx.raw</code></td>
+<td><code>data.audio</code></td>
+<td>any probe band exists</td>
+</tr>
+</tbody>
+</table>
+<p>Ground truth for that table is <code>src/core/ProcessorManager.cpp</code> (the two auto-provision blocks),
+<code>src/modules/audio/AudioProcessor.cpp</code> (which band audio listens to) and
+<a href="DerivedBands.html"><code>DerivedBands.md</code></a> §5.</p>
 <blockquote>
-<p>Issue #2. Companion to <a href="Fdir.html"><code>Fdir.md</code></a>, which consumes this log through <code>ErrorLog</code>.</p>
+<p><strong>This table is a second source of truth, and it is drawn as such.</strong> Those edges are <strong>orange and
+dashed</strong>, with their own legend entry — <em>"auto-provisioned in C++ (not in the profile)"</em> — because
+"the profile wires this" and "the program wires this" are different claims and a reader is owed
+the difference. If the provisioning rules change in C++ and this table does not, the picture will
+be confidently wrong; that is the cost of the table and the reason it is small and cited.</p>
 </blockquote>
-<h2 id="1-the-line">1. The line<a class="headerlink" href="#1-the-line" title="Permanent link">#</a></h2>
-<p>Every message goes through <code>logMessages()</code> in <code>src/main.cpp</code> and comes out identically on the console
-and in <code>output.log</code>, so a pasted terminal screenshot and the file can be compared line for line:</p>
-<pre><code>22:44:33.291  DEBUG  [proc.rippledetector]   RippleDetector.cpp:753    [RippleDetector] resolved ...
-|             |      |                       |                        |
-time          level  thread                  origin                   the message as written
+<p><strong>Upward edges are real.</strong> A derived-band processor <em>produces</em> data, so <code>proc.lfp → data.lfp</code> points
+from the Processor band back up to the Data band. Those are routed out to the side rather than
+dropped — an earlier version silently discarded every backward edge and so hid the exact wiring this
+section exists to show.</p>
+<hr />
+<h2 id="3-layout-rules-and-why-each-exists">3. Layout rules, and why each exists<a class="headerlink" href="#3-layout-rules-and-why-each-exists" title="Permanent link">#</a></h2>
+<p><strong>Top-down, not left-to-right.</strong> The first version made each stage a column. The canvas was then a
+function of the <em>biggest</em> stage, so with every config in one picture it came out <strong>1580 × 2460</strong> — a
+tall ribbon four times higher than wide, unreadable on any page. Stages as bands grow the diagram in
+the direction pages actually scroll.</p>
+<p><strong>Boxes are measured from their text.</strong> Fixed 200 px boxes with centred labels overflowed badly:
+config names run to 54 characters, about 270 px at 10 px type, spilling out of both sides and over
+the neighbours. Widths are now computed per node and clamped, and anything still too long is
+truncated with an ellipsis. The width estimate is <code>0.55 em</code> per character — the standard
+approximation for mixed-case Latin, deliberately erring wide, because a real font metric would be a
+dependency.</p>
+<p><strong>There is a <code>viewBox</code>.</strong> Without one an SVG renders at its intrinsic pixel size and overflows any
+narrower container; with one it scales to whatever it is given.</p>
+<p><strong>Config boxes are clustered by the source they feed, and their edges are bundled.</strong> 37 profiles
+each drawing an independent curve into 9 sources crossed everywhere and carried no information you
+could trace. Configs are now ordered by their first source name — sources are placed alphabetically,
+so this puts a profile roughly above its target — and their edges converge on a single collector
+point just above each source. They are also drawn fainter than the rest: at that count they are
+context, not the subject.</p>
+<hr />
+<h2 id="4-working-on-it">4. Working on it<a class="headerlink" href="#4-working-on-it" title="Permanent link">#</a></h2>
+<p><strong>Adding a source, processor, data or interpreter needs nothing here.</strong> Register it in
+<code>src/core/Utils.cpp</code> and reference it from a config; the next docs build draws it. That is the whole
+point of generating.</p>
+<p><strong>Adding a new C++-provisioned processor DOES need a line</strong> in <code>AUTO_PROVISIONED</code>, or it will be
+drawn as an orphan. There is no way around that short of parsing C++ control flow, which would be a
+worse trade.</p>
+<p><strong>After changing the generator, regenerate and look at the picture.</strong> The tests check that the SVGs
+match the code and that the committed copy matches the generated one; neither can tell you the
+layout is legible. To render one without a browser window:</p>
+<pre><code class="language-bash">chrome --headless=new --disable-gpu --hide-scrollbars --window-size=1500,1050 \
+  --screenshot=out.png file:///ABSOLUTE/PATH/developer_docs/images/architecture.svg
 </code></pre>
+<p><strong>Do not commit <code>developer_docs/images/architecture*.svg</code></strong> — they are git-ignored and derived. The
+single exception is <code>images/architecture.svg</code>, which the repo README embeds; GitHub renders the
+README from the repository and cannot see a git-ignored file. That copy is written by the docs build
+and asserted byte-identical to the generated one, so it is committed without being hand-maintained.</p>
+<p><strong>These files are deliberately not dated</strong>, unlike the screenshots (<a href="KnowledgeOps.html"><code>KnowledgeOps.md</code></a>
+§8). A hand-made artifact cannot say how old it is and nothing re-derives it, so it carries a date.
+These are a function of the wiring and are re-derived every build — and a date stamped inside the SVG
+would make <code>--check</code> compare a fresh render against a stamped file and fail <em>every day</em>, destroying
+the mechanism that guarantees freshness in order to display a claim about it.</p>
+<blockquote>
+<p><strong>Date what cannot be re-derived. Check what can.</strong></p>
+</blockquote>
+<hr />
+<h2 id="5-related">5. Related<a class="headerlink" href="#5-related" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Time</strong> is time-of-day only. The date is written once in the file header, not on every line:
-  this log is read live in a terminal beside the running rig, and a repeated date pushes the actual
-  message off the right of the window for no information. The header also carries the build, because
-  a log pasted into an issue is much less useful without knowing what produced it.</li>
-<li><strong>Thread</strong> matters more here than in most programs. Every processor and every acquisition loop runs
-  on its own <code>QThread</code>, and <code>ProcessorManager::setupProcThread</code> names them, so this answers "which
-  loop said that?" -- previously guesswork from the message prefix alone. Real values include
-  <code>main</code>, <code>proc.rippledetector</code>, <code>proc.npx.recorder</code>, <code>NpxWorkerThread</code>, <code>OneBoxAdcThread</code>.</li>
-<li><strong>Origin</strong> is <code>file:line</code>, which requires <code>QT_MESSAGELOGCONTEXT</code> -- set in <code>CMakeLists.txt</code>, because
-  Qt strips the context in release builds and every line would otherwise read "unknown" in the one
-  configuration that actually runs on the rig. The function name is deliberately omitted: Qt gives
-  the full mangled signature, which is far wider than it is useful.</li>
-<li><strong>Thread and origin are padded</strong> to fixed widths (22 and 26). A ragged column is not a cosmetic
-  complaint: if the message does not start at the same column on every line you cannot scan down it.
-  22 fits the widest real thread name; anything longer pushes its own line out rather than being
-  truncated, since losing a thread name to save a column is the wrong trade.</li>
-</ul>
-<p>The main thread is identified from <code>gMainThread</code>, captured in <code>main()</code>. Comparing against
-<code>QCoreApplication::instance()-&gt;thread()</code> does not work for the earliest messages -- type registration
-runs before the application object exists, so every startup line printed a raw handle instead.</p>
-<h2 id="2-severity-goes-in-the-level-not-in-the-text">2. Severity goes in the LEVEL, not in the text<a class="headerlink" href="#2-severity-goes-in-the-level-not-in-the-text" title="Permanent link">#</a></h2>
-<p>This is the half of issue #2 that was actually causing damage.</p>
-<p>The codebase used to write faults as <code>qDebug() &lt;&lt; "[MAIN] ERROR: No Headstage detected on any port!"</code>
--- severity in the <em>string</em>, at DEBUG level. 42 lines did this (32 "ERROR", 10 "WARNING"). Anything
-filtering or routing by <code>QtMsgType</code> therefore saw a debug message and treated a hardware failure as
-chatter, and <code>ErrorLog</code> had to match on the text to find faults at all.</p>
-<table>
-<thead>
-<tr>
-<th>use</th>
-<th>when</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>qDebug()</code></td>
-<td>tracing and detail. The default; no user ever needs to see it.</td>
-</tr>
-<tr>
-<td><code>qInfo()</code></td>
-<td>milestones a user would recognise -- "probe initialised", "recording started".</td>
-</tr>
-<tr>
-<td><code>qWarning()</code></td>
-<td>something failed and was handled or reported. <strong>Most "ERROR:" messages belong here.</strong></td>
-</tr>
-<tr>
-<td><code>qCritical()</code></td>
-<td>something failed that prevents the operation and is worth interrupting for.</td>
-</tr>
-</tbody>
-</table>
-<p>Keep the <code>[Subsystem]</code> prefix -- it names the component, which the thread and file columns do not
-always make obvious, and the GUI shows that raw text in dialogs.</p>
-<p><code>ErrorLog</code> still matches on text as well as level. That is a <strong>safety net, not the mechanism</strong>: the
-convention above is a convention, not a compiler rule, and the next mis-levelled line will be written
-eventually. See <a href="Fdir.html"><code>Fdir.md</code></a> section 5.</p>
-<h2 id="3-two-log-files-on-purpose">3. Two log files, on purpose<a class="headerlink" href="#3-two-log-files-on-purpose" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>file</th>
-<th>lifetime</th>
-<th>what it is for</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>output.log</code> (next to the exe's working dir)</td>
-<td><strong>truncated on every start</strong></td>
-<td>watching the rig live; the current session only</td>
-</tr>
-<tr>
-<td><code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;timestamp&gt;.log</code></td>
-<td>open only while a recording runs</td>
-<td><strong>provenance</strong> for the data beside it</td>
-</tr>
-</tbody>
-</table>
-<p><code>output.log</code> is opened with <code>"w"</code>, so it never survives a restart. That is fine for its job -- it is
-the file you tail in a terminal while working -- but it means it can never answer "what was the rig
-doing when this recording was written?" for data you come back to weeks later.</p>
-<p>So a recording gets <strong>its own copy of the log</strong>, written by <code>RecordingLog</code> into the recording
-directory, sharing the recording's timestamp:</p>
-<pre><code>RecordingTests/logdemo/
-    logdemo_20260819_231117.log        &lt;- this
-    logdemo_raw_20260819_231117.bin
-    logdemo_raw_20260819_231117.bin.json
-    logdemo_adc_20260819_231117.bin
-    logdemo_adc_20260819_231117.bin.json
-</code></pre>
-<p>It carries the same formatted lines as <code>output.log</code>, so the two are comparable line for line, plus a
-dated header and footer.</p>
-<p><strong>It covers the recording, not the session -- deliberately.</strong> Only the source that was connected while
-recording appears in it; nothing from before Record was pressed, and nothing after it stopped. This is
-a design decision, not a limitation waiting to be fixed: the file's value is that <em>everything in it
-pertains to the data next to it</em>. If you want the whole session, including sources you connected and
-dropped beforehand, that is what <code>output.log</code> is for -- copy it out before restarting, because the
-next start will truncate it.</p>
-<p><code>RecordingLog::start()</code> is idempotent. A profile can have several recorders (NPX + NI-DAQ) and each
-calls <code>applyRecordingState</code>; the first opens the file and the rest are no-ops, and the first stop
-closes it. One button drives them as a group -- if that ever changes, this needs a reference count
-rather than a flag. Failing to open the log is logged and otherwise ignored: a recording must never
-fail because its provenance file could not be written.</p>
-<h2 id="4-what-not-to-do">4. What NOT to do<a class="headerlink" href="#4-what-not-to-do" title="Permanent link">#</a></h2>
-<ul>
-<li><strong>Do not log per sample or per acquisition cycle.</strong> <code>logMessages()</code> <code>fflush</code>es both sinks on every
-  message; at 1 ms cadence that is a syscall pair per tick on the hot path. Use the throttled
-  <code>IDataSourceWorker::reportStreamError()</code> for a sustained streaming fault -- it fires after 3
-  consecutive failures then at most once per 5 s.</li>
-<li><strong>Do not put severity in the string and leave the level at debug.</strong> That is exactly what this issue
-  fixed.</li>
-<li><strong>Do not strip the <code>[Subsystem]</code> prefix</strong> to save width. The columns tell you where a line came from
-  mechanically; the prefix tells you which subsystem <em>claims</em> it, and the GUI shows it verbatim.</li>
+<li><a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a> — the docs build this runs inside</li>
+<li><a href="DerivedBands.html"><code>DerivedBands.md</code></a> — what <code>proc.lfp</code> / <code>proc.spike</code> actually do</li>
+<li><a href="ConfigReference.html"><code>ConfigReference.md</code></a> — the YAML this parses</li>
+<li><code>images/architecture_overview.md</code> — the narrative that embeds these diagrams</li>
 </ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/Logging.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+    <footer class="pagefoot">Generated from <code>developer_docs/ArchitectureDiagrams.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-line">1. The line</a></li>
-<li><a href="#2-severity-goes-in-the-level-not-in-the-text">2. Severity goes in the LEVEL, not in the text</a></li>
-<li><a href="#3-two-log-files-on-purpose">3. Two log files, on purpose</a></li>
-<li><a href="#4-what-not-to-do">4. What NOT to do</a></li>
+<li><a href="#1-what-it-draws">1. What it draws</a></li>
+<li><a href="#2-where-the-edges-come-from-and-the-one-place-they-do-not">2. Where the edges come from, and the one place they do not</a></li>
+<li><a href="#3-layout-rules-and-why-each-exists">3. Layout rules, and why each exists</a></li>
+<li><a href="#4-working-on-it">4. Working on it</a></li>
+<li><a href="#5-related">5. Related</a></li>
 </ul>
 </div>
 </aside>

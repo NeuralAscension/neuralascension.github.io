@@ -113,6 +113,9 @@
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -572,6 +575,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="Building.html"><code>Building.md</code></a></td>
 <td><strong>Build and run, on Windows and Linux, from a plain terminal.</strong> No Qt Creator, no "Developer Command Prompt", no path edited into a script. Prerequisites per platform, what <code>build.bat</code> / <code>./build.sh</code> actually do, why <code>--no-pause</code> exists (they hold the window open by default so a double-click does not vanish, which hangs a script at <em>"Press any key to continue"</em>), the incremental <code>rebuild.bat</code>, and what macOS is still missing.</td>
+</tr>
+<tr>
+<td><a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a></td>
+<td><strong>How the pipeline pictures are made, and why none of them is drawn by hand.</strong> <code>scripts/make_architecture.py</code> reads <code>src/core/Utils.cpp</code> and every <code>config/*.yaml</code> and emits the SVGs; the docs build re-runs it, and a test asserts the output still matches the code. Read it before changing the generator, and read 2 before concluding that a node with no edges is disconnected — <code>proc.lfp</code>, <code>proc.spike</code> and <code>proc.audio</code> are wired by C++, not by any profile, and were drawn as orphans until 2026-09-01. Also the layout rules and what each one cost: top-down bands (columns made it 1580x2460), text-measured boxes (fixed ones overflowed by 70 px), and bundled config edges (37 profiles into 9 sources was an untraceable hairball).</td>
 </tr>
 <tr>
 <td><a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a></td>

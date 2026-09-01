@@ -113,6 +113,9 @@
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 </details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
 <h3>Tooling</h3>
@@ -7198,7 +7201,219 @@ breaks it.</p>
 <td>proved by hand-editing the committed copy — the exact historical failure</td>
 </tr>
 </tbody>
-</table></article>
+</table>
+<hr />
+<h2 id="76-the-architecture-diagram-readable-honest-and-now-a-skill-2026-09-01">76. THE ARCHITECTURE DIAGRAM: READABLE, HONEST, AND NOW A SKILL  (2026-09-01)<a class="headerlink" href="#76-the-architecture-diagram-readable-honest-and-now-a-skill-2026-09-01" title="Permanent link">#</a></h2>
+<p>Operator, looking at the regenerated picture: <em>"should probably be top down rather than left to
+right … you need to ensure everything fits properly which it does not at all right now"</em>, then
+<em>"data.audio and proc.audio don't connect to anything which just seems off"</em>, then <em>"the config row
+is overly complicated"</em>, and finally the one that mattered most: <em>"what you're using to generate the
+diagram isn't properly documented nor is it an established skill."</em></p>
+<h3 id="76a-it-did-not-fit-for-two-compounding-reasons">76a. It did not fit, for two compounding reasons<a class="headerlink" href="#76a-it-did-not-fit-for-two-compounding-reasons" title="Permanent link">#</a></h3>
+<p><strong>Stages were columns</strong>, so the canvas was a function of the BIGGEST stage. With every config in one
+picture that is ~37 boxes, and the result came out <strong>1580 x 2460</strong> — a tall ribbon four times higher
+than wide. Stages are bands now and it is <strong>1760 x 1114</strong>.</p>
+<p><strong>Boxes were a fixed 200 px with centred text and no measurement.</strong> Config labels run to 54
+characters ("Simulated NPX 2.0 Multishank + Real NI-DAQ + Ripples"), about 270 px at 10 px type —
+spilling out of both sides and over the neighbours. Widths are computed per node now, clamped, and
+long names truncate with an ellipsis. There is also a <code>viewBox</code>, without which an SVG renders at
+intrinsic size and overflows any narrower container.</p>
+<h3 id="76b-the-floating-nodes-were-real-and-the-operator-found-them-by-looking">76b. The floating nodes were real, and the operator found them by looking<a class="headerlink" href="#76b-the-floating-nodes-were-real-and-the-operator-found-them-by-looking" title="Permanent link">#</a></h3>
+<p><code>data.audio</code>, <code>proc.audio</code>, <code>data.spike</code> and <code>proc.spike</code> had <strong>no edge touching them</strong>. Not a
+rendering artifact: the generator parses <code>config/*.yaml</code> for wiring, and those three processors are
+auto-provisioned by <code>ProcessorManager</code> in C++, so no profile ever declares their inputs.</p>
+<pre><code>proc.lfp    data.npx.raw -&gt; data.lfp      2.0 only (raw, no native lfp)   ProcessorManager.cpp:149-154
+proc.spike  data.npx.raw -&gt; data.spike    2.0 only                        same
+proc.audio  data.npx.ap else raw -&gt; data.audio   any probe band           ProcessorManager.cpp:202-206
+                                                                          AudioProcessor.cpp:913-917
+</code></pre>
+<p>Now supplied by an <code>AUTO_PROVISIONED</code> table and drawn <strong>orange and dashed</strong> with its own legend entry
+— "auto-provisioned in C++ (not in the profile)" — because <em>the profile wires this</em> and <em>the program
+wires this</em> are different claims. It is a second source of truth and is marked as one.</p>
+<p>Fixing it exposed a second bug: those edges point <strong>upward</strong> (a derived-band processor produces data,
+and Data sits above Processor), and the layout was silently dropping every backward edge as a
+presumed loop. So the first attempt at showing this wiring hid two thirds of it. Upward edges now
+route out to the side.</p>
+<h3 id="76c-the-config-band-was-a-hairball">76c. The config band was a hairball<a class="headerlink" href="#76c-the-config-band-was-a-hairball" title="Permanent link">#</a></h3>
+<p>37 profiles each drawing an independent curve into 9 sources. Every line crossed most of the others
+and none could be traced, which is the only thing those edges are for. Two changes: configs are
+<strong>ordered by the source they feed</strong> (sources are alphabetical, so a profile now sits roughly above
+its target), and their edges are <strong>bundled</strong> into a collector point above each source. They are also
+drawn fainter — at that count they are context, not the subject.</p>
+<h3 id="76d-the-point-the-operator-actually-made">76d. The point the operator actually made<a class="headerlink" href="#76d-the-point-the-operator-actually-made" title="Permanent link">#</a></h3>
+<blockquote>
+<p><em>"I don't think the diagram was blind — what you're using to generate it isn't properly documented
+nor is it an established skill for you nor future agents."</em></p>
+</blockquote>
+<p>That is the correct diagnosis. Every failure above was discoverable by anyone who read the generator,
+and nobody had, because nothing pointed at it: <code>make_architecture.py</code> was referenced in passing by
+<code>BuildingTheDocs.md</code> and had no page of its own. So the next agent would have rediscovered the same
+things by looking at the same broken picture.</p>
+<ul>
+<li><strong><a href="developer_docs/ArchitectureDiagrams.html"><code>developer_docs/ArchitectureDiagrams.md</code></a></strong> — what it
+  reads, where the edges come from, the C++-provisioned table and why it is drawn differently, every
+  layout rule <em>with the cost that bought it</em>, how to render an SVG headlessly to actually look at it,
+  and what is committed versus generated. Indexed in <code>developer_docs/README.md</code>.</li>
+<li><strong><code>.claude/skills/architecture-diagrams/SKILL.md</code></strong> — loads on "regenerate the architecture
+  diagram", "why is this node not connected to anything", "the README diagram",
+  "<code>make_architecture --check</code> failed". The main <code>spikespeak</code> skill now points at it.</li>
+</ul>
+<p>The skill leads with the trap, because it is the one that cost this session: <strong>a node with no edges
+is usually the diagram being blind, not the system being disconnected.</strong></p>
+<hr />
+<h2 id="77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80">77. ASAP BECOMES A CAPABILITY, NOT A SECOND COPY OF THE PROFILE  (2026-09-01, #80)<a class="headerlink" href="#77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80" title="Permanent link">#</a></h2>
+<p>Operator: <em>"Go ahead and get the ASAP mode selectable in the GUI … if one module needs it, like the
+Ripple Detector, then modules it's receiving data from upstream also need it."</em> On a separate branch
+(<code>feature/AsapPerModule</code>) with its own PR, per their instruction.</p>
+<h3 id="77a-why-a-config-key-was-the-wrong-shape">77a. Why a config key was the wrong shape<a class="headerlink" href="#77a-why-a-config-key-was-the-wrong-shape" title="Permanent link">#</a></h3>
+<p><code>low_latency</code> was readable only from YAML, at connect, with <strong>no GUI control anywhere</strong>. So the only
+way to run a closed loop at low latency was to select a <em>different profile</em> — which is why five files
+exist whose entire content is one flipped boolean, and why the matrix is <strong>incomplete by
+construction</strong>: 11 hardware profiles present, <strong>9 combinations missing</strong>. Encoding orthogonal flags
+as filenames costs 2^n files, so it can never be finished.</p>
+<h3 id="77b-three-measurements-that-shaped-the-design">77b. Three measurements that shaped the design<a class="headerlink" href="#77b-three-measurements-that-shaped-the-design" title="Permanent link">#</a></h3>
+<p><strong>ASAP changes exactly one thing.</strong> <code>mTimer-&gt;setInterval(mLowLatency ? 0 : 1)</code> and nothing else.
+Nothing is allocated or sized by it, and the worker runs at <code>QThread::HighPriority</code> in <strong>both</strong> modes
+— it is a high-priority spin, not a priority change. Cost: <strong>~98 % of one core against 13.4 %</strong>.</p>
+<p><strong>The flag is main-thread-only and read once</strong>, in <code>startAcq</code>, and the probe worker is created fresh
+on every Play. So a plain setter gives pause → toggle → play with no synchronisation, no worker and no
+vendor call touched. That is why the GUI control <strong>locks while acquiring</strong> rather than pretending to
+apply live.</p>
+<p><strong>The processors are already ASAP</strong>, and this is the finding that made propagation honest rather than
+theatrical. <code>BandFilterProcessor</code> and <code>RippleDetector</code> both drive off
+<code>waitForAvailable(consumerId, 1, available)</code> — whose second argument is a <strong>timeout in milliseconds,
+not a minimum count</strong>. They wake on the first sample and take whatever is there. Block size, and
+therefore latency, is set by the <strong>source's commit cadence</strong> and inherited downstream, exactly as
+LatencyProfiling.md concluded when the source flag removed the ~400 µs detector backlog.</p>
+<p>So: a consumer asks the data <strong>path</strong>; each producer either has a knob and uses it, or reports that
+it is already minimal. Only sources have a knob today. A processor that later batches gets the
+request for free, and the module needing the latency never has to know which ancestor can act.</p>
+<h3 id="77c-nothing-could-walk-the-graph">77c. Nothing could walk the graph<a class="headerlink" href="#77c-nothing-could-walk-the-graph" title="Permanent link">#</a></h3>
+<p><code>IProcessor</code> exposed only configure/start/stop. <code>IDataSource</code> reported no outputs.
+<code>ProcessorManager</code> stores <code>name -&gt; (IProcessor*, QThread*)</code> with <strong>no edges</strong>. Which is precisely why
+the one propagation that already existed — <code>RippleDetector::ensureInputBandEnabled</code> — is a hardcoded
+single hop keyed on the literal <code>"data.lfp"</code>.</p>
+<p>Modules now report their edges. Both new mixins have all-defaulted methods, so every existing module
+compiles untouched and opts in only if it has something to say.</p>
+<h3 id="77d-who-declares-what-which-is-the-part-the-operator-cared-about">77d. Who declares what, which is the part the operator cared about<a class="headerlink" href="#77d-who-declares-what-which-is-the-part-the-operator-cared-about" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>module</th>
+<th>declares</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.*</code>, both sims</td>
+<td>supports + <strong>exposes</strong></td>
+<td>the only real knob; on a rig, "how stale is the sample I am reacting to" is an operator question</td>
+</tr>
+<tr>
+<td><code>proc.lfp</code></td>
+<td><strong>edges only</strong></td>
+<td>already ASAP; walked <em>through</em> to reach the source, and deliberately given <strong>no</strong> control — it is in the path because the detector needs it, not because anyone should be tuning it</td>
+</tr>
+<tr>
+<td><code>proc.rippledetector</code></td>
+<td><strong>exposes</strong>, not supports</td>
+<td>nothing of its own to tune, but it is where the operator decides</td>
+</tr>
+</tbody>
+</table>
+<p><code>exposesLowLatency()</code> being separate from <code>supportsLowLatency()</code> is the whole mechanism for "present
+in the GUI at the discretion of that module's developer".</p>
+<h3 id="77e-ownership-and-a-test-expectation-of-mine-that-was-wrong">77e. Ownership, and a test expectation of mine that was wrong<a class="headerlink" href="#77e-ownership-and-a-test-expectation-of-mine-that-was-wrong" title="Permanent link">#</a></h3>
+<p>Release gives back <strong>only what the request took</strong>. The end-to-end check failed at first on
+"the source turned off" — and the code was right, the assertion was wrong:
+<code>SimNpx2RippleModule.yaml</code> sets <code>low_latency: true</code>, so the source was <em>already</em> in ASAP before
+anything was asked (<code>pending=True</code> on the very first dump). The request correctly took no ownership,
+and release correctly left the profile's setting alone. Corrected to assert <strong>that</strong>, which is a more
+valuable check than the one originally written — and the inverse of the bug where one ripple run left
+<code>proc.lfp</code> filtering 384 channels for a whole session.</p>
+<h3 id="77f-two-things-found-along-the-way">77f. Two things found along the way<a class="headerlink" href="#77f-two-things-found-along-the-way" title="Permanent link">#</a></h3>
+<p><strong><code>markProvisioned()</code> is called by only two processors</strong> — <code>BandFilterProcessor</code> and
+<code>AudioProcessor</code>. Filtering the graph on <code>isProvisioned()</code> therefore returned an EMPTY graph and made
+the ripple detector invisible. Membership in <code>mProcessorDatas</code> <em>is</em> "in this graph"; <code>isProvisioned</code>
+exists for the registry path, which this does not use.</p>
+<p><strong>The sim sources got the capability too</strong>, deliberately: every GUI test runs against simulated
+sources, so a capability the sim cannot express is one nothing can test without a probe on the bench.</p>
+<h3 id="77g-verified">77g. Verified<a class="headerlink" href="#77g-verified" title="Permanent link">#</a></h3>
+<ul>
+<li><code>tests/test_lowlatencygraph.cpp</code> — the NP2 chain reaches the source <strong>two hops</strong> away through a
+  knobless node; NP1 is one hop shorter through the <strong>same</strong> code; release returns only what it took;
+  a module reporting no edges is safely skipped; a cycle terminates. Proved by reverting the walk to
+  a single hop and watching it go red.</li>
+<li><code>tests/gui/low_latency.py</code> — who is offered a control, propagation, the lock while acquiring, and
+  <strong>confirmed</strong> state (pending → "takes effect on the next Play" → active after a Play).</li>
+<li>A live end-to-end run over the shipped WebSocket command:
+  <code>proc.rippledetector → proc.lfp → source.npx.sim2</code>, request accepted, source picked it up, a
+  module that does not expose it <strong>refused with a reason</strong> rather than silently doing nothing.</li>
+</ul>
+<hr />
+<h2 id="78-the-agreed-queue-2026-09-01-live">78. THE AGREED QUEUE  (2026-09-01, live)<a class="headerlink" href="#78-the-agreed-queue-2026-09-01-live" title="Permanent link">#</a></h2>
+<p>Recorded here as well as in the machine-local agent memory, because that memory does <strong>not</strong> cross
+machines and item 6 happens on a different box.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>item</th>
+<th>state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>#80 ASAP</strong> — gate green, commit + push <code>feature/AsapPerModule</code></td>
+<td>feature complete</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>PR for #80 → merge into <code>feature/OneBoxSupport</code>, delete the branch</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong><code>"below threshold"</code> label</strong> — → <strong><code>"no detection"</code></strong> (operator decision)</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>The dock renders four defaults it does not own</strong> — new-channel z → <strong>5.0</strong> to match <code>RippleDetector.cpp</code> (operator decision); the other three render nothing until the backend announces</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Gate speedup</strong> — <code>--jobs 4</code> twice; flip the default if green twice (~10 min/gate). Also make <code>run_gui_tests.py</code> take the same lock as <code>run_all_tests.py</code></td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Linux run</strong> — the operator runs Configuration 1. The last item on #52</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Order matters.</strong> 3 and 4 both edit <code>webinterface/RippleModule.js</code>, which the #80 branch also
+modified, so they wait until after the merge.</p>
+<p><strong>Two operator decisions already taken — do not re-ask.</strong> The column label becomes <code>"no detection"</code>,
+which states the confirmed backend fact and makes no claim about the signal, so it cannot contradict
+the sparkline drawn directly above it. A newly added channel gets <strong>z = 5.0</strong>, matching the
+detector's own <code>mZScoreThreshold</code>; this makes new channels <em>less</em> sensitive than before, which was
+accepted deliberately.</p>
+<p><strong>Item 5, so it is not re-investigated from scratch.</strong> The parallel path works and measured <strong>1.46×</strong>
+(1255 s against 1827 s), but one test used to hang to the 900 s subprocess timeout and <em>which</em> test
+changed between runs. Port collision is ruled out — <code>ensure_backend</code> fails in ~30 s with a clear
+error rather than hanging. The CDP per-recv and per-call deadlines that would bound this landed in
+the <strong>same commit</strong> as the serial default (<code>472d71b</code>), so git cannot say whether the hang predates
+them. So the cheap move is simply to re-run it twice, which is this file's own stated criterion.</p>
+<p>Also found while answering "can I start the queued tasks while a gate runs": <strong><code>run_gui_tests.py:160</code>
+reuses a backend it did not start</strong> (<code>if jobs == 1 and not backend_up()</code>), probing the default ports.
+The full gate takes a system-wide lock and the GUI runner does not, so a second suite launched beside
+a running gate silently attaches to the gate's backend — two suites driving one backend, which is
+exactly the failure that once looked like a regression. Folded into item 5.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7681,6 +7896,24 @@ breaks it.</p>
 <li><a href="#75c-why-these-are-not-dated-when-screenshots-are">75c. Why these are NOT dated, when screenshots are</a></li>
 </ul>
 </li>
+<li><a href="#76-the-architecture-diagram-readable-honest-and-now-a-skill-2026-09-01">76. THE ARCHITECTURE DIAGRAM: READABLE, HONEST, AND NOW A SKILL (2026-09-01)</a><ul>
+<li><a href="#76a-it-did-not-fit-for-two-compounding-reasons">76a. It did not fit, for two compounding reasons</a></li>
+<li><a href="#76b-the-floating-nodes-were-real-and-the-operator-found-them-by-looking">76b. The floating nodes were real, and the operator found them by looking</a></li>
+<li><a href="#76c-the-config-band-was-a-hairball">76c. The config band was a hairball</a></li>
+<li><a href="#76d-the-point-the-operator-actually-made">76d. The point the operator actually made</a></li>
+</ul>
+</li>
+<li><a href="#77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80">77. ASAP BECOMES A CAPABILITY, NOT A SECOND COPY OF THE PROFILE (2026-09-01, #80)</a><ul>
+<li><a href="#77a-why-a-config-key-was-the-wrong-shape">77a. Why a config key was the wrong shape</a></li>
+<li><a href="#77b-three-measurements-that-shaped-the-design">77b. Three measurements that shaped the design</a></li>
+<li><a href="#77c-nothing-could-walk-the-graph">77c. Nothing could walk the graph</a></li>
+<li><a href="#77d-who-declares-what-which-is-the-part-the-operator-cared-about">77d. Who declares what, which is the part the operator cared about</a></li>
+<li><a href="#77e-ownership-and-a-test-expectation-of-mine-that-was-wrong">77e. Ownership, and a test expectation of mine that was wrong</a></li>
+<li><a href="#77f-two-things-found-along-the-way">77f. Two things found along the way</a></li>
+<li><a href="#77g-verified">77g. Verified</a></li>
+</ul>
+</li>
+<li><a href="#78-the-agreed-queue-2026-09-01-live">78. THE AGREED QUEUE (2026-09-01, live)</a></li>
 </ul>
 </div>
 </aside>

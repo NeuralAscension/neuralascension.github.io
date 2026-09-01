@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -244,15 +245,11 @@ else. The GUI's band buttons and the Ripple dock's Start turn them on.</p>
 <pre><code class="language-yaml">name: &quot;OneBox&quot;
 sources:
   - name: &quot;source.npx.onebox&quot;
-    outputs:
-      - data: &quot;ap&quot;                    # 1.0 only  |  listing BOTH generations is what
-        name: &quot;data.npx.ap&quot;           #              marks this profile probe-agnostic
-      - data: &quot;lfp&quot;                   # 1.0 only
-        name: &quot;data.npx.lfp&quot;
-      - data: &quot;raw&quot;                   # 2.0 only
-        name: &quot;data.npx.raw&quot;
-      - data: &quot;adc&quot;                   # OneBox 12-ch analog input; presence enables the stream
-        name: &quot;data.npx.adc&quot;
+    outputs:                          # `name:` only -- an output has no other live key
+      - name: &quot;data.npx.ap&quot;           # 1.0 only  |  listing BOTH generations is what
+      - name: &quot;data.npx.lfp&quot;          # 1.0 only  |  marks this profile probe-agnostic
+      - name: &quot;data.npx.raw&quot;          # 2.0 only
+      - name: &quot;data.npx.adc&quot;          # OneBox 12-ch analog input; presence enables the stream
 processors:
   - name: &quot;proc.npx.display&quot;          # no inputs: -- bound from what the probe streams
   - name: &quot;proc.npx.recorder&quot;
@@ -264,6 +261,11 @@ processors:
 <p><strong><code>outputs:</code> is a permission list, not a demand.</strong> The source reads it to decide whether to enable
 the OneBox ADC, and to work out whether the profile expects a particular probe. It does <strong>not</strong>
 create the bands — the probe branch does. Listing a band the probe does not stream costs nothing.</p>
+<p><strong>An output entry has exactly one live key, <code>name:</code>.</strong> The <code>data:</code> key that used to sit beside it was
+read by nothing and was deleted from every shipped config on 2026-08-30 (#70). It is live on a
+<em>processor's</em> <code>inputs:</code> list — where it is the stream id — which is presumably why somebody copied it
+onto sources; the two blocks look identical and are not. Unknown keys are ignored, so an old config
+that still carries it keeps working. See <a href="ConfigReference.html"><code>ConfigReference.md</code></a> §<code>outputs:</code>.</p>
 <p><strong>Declaring both generations disables the probe-mismatch warning, deliberately.</strong> A profile naming
 only one generation still warns when the other is connected, and should: it was written for that
 probe. A profile naming both is stating that it serves either, and the warning would be noise.</p>
@@ -338,13 +340,22 @@ from every path that changes either, including the ones a <em>remote</em> change
 session and a second browser both land in <code>reflectSource()</code>.</p>
 <h3 id="the-menus-three-levels">The menu's three levels<a class="headerlink" href="#the-menus-three-levels" title="Permanent link">#</a></h3>
 <pre><code>Source ▾
-├─ HARDWARE
-│   ├─ OneBox           USB basestation — probe + 12-channel ADC
-│   ├─ PXIe             PXIe chassis — probe only
-│   └─ PXIe + NI-DAQ    PXIe chassis + the NI-DAQ card's inputs
-├─ Simulated Data  ›    → systems → probe → scenario
-└─ None
+├─ None
+├─ Neuropixels          basestation AND probe read from the rig (source.npx.auto)
+├─ PXIe with NI-DAQ     only offered when the scan found a PXIe module
+└─ Simulated Data  ›    → basestation → probe → scenario
 </code></pre>
+<p><strong>This is not the tree from §1's middle era.</strong> <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> were the menu for
+about a day and are now <code>gui_hidden: true</code>; they surface here <strong>only when the scan is ambiguous</strong> (a
+OneBox and a PXIe module both attached), as the explicit override for a question the backend refuses
+to guess at. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
+(<code>config/NeuropixelsNiDaq.yaml</code>) and <strong><code>PXIe + NI-DAQ</code></strong> is the hidden superseded one
+(<code>config/PxieNiDaq.yaml</code>). They are different profiles with different <code>name:</code> fields, and <code>name:</code> is
+the identity.</p>
+<p><strong>Hidden is not unselectable.</strong> Every hidden profile is still in the <code>configs</code> array of the
+<code>configList</code> reply — only the separate <code>guiHidden</code> array marks it — so <code>select "NPX 2.0 Multishank
+(OneBox)"</code> from the control CLI works exactly as it always did. Hiding a profile from the operator
+must never break a script that reproduces a published measurement; see §4.</p>
 <p>The simulated branch <strong>drills down in place</strong>. It was briefly a separate centred modal; a dropdown
 that hands you to a modal halfway through a decision is two surfaces for one choice.</p>
 <p>Both axes come from the config, never from a table in the frontend:</p>

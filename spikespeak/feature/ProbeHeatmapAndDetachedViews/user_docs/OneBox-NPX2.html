@@ -52,21 +52,25 @@
 <a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
 <a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
 <a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
 <a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
-<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -145,7 +146,7 @@ power-cycle. For the toolbar reference see <a href="README.html"><code>README.md
 walkthrough see <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a>; the 1.0-on-PXIe equivalent of this page is
 <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a>.</p>
 <blockquote>
-<p>📷 <em>Screenshots to be added — placeholders are marked <code>📷</code>. A missing capture is a missing
+<p>📷 <em>Some steps still carry a <code>📷</code> placeholder instead of an image. A missing capture is a missing
 screenshot, not a missing feature.</em></p>
 </blockquote>
 <p><strong>What is different about a OneBox, in one paragraph.</strong> To SpikesPeak the probe is the same probe: the
@@ -220,14 +221,17 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 <hr />
 <h2 id="2-launch-and-reach-the-gui">2. Launch, and reach the GUI<a class="headerlink" href="#2-launch-and-reach-the-gui" title="Permanent link">#</a></h2>
 <ol>
-<li>Run <strong><code>run_spikespeak.bat</code></strong> (in the repo root). A console window opens with the log, and your
-   default browser opens at <strong><code>http://localhost:8234</code></strong>.
+<li>Run <strong><code>run_spikespeak.bat</code></strong> (in the repo root). A console window opens with the log, and the UI
+   opens in a <strong>dedicated browser window</strong> — a chromeless app-window of its own, pointed at
+   <strong><code>http://localhost:8234</code></strong>, in its own session rather than as a tab among your others.
    - Run the launcher, <strong>not</strong> <code>bin/SpikesPeak.exe</code> directly. The exe on its own exits with
      <code>0xC0000135</code> — it needs Qt, the Neuropixels API and HDF5 on <code>PATH</code>, which the launcher supplies.
+   - <code>--tab</code> gives you the <strong>legacy</strong> behavior instead: a normal new tab in your default browser.
+     (That is also the automatic fallback if no suitable browser is found.)
    - If you would rather open the browser yourself, run <code>run_spikespeak.bat --no-browser</code> and browse to
      <code>http://localhost:8234</code>.</li>
 <li><strong>What you should see:</strong> a toolbar with <strong>Source: None</strong>, a status box reading <strong>Ready</strong>, and a
-   greyed-out <strong>▶</strong> Play button.</li>
+   grayed-out <strong>▶</strong> Play button.</li>
 <li>Any browser works, and you can open the page on a second monitor. <strong>Closing the last browser tab
    quits the backend</strong> after a ~2-second grace, so a refresh is safe — but the deliberate shutdown
    order in §9 is the one to use with hardware attached.</li>
@@ -237,7 +241,7 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 <ol>
 <li>Open the <strong>Source</strong> dropdown and pick <strong><code>Neuropixels</code></strong>.</li>
 </ol>
-<p>📷 <em>Source dropdown</em></p>
+<p><img alt="Source dropdown" src="images/source_dropdown.png" /></p>
 <p>You name neither the basestation nor the probe. <code>Neuropixels</code> scans, finds the OneBox, opens it,
    and the probe identifies itself; everything that depends on which probe it is (which bands exist,
    whether the LFP has to be computed, what the ripple detector reads) follows from that answer. The
@@ -312,7 +316,7 @@ of the 384 channels is routed to exactly one electrode, somewhere on some shank.
   shank 0 is channel 196; electrode 200 is channel 248. You never have to compute this, but it is why
   a channel number and an electrode number disagree on screen, and why the ripple dock shows you both
   (<code>e100 → ch196</code>).</li>
-<li>Unlike a 1.0, the 2.0 has <strong>no reserved reference channel</strong> — nothing is greyed out for that reason.</li>
+<li>Unlike a 1.0, the 2.0 has <strong>no reserved reference channel</strong> — nothing is grayed out for that reason.</li>
 </ul>
 <p>The editor enforces all of it. What you are doing is: <strong>choose 384 electrodes, apply them to the
 probe, then stream.</strong></p>
@@ -323,7 +327,7 @@ probe, then stream.</strong></p>
    manual), each with its shaft and tip. <strong>Green</strong> = this electrode's channel is active and will
    stream; <strong>gray</strong> = available, not selected.</li>
 </ol>
-<p>📷 <em>NP2 4-shank map editor on the OneBox</em></p>
+<p><img alt="NP2 4-shank map editor" src="images/np2_editor.png" /></p>
 <ol start="3">
 <li>Choose electrodes, three ways:
    - <strong>Shank + Bank buttons</strong> — pick a shank in the <strong>Shank</strong> dropdown, then <strong>Bank 0 / 1 / 2 / 3</strong>.
@@ -370,7 +374,7 @@ backend's confirmation.</p>
 <li><strong>The Play button tells you the state by color:</strong> green <strong>▶</strong> when paused ("press to play"), and a
   white <strong>⏸</strong> inside a <strong>green pulsing ring</strong> while streaming.</li>
 </ul>
-<p>📷 <em>Live view — probe RAW beside the OneBox ADC</em></p>
+<p><img alt="NP2 live view" src="images/np2_liveview.png" /></p>
 <h3 id="columns-rows-and-density">Columns, rows and density<a class="headerlink" href="#columns-rows-and-density" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -381,7 +385,7 @@ backend's confirmation.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Columns / Rows</strong></td>
+<td><strong>Cols</strong> (Rows in vertical layout)</td>
 <td>How many strips, 1–4.</td>
 </tr>
 <tr>
@@ -392,9 +396,19 @@ backend's confirmation.</p>
 <td><strong>Ch</strong></td>
 <td>Channels per strip: <code>Auto / 20 / 40 / 60 / 80 / 120</code>.</td>
 </tr>
+<tr>
+<td><strong>Time</strong></td>
+<td>Time width of the view: 1 / 2 / 5 / 10 s.</td>
+</tr>
 </tbody>
 </table>
-<p>| <strong>Window (sec)</strong> | Time width of the view: 1 / 2 / 5 / 10 s. |</p>
+<blockquote>
+<p>Two small naming traps in that row. <strong><code>Time</code></strong> was called <em>Window (sec)</em> until detached view windows
+landed, when "window" started reading as <em>which window</em>; its element id is still <code>windowSize</code>, which
+is what the GUI tests and <code>main.js</code> refer to. And there is a <strong>second readout also labeled Time</strong> —
+<code>Time: 0.00s</code> in the transport group beside Play and Record — which is elapsed stream time, not the
+width of the view.</p>
+</blockquote>
 <p><strong>Cost of density.</strong> Columns × Ch is what the browser draws. Since 2026-08-27 it is drawn by a hand-written WebGL2 renderer that holds a solid 60 fps across the whole range this GUI offers, 4 × 120 = 480 traces included (measured on this rig, OneBox + NP2.0). Frame rate is display smoothness only — acquisition, recording and ripple detection are unaffected either way.</p>
 <p>Each strip also has a <strong>vertical slider</strong> (plus ▲/▼) to scroll through depth, and its header shows the
 <strong>depth readout</strong> — the deepest and shallowest thing currently on screen.</p>
@@ -474,10 +488,12 @@ the caption; there is no control captioned <em>Scale</em>:</p>
 </table>
 <p>Click a trace label to <strong>select</strong> that channel, then use the <strong>scroll wheel</strong> over the chart to zoom
 just that one. Click again to deselect.</p>
-<h3 id="the-control-strip-changed-2026-08-25-this-is-the-current-behavior">The control strip (changed 2026-08-25 — this is the current behavior)<a class="headerlink" href="#the-control-strip-changed-2026-08-25-this-is-the-current-behavior" title="Permanent link">#</a></h3>
-<p>The per-column strip of controls (band, shank, L+R, scale, density) <strong>stays fully visible whenever it
-fits.</strong> It folds away to a small <strong><code>▾ controls</code></strong> chip only when the column is genuinely too narrow —
-the row needs 448 px beside the depth readout.</p>
+<h3 id="the-control-strip-behavior-as-of-2026-08-31">The control strip (behavior as of 2026-08-31)<a class="headerlink" href="#the-control-strip-behavior-as-of-2026-08-31" title="Permanent link">#</a></h3>
+<p>The per-column strip of controls (<strong>Traces/Heatmap</strong>, band, shank, L+R, scale, density) <strong>stays fully
+visible whenever it fits.</strong> It folds away to a small <strong><code>▾ controls</code></strong> chip only when the column is
+genuinely too narrow — the row needs <strong>556 px</strong> beside the depth readout.</p>
+<p><em>It used to be 448 px. The Traces/Heatmap view switch and the pin button added two tracks, so the
+strip is wider and folds one column sooner than it did before 2026-08-27.</em></p>
 <p>On the 1920-px screen on this rig, in practice:</p>
 <table>
 <thead>
@@ -488,20 +504,28 @@ the row needs 448 px beside the depth readout.</p>
 </thead>
 <tbody>
 <tr>
-<td>1, 2 or 3 columns, ripple dock closed</td>
+<td>1 or 2 columns, ripple dock closed</td>
 <td><strong>open</strong></td>
+</tr>
+<tr>
+<td><strong>3 columns</strong></td>
+<td><strong>folded to the chip</strong> — three columns leave about 477 px per header, under the 556 px the strip needs</td>
 </tr>
 <tr>
 <td>4 columns</td>
 <td><strong>folded to the chip</strong></td>
 </tr>
 <tr>
-<td>3 columns <strong>with the ripple dock open</strong></td>
-<td><strong>folded</strong> — the dock costs about 380 px, which is enough to push three columns over the line</td>
+<td>2 columns <strong>with the ripple dock open</strong></td>
+<td><strong>folded</strong> — the dock costs about 380 px</td>
 </tr>
 <tr>
 <td><strong>Vertical</strong> (rows), any number of rows</td>
 <td><strong>always open</strong> — a stacked row is the full window width</td>
+</tr>
+<tr>
+<td>any column switched to <strong>Heatmap</strong></td>
+<td>folds sooner still — heatmap mode spends the scale track on the statistic, colormap and color-axis top, so its strip is wider again</td>
 </tr>
 </tbody>
 </table>
@@ -581,9 +605,18 @@ the profile's <code>channels:</code> list (see <a href="../developer_docs/Config
 <td><code>&lt;name&gt;_&lt;timestamp&gt;.log</code></td>
 <td>A copy of the backend log for the life of this recording — what the rig was doing when the file was written.</td>
 </tr>
+<tr>
+<td><code>&lt;name&gt;_ripple.json</code></td>
+<td>The ripple detector's online thresholds and its <strong>resolved</strong> detection channels, written at record start — if the detector had channels then.</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_events.jsonl</code></td>
+<td><strong>One JSON object per line</strong> for every detection, latency measurement and confirmed stimulus during the recording. On a closed-loop rig this is the file that says what actually fired and when. Recordings made before 2026-08-28 do not have it: those events existed only as live WebSocket messages, so unless the stream was captured at the time they cannot be recovered.</td>
+</tr>
 </tbody>
 </table>
-<p>All the files in one recording share <strong>one timestamp</strong>, so a set always groups.</p>
+<p>All the <code>.bin</code> files in one recording share <strong>one timestamp</strong>, so a set always groups. (The two
+detector sidecars are named for the recording, not stamped — there is one of each per recording.)</p>
 <h3 id="what-the-sidecar-tells-you">What the sidecar tells you<a class="headerlink" href="#what-the-sidecar-tells-you" title="Permanent link">#</a></h3>
 <p>Each <code>.bin</code> is self-describing. Open the <code>.json</code> in any text editor:</p>
 <ul>
@@ -602,11 +635,15 @@ the profile's <code>channels:</code> list (see <a href="../developer_docs/Config
   real volts.) If you change the ADC range, the conversion changes with it.</li>
 </ul>
 <p>To load a recording in Python, use <code>python/spikespeak_postprocess</code> — see
-<a href="../python/README.html"><code>../python/README.md</code></a>. If the ripple detector had detection channels when you
-pressed Record, you also get a <strong><code>&lt;name&gt;_ripple.json</code></strong> carrying the online thresholds and the
-resolved detection channels — from the <strong>GUI Record button</strong> and from the <strong>control CLI</strong>
-(<a href="CommandLineControl.html"><code>CommandLineControl.md</code></a>) alike; both go through the same recorder. It lands
-in <code>&lt;dir&gt;/</code>, <em>beside</em> the <code>&lt;dir&gt;/&lt;name&gt;/</code> recording folder, so archive the parent directory.</p>
+<a href="../python/README.html"><code>../python/README.md</code></a>. The <code>_ripple.json</code> sidecar is written from the <strong>GUI
+Record button</strong> and from the <strong>control CLI</strong>
+(<a href="CommandLineControl.html"><code>CommandLineControl.md</code></a>) alike; both go through the same recorder.</p>
+<blockquote>
+<p><strong>Since 2026-08-28 the ripple sidecar lands inside <code>&lt;dir&gt;/&lt;name&gt;/</code>, with everything else.</strong> Copying
+the recording folder now takes the whole recording. In <strong>older</strong> recordings it was written one level
+up, in <code>&lt;dir&gt;/</code> — so for those, and only those, take the parent directory. The analysis tools read
+both layouts and tell you which one they found.</p>
+</blockquote>
 <hr />
 <h2 id="7-the-onebox-adc-band">7. The OneBox ADC band<a class="headerlink" href="#7-the-onebox-adc-band" title="Permanent link">#</a></h2>
 <p><strong>What it is for.</strong> Twelve analog inputs, ~30.3 kHz, sampled by the same box as the probe. It is the
@@ -625,7 +662,7 @@ alignment — which is the single biggest reason to prefer it over a second acqu
 BNCs on the imec <strong>NPOB_SDR_02</strong> breakout that plugs into the <strong>SDR</strong> connector. imec's documentation
 describes <strong>ADC0</strong> as the standalone <strong>"ADC" SMA</strong> connector on the box and ADC1–11 as reaching the
 breakout.</p>
-<p><strong>On this rig the wiring is:</strong></p>
+<p><strong>On this rig the wiring was, on 2026-08-24:</strong></p>
 <table>
 <thead>
 <tr>
@@ -653,6 +690,12 @@ breakout.</p>
 </tbody>
 </table>
 <blockquote>
+<p><strong>Only IO0 is a property of the hardware; the rest is a patch cable, and it has already changed.</strong>
+DAC0 always comes out on IO0 — that is silicon. Which BNC the SMA or the stimulator is on is one
+afternoon's wiring: IO9 has since been rewired and the SMA moved to IO11. <strong>Before you trust a
+channel number, check the dated bench table in
+<a href="../developer_docs/OneBoxWiring.html"><code>../developer_docs/OneBoxWiring.md</code></a> §4</strong> — that is the
+authority, and this table is a snapshot of one session.</p>
 <p><strong>Be honest with yourself about the mapping before you trust it.</strong> The channel-to-connector
 correspondence has <strong>not</strong> been verified end-to-end on this rig — with nothing patched in, all twelve
 channels sit at a common mid-scale level (measured ~1.37 V on 2026-08-21, ~1.7 V on 2026-08-24) and
@@ -710,7 +753,7 @@ quorum, training, and live z-tuning. Only the OneBox-specific parts are here.</p
 <li>The <code>OneBox</code> profile gets the detector and the derived LFP band automatically, provisioned from the
   probe that connects rather than declared in the file. Both
   are <strong>inert until you start them</strong> from the GUI — carrying them costs nothing when unused.</li>
-<li>Open the dock with <strong>◉ Ripple Detection</strong> in the second toolbar row (the same row that carries
+<li>Open the dock with <strong>SWR Detector</strong> in the second toolbar row (the same row that carries
   <strong>Bands ▼</strong> and the <strong>▣ OneBox</strong> tab). Opening it takes about 380 px off the live view, which is what
   folds a three-column control strip (§5).</li>
 <li><strong>A 2.0 probe has no hardware LFP band</strong>, so the detector reads the <strong>derived</strong> one. Pressing
@@ -727,8 +770,18 @@ quorum, training, and live z-tuning. Only the OneBox-specific parts are here.</p
   | <strong>both (for an A/B)</strong> | Fires both from the same threshold crossing — a paired comparison, not two runs matched afterwards. |</li>
 <li><strong>Latency, measured on this rig:</strong> the closed loop runs at <strong>0.55 ms</strong> on NP2.0 over the OneBox with
   ASAP delivery (<strong>0.92 ms</strong> on NP1.0) — see
-  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The
-  <strong>OneBox-DAC-versus-Pi comparison has not been measured yet</strong>; do not assume one is faster.</li>
+  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</li>
+<li><strong>DAC versus Pi, measured 2026-08-25:</strong> the <strong>OneBox DAC reaches voltage a median 363 µs before the
+  Pi does</strong> — n ≈ 1000 per trigger ordering, run both ways round and order-corrected, because two
+  triggers cannot leave one thread at the same instant and the one issued first is issued earlier.
+  <strong>The actionable half:</strong> issuing the <strong>stim server first</strong> costs <strong>6 µs</strong> and takes <strong>~200 µs</strong> out
+  of the Pi path, because the DAC's <code>np_setSWTriggerEx</code> occupies the detector thread for ~170–200 µs
+  and whichever trigger goes second waits for it. If you fire both, fire the Pi first.
+  Read 363 µs as a <strong>lower bound</strong>: the DAC is measured at its own output waveform, the Pi at the
+  gate it sends the AM 2300, which then has its own delay before it stimulates. And the two are not
+  interchangeable instruments — the DAC is a voltage source, the AM 2300 a constant-current
+  stimulator. Full method and both orderings:
+  <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</li>
 </ul>
 <p>Algorithm and data path: <a href="../developer_docs/RippleDetection.html"><code>../developer_docs/RippleDetection.md</code></a>.
 Stim server setup: <a href="../raspberrypi_pulsegenerator/README.html"><code>../raspberrypi_pulsegenerator/README.md</code></a>.</p>
@@ -743,7 +796,7 @@ Stim server setup: <a href="../raspberrypi_pulsegenerator/README.html"><code>../
 <li><strong>⏸ Pause</strong> the stream on the toolbar. <strong>What you should see:</strong> the Play button returns to a
    <strong>green ▶</strong>, status <code>Streaming paused</code>.</li>
 <li><strong>Disconnect.</strong> <strong>What you should see:</strong> status <strong><code>Source disconnected</code></strong>, Source back to <strong>None</strong>,
-   the <strong>Probe Map / Live Data / ▣ OneBox</strong> tabs disappear, Play greys out.
+   the <strong>Probe Map / Live Data / ▣ OneBox</strong> tabs disappear, Play grays out.
    Behind that one click the backend stops the WavePlayer, puts the SMA back to input, closes the
    probe, closes the basestation and <strong>releases the OneBox's virtual slot</strong> — that release is what lets
    the next connect succeed.</li>
@@ -802,11 +855,11 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 <td>Two hardware connects have failed in this process, and the <strong>third acquisition crashes the backend with no teardown</strong> — the one outcome the safety rules exist to prevent. So SpikesPeak stops the session first, on purpose: there is no ✕, no Escape, no clicking past it. Press <strong>Restart SpikesPeak</strong> (a fresh process clears the condition), then fix what made the connects fail before trying again. Detail: <a href="../developer_docs/HardwareFaultGuard.html"><code>../developer_docs/HardwareFaultGuard.md</code></a>.</td>
 </tr>
 <tr>
-<td><strong>▶ Play is greyed out</strong></td>
+<td><strong>▶ Play is grayed out</strong></td>
 <td>No source connected, or the probe is not ready yet. Watch the status box.</td>
 </tr>
 <tr>
-<td><strong>● Record is greyed out</strong></td>
+<td><strong>● Record is grayed out</strong></td>
 <td>You have to be <strong>playing</strong> first.</td>
 </tr>
 <tr>
@@ -827,7 +880,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 </tr>
 <tr>
 <td><strong>A column's controls have collapsed to a <code>▾ controls</code> chip</strong></td>
-<td>The column is narrower than 448 px. Hover to peek, click or <strong><code>Ctrl+Shift+&lt;n&gt;</code></strong> to pin — or use fewer columns, close the ripple dock, or switch to <strong>Vertical ⬍</strong>, where the strips are always open.</td>
+<td>The column is narrower than the 556 px the strip needs — on this 1920-px screen that is three columns or more. Hover to peek, click or <strong><code>Ctrl+Shift+&lt;n&gt;</code></strong> to pin — or use fewer columns, close the ripple dock, or switch to <strong>Vertical ⬍</strong>, where the strips are always open.</td>
 </tr>
 <tr>
 <td><strong><code>LFP Band</code> / <code>Spike Band</code> are missing from a column's dropdown</strong></td>
@@ -896,7 +949,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 <li><a href="#columns-rows-and-density">Columns, rows and density</a></li>
 <li><a href="#per-column-band-selection">Per-column band selection</a></li>
 <li><a href="#scale-labels-and-the-depth-readout">Scale, labels and the depth readout</a></li>
-<li><a href="#the-control-strip-changed-2026-08-25-this-is-the-current-behavior">The control strip (changed 2026-08-25 — this is the current behavior)</a></li>
+<li><a href="#the-control-strip-behavior-as-of-2026-08-31">The control strip (behavior as of 2026-08-31)</a></li>
 </ul>
 </li>
 <li><a href="#6-recording">6. Recording</a><ul>

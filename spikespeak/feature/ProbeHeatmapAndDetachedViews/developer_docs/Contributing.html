@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Next task — finish the OneBox closed-loop latency matrix - SpikesPeak Docs</title>
+<title>Contributing - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Plans and open briefs / Next task — finish the OneBox closed-loop latency matrix</span>
+  <span class="crumb">Developer Docs / Working on this repo / Contributing</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a class="active" href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a class="active" href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,117 +131,90 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="next-task-finish-the-onebox-closed-loop-latency-matrix">Next task — finish the OneBox closed-loop latency matrix<a class="headerlink" href="#next-task-finish-the-onebox-closed-loop-latency-matrix" title="Permanent link">#</a></h1>
-<blockquote>
-<p>Set up and ready to run. Needs: the probe in saline, the synthetic ripple signal <strong>playing</strong>, and the
-Pi stim server reachable. Everything else is prepared.</p>
-</blockquote>
-<h2 id="run-these-five-in-order">Run these five, in order<a class="headerlink" href="#run-these-five-in-order" title="Permanent link">#</a></h2>
-<p>The completed cell is <strong>NP2.0 / OneBox / 1 ch / quorum 1 / DEFAULT delivery</strong> — median 1.087 ms,
-n = 1000 (<code>RecordingTests/2026-08-19_onebox_np2_1000ripples</code>, Status §40). These finish the matrix
-that already exists for the PXIe rig (<code>{1 ch, 2 ch q2, 4 ch q3} × {baseline, ASAP}</code>):</p>
-<pre><code class="language-bash"># 1 -- 1 ch, ASAP  (the A/B partner of the completed cell)
-python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
-  --channels 0 --quorum 1 --z 2.5 --n 1000 --timeout 3600 \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_1ch_asap&quot; \
-  --name np2_onebox_1ch_asap
-
-# 2 -- 2 ch, quorum 2, DEFAULT
-python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
-  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_baseline&quot; \
-  --name np2_onebox_2ch_q2_baseline
-
-# 3 -- 2 ch, quorum 2, ASAP
-python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
-  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_asap&quot; \
-  --name np2_onebox_2ch_q2_asap
-
-# 4 -- 4 ch, quorum 3, DEFAULT
-python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
-  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_baseline&quot; \
-  --name np2_onebox_4ch_q3_baseline
-
-# 5 -- 4 ch, quorum 3, ASAP
-python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
-  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_asap&quot; \
-  --name np2_onebox_4ch_q3_asap
+  <main class="content"><article class="markdown-body"><h1 id="contributing">Contributing<a class="headerlink" href="#contributing" title="Permanent link">#</a></h1>
+<p>How work is actually done in this repo. Short on purpose; the reasoning behind most of these lives in
+the page each one links to.</p>
+<h2 id="branches-and-commits">Branches and commits<a class="headerlink" href="#branches-and-commits" title="Permanent link">#</a></h2>
+<p>Work happens on a <strong><code>feature/&lt;Thing&gt;</code></strong> branch off <code>main</code> — <code>feature/OneBoxSupport</code>,
+<code>feature/NIDAQSupport</code>, <code>feature/ProbeHeatmapAndDetachedViews</code>. One branch per subsystem or effort,
+not one per commit. <code>develop</code> and <code>main</code> exist; nothing is pushed straight to either while a feature
+branch is live.</p>
+<p><strong>Commit messages are one imperative sentence saying what the commit makes true</strong>, not what files it
+touched. No trailing period. An optional lowercase area prefix (<code>gui:</code>, <code>sim:</code>, <code>Intan:</code>) when the
+subject would otherwise be ambiguous, and the issue number in parentheses when there is one:</p>
+<pre><code>Believe the device's clock, not the host's
+Derive script paths from __file__, not the original machine's checkout
+Fix .gitignore rules that silently matched nothing
+sim: ripples reach the AP band, attenuated rather than eliminated
+Put the Python suite in the gate, and test the sync pairing (#75 item 4)
 </code></pre>
-<p><strong>The backend must already be running</strong> (<code>rebuild.bat</code> is unrelated; use <code>run_spikespeak.bat
---no-browser</code>). <code>Rig</code> attaches to <code>localhost:1234</code>; it does not launch the backend. The tool
-disconnects the source at the end of each cell but leaves the backend up, so all five can run against
-one backend.</p>
-<p>Then NP1.0 on the OneBox: the same five plus the 1 ch DEFAULT cell, with
-<code>--source "NPX 1.0 (OneBox)"</code> / <code>"NPX 1.0 (OneBox, ASAP)"</code>.</p>
-<h2 id="analysis-per-cell">Analysis, per cell<a class="headerlink" href="#analysis-per-cell" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python ripple_tools/analyze_recording.py &lt;dir&gt;/&lt;name&gt; --name &lt;name&gt; \
-  --stim-band adc --stim-channel 2 \
-  --ws &lt;dir&gt;/&lt;name&gt;_ws.jsonl \
-  --figs &lt;dir&gt;/analysis
-</code></pre>
-<p>Two things this line gets right that an earlier version of it did not, both of which cost a full
-re-run to discover:</p>
+<p><strong>Agents: do not <code>git add</code>, commit or push unless the operator asks.</strong> Leave the work in the tree and
+say what you changed. This is not a formality — the operator decides what lands, and an unrequested
+commit on a live feature branch is work they now have to undo.</p>
+<h2 id="issues">Issues<a class="headerlink" href="#issues" title="Permanent link">#</a></h2>
+<p><a href="https://github.com/NeuralAscension/SpikesPeak/issues">https://github.com/NeuralAscension/SpikesPeak/issues</a>. Cite them by bare number in commits, docs and
+status entries — <code>#49</code>, <code>#59</code>, <code>#65</code> — because that is how they are discussed on the rig, and the
+number is what makes a two-year-old paragraph findable.</p>
+<h2 id="before-you-push">Before you push<a class="headerlink" href="#before-you-push" title="Permanent link">#</a></h2>
+<p>Three suites: C++, Python, GUI. <strong><a href="Testing.html"><code>Testing.md</code></a> is the only place the suite and case
+counts are maintained</strong> — quote the file, never the number. The counts have rotted in three separate
+documents at once, which is how two mandatory entry documents came to hand a newcomer two different
+answers on the same day.</p>
+<p><code>python scripts/run_all_tests.py</code> runs all three in order. A red suite that reaches the remote is a
+red suite for everyone who pulls, so run it before you push, not just before you hand back. If you
+added a test, <strong>prove it can fail</strong> — inject the regression, watch it go red, revert <em>and rebuild</em>
+(a stale <code>bin/SpikesPeak.exe</code> still carries the regression after the source is clean).</p>
+<h2 id="house-rules">House rules<a class="headerlink" href="#house-rules" title="Permanent link">#</a></h2>
 <ul>
-<li><strong><code>recdir</code> is POSITIONAL. There is no <code>--dir</code>.</strong> The earlier form failed instantly with
-  <code>unrecognized arguments: --dir</code> on every cell.</li>
-<li><strong>It is the INNER directory.</strong> <code>record_ripples.py --dir D --name N</code> writes the <code>.bin</code> and
-  <code>.bin.json</code> into <code>D/N/</code>, and leaves <code>N_ws.jsonl</code> in <code>D/</code> beside it. Passing <code>D</code> gives
-  <code>No SpikesPeak recordings (*.bin.json) found</code>.</li>
-<li><strong><code>--ripple-sidecar</code> is no longer needed.</strong> Since 2026-08-28 the backend writes the sidecar into
-  <code>D/N/</code> with the bands, which is where <code>recdir</code> points, so it is found automatically. It was the
-  old layout — sidecar in <code>D/</code>, one level above where the tool looked — that made the explicit flag
-  mandatory. Recordings made before that date still need it, or the tool falls back to the parent
-  folder and prints which layout it found.</li>
+<li><strong>American English</strong> everywhere — color, behavior, analyze, optimize, artifact, gray — including
+  code comments, docs and commit messages.</li>
+<li><strong>No scratch files in the repo.</strong> Logs, captures, screenshots and working files go to the session
+  scratchpad. They were gitignored once, which meant <code>git status</code> looked clean while the repo root
+  held 34 of them.</li>
+<li><strong>Never commit recording data.</strong> The referenced analysis figures stay; the <code>.bin</code>s never do.</li>
+<li><strong>Absolute dates, never relative.</strong> "2026-08-20", not "last week" — every one of these pages
+  outlives the session that wrote it.</li>
 </ul>
-<p>And do not pipe the command into <code>tail</code>: a shell pipeline exits with the status of its LAST member, so
-a failing analysis reports success. That is how five cells were "analysed" without producing a single
-number.</p>
-<p><code>--stim-band adc --stim-channel 2</code> is <strong>not optional on a OneBox</strong>. Without it the analyser looks for
-a <code>nidaq</code> band, finds none, and silently reports no closed-loop latency at all. Channel 2 is the Pi's
-On/Off line (GPIO17 = header pin 11) into OneBox <strong>IO2</strong>.</p>
-<h2 id="what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters<a class="headerlink" href="#what-was-fixed-before-this-run-and-why-it-matters" title="Permanent link">#</a></h2>
-<p>A first attempt at cell 1 reached <strong>944 detections with ZERO stim fires</strong>, which would have been a
-634 MB recording that looks complete and cannot yield a latency.</p>
-<p>The cause: <strong>the gate and the arm are separate, and both are required.</strong> <code>set_stim_enabled</code> only
-permits datagrams to leave the host; the stimulator must also be <em>armed</em> before a detection triggers
-it. The backend's auto-arm on source selection was deliberately removed (selecting any source — even
-one whose connect then failed — put a datagram on the wire), and nothing replaced it for <strong>scripted</strong>
-runs. The GUI arms via its stim LED; <code>record_ripples.py</code> had no equivalent, so it enabled the gate,
-detected happily, and fired nothing. The log said so plainly and nobody was reading it:</p>
-<pre><code>[RippleDetector] stimulation ENABLED -&gt; &quot;192.168.1.100:8888&quot; (not armed; arm from the GUI stim LED)
-</code></pre>
-<p>Two changes:</p>
+<h2 id="documentation-conventions">Documentation conventions<a class="headerlink" href="#documentation-conventions" title="Permanent link">#</a></h2>
 <ul>
-<li><code>Rig.arm_stim()</code> added, and <code>record_ripples.py</code> now arms after enabling the gate, then prints the
-  stim status so the arming is visible at the top of the run.</li>
-<li>The end-of-run summary <strong>warns loudly</strong> if stimulation was requested and nothing fired, because a
-  pulse-less closed-loop recording is otherwise indistinguishable from a good one until analysis.</li>
-</ul>
-<h2 id="two-operational-notes">Two operational notes<a class="headerlink" href="#two-operational-notes" title="Permanent link">#</a></h2>
-<ul>
-<li><strong>Run each cell in the background, or with a long timeout.</strong> A cell takes roughly 10 minutes
-  (~500 ms between detections at 1000 detections). A 10-minute foreground limit killed the first
-  attempt at 944/1000. The hardware was fine — the teardown still ran and the OneBox closed properly
-  — but the run was lost.</li>
-<li><strong>Disk</strong>: each cell is ~600–700 MB, so the five are ~3.5 GB. There was 330 GB free at the time of
-  writing. Recording data stays local; it is never committed.</li>
+<li><strong>A page's row in <a href="README.html"><code>README.md</code></a> and its entry in <code>scripts/build_docs.py</code> <code>GROUPS</code> move in
+  the same commit.</strong> They are the same list twice: the map a human reads and the map the book renders.
+  The build prints a warning naming any page in neither, and such a page renders under "Unsorted",
+  which is where docs go to be missed.</li>
+<li><strong><code>NextTask_*.md</code> briefs are transient.</strong> Archive one to <a href="archive/README.html"><code>archive/</code></a> in the
+  commit that finishes it, fold anything durable into the topic doc, and add a row to the archive
+  table saying what superseded it. A finished brief left in "Plans and open briefs" reads as work
+  waiting to be done — on this repo that can cost a session of rig time re-running a completed matrix.</li>
+<li><strong><code>../SpikesPeak_Status.md</code> is append-only.</strong> Add a dated section and an index row; never rewrite or
+  reorder history.</li>
+<li><strong>A "current behavior" claim carries the date it was checked.</strong> Undated claims outlive the behavior
+  they describe and there is then no way to tell which.</li>
+<li><strong>Reference source files as inline code spans — <code>`src/core/Foo.cpp`</code> — never as markdown links.</strong>
+  The generated book contains only doc pages, so a link to <code>../src/…</code> or <code>../scripts/…</code> is a broken
+  link in the book even though it resolves on GitHub.</li>
+<li><strong>Keep spaced separators out of headings</strong> (<code>Scope: 2.0 only</code>, not <code>Scope — 2.0 only</code>): GitHub and
+  the book slugify them into <em>different</em> anchors, so the link works in exactly one of the two places
+  the file is read.</li>
+<li><strong>One canonical home per topic.</strong> Put durable knowledge in the existing topic doc; new files are for
+  genuinely new subsystems. Rebuild the book afterwards with <code>python scripts/build_docs.py</code> and read
+  its last line — <code>… N links, 0 broken</code>, with no <code>WARNING:</code> above it.</li>
 </ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_OneBoxLatencyMatrix.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+    <footer class="pagefoot">Generated from <code>developer_docs/Contributing.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#run-these-five-in-order">Run these five, in order</a></li>
-<li><a href="#analysis-per-cell">Analysis, per cell</a></li>
-<li><a href="#what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters</a></li>
-<li><a href="#two-operational-notes">Two operational notes</a></li>
+<li><a href="#branches-and-commits">Branches and commits</a></li>
+<li><a href="#issues">Issues</a></li>
+<li><a href="#before-you-push">Before you push</a></li>
+<li><a href="#house-rules">House rules</a></li>
+<li><a href="#documentation-conventions">Documentation conventions</a></li>
 </ul>
 </div>
 </aside>

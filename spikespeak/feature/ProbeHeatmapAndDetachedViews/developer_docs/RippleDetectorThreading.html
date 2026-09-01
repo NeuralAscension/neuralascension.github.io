@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a class="active" href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -150,6 +151,33 @@ the per-sample budget (thousands of channels, or a much heavier per-channel algo
 processing of both). <strong>Before threads, the higher-leverage optimization is AVX (8× per op, zero sync cost)</strong> —
 which this codebase already uses for <code>proc.lfp</code> but the detector does not. Numbers, method, and the crossover
 where multithreading wins are below, plus the plausible reasons a prior version was multithreaded.</p>
+<hr />
+<h2 id="0-what-has-changed-since-read-before-quoting-a-number-from-this-page-added-2026-08-31">0. What has changed since — read before quoting a number from this page (added 2026-08-31)<a class="headerlink" href="#0-what-has-changed-since-read-before-quoting-a-number-from-this-page-added-2026-08-31" title="Permanent link">#</a></h2>
+<p>This is a <strong>dated one-shot trade-off report</strong> from 2026-07-08 and it is kept as one. The method and the
+conclusion still hold: the detector's ripple-band and envelope filters are <strong>still scalar</strong>, single-thread
+inline is still the right design, and AVX still comes before threads. Three things have been measured since
+that a reader must not carry away wrong.</p>
+<p><strong>1. AVX2 is 3.10×, not 8×.</strong> §6 projects the post-AVX ceiling from the <strong>lane count</strong> (8 channels per op).
+The measured speedup of the AVX2 filter path is <strong>3.10×</strong> — 498.8 ns against 1547.3 ns per
+384-channel sample row, stable across three repeats (<a href="Profiling.html"><code>Profiling.md</code></a> §4). Lane count is an upper bound, not a speedup: loads,
+stores and the delay-line shift do not vectorize away. So §6's projected single-thread ceilings are about
+<strong>2.6× too high</strong> — read ~14 k → <strong>~44 k</strong> decimated and ~1.2 k → <strong>~3.7 k</strong> full-rate, not 113 k / 9.4 k.
+The <em>ordering</em> argument (SIMD adds no wake or scheduling latency, so it beats threads at every scale below
+saturation) is unaffected; only the size of the win moves.</p>
+<p><strong>2. The "~1–2 ms" UDP/stim-server row in §3 is a superseded estimate.</strong> It was a plausible budget written
+before anything was measured, and it is <strong>larger than the entire closed loop turned out to be</strong>: threshold
+crossing → stimulus at the electrode is <strong>0.55–0.98 ms</strong>, n ≈ 1000 per cell, on both probes and both
+transports. Read that row as "not measured at the time", not as a term in a budget. Measured numbers:
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>; the per-stage
+instrumentation is in <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>.</p>
+<p><strong>3. This page uses a different latency definition from the rest of the repo, and the two are not
+comparable.</strong> Here, latency is <strong>ripple ONSET → stimulation, with the filters' group delay INCLUDED</strong> —
+hence the ~7 ms fixed FIR delay plus ~10–30 ms of envelope build in §3. The repo's canonical definition is
+<strong>threshold crossing → stimulus at the electrode, group delay EXCLUDED</strong>, because the group delay is a fixed
+function of the tap count and not part of the loop. That is why this page says tens of milliseconds and
+<code>CLOSED_LOOP_LATENCY.md</code> says a fraction of one: <strong>they are measuring different quantities</strong>, not
+contradicting each other. Neither number is wrong; quoting one against the other is.</p>
+<p>None of this changes §8's recommendation.</p>
 <hr />
 <h2 id="1-what-the-detector-actually-does-today-facts-from-the-code">1. What the detector actually does today (facts, from the code)<a class="headerlink" href="#1-what-the-detector-actually-does-today-facts-from-the-code" title="Permanent link">#</a></h2>
 <ul>
@@ -416,6 +444,7 @@ lower-latency and simpler, with ~37× headroom on one core.</strong></p>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
+<li><a href="#0-what-has-changed-since-read-before-quoting-a-number-from-this-page-added-2026-08-31">0. What has changed since — read before quoting a number from this page (added 2026-08-31)</a></li>
 <li><a href="#1-what-the-detector-actually-does-today-facts-from-the-code">1. What the detector actually does today (facts, from the code)</a></li>
 <li><a href="#2-measurement-so-this-isnt-hand-waving">2. Measurement (so this isn't hand-waving)</a><ul>
 <li><a href="#21-repeated-measurement-mean-sem-n-20-reps-11-channel-counts">2.1 Repeated measurement (mean ± SEM, n = 20 reps × 11 channel counts)</a></li>

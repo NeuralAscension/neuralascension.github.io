@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -142,12 +143,24 @@
 <blockquote>
 <p><strong>Closed-loop latency = the time from the threshold being crossed (on the filtered probe signal) to the
 stimulus pulse being observed on the NI-DAQ.</strong></p>
+<p><strong>The clock starts at the threshold crossing, not at the ripple.</strong> Filter group delay and the time
+the envelope takes to build are <em>upstream</em> of that instant and are deliberately <strong>excluded</strong>.</p>
 </blockquote>
-<p>That is the number quoted in <code>RecordingTests/NP{1,2}_RIPPLE_TESTS.md</code>, and it can <strong>only be measured
-offline</strong>, by <code>ripple_tools/analyze_recording.py</code>, because the ai4 pulse edge exists solely in the NI-DAQ
-recording and needs the sync fit to share a clock with the probe. Everything else on this page is a
-<em>decomposition</em> of that interval — useful for finding where the milliseconds live, never a replacement.</p>
+<p>That is the number quoted in
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>, and it can
+<strong>only be measured offline</strong>, by <code>ripple_tools/analyze_recording.py</code>, because the ai4 pulse edge exists
+solely in the NI-DAQ recording and needs the sync fit to share a clock with the probe. Everything else
+on this page is a <em>decomposition</em> of that interval — useful for finding where the milliseconds live,
+never a replacement.</p>
 <blockquote>
+<p><strong>⚠️ Other pages measure a different quantity, and the numbers are not comparable.</strong> Figures
+elsewhere in these docs that quote <strong>tens of milliseconds</strong> — "~7–40 ms" and similar — are
+<em>ripple-onset</em> to stimulus: they <strong>include</strong> the ripple/envelope FIR group delay and the time the
+envelope needs to rise past threshold. That is a legitimate and useful measurement; it is simply not
+this one, and it is roughly an order of magnitude larger by construction. A reader comparing
+"~7–40 ms" against "0.55 ms" is comparing two different intervals, not two implementations.
+Whenever you quote a latency, <strong>say which instant the clock started on.</strong> The offline pipeline and
+what each stage contributes: <a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a>.</p>
 <p><strong>On a OneBox rig, read "NI-DAQ" as "the OneBox's own ADC".</strong> The definition is unchanged — threshold
 crossing → observed stimulus pulse — but the pulse is captured on an analog input of the <em>same device</em>
 as the probe, so both instants come from one 100 kHz hardware counter and <strong>no sync fit is involved</strong>.
@@ -302,7 +315,7 @@ in microseconds on a steady clock:</p>
 </tr>
 </tbody>
 </table>
-<p>Collect and summarise with:</p>
+<p>Collect and summarize with:</p>
 <pre><code class="language-bash">python ripple_tools/latency_breakdown.py --n 1000 --fig lat.png --out lat.json
 </code></pre>
 <p><strong><code>send_to_ack_us</code> is not comparable to the NI-DAQ figure.</strong> The ACK is sent <em>after</em> the pulse train
@@ -355,10 +368,10 @@ different quantities and the ACK figure also includes the return trip.</p>
 <p>Two conclusions:</p>
 <ol>
 <li><strong>Our compute is free.</strong> Filters, state machine and dispatch total ~6 µs. There is nothing worth
-   optimising in the backend's processing path.</li>
-<li><strong>The backlog is quantised to exact multiples of 400 µs</strong> (0 / 400 / 800 / 1600) — and 400 µs is
+   optimizing in the backend's processing path.</li>
+<li><strong>The backlog is quantized to exact multiples of 400 µs</strong> (0 / 400 / 800 / 1600) — and 400 µs is
    precisely one NP1 LFP sample period (2.5 kHz). That is the signature of <strong>block delivery</strong>, not jitter.
-   <em>This quantisation is also why the stage split must be summarised with means, not medians — see the
+   <em>This quantization is also why the stage split must be summarized with means, not medians — see the
    real-hardware section below.</em></li>
 </ol>
 <p>Raw data: <code>RecordingTests/latency/latency_stages_pi.{json,png}</code> (simulation + live Pi).</p>
@@ -391,7 +404,7 @@ measured below, which is the point: the spin is a tool with a price tag, not the
 <p><strong>Nothing in the module.</strong> ASAP is a property of the <strong>source</strong>, not of any consumer. A source with
 <code>low_latency: true</code> commits smaller blocks more often; every downstream processor simply sees its
 input arrive in smaller, fresher pieces through the same <code>CircularBuffer</code> it already reads. There is
-no API to call and no flag to honour.</p>
+no API to call and no flag to honor.</p>
 <p>What a module <em>must not</em> do is assume it:</p>
 <ul>
 <li><strong>Do not size a buffer, window or batch to the ASAP block size.</strong> The same module runs at 1 ms on
@@ -427,7 +440,7 @@ and plain-streaming configs leave it off, so only loop-closing configs pay for i
 </code></pre>
 <p>Implementation: <code>SimulatedDataSource::initDataSource</code> parses the key and forwards it to
 <code>SimNpx1Worker::setLowLatency</code>, which drops the production tick from 1 ms to 0 (fire on every event-loop
-pass). The <strong>NP2 sim</strong> source (<code>SimulatedData2Source</code> / <code>SimNpx2Worker</code>) honours it identically as of
+pass). The <strong>NP2 sim</strong> source (<code>SimulatedData2Source</code> / <code>SimNpx2Worker</code>) honors it identically as of
 2026-07-24 — it previously <strong>hardcoded the 1 ms tick and silently ignored <code>low_latency</code></strong>, so ASAP had no
 effect in NP2 simulation. The code default stays <code>false</code> (1 ms), so plain-streaming configs are unchanged —
 but the everyday ripple configs now set <code>low_latency: true</code>, so <strong>ripple detection defaults to ASAP</strong> on both
@@ -500,7 +513,7 @@ ripple period so 1000 samples take ~9 min instead of ~33).</p>
 </tbody>
 </table>
 <p>Raw data: <code>RecordingTests/latency/latency_{baseline,asap}_1000.{json,png}</code>.</p>
-<p>These are <strong>simulation</strong> artefacts, kept as the evidence behind this table. The authoritative hardware
+<p>These are <strong>simulation</strong> artifacts, kept as the evidence behind this table. The authoritative hardware
 numbers are in <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</p>
 <p><strong>Read the total with care.</strong> The <code>datagram -&gt; ACK</code> gain is NOT all real stimulus speed-up. The ACK is
 timestamped in <code>StimulatorClient::onReadyRead</code>, which runs during the detector's <code>processEvents()</code> BETWEEN
@@ -563,7 +576,7 @@ The <strong>request size is unchanged</strong> so the probe can still catch up i
 cadence changes. Configs <strong><code>Npx1PxiNiDaqAsap</code></strong> and <strong><code>Npx2PxiNiDaqAsap</code></strong> are byte-identical to their
 default configs apart from that key. The backend logs <code>acquisition poll interval 0 ms (low_latency =
 true)</code> at start — check it to confirm the flag actually took before trusting an A/B.</p>
-<p>Staleness is still bounded below by the Neuropixels API's own packetisation: below that the data has not
+<p>Staleness is still bounded below by the Neuropixels API's own packetization: below that the data has not
 arrived yet and no software change can help.</p>
 <h3 id="measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell">Measured on real NP1.0 — every quorum level, ~1000 stimuli per cell<a class="headerlink" href="#measured-on-real-np10-every-quorum-level-1000-stimuli-per-cell" title="Permanent link">#</a></h3>
 <table>
@@ -647,9 +660,9 @@ arrived yet and no software change can help.</p>
 <p><strong>−506 / −547 / −521 us (−34 to −37 %) median, IQR 4–5x tighter.</strong> ASAP zeroes the batching counter
 <em>exactly</em> — 0 us in every one of ~1000 events in all three ASAP runs, not merely a lower mean.</p>
 <p>The detector's own compute is <strong>8–15 us</strong>, two orders of magnitude below the loop total: there is nothing
-to gain by optimising the signal processing.</p>
+to gain by optimizing the signal processing.</p>
 <blockquote>
-<p><strong>Use means, not medians, for the stage split.</strong> The backlog counter is quantised to one input sample
+<p><strong>Use means, not medians, for the stage split.</strong> The backlog counter is quantized to one input sample
 (400 us at 2.5 kHz), so its <em>median</em> snaps to 0 / 400 / 800 us — two runs whose totals matched to 5 us
 reported medians of 400 us and 0 us. Medians are also not additive, so subtracting them from a median
 total pushed the discretisation error into the residual (1082 vs 1476 us). Both plotting scripts now
@@ -756,7 +769,7 @@ the detector input, or the split will mis-attribute the gain. The NI-DAQ total i
 </blockquote>
 <h2 id="figures">Figures<a class="headerlink" href="#figures" title="Permanent link">#</a></h2>
 <p><code>ripple_tools/plot_latency_figure.py</code> renders the five-panel latency figure (signal chain, histogram,
-CDF, stage decomposition, per-trial stability); <code>plot_latency_compare.py</code> renders the A/B. Both take
+CDF, stage decomposition, per-trial stability); <code>ripple_tools/plot_latency_compare.py</code> renders the A/B. Both take
 <code>--theme light|dark</code>.</p>
 <p>Palettes are <strong>validated, not eyeballed</strong> (<code>scripts/validate_palette.js</code> in the dataviz skill):</p>
 <ul>
@@ -787,6 +800,18 @@ python ripple_tools/plot_latency_compare.py \
 python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl     --stim-band adc --stim-channel 2 --figs &lt;recdir&gt;/analysis
 </code></pre>
 <h2 id="gotchas-that-cost-real-time">Gotchas that cost real time<a class="headerlink" href="#gotchas-that-cost-real-time" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>On a OneBox recording, the analyzer needs two flags or it silently answers nothing.</strong>
+  <code>analyze_recording.py</code> looks for a <code>nidaq</code> band by default. A OneBox rig has none, so without
+  <code>--stim-band adc --stim-channel &lt;n&gt;</code> it finds no stim edges, <strong>reports no closed-loop latency, and
+  exits 0</strong>. You get a clean run, a figure, and no number — which is the failure mode that looks
+  least like one:</li>
+</ul>
+<p><code>bash
+  python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl \
+      --stim-band adc --stim-channel 2 --figs &lt;recdir&gt;/analysis</code></p>
+<p>The channel is bench wiring, not a constant — <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a> §4 is the
+  authority for what is patched where today.</p>
 <ul>
 <li><strong>The OneBox ADC cannot measure stim pulse width. Do not try.</strong> At 30.3 kHz it samples every
   <strong>33 µs</strong>, so a ~130 µs biphasic pulse spans about four samples. Measured across 67 consecutive
@@ -824,10 +849,15 @@ python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;
   or width. Ground truth for width is an <strong>oscilloscope</strong>; on this rig the scope width matches what
   the Pi is commanded to emit to the microsecond, so quote the Pi's parameters, never a number
   derived from the ADC.</p>
-<p>Note also that <strong><code>IO9</code> carries the AM 2300 train gate, not the pulse</strong> — it sits high for the whole
-  <code>train ms</code> window regardless of frequency, so counting gate edges undercounts fires whenever one
-  lands inside an already-open gate. The stimulus artifact itself is on <strong><code>IO2</code></strong> (which is why the
-  <code>analyze_recording.py</code> invocations above pass <code>--stim-band adc --stim-channel 2</code>).</p>
+<p>Note also, <strong>on the 2026-08-21 bench</strong>, that <code>IO9</code> carried the AM 2300 <strong>train gate, not the
+  pulse</strong> — a gate sits high for the whole <code>train ms</code> window regardless of frequency, so counting
+  gate edges undercounts fires whenever one lands inside an already-open gate. The stimulus artifact
+  itself was on <code>IO2</code>, which is why the <code>analyze_recording.py</code> invocations above pass
+  <code>--stim-band adc --stim-channel 2</code>.</p>
+<p><strong>Which IO carries what is bench wiring and changes between sessions</strong> — IO9 has since been the SMA
+  and is now empty. Take the channel from <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a> §4, the dated bench
+  table, never from a number written in prose here. The trap that generalizes: <em>a gate is not a
+  pulse</em>, whichever line it is on.</p>
 <p>Figure: <code>RecordingTests/2026-08-21_onebox_np2_saline_stim/analysis/stim_pulse_capture.png</code>.</p>
 <ul>
 <li><strong>The backend auto-quits ~2 s after the last WebSocket client disconnects.</strong> Launch the backend and the

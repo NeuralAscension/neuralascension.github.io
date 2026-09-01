@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup" open><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup" open><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a class="active" href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -141,7 +142,7 @@
 <blockquote>
 <p>Digest of how the OpenEphys <code>neuropixels-pxi</code> plugin implements OneBox, kept as the <strong>API reference</strong>.
 The port itself is DONE — issues #50 and #59 are closed (#59 as <em>recovered and mitigated</em>,
-vendor-side, not fixed) — so the authority for current behaviour is the shipped implementation plus
+vendor-side, not fixed) — so the authority for current behavior is the shipped implementation plus
 <code>user_docs/</code>; the archived plan <a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a>
 is history, and one of its scope items is <strong>unbuildable</strong>: there is no <code>np_ADC_enableChannel</code>, only
 <code>ADC_enableProbe</code> (all twelve channels or none). Comparator thresholds have a GUI in the OneBox dock
@@ -177,6 +178,11 @@ Antigravity/Gemini and then <strong>cross-checked symbol-by-symbol against the v
 <h3 id="c-onebox-adc-analog-input">C. OneBox ADC (analog input)<a class="headerlink" href="#c-onebox-adc-analog-input" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>Channels &amp; Sample Rate:</strong> There are 12 channels (OpenEphys defines <code>NUM_ADCS = 12</code>). OpenEphys hardcodes the sample rate to <code>30300.5</code> Hz.</li>
+<li><strong>We carry <code>30300</code></strong>, in every OneBox profile's <code>sample_rate_hz:</code>, and the ADC sidecar inherits
+    that truncation — <strong>~16 ppm</strong>, about 60 ms over an hour. It is <strong>harmless for closed-loop timing</strong>,
+    which is anchored on the shared 100 kHz tick counter and never on a sample index; it matters only
+    if you reconstruct an offline time axis by counting samples. Worth knowing, not worth "fixing"
+    without deciding which of the two numbers the device actually runs at.</li>
 <li><strong>Reading:</strong> ADCs are read via <code>Neuropixels::ADC_readPackets(int slotID, struct PacketInfo* pck_info, int16_t* data, int channel_count, int packet_count, int* packets_read)</code>.</li>
 <li><strong>Data type/scale:</strong> The data returned is <code>int16_t</code> signed integers. OpenEphys scales these to volts using a <code>bitVolts</code> multiplier that depends on the configured voltage range (e.g., <code>5.0f / float(pow(2, 15))</code> for the <code>ADC_RANGE_5V</code> setting).</li>
 <li><strong>Configuration:</strong> Voltage range is set via <code>Neuropixels::ADC_setVoltageRange(int slotID, ADCrange_t range)</code>. The probe must be enabled with <code>Neuropixels::ADC_enableProbe(int slotID, bool enable)</code>.</li>
@@ -192,6 +198,30 @@ Antigravity/Gemini and then <strong>cross-checked symbol-by-symbol against the v
 <li><strong>Digital I/O:</strong> Digital states are captured through ADC comparators. The thresholds are configured using <code>Neuropixels::ADC_setComparatorThreshold(int slotID, int ADC_channel, double v_low, double v_high)</code>.</li>
 <li><strong>Triggers:</strong> The waveplayer is triggered in OpenEphys by sending software trigger 2: <code>Neuropixels::setSWTriggerEx(int slotID, swtriggerflags_t trigger_flags)</code> using <code>Neuropixels::swtrigger2</code>.</li>
 </ul>
+<blockquote>
+<p><strong>⚠️ Two corrections that cost more than anything else on this page. Read them before writing
+WavePlayer code.</strong> Both are <strong>ours, not OpenEphys'</strong> — this digest reports the plugin and the vendor
+header accurately; what it reports is what turned out to be incomplete or wrong on real hardware.</p>
+<ol>
+<li>
+<p><strong><code>waveplayer_arm()</code> alone does not enable the DAC.</strong> Load, arm and fire all return success and
+   <strong>no voltage ever leaves the box</strong>. <code>arm()</code> must <em>also</em> call
+   <code>np_DAC_enableOutput(slot, DAC0, true)</code> — and <code>disarm</code> must clear it. This is
+   <a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a>, and it cost <strong>four days</strong>, most of
+   them spent looking at a connector rather than at the enable call, because every control-plane
+   call answered SUCCESS. <strong>A control-plane probe is not a liveness test.</strong></p>
+</li>
+<li>
+<p><strong>DAC0's output is measured on breakout BNC <code>IO0</code>, not the SMA.</strong> The v4 header describes
+   <code>waveplayer_arm</code> as "routing output DAC0 to the SMA output", and <code>SM_Output_SMA</code> as the OneBox
+   back-panel SMA. Measured on this hardware, a 1 Hz ±2 V square moved <strong>IO0</strong> from sd 0.0002 to
+   1.9894 V while the SMA's patched channel stayed flat. The consequence to hold onto: <strong>anything
+   patched to IO0 shares a node with a DAC output driver while the WavePlayer is armed.</strong> Full
+   measurement, the connector-versus-patch-cable distinction it belongs to, and the dated bench
+   table: <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a> §3 and §4.</p>
+</li>
+</ol>
+</blockquote>
 <h3 id="e-switch-matrix-trigger-routing-on-onebox">E. Switch matrix / trigger routing on OneBox<a class="headerlink" href="#e-switch-matrix-trigger-routing-on-onebox" title="Permanent link">#</a></h3>
 <ul>
 <li><strong>At Open Time:</strong> Configures sync as an input by clearing current routes via <code>Neuropixels::switchmatrix_clear(int slotID, switchmatrixoutput_t output)</code> for <code>Neuropixels::SM_Output_StatusBit</code> and <code>Neuropixels::SM_Output_SMA</code>, and linking them to <code>Neuropixels::SM_Input_SMA</code> using <code>Neuropixels::switchmatrix_set(int slotID, switchmatrixoutput_t output, switchmatrixinput_t input, bool connect)</code>.</li>

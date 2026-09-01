@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reproducing the recording throughput shortfall on the second machine - SpikesPeak Docs</title>
+<title>ARCHIVED — finish the OneBox closed-loop latency matrix - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../../assets/style.css">
 <script src="../../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Archive (historical) / Reproducing the recording throughput shortfall on the second machine</span>
+  <span class="crumb">Archive (historical) / ARCHIVED — finish the OneBox closed-loop latency matrix</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -132,216 +132,125 @@
 <a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a class="active" href="NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a class="active" href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="reproducing-the-recording-throughput-shortfall-on-the-second-machine">Reproducing the recording throughput shortfall on the second machine<a class="headerlink" href="#reproducing-the-recording-throughput-shortfall-on-the-second-machine" title="Permanent link">#</a></h1>
-<p><strong>Issue: <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a>.</strong>
-Read that first — it has the original numbers and the two effects they separate into.</p>
-<p>Also read, in this order, because each one will otherwise cost you time:</p>
-<table>
-<thead>
-<tr>
-<th>Issue</th>
-<th>Why you need it</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a></strong></td>
-<td>The measurement itself. This page is its runbook.</td>
-</tr>
-<tr>
-<td><strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/64">#64</a></strong></td>
-<td>An unrecognised WebSocket command is silently ignored. This is what ruined the first attempt.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a></td>
-<td>Source switching. <strong>Not</strong> implicated here — I wrongly blamed it and retracted; do not go chasing it.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a></td>
-<td>The second-machine bring-up this was found during.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a></td>
-<td>Where the finding originally lived, in comments, before it was split out.</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<h2 id="what-is-being-asked">What is being asked<a class="headerlink" href="#what-is-being-asked" title="Permanent link">#</a></h2>
-<p>On the second machine, OneBox recordings came out <strong>short</strong> and nothing warned:</p>
-<table>
-<thead>
-<tr>
-<th>run</th>
-<th>config</th>
-<th>band</th>
-<th>rec/s</th>
-<th>nominal</th>
-<th>%</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>A, t+15 s</td>
-<td>with ADC</td>
-<td>raw</td>
-<td>23,429</td>
-<td>30,000</td>
-<td><strong>78.1 %</strong></td>
-</tr>
-<tr>
-<td>A, t+15 s</td>
-<td><strong>no ADC</strong></td>
-<td>raw</td>
-<td>29,997</td>
-<td>30,000</td>
-<td><strong>99.99 %</strong></td>
-</tr>
-<tr>
-<td>B, t+90 s</td>
-<td>with ADC</td>
-<td>raw</td>
-<td>19,980</td>
-<td>30,000</td>
-<td><strong>66.6 %</strong></td>
-</tr>
-<tr>
-<td>B, t+90 s</td>
-<td><strong>no ADC</strong></td>
-<td>raw</td>
-<td>19,740</td>
-<td>30,000</td>
-<td><strong>65.8 %</strong></td>
-</tr>
-</tbody>
-</table>
-<p>Two independent effects: the ADC stream appears to cost <strong>~22 %</strong> of probe throughput, and there is a
-decay to <strong>~66 %</strong> by t+90 s that happens with the ADC disabled too.</p>
-<p><strong>The same four cells were run on the original rig on 2026-08-25 and every one recorded at 100.0 %.</strong>
-So the question this run answers is narrow and worth answering: <em>is this machine, or its environment,
-different — and in what way?</em></p>
-<hr />
-<h2 id="1-before-you-start">1. Before you start<a class="headerlink" href="#1-before-you-start" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">git pull                          # you need Npx2OneBoxNoAdc.yaml, committed 2026-08-25
-cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
+  <main class="content"><article class="markdown-body"><h1 id="archived-finish-the-onebox-closed-loop-latency-matrix">ARCHIVED — finish the OneBox closed-loop latency matrix<a class="headerlink" href="#archived-finish-the-onebox-closed-loop-latency-matrix" title="Permanent link">#</a></h1>
+<blockquote>
+<p><strong>DONE 2026-08-20.</strong> All five cells ran, and then the NP1.0 half after them: the full 3x2 matrix on
+<strong>both</strong> probes, n ≈ 1000 per cell, <strong>0 unmatched</strong>. Results:
+<a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>;
+method: <a href="../LatencyProfiling.html"><code>../LatencyProfiling.md</code></a>; the session write-up is Status §48.</p>
+<p><strong>The commands below are finished work — do not re-run them.</strong> The file is kept for the traps in it,
+each of which cost a run to find and none of which are specific to this matrix: <code>recdir</code> is
+positional and is the INNER directory, do not pipe the runner into <code>tail</code>, the stim gate and the stim
+arm are separate and both are required, and a OneBox analysis needs <code>--stim-band adc --stim-channel N</code>.</p>
+</blockquote>
+<p><em>(Everything from here down is the run sheet as it was written, kept unedited. Read it; do not run it.)</em></p>
+<h2 id="run-these-five-in-order">Run these five, in order<a class="headerlink" href="#run-these-five-in-order" title="Permanent link">#</a></h2>
+<p>The completed cell is <strong>NP2.0 / OneBox / 1 ch / quorum 1 / DEFAULT delivery</strong> — median 1.087 ms,
+n = 1000 (<code>RecordingTests/2026-08-19_onebox_np2_1000ripples</code>, Status §40). These finish the matrix
+that already exists for the PXIe rig (<code>{1 ch, 2 ch q2, 4 ch q3} × {baseline, ASAP}</code>):</p>
+<pre><code class="language-bash"># 1 -- 1 ch, ASAP  (the A/B partner of the completed cell)
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0 --quorum 1 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_1ch_asap&quot; \
+  --name np2_onebox_1ch_asap
+
+# 2 -- 2 ch, quorum 2, DEFAULT
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
+  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_baseline&quot; \
+  --name np2_onebox_2ch_q2_baseline
+
+# 3 -- 2 ch, quorum 2, ASAP
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0,1 --quorum 2 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_2ch_q2_asap&quot; \
+  --name np2_onebox_2ch_q2_asap
+
+# 4 -- 4 ch, quorum 3, DEFAULT
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox)&quot; \
+  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_baseline&quot; \
+  --name np2_onebox_4ch_q3_baseline
+
+# 5 -- 4 ch, quorum 3, ASAP
+python ripple_tools/record_ripples.py --source &quot;NPX 2.0 Multishank (OneBox, ASAP)&quot; \
+  --channels 0,1,2,3 --quorum 3 --z 2.5 --n 1000 --timeout 3600 \
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak/RecordingTests/np2_onebox_4ch_q3_asap&quot; \
+  --name np2_onebox_4ch_q3_asap
 </code></pre>
-<p><code>Npx2OneBoxNoAdc.yaml</code> is the control. It is a copy of <code>Npx2OneBox.yaml</code> with every <code>adc</code> output,
-input and recording removed — the <strong>absence of a <code>*.adc</code> output</strong> is what disables the stream, so
-deleting only the recording would still pay the streaming cost and measure nothing.</p>
-<p>Its internal name — which is what you select, not the filename — is
-<strong><code>NPX 2.0 Multishank (OneBox, no ADC)</code></strong>.</p>
-<p>Confirm the build deployed it:</p>
-<pre><code class="language-bash">ls build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/config/Npx2OneBoxNoAdc.yaml
+<p><strong>The backend must already be running</strong> (<code>rebuild.bat</code> is unrelated; use <code>run_spikespeak.bat
+--no-browser</code>). <code>Rig</code> attaches to <code>localhost:1234</code>; it does not launch the backend. The tool
+disconnects the source at the end of each cell but leaves the backend up, so all five can run against
+one backend.</p>
+<p>Then NP1.0 on the OneBox: the same five plus the 1 ch DEFAULT cell, with
+<code>--source "NPX 1.0 (OneBox)"</code> / <code>"NPX 1.0 (OneBox, ASAP)"</code>.</p>
+<h2 id="analysis-per-cell">Analysis, per cell<a class="headerlink" href="#analysis-per-cell" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python ripple_tools/analyze_recording.py &lt;dir&gt;/&lt;name&gt; --name &lt;name&gt; \
+  --stim-band adc --stim-channel 2 \
+  --ws &lt;dir&gt;/&lt;name&gt;_ws.jsonl \
+  --figs &lt;dir&gt;/analysis
 </code></pre>
-<h2 id="2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything">2. The trap that ruined the first attempt — read this before scripting anything<a class="headerlink" href="#2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything" title="Permanent link">#</a></h2>
-<p>The WebSocket disconnect command is <strong><code>Disconnect</code>, capital D, and it requires a <code>value</code> field</strong>:</p>
-<pre><code class="language-python">ws.send_text(json.dumps({&quot;command&quot;: &quot;Disconnect&quot;, &quot;value&quot;: True}))     # correct
-ws.send_text(json.dumps({&quot;command&quot;: &quot;disconnect&quot;}))                    # matches NOTHING, silently
-</code></pre>
-<p>There is no terminal <code>else</code> in the command handler, so a wrong name produces <strong>no warning, no log
-line and no reply</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/64">#64</a>). On the original
-rig this meant the source was never released, the backend correctly refused every profile switch, and
-all four cells ran under the <em>first</em> profile — the control arm silently did not exist, and the files
-looked perfectly normal afterwards.</p>
-<p><strong>Two ways to avoid it. Either is fine:</strong></p>
+<p>Two things this line gets right that an earlier version of it did not, both of which cost a full
+re-run to discover:</p>
 <ul>
-<li><strong>Restart the backend between profiles.</strong> Simplest, and almost certainly what the original run did —
-  its two arms read differently, so its switch genuinely took effect.</li>
-<li><strong>Switch live, and verify.</strong> Send <code>setPlaying:false</code>, then <code>{"command":"Disconnect","value":true}</code>,
-  then <code>selectSource</code>, then <strong>read back the confirmed source name and refuse to record if it is not
-  the one you asked for.</strong></li>
+<li><strong><code>recdir</code> is POSITIONAL. There is no <code>--dir</code>.</strong> The earlier form failed instantly with
+  <code>unrecognized arguments: --dir</code> on every cell.</li>
+<li><strong>It is the INNER directory.</strong> <code>record_ripples.py --dir D --name N</code> writes the <code>.bin</code> and
+  <code>.bin.json</code> into <code>D/N/</code>, and leaves <code>N_ws.jsonl</code> in <code>D/</code> beside it. Passing <code>D</code> gives
+  <code>No SpikesPeak recordings (*.bin.json) found</code>.</li>
+<li><strong><code>--ripple-sidecar</code> is no longer needed.</strong> Since 2026-08-28 the backend writes the sidecar into
+  <code>D/N/</code> with the bands, which is where <code>recdir</code> points, so it is found automatically. It was the
+  old layout — sidecar in <code>D/</code>, one level above where the tool looked — that made the explicit flag
+  mandatory. Recordings made before that date still need it, or the tool falls back to the parent
+  folder and prints which layout it found.</li>
 </ul>
-<p>Either way, <strong>watch <code>output.log</code> in the backend's working directory</strong> while you run. A refused switch
-says so plainly:</p>
-<pre><code>[MainController]  Error: You must disconnect from a source before attempting to set a new one
-[WebSocketServer] select &quot;...&quot; REFUSED -- &quot;...&quot; is still connected; state restored
+<p>And do not pipe the command into <code>tail</code>: a shell pipeline exits with the status of its LAST member, so
+a failing analysis reports success. That is how five cells were "analyzed" without producing a single
+number.</p>
+<p><code>--stim-band adc --stim-channel 2</code> is <strong>not optional on a OneBox</strong>. Without it the analyzer looks for
+a <code>nidaq</code> band, finds none, and silently reports no closed-loop latency at all. Channel 2 is the Pi's
+On/Off line (GPIO17 = header pin 11) into OneBox <strong>IO2</strong>.</p>
+<h2 id="what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters<a class="headerlink" href="#what-was-fixed-before-this-run-and-why-it-matters" title="Permanent link">#</a></h2>
+<p>A first attempt at cell 1 reached <strong>944 detections with ZERO stim fires</strong>, which would have been a
+634 MB recording that looks complete and cannot yield a latency.</p>
+<p>The cause: <strong>the gate and the arm are separate, and both are required.</strong> <code>set_stim_enabled</code> only
+permits datagrams to leave the host; the stimulator must also be <em>armed</em> before a detection triggers
+it. The backend's auto-arm on source selection was deliberately removed (selecting any source — even
+one whose connect then failed — put a datagram on the wire), and nothing replaced it for <strong>scripted</strong>
+runs. The GUI arms via its stim LED; <code>record_ripples.py</code> had no equivalent, so it enabled the gate,
+detected happily, and fired nothing. The log said so plainly and nobody was reading it:</p>
+<pre><code>[RippleDetector] stimulation ENABLED -&gt; &quot;192.168.1.100:8888&quot; (not armed; arm from the GUI stim LED)
 </code></pre>
-<p>If you see that line, the cell you just recorded is worthless. Stop and fix the script.</p>
-<h2 id="3-the-four-cells">3. The four cells<a class="headerlink" href="#3-the-four-cells" title="Permanent link">#</a></h2>
-<p>Ten seconds of recording each. Warm-up is measured from <strong>when streaming starts</strong>, not from launch.</p>
-<table>
-<thead>
-<tr>
-<th>cell</th>
-<th>profile</th>
-<th>record at</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>A_withadc_t15</code></td>
-<td><code>NPX 2.0 Multishank (OneBox)</code></td>
-<td>t+15 s</td>
-</tr>
-<tr>
-<td><code>A_noadc_t15</code></td>
-<td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
-<td>t+15 s</td>
-</tr>
-<tr>
-<td><code>B_withadc_t90</code></td>
-<td><code>NPX 2.0 Multishank (OneBox)</code></td>
-<td>t+90 s</td>
-</tr>
-<tr>
-<td><code>B_noadc_t90</code></td>
-<td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
-<td>t+90 s</td>
-</tr>
-</tbody>
-</table>
-<p>The harness used on the original rig is in the session scratchpad rather than the repo, because it
-carried the bug above. Write a fresh one, or drive it by hand from
-<code>python python/spikespeak_cli.py</code>, which already sends the correct command spellings:</p>
-<pre><code class="language-bash">python python/spikespeak_cli.py --script &quot;select 'NPX 2.0 Multishank (OneBox)'; waitready 40; play; sleep 15; record &lt;dir&gt; A_withadc_t15; sleep 10; stop; sleep 2; pause; disconnect&quot;
-</code></pre>
-<h2 id="4-counting-do-not-use-a-wall-clock">4. Counting — do not use a wall clock<a class="headerlink" href="#4-counting-do-not-use-a-wall-clock" title="Permanent link">#</a></h2>
-<p>A script that times its own <code>record</code> / <code>stop</code> round trip is measuring <strong>its own latency</strong> and calling
-it data loss. Count from the files:</p>
-<pre><code class="language-python">records = os.path.getsize(bin_path) // sidecar[&quot;frame&quot;][&quot;bytes&quot;]
-percent = 100.0 * (records / RECORD_SECONDS) / sidecar[&quot;sample_rate_hz&quot;]
-</code></pre>
-<p><code>frame.bytes</code> is declared in the sidecar — do not hardcode it. For the probe's <code>raw</code> band with three
-recorded channels it is 12 bytes (<code>[uint32 timestamp][uint16 sync][int16 × 3]</code>); for the 12-channel
-ADC band it is 30.</p>
-<p>Cross-check the record's own duration against the sidecar's rate as well: both bands being short by
-the <em>same</em> fraction points at a shared cause rather than anything band-specific.</p>
-<h2 id="5-what-to-report">5. What to report<a class="headerlink" href="#5-what-to-report" title="Permanent link">#</a></h2>
+<p>Two changes:</p>
 <ul>
-<li>The four percentages, and whether either effect appears.</li>
-<li>If it reproduces: the two machines' <strong>differences</strong>, because the code is now known to be innocent —
-  disk (model, free space, whether it is the same drive as the build tree), USB controller and
-  whether the OneBox is on a hub, Windows power profile, and what else is resident.</li>
-<li>If it does not reproduce: say so plainly, and note anything that changed on that machine since
-  2026-08-21. A fault that has gone away is still worth a line in #63.</li>
-<li>Whether <code>output.log</code> shows <strong>any</strong> WARN or CRITICAL during a short run. The original observation was
-  that it shows none, which is half of why the fault is dangerous.</li>
+<li><code>Rig.arm_stim()</code> added, and <code>record_ripples.py</code> now arms after enabling the gate, then prints the
+  stim status so the arming is visible at the top of the run.</li>
+<li>The end-of-run summary <strong>warns loudly</strong> if stimulation was requested and nothing fired, because a
+  pulse-less closed-loop recording is otherwise indistinguishable from a good one until analysis.</li>
 </ul>
-<h2 id="6-do-not">6. Do not<a class="headerlink" href="#6-do-not" title="Permanent link">#</a></h2>
+<h2 id="two-operational-notes">Two operational notes<a class="headerlink" href="#two-operational-notes" title="Permanent link">#</a></h2>
 <ul>
-<li>Do not force-kill the backend with the OneBox connected. The FT601 handle is released only on a
-  clean exit and a kill costs a physical power-cycle. Use Disconnect, then <code>quit</code>.</li>
-<li>Do not change <code>Npx2OneBox.yaml</code> to "test something quickly". The two profiles must differ in one
-  variable, which is why the control is committed rather than edited in place.</li>
-<li>Do not conclude anything from a cell where the source switch was refused.</li>
+<li><strong>Run each cell in the background, or with a long timeout.</strong> A cell takes roughly 10 minutes
+  (~500 ms between detections at 1000 detections). A 10-minute foreground limit killed the first
+  attempt at 944/1000. The hardware was fine — the teardown still ran and the OneBox closed properly
+  — but the run was lost.</li>
+<li><strong>Disk</strong>: each cell is ~600–700 MB, so the five are ~3.5 GB. There was 330 GB free at the time of
+  writing. Recording data stays local; it is never committed.</li>
 </ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_ThroughputOnSecondMachine.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_OneBoxLatencyMatrix.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#what-is-being-asked">What is being asked</a></li>
-<li><a href="#1-before-you-start">1. Before you start</a></li>
-<li><a href="#2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything">2. The trap that ruined the first attempt — read this before scripting anything</a></li>
-<li><a href="#3-the-four-cells">3. The four cells</a></li>
-<li><a href="#4-counting-do-not-use-a-wall-clock">4. Counting — do not use a wall clock</a></li>
-<li><a href="#5-what-to-report">5. What to report</a></li>
-<li><a href="#6-do-not">6. Do not</a></li>
+<li><a href="#run-these-five-in-order">Run these five, in order</a></li>
+<li><a href="#analysis-per-cell">Analysis, per cell</a></li>
+<li><a href="#what-was-fixed-before-this-run-and-why-it-matters">What was fixed before this run, and why it matters</a></li>
+<li><a href="#two-operational-notes">Two operational notes</a></li>
 </ul>
 </div>
 </aside>

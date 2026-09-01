@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Filter debugging — the .bin dumps, the kill switches, and how to validate the filters - SpikesPeak Docs</title>
+<title>Knowledge ops — where what you learned goes - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Signal processing / Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</span>
+  <span class="crumb">Developer Docs / Testing / Knowledge ops — where what you learned goes</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -62,9 +62,9 @@
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup" open><summary>Signal processing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
-<a class="active" href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
 <a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
@@ -92,10 +92,10 @@
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
-<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a class="active" href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
@@ -138,211 +138,181 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="filter-debugging-the-bin-dumps-the-kill-switches-and-how-to-validate-the-filters">Filter debugging — the <code>.bin</code> dumps, the kill switches, and how to validate the filters<a class="headerlink" href="#filter-debugging-the-bin-dumps-the-kill-switches-and-how-to-validate-the-filters" title="Permanent link">#</a></h1>
-<p>The ripple pipeline runs filter stages that are easy to get wrong and hard to eyeball live — the
-detector's own ripple-band + envelope FIRs, and (on a 2.0 probe) the derived band the detector reads.
-Each can dump its intermediate signals to <code>.bin</code> files so they can be checked offline. <strong>Every dump
-ships OFF</strong>; this page is how to turn them on, validate the filters, and turn them back off.</p>
-<h2 id="the-two-kill-switches">The two kill switches<a class="headerlink" href="#the-two-kill-switches" title="Permanent link">#</a></h2>
-<table>
-<thead>
-<tr>
-<th>Flag</th>
-<th>File</th>
-<th>Default</th>
-<th>Gates</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code></td>
-<td><code>src/modules/swr/RippleDetector.cpp</code> (top)</td>
-<td><strong>false</strong></td>
-<td><code>lfp-data.bin</code>, <code>ripple-band-data.bin</code>, <code>envelope-data.bin</code>, <code>ripple-detection-time.bin</code></td>
-</tr>
-<tr>
-<td><code>kDebugFilters</code></td>
-<td><code>src/core/BandFilterProcessor.cpp</code> (top)</td>
-<td><strong>false</strong></td>
-<td>one dump <strong>per derived band</strong> — <code>lfp-filter-data.bin</code> <em>and</em> <code>spike-filter-data.bin</code></td>
-</tr>
-<tr>
-<td><code>kDebugFiltersChannel</code></td>
-<td><code>src/core/BandFilterProcessor.cpp</code> (top)</td>
-<td><code>0</code></td>
-<td>which read-out channel the band dumps follow</td>
-</tr>
-</tbody>
-</table>
+  <main class="content"><article class="markdown-body"><h1 id="knowledge-ops-where-what-you-learned-goes">Knowledge ops — where what you learned goes<a class="headerlink" href="#knowledge-ops-where-what-you-learned-goes" title="Permanent link">#</a></h1>
+<p>You worked something out. Where does it belong so the <strong>next</strong> person or agent gets it for free?</p>
+<p>This page is the decision procedure. It exists because the answer used to be a judgment call made
+fresh every time, which meant the same fact landed in three places, or none.</p>
+<hr />
+<h2 id="1-the-rule-in-one-line">1. The rule, in one line<a class="headerlink" href="#1-the-rule-in-one-line" title="Permanent link">#</a></h2>
 <blockquote>
-<p><strong>It used to be called <code>DEBUGGING_LFP_FILTERS</code>, and it used to gate one file.</strong> The switch lived in
-<code>src/modules/lfp/LFPProcessor.cpp</code>; that file no longer exists. When the spike band arrived, the whole
-filter loop was lifted into the shared base <code>src/core/BandFilterProcessor.cpp</code> and <code>LFPProcessor</code> shrank
-to a header that names the coefficients (see <a href="DerivedBands.html"><code>DerivedBands.md</code></a> §1). One consequence
-is easy to miss: the switch is now in the base, so <strong>every</strong> derived band obeys it and the filename is
-built as <code>mBandName + "-filter-data.bin"</code>. Flipping it on a 2.0 profile with both bands running gets you
-<strong>two</strong> files, not one.</p>
+<p><strong>If a mistake can be made mechanically, make it impossible. If it can be computed, compute it.
+Write prose only for WHY.</strong></p>
 </blockquote>
-<p>They are <code>static constexpr bool</code>, so when false <strong>the file creation, every per-sample write, and the close
-all compile out</strong> — no branch, no cost on the detection hot path, and nothing appears in the working
-directory. The ripple flag is ANDed with the pre-existing runtime config key <code>debug_files:</code> (see
-<code>config/*.yaml</code>), so you need <strong>both</strong> to get dumps: <code>DEBUGGING_RIPPLE_DETECTION_FILTERS = true</code> <em>and</em>
-<code>debug_files: true</code>. <code>kDebugFilters</code> has no runtime companion — the compile switch is the whole gate.</p>
-<blockquote>
-<p><strong>Why they are off.</strong> These write one record per sample per channel into the process working directory —
-~1 MB per channel per 30 s for the ripple dumps, ~350 KB/s <strong>per band</strong> for the band dumps — landing as
-untracked <code>.bin</code> files in the repo root, from a write on the real-time detection path. They are a
-development aid, never something to leave on for a recording session.</p>
-</blockquote>
-<h2 id="dump-formats">Dump formats<a class="headerlink" href="#dump-formats" title="Permanent link">#</a></h2>
-<p>All little-endian <code>float32</code>, written per sample, and <strong>N-way interleaved when N detection channels are
-active</strong> (in <code>mDetectionChannels</code> order — the same timestamp repeats once per channel):</p>
+<p>Everything below is that rule applied.</p>
+<hr />
+<h2 id="2-the-decision-table">2. The decision table<a class="headerlink" href="#2-the-decision-table" title="Permanent link">#</a></h2>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th>Record</th>
-<th>Meaning</th>
+<th>What you have</th>
+<th>Where it goes</th>
+<th>Why there</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>lfp-data.bin</code></td>
-<td><code>(ts, lfp)</code></td>
-<td>detector INPUT (NP1: native int16 LFP cast to float; NP2: derived float LFP)</td>
+<td>A mistake anyone could repeat mechanically</td>
+<td><strong>A check</strong> — a test, a guard, or a shared function. Then a one-line trap entry pointing at the check</td>
+<td>Prose needs reading <em>and</em> recall at the exact moment. A check fires whether or not you read anything</td>
 </tr>
 <tr>
-<td><code>ripple-band-data.bin</code></td>
-<td><code>(ts, ripple)</code></td>
-<td>after the 26-tap 150–250 Hz FIR</td>
+<td>A rule spanning several call sites</td>
+<td><strong>An invariant test</strong> (<a href="InvariantTests.html"><code>InvariantTests.md</code></a>)</td>
+<td>Testing the bug catches the bug; testing the rule makes the class unwritable</td>
 </tr>
 <tr>
-<td><code>envelope-data.bin</code></td>
-<td><code>(ts, envelope)</code></td>
-<td>after <code>abs()</code> + the 10-tap envelope FIR</td>
+<td>A fact derivable from the source — ports, counts, paths, layouts</td>
+<td><strong><code>scripts/facts.py</code></strong>, and nowhere else</td>
+<td>A derived fact cannot rot. A written one always does</td>
 </tr>
 <tr>
-<td><code>ripple-detection-time.bin</code></td>
-<td><code>(ts)</code></td>
-<td>one record per quorum detection</td>
+<td>Why something is the way it is, with the cost of learning it</td>
+<td><strong>Prose</strong>, in the doc for that subsystem</td>
+<td>This is the one thing that is not mechanizable, and it is the most valuable content here</td>
+</tr>
+<tr>
+<td>Something that cost you time and has no cheap check</td>
+<td><a href="AgentTraps.html"><code>AgentTraps.md</code></a></td>
+<td>The catch-all. Always ask first whether it could be a check instead</td>
+</tr>
+<tr>
+<td>Something a fresh agent must know <em>before</em> acting</td>
+<td>The skill, <code>.claude/skills/spikespeak/SKILL.md</code></td>
+<td>It loads automatically. Keep it short and pointing outward</td>
+</tr>
+<tr>
+<td>What happened, and when</td>
+<td><code>SpikesPeak_Status.md</code> — append-only, dated</td>
+<td>The narrative record. Never rewrite history</td>
+</tr>
+<tr>
+<td>Bench or hardware state that changes per session</td>
+<td>A <strong>dated table</strong> (e.g. <code>OneBoxWiring.md</code> §4)</td>
+<td>Add a row; never edit an old one. "The SMA is IO9" is only ever true of one afternoon</td>
+</tr>
+<tr>
+<td>An operator-facing behaviour change</td>
+<td><code>user_docs/</code>, and check the screenshots</td>
+<td>The GUI's labels are in there; a rename silently makes six pages wrong</td>
 </tr>
 </tbody>
 </table>
-<p>The band dumps are <strong>not</strong> interleaved — one file per band, one channel (<code>kDebugFiltersChannel</code>) each:</p>
+<p><strong>The most common mistake is stopping at row 5.</strong> Writing the trap feels like completing the task. Ask
+whether rows 1–3 apply first — the trap is the fallback, not the default.</p>
+<hr />
+<h2 id="3-turning-a-trap-into-a-check">3. Turning a trap into a check<a class="headerlink" href="#3-turning-a-trap-into-a-check" title="Permanent link">#</a></h2>
+<p>Four of this repo's traps were mechanized on 2026-08-31. The pattern each followed:</p>
 <table>
 <thead>
 <tr>
-<th>File</th>
-<th>Record</th>
-<th>Meaning</th>
+<th>Trap</th>
+<th>Became</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>lfp-filter-data.bin</code></td>
-<td><code>(ts, raw_in, band_out)</code></td>
-<td><code>proc.lfp</code>'s Bessel <strong>low-pass</strong> 400 Hz, in and out</td>
+<td>"recording <code>.bin</code> frames carry a 6-byte header"</td>
+<td><code>python/spikespeak_io.py</code> — one reader. The arithmetic is now unavailable to get wrong, and it <strong>refuses</strong> when a sidecar disagrees with itself rather than guessing</td>
 </tr>
 <tr>
-<td><code>spike-filter-data.bin</code></td>
-<td><code>(ts, raw_in, band_out)</code></td>
-<td><code>proc.spike</code>'s Bessel <strong>band-pass</strong> 300–6000 Hz, in and out</td>
+<td>"don't start a second gate"</td>
+<td>A pid lock in <code>run_all_tests.py</code>, with a message saying why the symptom misleads</td>
+</tr>
+<tr>
+<td>"revert the regression, then rebuild"</td>
+<td><code>facts.py</code> reports the binary as <strong>stale</strong> when <code>src/</code> is newer</td>
+</tr>
+<tr>
+<td>"a dead browser hangs the suite"</td>
+<td>A deadline in <code>python/tools/cdp.py</code>, so it fails in seconds with a message naming the likely cause</td>
 </tr>
 </tbody>
 </table>
-<p><code>ts</code> is the timestamp in seconds (hardware timestamp ÷ sampling rate) — the LFP clock for the ripple
-dumps, the 30 kHz headstage clock for the band dumps.</p>
-<h2 id="validating-the-filters">Validating the filters<a class="headerlink" href="#validating-the-filters" title="Permanent link">#</a></h2>
-<p><code>ripple_tools/validate_filters.py</code> re-runs the <strong>same two FIRs offline</strong> over <code>lfp-data.bin</code> and compares
-against the backend's own <code>ripple-band-data.bin</code> / <code>envelope-data.bin</code>, sample for sample. The offline
-coefficients in <code>ripple_tools/plot_demo.py</code> (<code>B_RIPPLE</code>, <code>B_ENV</code>) are transcribed from
-<code>src/core/Common.hpp</code> (<code>RippleBandFilterCoefficients2_5kHz</code>, <code>EnvelopeFilter2_5kHz</code>) — they are verified
-identical.</p>
-<pre><code class="language-bash"># with the flags on and a short session recorded:
-python ripple_tools/validate_filters.py --dir .
-</code></pre>
-<p>It prints three comparisons per channel and passes when the relative error is &lt; 1e-4:</p>
+<p><strong>What makes a good check:</strong></p>
+<ol>
+<li><strong>It fires at the moment of the mistake</strong>, not before it and not in review.</li>
+<li><strong>Its message explains the misleading symptom</strong>, because the symptom is why the trap was expensive.
+   "Two gates at once make every GUI test fail on unrelated assertions, which looks like a
+   regression" is worth more than "lock held".</li>
+<li><strong>It fails safe.</strong> A stale lock from a killed run must not block the next one — a guard that needs a
+   human to clear it is worse than the collision it prevents.</li>
+<li><strong>It can itself fail.</strong> Prove it, like any test here: induce the condition, watch it fire, revert.</li>
+</ol>
+<p><strong>When NOT to mechanize:</strong> when the rule needs judgment ("is this the right abstraction"), when it
+holds in one place only (an ordinary test is cheaper and clearer), or when the check would be so
+loose it goes red on things that are fine. A test that cries wolf gets disabled, and then you have
+neither the check nor the trap.</p>
+<hr />
+<h2 id="4-adding-to-factspy">4. Adding to <code>facts.py</code><a class="headerlink" href="#4-adding-to-factspy" title="Permanent link">#</a></h2>
+<p><strong>Add a fact when you catch yourself grepping for the same thing twice.</strong></p>
+<p>Rules: derive it, never type it. Keep each collector independent — one that breaks must not take the
+others down, because a partial answer beats a traceback. And if a fact you add is currently <em>also</em>
+written in prose somewhere, delete the prose. Two sources of truth is the problem being solved, and
+leaving both is worse than either.</p>
+<hr />
+<h2 id="5-updating-the-skill">5. Updating the skill<a class="headerlink" href="#5-updating-the-skill" title="Permanent link">#</a></h2>
+<p>The skill is the <strong>agent entry point</strong> and it loads automatically, so its staleness is maximally
+leveraged: a stale skill gives every future agent a wrong mental model before they read anything.</p>
 <ul>
-<li><strong>ripple band (26-tap FIR)</strong> — offline FIR over the dumped LFP vs the backend's ripple band</li>
-<li><strong>envelope (10-tap FIR)</strong> — the full offline chain vs the backend's envelope</li>
-<li><strong>envelope from backend rb</strong> — offline envelope filter fed the backend's OWN ripple band; this isolates
-  <em>which</em> stage is wrong when the envelope disagrees but the ripple band matches</li>
+<li>Update it in the same change that makes it stale — a GUI rename, a new suite, a moved contract.</li>
+<li>Keep it <strong>short and outward-pointing</strong>. It is a map, not the territory. Depth belongs in
+  <code>developer_docs/</code>; the skill says which page and why you would go there.</li>
+<li><strong>The frontmatter <code>description</code> matters as much as the body.</strong> It decides when the skill loads and
+  what the listing shows. On 2026-08-31 it still said "the two test suites" and never mentioned the
+  heatmap or detached windows — so it would not reliably trigger for exactly the work most likely to
+  break something.</li>
+<li>Facts with numbers belong in <code>facts.py</code>; the skill should say <em>how to ask</em>, not what the answer is.</li>
 </ul>
-<h3 id="result-validated-2026-07-20-pass">Result — validated 2026-07-20 (PASS)<a class="headerlink" href="#result-validated-2026-07-20-pass" title="Permanent link">#</a></h3>
-<p>Two channels, 66,725 samples each, from a simulated NP1.0 session:</p>
-<table>
-<thead>
-<tr>
-<th>comparison</th>
-<th>max abs err</th>
-<th>relative</th>
-<th>correlation</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ripple band (26-tap FIR)</td>
-<td>2.2e-05</td>
-<td>2.0e-07</td>
-<td>1.000000000</td>
-</tr>
-<tr>
-<td>envelope (10-tap FIR)</td>
-<td>1.4e-05</td>
-<td>1.8e-07</td>
-<td>1.000000000</td>
-</tr>
-<tr>
-<td>envelope from backend rb</td>
-<td>1.1e-05</td>
-<td>1.5e-07</td>
-<td>1.000000000</td>
-</tr>
-</tbody>
-</table>
-<p>Relative error ~2×10⁻⁷ is exactly <code>float32</code> rounding on a signal of RMS ~108 — i.e. the backend's filters
-are <strong>bit-level correct</strong> implementations of the reference. Both filter stages are causal, zero-initial-state
-Direct-Form FIRs applied sample by sample, which is exactly <code>np.convolve(x, b)[:len(x)]</code> — that equivalence
-is what makes the offline reconstruction in <code>analyze_recording.py</code> trustworthy.</p>
-<p>This also independently corroborates the recording-side result: on the NP1.0 hardware tests the offline
-envelope crossings paired <strong>1:1 with the ai4 stim pulses</strong> (99/99, max deviation 4.6 ms), which could not
-happen if the online filters diverged from the offline ones. See
-<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> and <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>.</p>
-<h2 id="housekeeping">Housekeeping<a class="headerlink" href="#housekeeping" title="Permanent link">#</a></h2>
-<p>The dumps are written to the <strong>process working directory</strong>, which for <code>python run_spikespeak.py</code> is the
-repo root. They are untracked build litter, not data:</p>
-<pre><code class="language-bash">rm -f lfp-data.bin ripple-band-data.bin envelope-data.bin ripple-detection-time.bin \
-      lfp-filter-data.bin spike-filter-data.bin
-</code></pre>
-<p>Delete them after any debugging session. If you find them in a fresh checkout, someone shipped a switch
-flipped to <code>true</code> — check <code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code> at the top of
-<code>src/modules/swr/RippleDetector.cpp</code> and <code>kDebugFilters</code> at the top of <code>src/core/BandFilterProcessor.cpp</code>.
-Those two files are the only places either switch is defined.</p>
+<hr />
+<h2 id="6-writing-prose-that-earns-its-place">6. Writing prose that earns its place<a class="headerlink" href="#6-writing-prose-that-earns-its-place" title="Permanent link">#</a></h2>
+<p>The docs here are unusually good in one specific way: they say <strong>why</strong>, with the cost attached.</p>
 <blockquote>
-<p><strong>Known stale references in the source.</strong> Two comments in <code>src/modules/swr/RippleDetector.cpp</code> still
-point at the deleted <code>lfp/LFPProcessor.cpp</code> — the mirror-switch note near the top (which also still
-uses the old name <code>DEBUGGING_LFP_FILTERS</code>) and the <code>noteCycle()</code> comment in the detection loop. Both
-mean <code>src/core/BandFilterProcessor.cpp</code>. Written down here so the next person does not spend ten
-minutes looking for a file that was deleted.</p>
+<p>"Four days of #49 were spent watching the wrong connector."
+"This comment said <em>attenuates</em> and implemented <em>eliminates</em>."
+"It cost a 13-minute stall, and the test passes when re-run alone."</p>
 </blockquote>
-<h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">#</a></h2>
+<p>Keep doing that. A reader who knows what a mistake cost will not repeat it; a reader told only what
+is true will. When you fix something subtle, write the sentence that would have saved you.</p>
+<p>And do the opposite for anything countable: <strong>no suite counts, test counts or page counts in prose.</strong>
+They were wrong for days in <code>CLAUDE.md</code> and nobody noticed. Point at <code>facts.py</code>.</p>
+<hr />
+<h2 id="7-the-trigger-for-all-of-this">7. The trigger for all of this<a class="headerlink" href="#7-the-trigger-for-all-of-this" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>The second time a bug of the same shape appears, stop fixing bugs and write down the rule.</strong></p>
+</blockquote>
+<p>First occurrence: fix it. Second: it is a class — mechanize it, or write the invariant. This repo had
+the same defect four times before anyone noticed the shape (<a href="InvariantTests.html"><code>InvariantTests.md</code></a>),
+and had three instances of "edited something the running suite reads" in a single day.</p>
+<hr />
+<h2 id="8-related">8. Related<a class="headerlink" href="#8-related" title="Permanent link">#</a></h2>
 <ul>
-<li><a href="RippleDetection.html"><code>RippleDetection.md</code></a> — the detector itself (per-probe input, decimation, baseline)</li>
-<li><a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> — the offline analysis pipeline + sync</li>
-<li><a href="RippleDetectorThreading.html"><code>RippleDetectorThreading.md</code></a> — why writes on this path cost real time</li>
+<li><a href="AgentTraps.html"><code>AgentTraps.md</code></a> — the traps themselves</li>
+<li><a href="InvariantTests.html"><code>InvariantTests.md</code></a> — testing the rule instead of the bug</li>
+<li><a href="Contributing.html"><code>Contributing.md</code></a> — branch, commit and gate conventions</li>
+<li><code>scripts/facts.py</code> — the derived facts; run it before believing anything counted</li>
 </ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/FilterDebugging.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+    <footer class="pagefoot">Generated from <code>developer_docs/KnowledgeOps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#the-two-kill-switches">The two kill switches</a></li>
-<li><a href="#dump-formats">Dump formats</a></li>
-<li><a href="#validating-the-filters">Validating the filters</a><ul>
-<li><a href="#result-validated-2026-07-20-pass">Result — validated 2026-07-20 (PASS)</a></li>
-</ul>
-</li>
-<li><a href="#housekeeping">Housekeeping</a></li>
-<li><a href="#related">Related</a></li>
+<li><a href="#1-the-rule-in-one-line">1. The rule, in one line</a></li>
+<li><a href="#2-the-decision-table">2. The decision table</a></li>
+<li><a href="#3-turning-a-trap-into-a-check">3. Turning a trap into a check</a></li>
+<li><a href="#4-adding-to-factspy">4. Adding to facts.py</a></li>
+<li><a href="#5-updating-the-skill">5. Updating the skill</a></li>
+<li><a href="#6-writing-prose-that-earns-its-place">6. Writing prose that earns its place</a></li>
+<li><a href="#7-the-trigger-for-all-of-this">7. The trigger for all of this</a></li>
+<li><a href="#8-related">8. Related</a></li>
 </ul>
 </div>
 </aside>

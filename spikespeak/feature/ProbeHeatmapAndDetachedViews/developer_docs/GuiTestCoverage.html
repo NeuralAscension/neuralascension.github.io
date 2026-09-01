@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup" open><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup" open><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a class="active" href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -142,10 +143,11 @@
 the behavior the tests recorded, and — kept deliberately prominent — the aspects that are <strong>not</strong>
 covered yet, so nobody mistakes a green run for complete coverage.</p>
 <p>Run them:</p>
-<pre><code class="language-bash">python scripts/run_gui_tests.py
+<pre><code class="language-bash">python scripts/run_gui_tests.py               # 22 tests, ~33 min
+python scripts/run_gui_tests.py --only ripple # while you iterate
 </code></pre>
-<p>Mechanics, conventions and how to add a test live in <a href="Testing.html"><code>Testing.md</code></a> §3. This page is the
-coverage itself.</p>
+<p>Mechanics, conventions, the runner's flags and how to add a test live in <a href="Testing.html"><code>Testing.md</code></a>
+§3, which is also the only page that carries suite counts. This page is the coverage itself.</p>
 <hr />
 <h2 id="1-the-suites">1. The suites<a class="headerlink" href="#1-the-suites" title="Permanent link">#</a></h2>
 <table>
@@ -242,13 +244,51 @@ coverage itself.</p>
 <td>The probe channel map DRAWS, on a 1.0 and on a 4-shank 2.0 (shank shafts, routed vs available electrodes, electrode-number labels -- asserted by reading canvas pixels back, because a canvas has no DOM to check and an empty one photographs perfectly); that probe identity comes from <code>probeType</code> and NOT the part-number string, on synthetic payloads the simulator cannot produce; and that an NP1.0 click/drag assigns exactly the electrodes it covers</td>
 <td>2 probes</td>
 </tr>
+<tr>
+<td><code>heatmap_spatial</code></td>
+<td><strong>The heatmap can merge every shank into one column ordered by physical DEPTH.</strong> Both existing orderings sort by shank first, so two electrodes at the same depth on different shanks come out ~96 rows apart. Half of this runs against a <strong>synthetic 4-shank map injected into the page</strong>, said plainly in the test's own docstring: the simulated 2.0 puts all 384 read-out channels on shank 0, so a sim-only test would exercise the option's <em>absence</em> and call that coverage. The other half checks ImroManager's real ordering against the map the sim actually applied. What is left uncovered is a real 4-shank probe, which needs a rig</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>intan_not_implemented</code></td>
+<td><strong>Selecting Intan refuses cleanly and leaves the rig usable.</strong> The listed-but-unimplemented source is one an operator can click, and a half-open source is worse than no source. Asserts the operator is told what is missing rather than blamed for their hardware, and that the system is left cleanly disconnected — the failure this guards is #51 (a refusal that broadcast the requested name) and #54 (failed connects poisoning the next one). <strong>No browser</strong></td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>ripple_detach</code></td>
+<td><strong>The detached ripple dock is ONLY the dock.</strong> It draws on canvas 2D and must build <strong>zero</strong> <code>ChartColumn</code>s: Chrome grants ~16 WebGL2 contexts per renderer process and force-loses the oldest silently, so a window allocating contexts it never shows evicts the contexts of a window the operator IS looking at — and nothing about the offending page looks wrong. Also pins the window-role registry, so a detached dock does not renumber "View 2 of 3"</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>state_consistency</code></td>
+<td><strong>The invariant, not the bug.</strong> Pins I1–I5 over reported state across every transition: <code>acquisition == "no_source"</code> ⇔ <code>source</code> empty (a biconditional, so it fails in both directions), playing ⇒ acquiring, a REFUSED connect leaves <code>source</code> untouched, a successful one leaves it equal to what was asked, Disconnect leaves none. Written after the <strong>fourth</strong> defect of one shape — announcing REQUESTED state instead of CONFIRMED — because a test per bug is whack-a-mole. <strong>No browser.</strong> See <a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
+<td>every source, including ones not yet written</td>
+</tr>
+<tr>
+<td><code>window_registry</code></td>
+<td><strong>The front end knows how many windows are open, and the backend is never told.</strong> Presence rides a same-origin <code>BroadcastChannel</code>, because detached windows are opened <code>noopener</code> — which is the point, it buys each its own renderer process and its own WebGL2 budget — so <code>opener</code> and <code>postMessage</code> are severed by design. Without this test a channel that never opened would report exactly <code>1</code> in every window, which is the correct answer on a single-window rig and therefore invisible until somebody opens a second</td>
+<td>1 source</td>
+</tr>
 </tbody>
 </table>
-<p>All drive a <strong>real browser</strong> over CDP against a <strong>real backend</strong> on a simulated source. No hardware.</p>
-<p>All thirteen drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is now the
-only one, so there is no renderer to select. During the transition off SciChart the whole suite was
-run under <strong>both</strong> renderers and was green under both; that is the evidence that removing SciChart
-changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+<p>All twenty-two run against a <strong>real backend</strong> on a simulated source. No hardware.</p>
+<p><strong>Eighteen drive a real browser</strong> over CDP. The other four — <code>command_surface</code>,
+<code>intan_not_implemented</code>, <code>state_consistency</code> and <code>teardown_while_recording</code> — drive the backend over
+a WebSocket with <strong>no browser at all</strong>, because every assertion they make is about what the backend
+<em>says</em>, and that costs seconds instead of the minute a browser costs. Read that as a property of the
+assertion, not a shortcut: a browser added to those tests would not check anything more.</p>
+<p>The eighteen all drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is
+now the only one, so there is no renderer to select. During the transition off SciChart the whole
+suite was run under <strong>both</strong> renderers and was green under both; that is the evidence that removing
+SciChart changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
+<blockquote>
+<p><strong>This table is hand-maintained; <code>run_gui_tests.py</code> globs the directory.</strong> A new file in
+<code>tests/gui/</code> is registered, run and reported with no edit here, so the inventory drifts silently
+and only downward. On <strong>2026-08-31</strong> the last five rows above were missing and this paragraph still
+read <em>"All thirteen"</em> — against a table of seventeen. Add the row when you add the test
+(<a href="Testing.html"><code>Testing.md</code></a> §3); the "what is NOT covered" argument in §5 is only as good as the
+list it is subtracted from.</p>
+</blockquote>
 <p>The harness refuses to run at all unless a column has a live WebGL2 context (<code>tests/gui/_harness.py</code>,
 after play). That check is coverage in its own right: a renderer whose context failed to create draws
 a blank box, which is indistinguishable from a rig sending nothing, and every assertion below would
@@ -535,10 +575,32 @@ line</strong> in a <strong>46 px</strong> header, and every column in the cell a
 </tr>
 </tbody>
 </table>
-<p>‡ recorded before 2026-08-25, when this cell collapsed and its header was 36 px. Expanding the
-strip does not change the column's width and gives ~10 px of its height back to the header, which is
-where every other expanded row's 884 comes from. Marked for re-measurement rather than guessed at
-further — the next run rewrites this table's numbers and all sixteen frames together.</p>
+<p>‡ recorded before 2026-08-25, when this cell collapsed and its header was 36 px. Expanding the strip
+does not change the column's width and gives ~10 px of its height back to the header, which is where
+every other expanded row's 884 comes from.</p>
+<p><strong>Re-measured 2026-08-31, and the note above was wrong about how the fix would arrive.</strong> The suite
+has run many times since — <code>layout_matrix</code> is green — and the numbers in this table are unchanged,
+because <strong>the run does not rewrite them.</strong> It writes <code>gui_layout_matrix.json</code> (git-ignored), and
+somebody has to copy that in by hand. Only the sixteen PNGs regenerate themselves, which is why the
+frames stayed current while the table did not.</p>
+<p>The 2026-08-31 <code>gui_layout_matrix.json</code> disagrees with this table in two ways worth knowing before
+you trust a cell:</p>
+<ul>
+<li><strong>The ‡ cell collapses.</strong> Horizontal, 3 columns, dock shut now reports <code>3/3</code> collapsed at a 602 px
+  canvas. Every horizontal cell is a little narrower than it was — 1 column measures 1879 rather than
+  1903 — and this is the cell that was closest to the line. <strong>What did not change is the rule</strong>, and
+  this is exactly why the test asserts <code>collapsed == !(oneRowNeed &lt;= avail)</code> in live operands rather
+  than against a table of expected collapse counts: the assertion stayed green through a shift that
+  would have turned every hard-coded count on this page red. Do not chase the 24 px from this page —
+  measure it.</li>
+<li><strong>The vertical half is now measured on a portrait monitor</strong>, viewport 1080×2560 rather than the
+  1920×1080 recorded here, and with the dock open every vertical cell collapses. The claim below
+  that "vertical never collapses at any row count" was true at 1920 px of row and is not a property
+  of the axis: 1080 − 381 px of dock leaves 659 px of canvas, and 448 px + the depth readout does
+  not fit in it.</li>
+</ul>
+<p><strong>Treat the table as a dated snapshot (pre-2026-08-25), not as current behavior.</strong> To refresh it,
+run the suite and copy the cells out of <code>gui_layout_matrix.json</code>.</p>
 <p>The three cells that still collapse — 4 columns either way, and 3 columns with the dock <strong>open</strong> —
 collapse for a different reason than the table recorded. Not because four is more than two, but
 because 470 px, 379 px and 507 px of column leave less than the band's 448 px. 3 columns with the
@@ -631,8 +693,11 @@ collapses at 1200, 1150, 1100 and 1080 — at 1200 px it needs 448 px and 437 px
 <strong>Width is what makes a column too small, not column count.</strong> That is why <code>live_view</code>'s collapse case
 narrows the window at three columns rather than adding a fourth: adding columns no longer proves
 anything about the fold path.</p>
-<p>Vertical never collapses at any row count, which is now a <em>consequence</em> rather than an exemption: a
-stacked row is 1530–1894 px wide, so 448 px always fits.</p>
+<p>Vertical never collapses at any row count <strong>on a landscape screen</strong>, which is a <em>consequence</em> rather
+than an exemption: a stacked row is 1530–1894 px wide, so 448 px always fits. On the portrait monitor
+the 2026-08-31 run used it does not hold — 1080 px of window less 381 px of dock leaves 659 px of
+canvas, and the band does not fit — so every vertical cell with the dock open collapses. Same rule,
+different operands, which is the point of stating it in operands.</p>
 <p><strong>The decision is made once per row and applied to every column</strong> (<code>fitStrips()</code> is static). Two
 reasons, both paid for. <code>.column-container</code> is <code>flex:1 1 0</code> and Chrome distributes the remainder in
 1/64 px LayoutUnits while <code>clientWidth</code> rounds to an integer, so siblings at 601.98 and 602.02 report
@@ -902,9 +967,14 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
 <h2 id="5-what-is-not-covered-yet">5. What is NOT covered yet<a class="headerlink" href="#5-what-is-not-covered-yet" title="Permanent link">#</a></h2>
 <p>Stated plainly so a green run is not mistaken for completeness:</p>
 <ul>
-<li><strong>System-state panel.</strong> The tables, the <code>This run</code> vs <code>Total</code> columns, the stalled vocabulary, and
-  whether the counters actually advance. This is the surface that reported a healthy rig for three
-  and a half minutes during the 2026-08-20 incident, so it is the <strong>highest-value gap</strong>.</li>
+<li><strong>System-state panel — now PARTLY covered, and the remaining half is still the highest-value gap.</strong>
+  <code>state_consistency</code> pins invariants I1–I5 over the state the backend <em>reports</em>, across every
+  transition and for any source, so the panel can no longer render a source name beside
+  <code>acquisition: no_source</code>, or a name for a rig that refused to connect. What that does <strong>not</strong> touch
+  is the panel itself: the tables, the <code>This run</code> vs <code>Total</code> columns, the stalled vocabulary, and
+  <strong>whether the counters actually advance</strong>. That last one is the 2026-08-20 failure exactly — every
+  counter sat at its nominal timer rate while not one sample had been read, and no invariant over
+  reported state can catch a number that is present, self-consistent and meaningless.</li>
 <li><strong>Probe map tab</strong> — bank buttons, edit vs select-recording-channels modes, <code>Apply Map to Hardware</code>,
   <code>.imro</code> load/save.</li>
 <li><strong>Per-column controls beyond the stream selector</strong> — shank, L+R/Left/Right, µV scale, channel
@@ -968,7 +1038,7 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
 <li>
 <p><strong>Prove a new test can fail.</strong> Inject a regression, watch it go red, revert. <code>toolbar_layout</code> was
   validated by hiding <code>#tb-peek-source</code> while folded: it reported <code>UNREACHABLE</code> at all seven folded
-  widths.</p>
+  widths. (<a href="Testing.html"><code>Testing.md</code></a> §3 is the authority on this rule — edit it there.)</p>
 </li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/GuiTestCoverage.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>

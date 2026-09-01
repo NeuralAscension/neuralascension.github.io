@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reproducing the recording throughput shortfall on the second machine - SpikesPeak Docs</title>
+<title>ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0 - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../../assets/style.css">
 <script src="../../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Archive (historical) / Reproducing the recording throughput shortfall on the second machine</span>
+  <span class="crumb">Archive (historical) / ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -131,217 +131,161 @@
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
-<a href="NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a class="active" href="NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
 <a href="NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
-<a class="active" href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="reproducing-the-recording-throughput-shortfall-on-the-second-machine">Reproducing the recording throughput shortfall on the second machine<a class="headerlink" href="#reproducing-the-recording-throughput-shortfall-on-the-second-machine" title="Permanent link">#</a></h1>
-<p><strong>Issue: <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a>.</strong>
-Read that first — it has the original numbers and the two effects they separate into.</p>
-<p>Also read, in this order, because each one will otherwise cost you time:</p>
-<table>
-<thead>
-<tr>
-<th>Issue</th>
-<th>Why you need it</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">#63</a></strong></td>
-<td>The measurement itself. This page is its runbook.</td>
-</tr>
-<tr>
-<td><strong><a href="https://github.com/NeuralAscension/SpikesPeak/issues/64">#64</a></strong></td>
-<td>An unrecognised WebSocket command is silently ignored. This is what ruined the first attempt.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a></td>
-<td>Source switching. <strong>Not</strong> implicated here — I wrongly blamed it and retracted; do not go chasing it.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">#52</a></td>
-<td>The second-machine bring-up this was found during.</td>
-</tr>
-<tr>
-<td><a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a></td>
-<td>Where the finding originally lived, in comments, before it was split out.</td>
-</tr>
-</tbody>
-</table>
+  <main class="content"><article class="markdown-body"><h1 id="archived-closed-loop-latency-on-the-onebox-np10-and-np20">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 <strong>and</strong> NP2.0<a class="headerlink" href="#archived-closed-loop-latency-on-the-onebox-np10-and-np20" title="Permanent link">#</a></h1>
+<blockquote>
+<p><strong>DONE 2026-08-20.</strong> The full 3x2 matrix ({1 ch, 2 ch quorum 2, 4 ch quorum 3} x {baseline, ASAP})
+was completed on <strong>both</strong> probes, n ≈ 1000 per cell, <strong>0 unmatched</strong>. ASAP roughly halves the loop on
+each (NP1.0 1.44 → 0.92 ms, NP2.0 1.08 → 0.55 ms) and quorum costs nothing; the OneBox matches or
+beats PXIe in every cell. Results:
+<a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>;
+method: <a href="../LatencyProfiling.html"><code>../LatencyProfiling.md</code></a>; the session write-up is Status §48.</p>
+<p><strong>The body below is kept for the operator knowledge in it</strong>, not as a plan — how the stim capture
+moved off the NI-DAQ and onto the OneBox's own ADC, and what has to be true before an ADC-captured
+pulse can be trusted. Read it before designing the next same-clock measurement.</p>
+</blockquote>
+<p><em>(Everything from here down is the brief as it was written. Kept unedited except where marked.)</em></p>
+<p><strong>Status:</strong> planned, agreed 2026-08-18. <strong>Blocked on nothing but the rig</strong> — the maintainer streams the
+synthetic ripple signal when back at work (2026-08-19).</p>
+<p><strong>The goal:</strong> closed-loop latency <em>recordings and measurements</em> for the ripple → stim path, with the probe
+on the <strong>OneBox</strong> rather than the PXIe basestation, for <strong>both</strong> NP1.0 and NP2.0.</p>
+<p>This is the OneBox counterpart of the PXIe latency work already in the log (§27–§30). Everything that
+matters there — the definition of latency, the analysis tooling, the ASAP delivery flag — carries over
+unchanged; what is new is the basestation underneath.</p>
 <hr />
-<h2 id="what-is-being-asked">What is being asked<a class="headerlink" href="#what-is-being-asked" title="Permanent link">#</a></h2>
-<p>On the second machine, OneBox recordings came out <strong>short</strong> and nothing warned:</p>
+<h2 id="why-this-is-worth-doing">Why this is worth doing<a class="headerlink" href="#why-this-is-worth-doing" title="Permanent link">#</a></h2>
+<p>The closed loop is fully quantified on <strong>PXIe</strong> (§29/§30): sub-millisecond at every quorum level on both
+probes, NP1.0 0.94–0.98 ms and NP2.0 0.55–0.61 ms with ASAP delivery. Nothing equivalent exists for the
+OneBox, and the OneBox is a <em>different transport</em>: USB3/FTDI rather than PCIe/MXI. The open question is
+whether that transport costs latency, and how much.</p>
+<p>That is the whole point of the measurement — do <strong>not</strong> assume it matches PXIe.</p>
+<h2 id="rig-wiring-as-of-2026-08-24-and-why-it-changed-this-task">Rig wiring as of 2026-08-24 — and why it changed this task<a class="headerlink" href="#rig-wiring-as-of-2026-08-24-and-why-it-changed-this-task" title="Permanent link">#</a></h2>
+<blockquote>
+<p>⚠️ <strong>This is a snapshot of the 2026-08-24 bench, and the rig has been rewired twice since.</strong> It shows
+the SMA on IO9, which is no longer where it is. The current authority on which OneBox connector is
+which — and on the fact that <strong>SMA 1 has no IO number</strong> because it is patched somewhere different
+every session — is <a href="../OneBoxWiring.html"><code>../OneBoxWiring.md</code></a> §4. Keep reading this section for
+<em>why</em> the IO2 connection mattered; do not wire from its table.</p>
+</blockquote>
+<p>Reported by the maintainer, ahead of the next hardware session:</p>
+<blockquote>
+<p>"npx 2.0 probe has been moved back to the onebox. both systems are powered but no probes on PXIe
+... as far as the SDR goes IO6 is connected to IO4 (IO0 to IO11 is the range). SMA on the onebox is
+connected to IO9 and trigger pin from the pi is connected to IO2"</p>
+</blockquote>
 <table>
 <thead>
 <tr>
-<th>run</th>
-<th>config</th>
-<th>band</th>
-<th>rec/s</th>
-<th>nominal</th>
-<th>%</th>
+<th>line</th>
+<th>connected to</th>
+<th>what it buys</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>A, t+15 s</td>
-<td>with ADC</td>
-<td>raw</td>
-<td>23,429</td>
-<td>30,000</td>
-<td><strong>78.1 %</strong></td>
+<td><strong>IO2</strong></td>
+<td>Pi stim-server trigger pin</td>
+<td><strong>The stim pulse is captured on the OneBox's own ADC.</strong></td>
 </tr>
 <tr>
-<td>A, t+15 s</td>
-<td><strong>no ADC</strong></td>
-<td>raw</td>
-<td>29,997</td>
-<td>30,000</td>
-<td><strong>99.99 %</strong></td>
+<td><strong>IO9</strong></td>
+<td>OneBox SMA</td>
+<td>the SMA signal becomes readable as an ADC channel</td>
 </tr>
 <tr>
-<td>B, t+90 s</td>
-<td>with ADC</td>
-<td>raw</td>
-<td>19,980</td>
-<td>30,000</td>
-<td><strong>66.6 %</strong></td>
-</tr>
-<tr>
-<td>B, t+90 s</td>
-<td><strong>no ADC</strong></td>
-<td>raw</td>
-<td>19,740</td>
-<td>30,000</td>
-<td><strong>65.8 %</strong></td>
+<td><strong>IO6 → IO4</strong></td>
+<td>loopback</td>
+<td>an end-to-end check of the ADC path with a known signal</td>
 </tr>
 </tbody>
 </table>
-<p>Two independent effects: the ADC stream appears to cost <strong>~22 %</strong> of probe throughput, and there is a
-decay to <strong>~66 %</strong> by t+90 s that happens with the ADC disabled too.</p>
-<p><strong>The same four cells were run on the original rig on 2026-08-25 and every one recorded at 100.0 %.</strong>
-So the question this run answers is narrow and worth answering: <em>is this machine, or its environment,
-different — and in what way?</em></p>
+<p><strong>The IO2 connection is the interesting one.</strong> As written below, this task needs the <strong>NI-DAQ</strong> for
+the ground-truth capture: the probe stream and the stim pulse have to be sampled on a common clock,
+and the NI-DAQ was the only thing doing that. With the Pi's trigger on IO2, the OneBox ADC samples
+the stim pulse <em>itself</em> — on the same device, and the same acquisition, as the probe.</p>
+<p>If that holds up, it removes the NI-DAQ from the measurement entirely and with it the sync-alignment
+step that has already produced one wrong answer (the off-by-one in <code>align_timestamps</code>, §"Sync
+off-by-one" in the log — a whole-period shift that was invisible because the intervals still looked
+right). Two streams from one device need no alignment at all.</p>
+<p><strong>Not yet verified.</strong> Nobody has recorded through this wiring. Before trusting a latency number from
+it, confirm on the rig that:</p>
+<ol>
+<li>the ADC channel for IO2 actually shows the pulse, with an amplitude and width that match what the
+   Pi is asked to emit (the oscilloscope is the reference for width — the OneBox ADC samples every 33 µs and
+   cannot resolve a stim pulse's width; the note is in <a href="../LatencyProfiling.html"><code>../LatencyProfiling.md</code></a>,
+   in its gotchas section, NOT in <code>Recording.md</code> §5 where this brief first sent people);</li>
+<li>the ADC samples and the probe samples carry timestamps from the same clock, rather than two that
+   merely start together;</li>
+<li>the IO6 → IO4 loopback reads back what is driven, which is the cheapest way to prove the ADC path
+   before trusting anything measured through it.</li>
+</ol>
+<p>Until those three are done, keep the NI-DAQ capture as the reference and treat the ADC capture as
+the thing being validated, not the thing validating.</p>
 <hr />
-<h2 id="1-before-you-start">1. Before you start<a class="headerlink" href="#1-before-you-start" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">git pull                          # you need Npx2OneBoxNoAdc.yaml, committed 2026-08-25
-cmake --build build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release
-</code></pre>
-<p><code>Npx2OneBoxNoAdc.yaml</code> is the control. It is a copy of <code>Npx2OneBox.yaml</code> with every <code>adc</code> output,
-input and recording removed — the <strong>absence of a <code>*.adc</code> output</strong> is what disables the stream, so
-deleting only the recording would still pay the streaming cost and measure nothing.</p>
-<p>Its internal name — which is what you select, not the filename — is
-<strong><code>NPX 2.0 Multishank (OneBox, no ADC)</code></strong>.</p>
-<p>Confirm the build deployed it:</p>
-<pre><code class="language-bash">ls build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/config/Npx2OneBoxNoAdc.yaml
-</code></pre>
-<h2 id="2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything">2. The trap that ruined the first attempt — read this before scripting anything<a class="headerlink" href="#2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything" title="Permanent link">#</a></h2>
-<p>The WebSocket disconnect command is <strong><code>Disconnect</code>, capital D, and it requires a <code>value</code> field</strong>:</p>
-<pre><code class="language-python">ws.send_text(json.dumps({&quot;command&quot;: &quot;Disconnect&quot;, &quot;value&quot;: True}))     # correct
-ws.send_text(json.dumps({&quot;command&quot;: &quot;disconnect&quot;}))                    # matches NOTHING, silently
-</code></pre>
-<p>There is no terminal <code>else</code> in the command handler, so a wrong name produces <strong>no warning, no log
-line and no reply</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/64">#64</a>). On the original
-rig this meant the source was never released, the backend correctly refused every profile switch, and
-all four cells ran under the <em>first</em> profile — the control arm silently did not exist, and the files
-looked perfectly normal afterwards.</p>
-<p><strong>Two ways to avoid it. Either is fine:</strong></p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Restart the backend between profiles.</strong> Simplest, and almost certainly what the original run did —
-  its two arms read differently, so its switch genuinely took effect.</li>
-<li><strong>Switch live, and verify.</strong> Send <code>setPlaying:false</code>, then <code>{"command":"Disconnect","value":true}</code>,
-  then <code>selectSource</code>, then <strong>read back the confirmed source name and refuse to record if it is not
-  the one you asked for.</strong></li>
+<li>The maintainer streams the <strong>synthetic ripple signal</strong> into the probe (the same playback used for the
+  PXIe runs). Nothing in this task generates the signal.</li>
+<li><strong>Stim server</strong> reachable — the Pi 3B+ at <code>stimserver@192.168.1.100</code>, UDP 8888 (see
+  <code>raspberrypi_pulsegenerator/</code>). It must be ARMED; the detector arms on connect.</li>
+<li><strong>NI-DAQ</strong> for the ground truth capture: latency is measured offline as
+  <strong>ripple threshold-crossing → the stim pulse on ai4</strong>, so the NI-DAQ must record alongside the probe.
+  ⚠️ This is the part that needs thought — see "The open question" below.</li>
+<li>Calibration CSVs for the NP1.0 probe (<code>22175723312</code>) are <strong>missing</strong>; it currently streams
+  UNCALIBRATED. Worth fixing before taking numbers that will be quoted.</li>
 </ul>
-<p>Either way, <strong>watch <code>output.log</code> in the backend's working directory</strong> while you run. A refused switch
-says so plainly:</p>
-<pre><code>[MainController]  Error: You must disconnect from a source before attempting to set a new one
-[WebSocketServer] select &quot;...&quot; REFUSED -- &quot;...&quot; is still connected; state restored
-</code></pre>
-<p>If you see that line, the cell you just recorded is worthless. Stop and fix the script.</p>
-<h2 id="3-the-four-cells">3. The four cells<a class="headerlink" href="#3-the-four-cells" title="Permanent link">#</a></h2>
-<p>Ten seconds of recording each. Warm-up is measured from <strong>when streaming starts</strong>, not from launch.</p>
-<table>
-<thead>
-<tr>
-<th>cell</th>
-<th>profile</th>
-<th>record at</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>A_withadc_t15</code></td>
-<td><code>NPX 2.0 Multishank (OneBox)</code></td>
-<td>t+15 s</td>
-</tr>
-<tr>
-<td><code>A_noadc_t15</code></td>
-<td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
-<td>t+15 s</td>
-</tr>
-<tr>
-<td><code>B_withadc_t90</code></td>
-<td><code>NPX 2.0 Multishank (OneBox)</code></td>
-<td>t+90 s</td>
-</tr>
-<tr>
-<td><code>B_noadc_t90</code></td>
-<td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
-<td>t+90 s</td>
-</tr>
-</tbody>
-</table>
-<p>The harness used on the original rig is in the session scratchpad rather than the repo, because it
-carried the bug above. Write a fresh one, or drive it by hand from
-<code>python python/spikespeak_cli.py</code>, which already sends the correct command spellings:</p>
-<pre><code class="language-bash">python python/spikespeak_cli.py --script &quot;select 'NPX 2.0 Multishank (OneBox)'; waitready 40; play; sleep 15; record &lt;dir&gt; A_withadc_t15; sleep 10; stop; sleep 2; pause; disconnect&quot;
-</code></pre>
-<h2 id="4-counting-do-not-use-a-wall-clock">4. Counting — do not use a wall clock<a class="headerlink" href="#4-counting-do-not-use-a-wall-clock" title="Permanent link">#</a></h2>
-<p>A script that times its own <code>record</code> / <code>stop</code> round trip is measuring <strong>its own latency</strong> and calling
-it data loss. Count from the files:</p>
-<pre><code class="language-python">records = os.path.getsize(bin_path) // sidecar[&quot;frame&quot;][&quot;bytes&quot;]
-percent = 100.0 * (records / RECORD_SECONDS) / sidecar[&quot;sample_rate_hz&quot;]
-</code></pre>
-<p><code>frame.bytes</code> is declared in the sidecar — do not hardcode it. For the probe's <code>raw</code> band with three
-recorded channels it is 12 bytes (<code>[uint32 timestamp][uint16 sync][int16 × 3]</code>); for the 12-channel
-ADC band it is 30.</p>
-<p>Cross-check the record's own duration against the sidecar's rate as well: both bands being short by
-the <em>same</em> fraction points at a shared cause rather than anything band-specific.</p>
-<h2 id="5-what-to-report">5. What to report<a class="headerlink" href="#5-what-to-report" title="Permanent link">#</a></h2>
+<h2 id="the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST<a class="headerlink" href="#the-open-question-to-resolve-first" title="Permanent link">#</a></h2>
+<p>On a PXIe rig the probe and the NI-DAQ share a chassis and a sync line, which is what makes the offline
+<code>threshold-crossing → ai4</code> measurement meaningful. <strong>With the probe on the OneBox, work out how the NI-DAQ
+capture is synchronised to it before recording anything</strong>, because the whole measurement rests on that
+alignment:</p>
 <ul>
-<li>The four percentages, and whether either effect appears.</li>
-<li>If it reproduces: the two machines' <strong>differences</strong>, because the code is now known to be innocent —
-  disk (model, free space, whether it is the same drive as the build tree), USB controller and
-  whether the OneBox is on a hub, Windows power profile, and what else is resident.</li>
-<li>If it does not reproduce: say so plainly, and note anything that changed on that machine since
-  2026-08-21. A fault that has gone away is still worth a line in #63.</li>
-<li>Whether <code>output.log</code> shows <strong>any</strong> WARN or CRITICAL during a short run. The original observation was
-  that it shows none, which is half of why the fault is dangerous.</li>
+<li>Does the existing NPX↔NI-DAQ sync-pulse alignment still hold when the probe is on USB?</li>
+<li>Or should the <strong>OneBox's own 12-channel ADC</strong> capture the stim pulse instead of the NI-DAQ, making the
+  measurement single-device and removing the cross-device sync entirely? The ADC is verified working
+  (0.000152588 V/count, §35.4) and records to <code>data.npx.adc</code> with a well-formed sidecar.</li>
 </ul>
-<h2 id="6-do-not">6. Do not<a class="headerlink" href="#6-do-not" title="Permanent link">#</a></h2>
+<p>The second option is the more attractive one and is probably the right answer — it collapses a two-clock
+problem into one clock. Decide deliberately; do not default to copying the PXIe recipe.</p>
+<p>Remember the sync off-by-one that cost 30+ minutes previously (§24): verify closed-loop timing
+<strong>event-by-event</strong>, never by nearest-neighbour matching on a periodic signal.</p>
+<h2 id="method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)<a class="headerlink" href="#method-mirrors-the-pxie-runs" title="Permanent link">#</a></h2>
+<ol>
+<li>Bring up <code>Npx1OneBox</code> / <code>Npx2OneBox</code>, confirm the detector fires on the synthetic signal.</li>
+<li>Record with the detector's resolved read-out channels plus the stim capture channel.</li>
+<li>Run the existing analysis: <code>ripple_tools/analyze_recording.py</code>, <code>latency_breakdown.py</code>,
+   <code>verify_quorum.py</code>. <code>sync.py</code> defaults to <code>match="auto"</code>.</li>
+<li>Repeat the quorum × delivery matrix if time allows; at minimum ASAP vs baseline on both probes.</li>
+<li>Compare against the PXIe numbers and state plainly whether USB3 costs latency.</li>
+</ol>
+<h2 id="deliverables">Deliverables<a class="headerlink" href="#deliverables" title="Permanent link">#</a></h2>
 <ul>
-<li>Do not force-kill the backend with the OneBox connected. The FT601 handle is released only on a
-  clean exit and a kill costs a physical power-cycle. Use Disconnect, then <code>quit</code>.</li>
-<li>Do not change <code>Npx2OneBox.yaml</code> to "test something quickly". The two profiles must differ in one
-  variable, which is why the control is committed rather than edited in place.</li>
-<li>Do not conclude anything from a cell where the source switch was refused.</li>
-</ul></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_ThroughputOnSecondMachine.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<li>Recordings under <code>RecordingTests/&lt;date&gt;_onebox_closed_loop/</code>, raw <code>.bin</code> <strong>not committed</strong> (gitignored);
+  derived figures + metrics in that session's <code>analysis/</code>.</li>
+<li>A latency table for NP1.0 and NP2.0 on the OneBox, directly comparable to the PXIe matrix in §29/§30.</li>
+<li>A new dated section in <code>SpikesPeak_Status.md</code>.</li>
+</ul>
+<h2 id="reference">Reference<a class="headerlink" href="#reference" title="Permanent link">#</a></h2>
+<p><code>developer_docs/LatencyProfiling.md</code> (the definition, the per-stage <code>rippleLatency</code> instrumentation, and
+the <code>low_latency:</code> / ASAP flag), <code>RippleDetection.md</code>, <code>StimClosedLoop_Status.md</code>, and Status §27–§30 for
+the PXIe results this must be compared against.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/archive/NextTask_OneBoxClosedLoopLatency.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#what-is-being-asked">What is being asked</a></li>
-<li><a href="#1-before-you-start">1. Before you start</a></li>
-<li><a href="#2-the-trap-that-ruined-the-first-attempt-read-this-before-scripting-anything">2. The trap that ruined the first attempt — read this before scripting anything</a></li>
-<li><a href="#3-the-four-cells">3. The four cells</a></li>
-<li><a href="#4-counting-do-not-use-a-wall-clock">4. Counting — do not use a wall clock</a></li>
-<li><a href="#5-what-to-report">5. What to report</a></li>
-<li><a href="#6-do-not">6. Do not</a></li>
+<li><a href="#why-this-is-worth-doing">Why this is worth doing</a></li>
+<li><a href="#rig-wiring-as-of-2026-08-24-and-why-it-changed-this-task">Rig wiring as of 2026-08-24 — and why it changed this task</a></li>
+<li><a href="#prerequisites">Prerequisites</a></li>
+<li><a href="#the-open-question-to-resolve-first">⚠️ The open question to resolve FIRST</a></li>
+<li><a href="#method-mirrors-the-pxie-runs">Method (mirrors the PXIe runs)</a></li>
+<li><a href="#deliverables">Deliverables</a></li>
+<li><a href="#reference">Reference</a></li>
 </ul>
 </div>
 </aside>

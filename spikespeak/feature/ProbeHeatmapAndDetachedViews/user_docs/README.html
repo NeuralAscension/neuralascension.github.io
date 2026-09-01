@@ -52,21 +52,25 @@
 <a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
 <a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="../developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
 <a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
 <a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="../developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="../developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
-<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -139,8 +140,9 @@
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-user-guide">SpikesPeak — User Guide<a class="headerlink" href="#spikespeak-user-guide" title="Permanent link">#</a></h1>
 <p>How to run SpikesPeak and use the interface. SpikesPeak is a real-time neural acquisition app: a
-backend program serves a web UI that opens in your <strong>normal web browser</strong>, where you connect a probe,
-configure its channel map, and watch / record the live signal.</p>
+backend program serves a web UI that opens in a <strong>dedicated browser window</strong> (your everyday browser,
+in its own session), where you connect a probe, configure its channel map, and watch / record the
+live signal.</p>
 <h2 id="guides">Guides<a class="headerlink" href="#guides" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -194,8 +196,8 @@ configure its channel map, and watch / record the live signal.</p>
 <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> for connect → record, <a href="RippleDetection.html"><code>RippleDetection.md</code></a> for the
 ripple module.)</p>
 <ol>
-<li><strong>Launch.</strong> Run <strong><code>SpikesPeak.exe</code></strong> (or <code>python run_spikespeak.py</code>). Your browser opens at
-   <code>http://localhost:8234</code>. (Details: <a href="#launching-spikespeak">Launching SpikesPeak</a>.)</li>
+<li><strong>Launch.</strong> Run <strong><code>run_spikespeak.bat</code></strong> (<code>./run_spikespeak.sh</code> on Linux/macOS). A dedicated browser
+   window opens at <code>http://localhost:8234</code>. (Details: <a href="#launching-spikespeak">Launching SpikesPeak</a>.)</li>
 <li><strong>Pick a source.</strong> Toolbar <strong>Source</strong> ▸ <strong><code>Simulated Data…</code></strong> → <strong>Neuropixels 1.0 — Ripple Detection
    (GUI)</strong>. It connects with no probe attached.</li>
 </ol>
@@ -203,7 +205,7 @@ ripple module.)</p>
 3. <strong>Play.</strong> Press <strong>▶</strong> — the view switches itself to the <strong>Live Data</strong> tab, and you'll see the live
    waveforms, one trace per channel, stacked by depth.</p>
 <p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview.png" />
-4. <strong>Open Ripple Detection.</strong> Click <strong>◉ Ripple Detection</strong> in the toolbar; the dock slides in on the right.
+4. <strong>Open Ripple Detection.</strong> Click <strong>SWR Detector</strong> in the toolbar; the dock slides in on the right.
 5. <strong>Add a channel + arm.</strong> Drag an electrode label from the view (or type a number and <strong>Add</strong>), set
    <strong>Parameter-estimation time = 3 s</strong> (quick test), then press <strong>▶ Start</strong>.</p>
 <p><img alt="Channels added" src="images/ripple/np1_channels.png" />
@@ -216,20 +218,50 @@ ripple module.)</p>
 <hr />
 <h2 id="launching-spikespeak">Launching SpikesPeak<a class="headerlink" href="#launching-spikespeak" title="Permanent link">#</a></h2>
 <ol>
-<li>Run <strong><code>SpikesPeak.exe</code></strong>. A console window opens (status/log messages) and your <strong>default web
-   browser</strong> opens automatically to the UI (served locally at <code>http://localhost:8234</code>).
+<li>Run <strong><code>run_spikespeak.bat</code></strong> — or <strong><code>./run_spikespeak.sh</code></strong> on Linux/macOS. A console window opens
+   (status/log messages) and a <strong>dedicated browser window</strong> opens automatically on the UI (served
+   locally at <code>http://localhost:8234</code>).
    - 📷 <em>the console + the browser opening</em></li>
-<li>If the browser doesn't open, browse to <strong><code>http://localhost:8234</code></strong> manually.</li>
-<li><strong>Closing the browser tab quits the app</strong> (after a ~2-second grace, so a refresh is safe). You no
-   longer need to close the console window separately.</li>
 </ol>
 <blockquote>
-<p>Use the machine that has the PXI / probe hardware. Without hardware, choose <strong>Simulated Data</strong> or a
-synthetic source to explore the UI (those don't expose the probe channel-map panel).</p>
+<p><strong>Use the launcher, not <code>bin/SpikesPeak.exe</code>.</strong> The launcher is what puts Qt, the Neuropixels API
+and HDF5 on <code>PATH</code>. Started without them the exe exits <strong><code>0xC0000135</code></strong> (STATUS_DLL_NOT_FOUND)
+before it prints anything — which is what an operator sees as <em>"a window flashed and closed"</em>.
+There is nothing wrong with the install when that happens; the wrong thing was started.</p>
+</blockquote>
+<ol start="2">
+<li>If the browser doesn't open, browse to <strong><code>http://localhost:8234</code></strong> manually.</li>
+<li><strong>Closing the browser window quits the app</strong> (after a ~2-second grace, so a refresh is safe). You no
+   longer need to close the console window separately.</li>
+</ol>
+<p><strong>Flags worth knowing:</strong></p>
+<table>
+<thead>
+<tr>
+<th>flag</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--tab</code></td>
+<td>open the UI as a <strong>tab in your default browser</strong> instead of a dedicated window. This was the old behavior; the dedicated window is now the default because it runs in its own browser session, separate from your everyday profile.</td>
+</tr>
+<tr>
+<td><code>--no-browser</code></td>
+<td>open no browser at all. Use this for any scripted or automated run — otherwise SpikesPeak opens a second GUI on top of the one you are already driving.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>Use the machine that has the PXI / OneBox / probe hardware. Without hardware, choose <strong>Simulated
+Data</strong> or a synthetic source to explore the UI — the simulated and play-file sources render the probe
+channel-map editor exactly like a real probe, so they are the best hardware-free way to learn it.</p>
 </blockquote>
 <hr />
 <h2 id="the-toolbar-left-right">The toolbar (left → right)<a class="headerlink" href="#the-toolbar-left-right" title="Permanent link">#</a></h2>
 <p>📷 <em>the toolbar</em></p>
+<h3 id="row-1-transport-view-source">Row 1 — transport, view, source<a class="headerlink" href="#row-1-transport-view-source" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -243,12 +275,40 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 <td>Start / pause streaming. Disabled until a source is connected and the device is ready.</td>
 </tr>
 <tr>
-<td><strong>Window (sec)</strong></td>
-<td>Width of the live time window (1 / 2 / 5 / 10 s).</td>
+<td><strong>⏺ Record</strong></td>
+<td>Start / stop writing data to disk. Enabled only <strong>while playing</strong>.</td>
 </tr>
 <tr>
-<td><strong>Columns</strong></td>
-<td>How many side-by-side chart columns to show (1–4; default 2).</td>
+<td><strong>Time: 0.00s</strong></td>
+<td><strong>Elapsed stream time</strong> — a readout, not a control. (Not to be confused with the <strong>Time</strong> dropdown below, which sets the width of the trace window. Two things named Time, one of which you can click.)</td>
+</tr>
+<tr>
+<td><strong>▾ view</strong> <em>(chip)</em></td>
+<td>Only appears when the window is too narrow to hold the view controls. <strong>Hover to peek</strong>; click, or press <strong>Ctrl+Shift+V</strong>, to pin them open. If the view controls seem to have vanished, this is where they went.</td>
+</tr>
+<tr>
+<td><strong>Time</strong> <em>(dropdown)</em></td>
+<td>Seconds of history shown by <strong>trace</strong> columns (1 / 2 / 5 / 10 s). Heatmap columns carry their own span, set per column. It was called <em>Window</em> until detached view windows landed, at which point "Window" started reading as <em>which window</em>.</td>
+</tr>
+<tr>
+<td><strong>Cols</strong></td>
+<td>How many side-by-side chart columns to show (1–4; default 2). Reads <strong>Rows</strong> in vertical layout.</td>
+</tr>
+<tr>
+<td><strong>⧉</strong></td>
+<td>Open <strong>another view window</strong> — more columns or rows of the same live data, on a second monitor. No toolbar in it: no play, no record, no probe map, because the rig has one operator. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3b.</td>
+</tr>
+<tr>
+<td><strong>Ch</strong></td>
+<td>Channels shown per column/row: <code>Auto</code> (20 horizontal / 40 vertical), 20, 40, 60, 80, 120. In heatmap mode an <strong>All</strong> option appears.</td>
+</tr>
+<tr>
+<td><strong>Horizontal ⬌ / Vertical ⬍</strong></td>
+<td>Lay the strips out as side-by-side <strong>columns</strong> (landscape monitor) or full-width stacked <strong>rows</strong> (portrait / rotated monitor, and laminar probes). The choice persists across reloads.</td>
+</tr>
+<tr>
+<td><strong>▾ source</strong> <em>(chip)</em></td>
+<td>The same peek behavior for the Source group — hover to peek, click or <strong>Ctrl+Shift+S</strong> to pin.</td>
 </tr>
 <tr>
 <td><strong>Source</strong></td>
@@ -258,25 +318,63 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 <td><strong>Disconnect</strong></td>
 <td>Releases the current source and returns to "None".</td>
 </tr>
+</tbody>
+</table>
+<h3 id="row-2-status-module-tabs-view-tabs">Row 2 — status, module tabs, view tabs<a class="headerlink" href="#row-2-status-module-tabs-view-tabs" title="Permanent link">#</a></h3>
+<table>
+<thead>
 <tr>
-<td><strong>⏺ Record</strong></td>
-<td>Start / stop writing data to disk. Enabled only <strong>while playing</strong>.</td>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Status box</strong> <em>(left)</em></td>
+<td>The latest action, color-coded: <strong>green</strong> = success, <strong>amber (pulsing)</strong> = working, <strong>red</strong> = error, gray = info. Hover for the full message + time. A <strong>● REC → name</strong> badge joins it while recording.</td>
 </tr>
 <tr>
-<td><strong>Time</strong></td>
-<td>Elapsed stream time.</td>
+<td><strong>Bands ▾</strong></td>
+<td>Menu of the <strong>derived bands</strong> — LFP and Spike, computed from a 2.0 probe's single wideband stream. Each row has its own on/off switch; the button carries a count of how many are <strong>running</strong> and turns green when that is not zero. They ship <strong>off</strong>: nothing filters 384 channels until you ask for it.</td>
 </tr>
 <tr>
-<td><strong>Probe Map / Live Data</strong> <em>(tabs)</em></td>
+<td><strong>♪</strong></td>
+<td>The <strong>spike audio monitor</strong> — listen to one channel through the speakers. Appears for any probe source, 1.0 or 2.0. See <a href="SpikeAudio.html"><code>SpikeAudio.md</code></a>.</td>
+</tr>
+<tr>
+<td><strong>SWR Detector</strong></td>
+<td>Opens the ripple <strong>dock</strong> on the right: detection channels, thresholds, quorum, live envelopes and the stimulation controls. The main view shrinks to fit rather than being covered. See <a href="RippleDetection.html"><code>RippleDetection.md</code></a>.</td>
+</tr>
+<tr>
+<td><strong>▣ OneBox</strong></td>
+<td>Appears when a <strong>OneBox</strong> is connected — the box's own device panel (its 12-channel ADC and I/O).</td>
+</tr>
+<tr>
+<td><strong>▤ NI-DAQ</strong></td>
+<td>Appears when an <strong>NI-DAQ</strong> card is connected — that device's panel.</td>
+</tr>
+<tr>
+<td><strong>Probe Map / Live Data</strong> <em>(tabs, right)</em></td>
 <td>Switch between the channel-map editor and the live waveforms. The bar appears once a probe map exists — connecting a probe opens <strong>Probe Map</strong>, and streaming switches to <strong>Live Data</strong> on the backend's confirmation. Pausing does not switch back: you may have paused in order to edit the map.</td>
 </tr>
+</tbody>
+</table>
+<h3 id="inside-a-column-not-the-toolbar">Inside a column (not the toolbar)<a class="headerlink" href="#inside-a-column-not-the-toolbar" title="Permanent link">#</a></h3>
+<table>
+<thead>
 <tr>
-<td><strong>♪</strong> <em>(second row)</em></td>
-<td>Opens the <strong>spike audio monitor</strong> — listen to one channel through the speakers. Appears only for probe sources. See <a href="SpikeAudio.html"><code>SpikeAudio.md</code></a>.</td>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Traces / Heatmap</strong></td>
+<td>The first dropdown in each column's control strip. <strong>Traces</strong> is one line per channel; <strong>Heatmap</strong> is time across, channel down, color for amplitude — the way to see the whole probe at once. Same channels, same band, different way of looking. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3a.</td>
 </tr>
 <tr>
-<td><strong>Status box</strong> <em>(far right)</em></td>
-<td>The latest action, color-coded: <strong>green</strong> = success, <strong>amber (pulsing)</strong> = working, <strong>red</strong> = error, gray = info. Hover for the full message + time.</td>
+<td><strong>▾ controls</strong> <em>(chip)</em></td>
+<td>The same peek pattern as the toolbar chips: when a column is too narrow for its control strip, the strip folds to a chip. Hover to peek, click or <strong>Ctrl+Shift+&lt;n&gt;</strong> to pin.</td>
 </tr>
 </tbody>
 </table>
@@ -352,7 +450,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Ripple detection + closed-loop stim</strong></td>
-<td>✅ SWR detection validated for NP1 + NP2 (simulation); ripple→UDP→stimulator closed loop verified, including a real hardware pulse. See <a href="RippleDetection.html"><code>RippleDetection.md</code></a> -- Pi stim-server setup: <a href="../raspberrypi_pulsegenerator/README.html">../raspberrypi_pulsegenerator/README.md</a>.</td>
+<td>✅ <strong>Hardware-validated on both probes over both transports</strong> (PXIe and OneBox), synthetic ripple in saline → detection → stimulus, <strong>n ≈ 1000 per cell, 0 unmatched</strong> across the full quorum × delivery matrix. Sub-millisecond with ASAP delivery. Numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Operating the dock: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>. Pi stim-server setup: <a href="../raspberrypi_pulsegenerator/README.html">../raspberrypi_pulsegenerator/README.md</a>. The next milestone is in vivo under anesthesia.</td>
 </tr>
 <tr>
 <td><strong>Simulated sources</strong></td>
@@ -360,7 +458,7 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 </tr>
 <tr>
 <td><strong>Neuropixels OneBox</strong></td>
-<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output works and is measured on <strong>DAC0 → breakout BNC IO0</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed 2026-08-24); its latency has not yet been compared against the Pi path. <strong>Operator walkthrough: <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a>.</strong></td>
+<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output works and is measured on <strong>DAC0 → breakout BNC IO0</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed 2026-08-24). It <strong>has</strong> now been compared against the Pi path (2026-08-25): the DAC reaches voltage a median <strong>363 µs earlier</strong>, order-corrected, n ≈ 1000 per ordering — but it is a <strong>voltage</strong> source where the AM 2300 is a <strong>constant-current</strong> stimulator, so read that as a transport comparison, not a stimulus one (<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>). <strong>Operator walkthrough: <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a>.</strong></td>
 </tr>
 </tbody>
 </table></article>
@@ -371,7 +469,12 @@ synthetic source to explore the UI (those don't expose the probe channel-map pan
 <li><a href="#guides">Guides</a></li>
 <li><a href="#quick-start-6-steps-to-streaming-and-your-first-detection">Quick start — 6 steps to streaming (and your first detection)</a></li>
 <li><a href="#launching-spikespeak">Launching SpikesPeak</a></li>
-<li><a href="#the-toolbar-left-right">The toolbar (left → right)</a></li>
+<li><a href="#the-toolbar-left-right">The toolbar (left → right)</a><ul>
+<li><a href="#row-1-transport-view-source">Row 1 — transport, view, source</a></li>
+<li><a href="#row-2-status-module-tabs-view-tabs">Row 2 — status, module tabs, view tabs</a></li>
+<li><a href="#inside-a-column-not-the-toolbar">Inside a column (not the toolbar)</a></li>
+</ul>
+</li>
 <li><a href="#the-two-views-neuropixels-sources">The two views (Neuropixels sources)</a></li>
 <li><a href="#status-messages-youll-see">Status messages you'll see</a></li>
 <li><a href="#current-support">Current support</a></li>

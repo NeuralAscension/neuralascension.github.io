@@ -52,21 +52,25 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">6</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
 <a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
@@ -74,45 +78,40 @@
 <a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup" open><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a class="active" href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
 <a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">5</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">7</span></summary>
-<a href="DetachedViews.html">Detached view windows</a>
-<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
-<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
-<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -132,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -194,7 +195,7 @@ previously Linux-only (issue #6): each typed line drives <code>MainController</c
 </tr>
 <tr>
 <td><code>quit</code> / <code>exit</code></td>
-<td>shut the server down (once <code>MainController::isReadyToQuit()</code>)</td>
+<td>shut the server down — <strong>but only if nothing is connected</strong>; see below</td>
 </tr>
 <tr>
 <td><em>(blank line)</em></td>
@@ -203,6 +204,16 @@ previously Linux-only (issue #6): each typed line drives <code>MainController</c
 </tbody>
 </table>
 <blockquote>
+<p>⚠️ <strong>Console <code>quit</code> is gated and the CLI's <code>quit</code> is not.</strong> <code>KeyboardListener</code> asks
+<code>MainController::isReadyToQuit()</code> first, and that returns false whenever <code>acqState != eNoSource</code>,
+logging <code>Please disconnect data source before attempting to quit</code> and then <code>Not ready to quit yet</code>.
+Type <code>quit</code> at the console with a source connected and <strong>nothing happens</strong> — no shutdown, and the
+refusal is a <code>qDebug</code> line you will only see if you are watching the backend's own output.
+The WebSocket <code>quit</code> (<code>spikespeak_cli.py quit</code>) has no such guard: <code>WebSocketServer</code> calls
+<code>teardownSource()</code> for you when <code>mSourceName</code> is non-empty, then quits. So from the console the
+order <strong><code>disconnect</code> → <code>quit</code></strong> is mandatory; from the CLI it is merely good manners, and a record
+test should still <code>stop</code> first for a clean file. Full ordering rules below under
+<a href="#readiness-signal-and-the-correct-teardown-order">Readiness signal and the correct teardown order</a>.</p>
 <p><strong>No <code>list</code>, <code>record</code>, <code>waitready</code>, or probe-map</strong> over the console, and <code>connect</code> has <strong>no discovery</strong> —
 you must already know the source <code>name:</code> (from <code>config/*.yaml</code> or the WebSocket CLI's <code>list</code>). For
 recording, readiness-waiting, scripting, or remote control, use the WebSocket CLI below.</p>
@@ -274,7 +285,7 @@ Shutdown initiated
 <tr>
 <td><code>quit</code></td>
 <td><code>{command:"quit"}</code></td>
-<td>shut the whole server down (<code>QApplication::quit</code>)</td>
+<td>shut the whole server down (<code>QApplication::quit</code>). <strong>Not</strong> gated by <code>isReadyToQuit()</code> the way console <code>quit</code> is — it tears the source down for you first</td>
 </tr>
 <tr>
 <td><code>sleep &lt;s&gt;</code>, <code>help</code>, <code>exit</code></td>
@@ -320,31 +331,34 @@ its toolbar <strong>without re-sending</strong> the command (<code>main.js</code
 </tbody>
 </table>
 <p><code>stateSource</code> is broadcast <strong>before</strong> the <code>deviceReady</code> connect result, so a watching browser records
-the source name in time for its QWebChannel bind (keyed on that name).</p>
+the source name in time for its QWebChannel bind. (The bind itself keys off the <strong>registered object
+key</strong> containing <code>npx</code>, not the source name -- the name gate was removed when the profiles were
+renamed to <code>Neuropixels</code> / <code>OneBox</code> / <code>PXIe</code>, none of which contain "NPX".)</p>
 <p>Recording/IMRO get this <strong>JSON command path in addition to</strong> their QWebChannel path (the GUI still uses
 QWebChannel). That small duplication is deliberate: it keeps the CLI QWebChannel-free. See
 <a href="ModuleCommunication.html">ModuleCommunication.md</a>.</p>
 <h2 id="running-the-backend-headless">Running the backend headless<a class="headerlink" href="#running-the-backend-headless" title="Permanent link">#</a></h2>
-<p><strong>Linux (the current dev path — sim only, no hardware):</strong> just run the binary. On this box the Qt Creator
-build dir is <code>build/Desktop_Qt_6_11_1_Release/</code> (Qt 6.11.1), so:</p>
-<pre><code class="language-bash">cd build/Desktop_Qt_6_11_1_Release
-LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib QT_QPA_PLATFORM=offscreen ./bin/SpikesPeak --no-browser &amp;
+<p><strong>Launch it through the launcher, on every platform.</strong> <code>bin/SpikesPeak.exe</code> started directly exits
+<code>0xC0000135</code> at the loader, before Qt, with no message: its non-system imports are <code>Qt6*</code>,
+<code>NeuropixAPI_x64_4_1_3.dll</code>, <code>hdf5.dll</code>/<code>hdf5_cpp.dll</code> and <code>nicaiu.dll</code>, and none of them are on a
+default <code>PATH</code>.</p>
+<pre><code class="language-bash">run_spikespeak.bat --no-browser        # Windows
+./run_spikespeak.sh --no-browser       # Linux / macOS
 </code></pre>
-<p><code>QT_QPA_PLATFORM=offscreen</code> is needed because the app links WebEngineWidgets/Widgets and there's no
-display; <code>LD_LIBRARY_PATH</code> points at the non-system Qt. There are no hardware DLLs to stage; the CLI drives
-it the same way (<code>python python/spikespeak_cli.py --host localhost …</code>), and the source to <code>select</code> is
+<p>Both are thin wrappers around <code>scripts/spikespeak.py run</code>, which <strong>auto-detects Qt, HDF5 and the
+Neuropixels API from the build's <code>CMakeCache.txt</code></strong> — the toolchain that actually built the exe, not
+merely the newest one installed — and puts them on the loader path. There are no hardcoded machine
+paths to edit, so the same command works on any checkout. Everything after the script name is passed
+through to the backend. (<code>SP_BUILD_DIR</code> / <code>QT_RUNTIME_DIR</code> / <code>HDF5_BIN_DIR</code> / <code>SPIKESPEAK_EXE</code> override
+the detection if your install is somewhere unusual.)</p>
+<p><strong>Linux</strong> needs nothing extra. The same launcher points <code>LD_LIBRARY_PATH</code> at the Qt that built the exe
+and sets <code>QT_QPA_PLATFORM=offscreen</code> itself when there is no <code>DISPLAY</code> — do not set it by hand, and do
+not <code>cd</code> into a build directory first. (The old reason given for offscreen — "the app links
+WebEngineWidgets" — is gone: WebEngine was removed from <code>CMakeLists.txt</code>, and <code>grep -rn QWebEngine src/</code>
+returns nothing. Offscreen is simply what a headless Qt app wants.) There are no hardware DLLs to stage
+and no hardware to find; the CLI drives it identically
+(<code>python python/spikespeak_cli.py --host localhost …</code>) and the source to <code>select</code> is
 <strong>"Simulated Data"</strong>. See <a href="SimDataLinux.html">SimDataLinux.md</a>.</p>
-<p><strong>Windows (the historical hardware box) — runtime DLLs:</strong> the exe is normally launched by Qt Creator,
-which sets up the runtime environment. To launch it <strong>standalone</strong> (e.g. from a script), these
-directories must be on <code>PATH</code> or it exits instantly at the loader (before Qt) with no message — its
-non-system imports are <code>Qt6*</code>, <code>NeuropixAPI_x64_4_1_3.dll</code>, <code>hdf5.dll</code>/<code>hdf5_cpp.dll</code>, <code>nicaiu.dll</code>:</p>
-<pre><code class="language-powershell">$env:PATH = &quot;C:\Qt\6.7.3\msvc2019_64\bin;&quot; +                                              # Qt runtime
-            &quot;C:\Users\BIOEl\Documents\Code\SpikesPeak\external\neuropixels\api\lib64\v4;&quot; + # NeuropixAPI
-            $env:PATH
-# HDF5 (C:\Program Files\HDF_Group\HDF5\1.14.6\bin) is already on the system PATH; nicaiu.dll ships with the NI driver.
-Start-Process -FilePath &quot;...\build-...\bin\SpikesPeak.exe&quot; -WorkingDirectory &quot;...\bin&quot; `
-    -ArgumentList &quot;--no-browser&quot; -WindowStyle Hidden
-</code></pre>
 <p>Pass <strong><code>--no-browser</code></strong> (or <code>--nobrowser</code>) for automated runs: the app starts the HTTP + WebSocket
 servers but does <strong>not</strong> open any browser, so nothing is left open when the test ends. Open
 <code>http://localhost:8234</code> yourself if you want to watch. Launched without a console, <code>KeyboardListener</code>
@@ -359,7 +373,7 @@ WebSocket client, so the backend's grace timer shuts the server down shortly aft
 app's lifetime. Flags: <code>--tab</code> (a.k.a. <code>--system-browser</code>) opens a normal tab in your default browser
 instead (legacy behavior); if no Chromium-family browser is found it falls back to a tab automatically.
 <code>main.cpp launchDedicatedBrowser()</code>.</p>
-<h2 id="readiness-signal-the-correct-teardown-order">Readiness signal + the correct teardown order<a class="headerlink" href="#readiness-signal-the-correct-teardown-order" title="Permanent link">#</a></h2>
+<h2 id="readiness-signal-and-the-correct-teardown-order">Readiness signal and the correct teardown order<a class="headerlink" href="#readiness-signal-and-the-correct-teardown-order" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>Readiness.</strong> The NPX + NI-DAQ connect <strong>blocks the main thread</strong> for several seconds, so events
   only flush once it returns. When the probe is detected the backend emits
@@ -370,6 +384,10 @@ instead (legacy behavior); if no Chromium-family browser is found it falls back 
   <strong>stop → pause → disconnect → quit.</strong> As a safety net, <code>WebSocketServer::teardownSource()</code> (used by
   <em>both</em> <code>disconnect</code> and <code>quit</code>) now <strong>pauses first if still streaming</strong>, so <code>disconnect</code>/<code>quit</code> are
   safe even if you forget to <code>pause</code> — but a record test should still <code>stop</code> first for a clean file.</li>
+<li><strong>The two <code>quit</code>s are not the same command.</strong> Over the WebSocket, <code>quit</code> will tear a live source
+  down and exit. At the <strong>console</strong> it will not: <code>isReadyToQuit()</code> refuses while any source is
+  connected and only says so in a <code>qDebug</code>, so a script that types <code>quit</code> into the console and waits
+  for the process to exit waits forever. Write <code>disconnect</code> first, always.</li>
 </ul>
 <h2 id="example-a-full-headless-record-test-validated-on-live-hardware">Example: a full headless record test (validated on live hardware)<a class="headerlink" href="#example-a-full-headless-record-test-validated-on-live-hardware" title="Permanent link">#</a></h2>
 <pre><code class="language-bash">python python/spikespeak_cli.py --script \
@@ -391,7 +409,8 @@ writing even if the CLI drops; when the <em>last</em> client disconnects an auto
 <ol>
 <li><strong>Launch the backend headless</strong> (keeps serving; opens no browser):
    <code>bash
-   python run_spikespeak.py --no-browser        # add --offscreen if there is no display at all</code></li>
+   run_spikespeak.bat --no-browser        # Windows
+   ./run_spikespeak.sh --no-browser       # Linux / macOS</code></li>
 <li><strong>See what sources exist</strong> — the names printed are the config <code>name:</code> fields you pass to <code>select</code>:
    <code>bash
    python python/spikespeak_cli.py list</code><blockquote>
@@ -440,7 +459,9 @@ python python/spikespeak_cli.py --host 192.168.1.50 --port 1234 list
 <code>{"command":"ripple","action":…}</code> WS text frame, the <strong>same contract the browser dock uses</strong>
 (<a href="RippleGui.html"><code>RippleGui.md</code></a> §2). <strong>Every subcommand except <code>arm</code>/<code>disarm</code> is applied on the detector's
 worker thread, which only runs while streaming — so <code>play</code> first.</strong> <code>arm</code>/<code>disarm</code> run on the main thread
-(<code>RippleDetector::setStimArmed</code>) and work even when paused / not streaming.</p>
+(<code>RippleDetector::setStimArmed</code>) and work even when paused / not streaming; so does the stimulation
+gate (<code>setStimEnabled</code>), for the same reason — the operator has to be able to decide between
+detection-only and closed-loop <em>before</em> pressing Play.</p>
 <table>
 <thead>
 <tr>
@@ -503,25 +524,60 @@ worker thread, which only runs while streaming — so <code>play</code> first.</
 <td><code>ripple arm</code> / <code>ripple disarm</code></td>
 <td><code>armStim</code> / <code>disarmStim</code></td>
 <td><code>{}</code></td>
-<td><strong>main-thread</strong> — arm / disarm the stim server even when NOT streaming</td>
+<td><strong>main-thread</strong> — arm / disarm the stim server even when NOT streaming. <strong>No-op while the stimulation gate is off</strong></td>
 </tr>
 <tr>
 <td><code>ripple enable &lt;0\|1&gt;</code></td>
 <td><code>enable</code></td>
 <td><code>{enabled}</code></td>
-<td>legacy bool toggle (maps to start/pause)</td>
+<td>legacy bool toggle for <strong>run/pause</strong>, not stimulation — maps to <code>start</code>/<code>pause</code>. Nothing to do with <code>setStimEnabled</code></td>
 </tr>
 <tr>
 <td><code>ripple raw '&lt;json&gt;'</code></td>
 <td><em>(verbatim)</em></td>
 <td>your object</td>
-<td>escape hatch: sends <code>{command:"ripple", …your fields}</code></td>
+<td>escape hatch: sends <code>{command:"ripple", …your fields}</code>. This is the only way to reach <code>setStimEnabled</code> from the CLI — see below</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Events the reader prints back:</strong> <code>rippleState</code> (full snapshot after every command), <code>rippleTraining</code>
 (progress %), <code>rippleBaseline</code> (μ/σ/threshold per channel), <code>rippleDetected</code> (<code>k/N</code> quorum + electrodes +
 <code>ts</code>). <code>rippleEnvelope</code> (~30–60 Hz) is drained silently so it doesn't flood the terminal.</p>
+<h3 id="the-stimulation-gate-the-reason-a-scripted-closed-loop-fires-nothing">⚠️ The stimulation gate — the reason a scripted closed loop fires nothing<a class="headerlink" href="#the-stimulation-gate-the-reason-a-scripted-closed-loop-fires-nothing" title="Permanent link">#</a></h3>
+<p><strong><code>arm</code>, <code>disarm</code> and <code>testfire</code> are hard no-ops until the master stimulation gate is on, and no
+shipped config turns it on.</strong> <code>grep -rn "stimulation" config/*.yaml</code> returns <strong>zero hits</strong> across all
+36 profiles, and <code>RippleDetector</code>'s member default is <code>false</code> — stimulation is opt-in by design, so
+that a profile cannot cause a datagram to leave the host without somebody saying so.</p>
+<p>Both refusals go only to the backend's own log, which is exactly where a CLI operator is not looking:</p>
+<pre><code>[RippleDetector] stim arm/disarm IGNORED -- stimulation is disabled. Enable it in the Ripple dock,
+                 or set 'stimulation: true' in this profile.
+[RippleDetector] test fire IGNORED -- stimulation is disabled. Enable it in the Ripple dock, or set
+                 'stimulation: true' in this profile.
+</code></pre>
+<p>The CLI still prints a perfectly healthy <code>rippleState</code> afterwards, because <code>setStimArmed</code> returns
+before it broadcasts and <code>testFire</code> still gets the unconditional state echo. Detection runs, the
+detector reports crossings, and nothing is transmitted. That is a whole run lost, silently.</p>
+<p><strong>In the GUI</strong> the gate is the Ripple dock's <strong><code>enable stimulation</code></strong> checkbox (section
+<em>4 · Detection &amp; stimulation</em>), which sends <code>setStimEnabled</code>.</p>
+<p><strong>From the CLI there is no dedicated verb.</strong> <code>spikespeak_cli.py</code> has no <code>ripple stimenable</code>; the
+gate is reachable only through <code>ripple raw</code>:</p>
+<pre><code class="language-bash">ripple raw '{&quot;action&quot;:&quot;setStimEnabled&quot;,&quot;value&quot;:true}'
+</code></pre>
+<p><code>ripple raw</code> json-parses your object and sets <code>command: "ripple"</code> on it, so this goes out as
+<code>{"command":"ripple","action":"setStimEnabled","value":true}</code> — matching the <code>obj["value"].toBool()</code>
+that <code>WebSocketServer</code> reads. Like <code>armStim</code>/<code>disarmStim</code> it is a <strong>direct main-thread call</strong>
+(<code>RippleDetector::setStimEnabled</code>), not a queued worker-thread command, so it works before <code>play</code>.
+Turning it <strong>off</strong> disarms first, so it can never strand an armed stimulator.</p>
+<p>Order for a scripted closed-loop run: <strong>enable the gate → <code>arm</code> → <code>play</code> → <code>ripple start</code>.</strong></p>
+<pre><code class="language-bash">python python/spikespeak_cli.py --script \
+  &quot;select 'Simulated NPX 1.0 + Ripple Detection (no channels)'; waitready 30; \
+   ripple raw '{\&quot;action\&quot;:\&quot;setStimEnabled\&quot;,\&quot;value\&quot;:true}'; ripple arm; \
+   play; sleep 2; ripple channels 0 10 20; ripple start; sleep 20; \
+   ripple pause; ripple disarm; pause; disconnect; quit&quot;
+</code></pre>
+<p>The alternative, if you own the profile, is <code>stimulation: true</code> on the <code>proc.rippledetector</code> node —
+but note it is read <strong>only on the first <code>configure()</code></strong>, along with <code>stim_ip</code> / <code>stim_port</code>, because
+the detector is a registry singleton. See <a href="ConfigReference.html"><code>ConfigReference.md</code></a>.</p>
 <p><strong>Worked example</strong> (verified headless, sim, 2026-07-22 — fires detections in ~10 s):</p>
 <pre><code class="language-bash">python python/spikespeak_cli.py --script \
   &quot;select 'Latency Bench NP1 (baseline delivery)'; waitready 30; play; sleep 2; \
@@ -531,7 +587,10 @@ worker thread, which only runs while streaming — so <code>play</code> first.</
 </code></pre>
 <p>It prints the training progress, the three baselines, then detections such as
 <code>[ripple ● DETECTED] 2/3 ch [0, 10] ts=15.73</code>. <code>arm</code>/<code>disarm</code> may go <strong>before</strong> <code>play</code>. (Any ripple-capable
-source works; this benchmark sim just injects frequent ripples for a fast demo.)</p>
+source works; this benchmark sim just injects frequent ripples for a fast demo. It carries
+<code>gui_hidden: true</code>, so it is <strong>not</strong> in the operator's Source menu — hidden profiles stay selectable by
+exact <code>name:</code> from here, which is the whole point of the flag. See
+<a href="SourceSelection.html"><code>SourceSelection.md</code></a> §4.)</p>
 <blockquote>
 <p><strong>Read next:</strong> the detection <strong>algorithm</strong> — <a href="RippleDetection.html"><code>RippleDetection.md</code></a>; the <strong>full GUI/WS
 contract</strong> (every action + every event field) — <a href="RippleGui.html"><code>RippleGui.md</code></a>; the <strong>operator's</strong>
@@ -545,11 +604,14 @@ walkthrough — <a href="../user_docs/RippleDetection.html"><code>../user_docs/R
 <li><a href="#websocket-control-cli-spikespeak_clipy-command-reference">WebSocket control CLI (spikespeak_cli.py) — command reference</a></li>
 <li><a href="#how-the-gui-mirrors-a-cli-session">How the GUI mirrors a CLI session</a></li>
 <li><a href="#running-the-backend-headless">Running the backend headless</a></li>
-<li><a href="#readiness-signal-the-correct-teardown-order">Readiness signal + the correct teardown order</a></li>
+<li><a href="#readiness-signal-and-the-correct-teardown-order">Readiness signal and the correct teardown order</a></li>
 <li><a href="#example-a-full-headless-record-test-validated-on-live-hardware">Example: a full headless record test (validated on live hardware)</a></li>
 <li><a href="#tutorial-from-zero-to-a-recorded-clip-websocket-cli">Tutorial — from zero to a recorded clip (WebSocket CLI)</a></li>
 <li><a href="#more-examples">More examples</a></li>
-<li><a href="#ripple-detection-module-commands">Ripple Detection module commands</a></li>
+<li><a href="#ripple-detection-module-commands">Ripple Detection module commands</a><ul>
+<li><a href="#the-stimulation-gate-the-reason-a-scripted-closed-loop-fires-nothing">⚠️ The stimulation gate — the reason a scripted closed loop fires nothing</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

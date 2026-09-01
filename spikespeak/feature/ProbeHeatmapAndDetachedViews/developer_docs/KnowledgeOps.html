@@ -286,6 +286,37 @@ is true will. When you fix something subtle, write the sentence that would have 
 <p>And do the opposite for anything countable: <strong>no suite counts, test counts or page counts in prose.</strong>
 They were wrong for days in <code>CLAUDE.md</code> and nobody noticed. Point at <code>facts.py</code>.</p>
 <hr />
+<h2 id="6a-two-rules-paid-for-on-2026-08-31">6a. Two rules paid for on 2026-08-31<a class="headerlink" href="#6a-two-rules-paid-for-on-2026-08-31" title="Permanent link">#</a></h2>
+<p>Both came from the same incident: the converters had <strong>126 passing tests</strong> and still exported every
+OneBox ADC voltage at exactly half its true value.</p>
+<h3 id="a-fixture-at-the-default-value-cannot-test-that-the-value-was-read">A fixture at the default value cannot test that the value was read<a class="headerlink" href="#a-fixture-at-the-default-value-cannot-test-that-the-value-was-read" title="Permanent link">#</a></h3>
+<p>Every converter fixture was built at the <strong>default</strong> ±5 V ADC range. At that range, "read the scale
+from the recording" and "use the CLI default" produce <strong>byte-identical output</strong>. The two code paths
+were indistinguishable to the entire suite, by construction, so no amount of test <em>count</em> would ever
+have found it. The bug only became reachable at all when a real recording was made at ±10 V.</p>
+<blockquote>
+<p><strong>If a test's fixture uses the default, the test cannot prove the code read the input.</strong>
+Set fixtures to a value the default would get <em>wrong</em>, and pass the wrong default deliberately.</p>
+</blockquote>
+<p>The new test sets a sidecar scale of 10 V <em>while passing</em> <code>adc_range_volts=5.0</code>. It fails the moment
+the default wins. That is the shape to copy: the fixture and the fallback must <strong>disagree</strong>, or the
+assertion is vacuous.</p>
+<p>This generalises past scale factors — it applies to any default: a port, a path, a sample rate, a
+channel count. A green test over a default-valued fixture tells you the code compiles, not that it
+reads.</p>
+<h3 id="close-an-issue-on-evidence-not-on-the-existence-of-code">Close an issue on evidence, not on the existence of code<a class="headerlink" href="#close-an-issue-on-evidence-not-on-the-existence-of-code" title="Permanent link">#</a></h3>
+<h1 id="40-and-28-asked-for-spikeglx-and-open-ephys-output-they-were-closed-because">40 and #28 asked for SpikeGLX and Open Ephys output. They were closed because<a class="headerlink" href="#40-and-28-asked-for-spikeglx-and-open-ephys-output-they-were-closed-because" title="Permanent link">#</a></h1>
+<p><code>convert_to_spikeglx.py</code> and <code>convert_to_openephys.py</code> <strong>exist</strong> and had been exercised historically.
+Nobody ran them. The recordings were sitting in <code>RecordingTests/</code> at the time.</p>
+<p>Running them took four minutes and found two defects — the halved voltages above, and a converter
+that aborts an entire run because one band has no mapping (#78).</p>
+<blockquote>
+<p><strong>Before closing: run the thing, on real data, and paste what it printed.</strong>
+"The code is there and it was working" is a claim about the past.</p>
+</blockquote>
+<p>The cheap version of this is usually available and usually skipped because the artifact already
+exists. If a recording, a config, or a rig session is within reach, use it.</p>
+<hr />
 <h2 id="7-the-trigger-for-all-of-this">7. The trigger for all of this<a class="headerlink" href="#7-the-trigger-for-all-of-this" title="Permanent link">#</a></h2>
 <blockquote>
 <p><strong>The second time a bug of the same shape appears, stop fixing bugs and write down the rule.</strong></p>
@@ -311,6 +342,11 @@ and had three instances of "edited something the running suite reads" in a singl
 <li><a href="#4-adding-to-factspy">4. Adding to facts.py</a></li>
 <li><a href="#5-updating-the-skill">5. Updating the skill</a></li>
 <li><a href="#6-writing-prose-that-earns-its-place">6. Writing prose that earns its place</a></li>
+<li><a href="#6a-two-rules-paid-for-on-2026-08-31">6a. Two rules paid for on 2026-08-31</a><ul>
+<li><a href="#a-fixture-at-the-default-value-cannot-test-that-the-value-was-read">A fixture at the default value cannot test that the value was read</a></li>
+<li><a href="#close-an-issue-on-evidence-not-on-the-existence-of-code">Close an issue on evidence, not on the existence of code</a></li>
+</ul>
+</li>
 <li><a href="#7-the-trigger-for-all-of-this">7. The trigger for all of this</a></li>
 <li><a href="#8-related">8. Related</a></li>
 </ul>

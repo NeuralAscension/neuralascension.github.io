@@ -7259,7 +7259,161 @@ things by looking at the same broken picture.</p>
   "<code>make_architecture --check</code> failed". The main <code>spikespeak</code> skill now points at it.</li>
 </ul>
 <p>The skill leads with the trap, because it is the one that cost this session: <strong>a node with no edges
-is usually the diagram being blind, not the system being disconnected.</strong></p></article>
+is usually the diagram being blind, not the system being disconnected.</strong></p>
+<hr />
+<h2 id="77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80">77. ASAP BECOMES A CAPABILITY, NOT A SECOND COPY OF THE PROFILE  (2026-09-01, #80)<a class="headerlink" href="#77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80" title="Permanent link">#</a></h2>
+<p>Operator: <em>"Go ahead and get the ASAP mode selectable in the GUI … if one module needs it, like the
+Ripple Detector, then modules it's receiving data from upstream also need it."</em> On a separate branch
+(<code>feature/AsapPerModule</code>) with its own PR, per their instruction.</p>
+<h3 id="77a-why-a-config-key-was-the-wrong-shape">77a. Why a config key was the wrong shape<a class="headerlink" href="#77a-why-a-config-key-was-the-wrong-shape" title="Permanent link">#</a></h3>
+<p><code>low_latency</code> was readable only from YAML, at connect, with <strong>no GUI control anywhere</strong>. So the only
+way to run a closed loop at low latency was to select a <em>different profile</em> — which is why five files
+exist whose entire content is one flipped boolean, and why the matrix is <strong>incomplete by
+construction</strong>: 11 hardware profiles present, <strong>9 combinations missing</strong>. Encoding orthogonal flags
+as filenames costs 2^n files, so it can never be finished.</p>
+<h3 id="77b-three-measurements-that-shaped-the-design">77b. Three measurements that shaped the design<a class="headerlink" href="#77b-three-measurements-that-shaped-the-design" title="Permanent link">#</a></h3>
+<p><strong>ASAP changes exactly one thing.</strong> <code>mTimer-&gt;setInterval(mLowLatency ? 0 : 1)</code> and nothing else.
+Nothing is allocated or sized by it, and the worker runs at <code>QThread::HighPriority</code> in <strong>both</strong> modes
+— it is a high-priority spin, not a priority change. Cost: <strong>~98 % of one core against 13.4 %</strong>.</p>
+<p><strong>The flag is main-thread-only and read once</strong>, in <code>startAcq</code>, and the probe worker is created fresh
+on every Play. So a plain setter gives pause → toggle → play with no synchronisation, no worker and no
+vendor call touched. That is why the GUI control <strong>locks while acquiring</strong> rather than pretending to
+apply live.</p>
+<p><strong>The processors are already ASAP</strong>, and this is the finding that made propagation honest rather than
+theatrical. <code>BandFilterProcessor</code> and <code>RippleDetector</code> both drive off
+<code>waitForAvailable(consumerId, 1, available)</code> — whose second argument is a <strong>timeout in milliseconds,
+not a minimum count</strong>. They wake on the first sample and take whatever is there. Block size, and
+therefore latency, is set by the <strong>source's commit cadence</strong> and inherited downstream, exactly as
+LatencyProfiling.md concluded when the source flag removed the ~400 µs detector backlog.</p>
+<p>So: a consumer asks the data <strong>path</strong>; each producer either has a knob and uses it, or reports that
+it is already minimal. Only sources have a knob today. A processor that later batches gets the
+request for free, and the module needing the latency never has to know which ancestor can act.</p>
+<h3 id="77c-nothing-could-walk-the-graph">77c. Nothing could walk the graph<a class="headerlink" href="#77c-nothing-could-walk-the-graph" title="Permanent link">#</a></h3>
+<p><code>IProcessor</code> exposed only configure/start/stop. <code>IDataSource</code> reported no outputs.
+<code>ProcessorManager</code> stores <code>name -&gt; (IProcessor*, QThread*)</code> with <strong>no edges</strong>. Which is precisely why
+the one propagation that already existed — <code>RippleDetector::ensureInputBandEnabled</code> — is a hardcoded
+single hop keyed on the literal <code>"data.lfp"</code>.</p>
+<p>Modules now report their edges. Both new mixins have all-defaulted methods, so every existing module
+compiles untouched and opts in only if it has something to say.</p>
+<h3 id="77d-who-declares-what-which-is-the-part-the-operator-cared-about">77d. Who declares what, which is the part the operator cared about<a class="headerlink" href="#77d-who-declares-what-which-is-the-part-the-operator-cared-about" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>module</th>
+<th>declares</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.*</code>, both sims</td>
+<td>supports + <strong>exposes</strong></td>
+<td>the only real knob; on a rig, "how stale is the sample I am reacting to" is an operator question</td>
+</tr>
+<tr>
+<td><code>proc.lfp</code></td>
+<td><strong>edges only</strong></td>
+<td>already ASAP; walked <em>through</em> to reach the source, and deliberately given <strong>no</strong> control — it is in the path because the detector needs it, not because anyone should be tuning it</td>
+</tr>
+<tr>
+<td><code>proc.rippledetector</code></td>
+<td><strong>exposes</strong>, not supports</td>
+<td>nothing of its own to tune, but it is where the operator decides</td>
+</tr>
+</tbody>
+</table>
+<p><code>exposesLowLatency()</code> being separate from <code>supportsLowLatency()</code> is the whole mechanism for "present
+in the GUI at the discretion of that module's developer".</p>
+<h3 id="77e-ownership-and-a-test-expectation-of-mine-that-was-wrong">77e. Ownership, and a test expectation of mine that was wrong<a class="headerlink" href="#77e-ownership-and-a-test-expectation-of-mine-that-was-wrong" title="Permanent link">#</a></h3>
+<p>Release gives back <strong>only what the request took</strong>. The end-to-end check failed at first on
+"the source turned off" — and the code was right, the assertion was wrong:
+<code>SimNpx2RippleModule.yaml</code> sets <code>low_latency: true</code>, so the source was <em>already</em> in ASAP before
+anything was asked (<code>pending=True</code> on the very first dump). The request correctly took no ownership,
+and release correctly left the profile's setting alone. Corrected to assert <strong>that</strong>, which is a more
+valuable check than the one originally written — and the inverse of the bug where one ripple run left
+<code>proc.lfp</code> filtering 384 channels for a whole session.</p>
+<h3 id="77f-two-things-found-along-the-way">77f. Two things found along the way<a class="headerlink" href="#77f-two-things-found-along-the-way" title="Permanent link">#</a></h3>
+<p><strong><code>markProvisioned()</code> is called by only two processors</strong> — <code>BandFilterProcessor</code> and
+<code>AudioProcessor</code>. Filtering the graph on <code>isProvisioned()</code> therefore returned an EMPTY graph and made
+the ripple detector invisible. Membership in <code>mProcessorDatas</code> <em>is</em> "in this graph"; <code>isProvisioned</code>
+exists for the registry path, which this does not use.</p>
+<p><strong>The sim sources got the capability too</strong>, deliberately: every GUI test runs against simulated
+sources, so a capability the sim cannot express is one nothing can test without a probe on the bench.</p>
+<h3 id="77g-verified">77g. Verified<a class="headerlink" href="#77g-verified" title="Permanent link">#</a></h3>
+<ul>
+<li><code>tests/test_lowlatencygraph.cpp</code> — the NP2 chain reaches the source <strong>two hops</strong> away through a
+  knobless node; NP1 is one hop shorter through the <strong>same</strong> code; release returns only what it took;
+  a module reporting no edges is safely skipped; a cycle terminates. Proved by reverting the walk to
+  a single hop and watching it go red.</li>
+<li><code>tests/gui/low_latency.py</code> — who is offered a control, propagation, the lock while acquiring, and
+  <strong>confirmed</strong> state (pending → "takes effect on the next Play" → active after a Play).</li>
+<li>A live end-to-end run over the shipped WebSocket command:
+  <code>proc.rippledetector → proc.lfp → source.npx.sim2</code>, request accepted, source picked it up, a
+  module that does not expose it <strong>refused with a reason</strong> rather than silently doing nothing.</li>
+</ul>
+<hr />
+<h2 id="78-the-agreed-queue-2026-09-01-live">78. THE AGREED QUEUE  (2026-09-01, live)<a class="headerlink" href="#78-the-agreed-queue-2026-09-01-live" title="Permanent link">#</a></h2>
+<p>Recorded here as well as in the machine-local agent memory, because that memory does <strong>not</strong> cross
+machines and item 6 happens on a different box.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>item</th>
+<th>state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>#80 ASAP</strong> — gate green, commit + push <code>feature/AsapPerModule</code></td>
+<td>feature complete</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>PR for #80 → merge into <code>feature/OneBoxSupport</code>, delete the branch</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong><code>"below threshold"</code> label</strong> — → <strong><code>"no detection"</code></strong> (operator decision)</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>The dock renders four defaults it does not own</strong> — new-channel z → <strong>5.0</strong> to match <code>RippleDetector.cpp</code> (operator decision); the other three render nothing until the backend announces</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Gate speedup</strong> — <code>--jobs 4</code> twice; flip the default if green twice (~10 min/gate). Also make <code>run_gui_tests.py</code> take the same lock as <code>run_all_tests.py</code></td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Linux run</strong> — the operator runs Configuration 1. The last item on #52</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Order matters.</strong> 3 and 4 both edit <code>webinterface/RippleModule.js</code>, which the #80 branch also
+modified, so they wait until after the merge.</p>
+<p><strong>Two operator decisions already taken — do not re-ask.</strong> The column label becomes <code>"no detection"</code>,
+which states the confirmed backend fact and makes no claim about the signal, so it cannot contradict
+the sparkline drawn directly above it. A newly added channel gets <strong>z = 5.0</strong>, matching the
+detector's own <code>mZScoreThreshold</code>; this makes new channels <em>less</em> sensitive than before, which was
+accepted deliberately.</p>
+<p><strong>Item 5, so it is not re-investigated from scratch.</strong> The parallel path works and measured <strong>1.46×</strong>
+(1255 s against 1827 s), but one test used to hang to the 900 s subprocess timeout and <em>which</em> test
+changed between runs. Port collision is ruled out — <code>ensure_backend</code> fails in ~30 s with a clear
+error rather than hanging. The CDP per-recv and per-call deadlines that would bound this landed in
+the <strong>same commit</strong> as the serial default (<code>472d71b</code>), so git cannot say whether the hang predates
+them. So the cheap move is simply to re-run it twice, which is this file's own stated criterion.</p>
+<p>Also found while answering "can I start the queued tasks while a gate runs": <strong><code>run_gui_tests.py:160</code>
+reuses a backend it did not start</strong> (<code>if jobs == 1 and not backend_up()</code>), probing the default ports.
+The full gate takes a system-wide lock and the GUI runner does not, so a second suite launched beside
+a running gate silently attaches to the gate's backend — two suites driving one backend, which is
+exactly the failure that once looked like a regression. Folded into item 5.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7749,6 +7903,17 @@ is usually the diagram being blind, not the system being disconnected.</strong><
 <li><a href="#76d-the-point-the-operator-actually-made">76d. The point the operator actually made</a></li>
 </ul>
 </li>
+<li><a href="#77-asap-becomes-a-capability-not-a-second-copy-of-the-profile-2026-09-01-80">77. ASAP BECOMES A CAPABILITY, NOT A SECOND COPY OF THE PROFILE (2026-09-01, #80)</a><ul>
+<li><a href="#77a-why-a-config-key-was-the-wrong-shape">77a. Why a config key was the wrong shape</a></li>
+<li><a href="#77b-three-measurements-that-shaped-the-design">77b. Three measurements that shaped the design</a></li>
+<li><a href="#77c-nothing-could-walk-the-graph">77c. Nothing could walk the graph</a></li>
+<li><a href="#77d-who-declares-what-which-is-the-part-the-operator-cared-about">77d. Who declares what, which is the part the operator cared about</a></li>
+<li><a href="#77e-ownership-and-a-test-expectation-of-mine-that-was-wrong">77e. Ownership, and a test expectation of mine that was wrong</a></li>
+<li><a href="#77f-two-things-found-along-the-way">77f. Two things found along the way</a></li>
+<li><a href="#77g-verified">77g. Verified</a></li>
+</ul>
+</li>
+<li><a href="#78-the-agreed-queue-2026-09-01-live">78. THE AGREED QUEUE (2026-09-01, live)</a></li>
 </ul>
 </div>
 </aside>

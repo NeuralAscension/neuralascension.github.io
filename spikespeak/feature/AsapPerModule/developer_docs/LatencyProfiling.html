@@ -433,6 +433,91 @@ the data:</p>
 <p>Operator-facing version, with the "when not to use it" list:
 <a href="../user_docs/RippleDetection.html"><code>user_docs/RippleDetection.md</code> §8</a>.</p>
 <h2 id="the-asap-low-latency-flag">The ASAP / low-latency flag<a class="headerlink" href="#the-asap-low-latency-flag" title="Permanent link">#</a></h2>
+<blockquote>
+<h3 id="since-2026-09-01-this-is-a-capability-not-only-a-config-key-issue-80">Since 2026-09-01 this is a CAPABILITY, not only a config key (issue #80)<a class="headerlink" href="#since-2026-09-01-this-is-a-capability-not-only-a-config-key-issue-80" title="Permanent link">#</a></h3>
+<p>A module declares in C++ whether ASAP means anything for it, an operator can ask for it <strong>from the
+GUI</strong>, and the request <strong>propagates upstream</strong> to everything feeding that module. The YAML key
+below still works and still seeds the initial state — nothing about it changed — but it is no
+longer the only way in, and it is no longer a reason to keep a second copy of a profile.</p>
+<p><strong>Why it had to change.</strong> <code>low_latency</code> was readable only from YAML, at connect, with no GUI
+control anywhere, so the only way to run a closed loop at low latency was to select a <em>different
+profile</em>. That produced five files whose entire content is one flipped boolean —
+<code>Npx1OneBoxAsap</code>, <code>Npx1PxiNiDaqAsap</code>, <code>Npx2OneBoxAsap</code>, <code>Npx2PxiNiDaqAsap</code>,
+<code>SimNpx1LatencyAsap</code> — and a matrix that could never be finished: 11 hardware profiles present, 9
+combinations missing, because encoding orthogonal flags as filenames costs 2^n files.</p>
+<p><strong>The four declarations</strong> (<code>src/core/LowLatency.hpp</code>):</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supportsLowLatency()</code></td>
+<td>do I have a latency knob at all</td>
+</tr>
+<tr>
+<td><code>exposesLowLatency()</code></td>
+<td>should an operator be offered a control <strong>for me</strong></td>
+</tr>
+<tr>
+<td><code>isLowLatency()</code> / <code>lowLatencyPending()</code></td>
+<td>what is in force, versus what has been asked for</td>
+</tr>
+<tr>
+<td><code>setLowLatency(on, why)</code></td>
+<td>ask</td>
+</tr>
+</tbody>
+</table>
+<p><code>exposes</code> is deliberately separate from <code>supports</code>, and it is <strong>the module developer's call</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>module</th>
+<th>declares</th>
+<th>why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source.npx.*</code></td>
+<td>supports + exposes</td>
+<td>the only real knob, and on a rig "how stale is the sample I am reacting to" is an operator question</td>
+</tr>
+<tr>
+<td><code>proc.lfp</code></td>
+<td><strong>edges only</strong></td>
+<td>already ASAP; it is walked <em>through</em> to reach the source, and offering a control for it would invite tuning something that has nothing to tune</td>
+</tr>
+<tr>
+<td><code>proc.rippledetector</code></td>
+<td>exposes, not supports</td>
+<td>nothing of its own to tune, but it is where the operator decides — closed-loop latency is the number this rig is judged on</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Propagation is the point.</strong> A consumer at low latency behind a producer that is not gains
+nothing. Asking the ripple detector reaches <code>proc.lfp</code> <strong>and</strong> the source on an NP2.0; on an NP1.0
+the detector reads the native band, so the chain is one hop shorter — through the same walk, not a
+special case. Before this, the only upstream propagation in the tree
+(<code>RippleDetector::ensureInputBandEnabled</code>) was a hardcoded single hop keyed on the literal string
+<code>"data.lfp"</code>, because nothing could walk the graph: <code>IProcessor</code> exposed only
+configure/start/stop, <code>IDataSource</code> reported no outputs, and <code>ProcessorManager</code> stores its nodes
+with <strong>no edges</strong>. Modules now report their edges.</p>
+<p><strong>Release gives back only what the request took.</strong> If the profile or the operator turned ASAP on,
+a detector run ending must not take it away — the inverse of the bug where one ripple run left
+<code>proc.lfp</code> filtering 384 channels for a whole session.</p>
+<p><strong>The control locks while acquiring.</strong> The source reads its flag exactly once, in <code>startAcq</code>, and
+the worker is created fresh on every Play — so a request made mid-run is real and simply not in
+force. The panel says <em>"takes effect on the next Play"</em> rather than showing it as live, because
+announcing requested state instead of confirmed state is this repo's recurring defect
+(#16/#18, #51).</p>
+<p>Tests: <code>tests/test_lowlatencygraph.cpp</code> (the walk and the ownership rule),
+<code>tests/gui/low_latency.py</code> (who is offered a control, propagation, the lock, confirmed state).</p>
+</blockquote>
 <p><code>low_latency: true</code> on a <strong>source</strong> node makes it deliver in the smallest blocks the clock allows, trading
 CPU for freshness. It is <strong>per-source</strong>; the ripple / closed-loop configs now ship with it <strong>on by default</strong>
 and plain-streaming configs leave it off, so only loop-closing configs pay for it:</p>
@@ -896,6 +981,7 @@ python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;
 </ul>
 </li>
 <li><a href="#the-asap-low-latency-flag">The ASAP / low-latency flag</a><ul>
+<li><a href="#since-2026-09-01-this-is-a-capability-not-only-a-config-key-issue-80">Since 2026-09-01 this is a CAPABILITY, not only a config key (issue #80)</a></li>
 <li><a href="#measured-effect-ab-n1000-each-live-pi-simulation">Measured effect (A/B, n=1000 each, live Pi, simulation)</a></li>
 <li><a href="#cpu-cost-of-asap-the-busy-spin-measured-2026-07-22">CPU cost of ASAP — the busy-spin (measured 2026-07-22)</a></li>
 <li><a href="#on-real-hardware-implemented-2026-07-21">On real hardware — implemented 2026-07-21</a></li>

@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a class="active" href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -189,7 +189,10 @@ built to this codebase's rules.</p>
 the column at <code>ap</code>, <code>lfp</code>, <code>raw</code>, <code>adc</code> or <code>nidaq</code> and it colors that.</p>
 <p><strong>Statistic: peak-to-peak per channel per time bin</strong>, in the stream's own units (µV for a probe band,
 V for NI-DAQ and the OneBox ADC).</p>
-<p><strong>Window: 8 seconds</strong>, newest at the right edge. Matches probe-viewer's <code>TRANSPORT_WINDOW_TIMEBASE</code>.</p>
+<p><strong>Window: per column, 1 s to 1 min — default 8 s</strong>, newest at the right edge. The 8 s default matches
+probe-viewer's <code>TRANSPORT_WINDOW_TIMEBASE</code>; the ladder is 1, 2, 4, 8, 15, 30 s and 1 min
+(<code>ChartColumn.js</code>, <code>hmWinSelector</code>). See §1b — it is <strong>not</strong> the toolbar's <code>Time</code>, and the difference
+matters.</p>
 <p><strong>Channel axis: the same channels, in the same order, as the traces</strong> — so switching modes never
 moves a channel. The density dropdown gains an <strong>All</strong> option in heatmap mode: 384 traces in one
 column is unreadable, 384 rows of heatmap is the ordinary way to look at a probe, and on the GPU it
@@ -211,17 +214,35 @@ interleaves them:</p>
             shank 2, shallow → deep          …
     bottom  shank 3, shallow → deep          all shanks at the tip
 </code></pre>
-<p>The comparator is <code>descending row</code>, then <code>shank</code>, then <code>column</code>:</p>
-<pre><code class="language-js">const depth = (c) =&gt; lv.isRef(c) ? Infinity : lv.rowOf(c);
-out.sort((a, b) =&gt; (depth(b) - depth(a))
-                || (lv.shankOf(a) - lv.shankOf(b))
-                || (lv.colOf(a) - lv.colOf(b)));
+<p>The comparator has <strong>five</strong> keys, and ascending array index is display order, top to tip:</p>
+<pre><code class="language-js">const isRef = (c) =&gt; (lv.isRef &amp;&amp; lv.isRef(c)) ? 1 : 0;
+const row   = (c) =&gt; lv.rowOf(c) || 0;
+out.sort((a, b) =&gt; (isRef(b) - isRef(a))          // 1. REF first: it has no depth
+                || (row(b)   - row(a))            // 2. DESCENDING row -- row 0 is the TIP
+                || (lv.shankOf(a) - lv.shankOf(b))// 3. shank ascending
+                || (lv.colOf(b)   - lv.colOf(a))  // 4. column DESCENDING -- Right before Left
+                || (a - b));                      // 5. total-order backstop
 </code></pre>
-<p>The tiebreaks are not decoration. <code>Array.prototype.sort</code> is stable only for <em>equal</em> keys, and "same
-depth, different shank" is exactly the case that must not be left to that guarantee — a total order
-is what makes two runs comparable. Reference channels are pinned to the shallow end with the same
-<code>Infinity</code> sentinel the packed ordering uses: a REF sitting at its nominal depth is a dead row in
-the middle of the data.</p>
+<p><strong>REF is a separate boolean key, never a depth sentinel.</strong> The packed ordering pins REFs with
+<code>Infinity</code>, and doing the same here would be wrong twice over — the code says so at the call site and
+it is worth repeating:</p>
+<ul>
+<li>this axis is labeled in <strong>micrometres</strong>, so a sentinel fed through the depth key prints as a depth
+  (20,000,000 µm). That is a lie the operator cannot see.</li>
+<li><code>Infinity - Infinity</code> is <code>NaN</code>, and a comparator returning <code>NaN</code> has undefined behavior. Two REFs
+  cannot currently meet — <code>NP1_REFERENCE_ELECTRODES</code> is <code>{191, 575, 959}</code>, all mapping to channel
+  191 — but that is an accident of NP1's modulo-384 wiring, not a property anybody stated, and it
+  would break silently the moment the set grew.</li>
+</ul>
+<p><strong>Column sorts DESCENDING</strong>, Right before Left, which is not arbitrary: the existing L+R view at
+density All already emits R above L, so matching it means a single-shank probe sees <em>nothing</em> move
+when this is switched on. Both electrodes in a row are at identical depth, so their relative order
+carries no information — which makes "don't move anything" the only thing left to optimize for.</p>
+<p><strong>Key 5 is the one to keep.</strong> The two older comparators stop after three keys and lean on
+<code>Array.prototype.sort</code> being stable, which is safe there because <code>(row, col)</code> uniquely identifies an
+electrode within one shank. Merging <strong>inverts</strong> that: on a 4-shank probe up to eight channels share a
+row, so ties are the common case rather than the impossible one, and the result must not depend on
+the engine's stability guarantee or on input order.</p>
 <h3 id="the-depth-model-is-faithful-the-lateral-one-is-not">The depth model is faithful; the lateral one is not<a class="headerlink" href="#the-depth-model-is-faithful-the-lateral-one-is-not" title="Permanent link">#</a></h3>
 <p>Ordering by depth is sound on both generations: <code>y</code> depends only on the row (<code>electrode &gt;&gt; 1</code>) and
 the shanks are tip-aligned, so equal rows really are equal depths. The <strong>x</strong> model is a
@@ -265,10 +286,16 @@ either: the ordering never compares lateral position.</p>
 insertion depth. The readout says <code>· from tip</code> for that reason; calling it depth would be free to
 write and impossible for the operator to catch.</p>
 <h3 id="why-it-is-an-option-on-the-shank-dropdown">Why it is an option on the <em>shank</em> dropdown<a class="headerlink" href="#why-it-is-an-option-on-the-shank-dropdown" title="Permanent link">#</a></h3>
-<p>Because a fourth heatmap control would widen the column band, and the band's width decides at how
+<p>Because another heatmap control would widen the column band, and the band's width decides at how
 many columns the whole strip folds behind the reveal chip — the view selector alone moved that from
-four columns to three (§10). It would also mean editing <strong>six</strong> CSS area maps. And it belongs there
-on its merits: that dropdown <em>is</em> the "which shanks" control.</p>
+four columns to three (§10). It would also mean editing every CSS area map. And it belongs there on
+its merits: that dropdown <em>is</em> the "which shanks" control.</p>
+<blockquote>
+<p>That argument was tested five days later. The span selector (§1b) <strong>was</strong> added as a new control,
+and it cost exactly what this paragraph predicts: 64 px more band, and a cell in eight area maps —
+of which the first attempt supplied two. The conclusion is not "never add one", it is that the
+price is real and an option on an existing dropdown is free.</p>
+</blockquote>
 <p>It is offered only in heatmap mode, and only when <code>lv.shanks().length &gt; 1</code>. <strong>Traces cannot do it:</strong>
 the vertical offset is baked into the shared sample data, so one global ordering serves every trace
 column, and a merged-across-shank ordering would need a <em>third</em> baked series alongside the packed
@@ -284,6 +311,44 @@ is rebuilt when a probe map is applied or cleared, and at no other time.</p>
 <p>Keying on <code>lvAtSlot</code> by identity would work today and stop working the moment somebody sorts in
 place; comparing contents is 384 elements on a per-frame path.</p>
 <hr />
+<h2 id="1b-the-span-is-per-column-and-it-is-not-the-toolbars-time">1b. The span is per column, and it is not the toolbar's <code>Time</code><a class="headerlink" href="#1b-the-span-is-per-column-and-it-is-not-the-toolbars-time" title="Permanent link">#</a></h2>
+<p>Added 2026-08-31. Two controls now set a time axis and they are deliberately different ones:</p>
+<table>
+<thead>
+<tr>
+<th>control</th>
+<th>sets</th>
+<th>lives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>toolbar <strong>Time</strong></td>
+<td>seconds of history in <strong>trace</strong> columns</td>
+<td>one setting for the page</td>
+</tr>
+<tr>
+<td>column <strong>span</strong> (<code>cc-hmwin</code>)</td>
+<td>seconds of history in <strong>this heatmap</strong></td>
+<td>per column</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Why not just use the toolbar's Time.</strong> A heatmap earns its keep by showing minutes of the whole
+probe at once; at the trace default of 1 s it wraps its ring before anything is readable. Forcing the
+two onto one control would make the heatmap useless at the span traces want.</p>
+<p><strong>Why it needed a control at all.</strong> Before this, the span was a hardcoded constant with no control
+<em>and no label</em>, so a heatmap column and a trace column could sit side by side showing <strong>8 s and 1 s</strong>
+with nothing on screen saying so — an 8× difference in the x axis between two columns of the same
+probe. That is not a subtle infelicity; it is a misleading picture.</p>
+<p><strong>So every column now names its own span</strong> in its readout (<code>timeBaseLabel()</code>), in <em>both</em> view modes —
+a label that appears only in one mode is a label nobody learns to look for. 1 s and 2 s are on the
+ladder precisely so a heatmap and a trace column <em>can</em> be put on the same span deliberately, which is
+the one case where reading one against the other is legitimate.</p>
+<p><strong>Changing it reallocates nothing.</strong> The span is stored as seconds-per-texture-column
+(<code>heatmapSecondsPerColumn = window / bins</code>), so the ring keeps its width and simply accumulates for
+longer or shorter before each push. That is also why the cost varies with span — see §5 and §8.</p>
+<hr />
 <h2 id="2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design<a class="headerlink" href="#2-peak-to-peak-was-free-and-that-decided-the-design" title="Permanent link">#</a></h2>
 <p>The display stream <strong>already carries min and max per channel per time bin</strong> — that is what makes a
 trace's vertical segment. So <code>max - min</code> is one subtraction on two values the parse loop has already
@@ -296,7 +361,8 @@ cost of the headline statistic is zero.</p>
 the per-column zoom and (for <code>raw</code>) an AC-coupling baseline — they become <em>plot coordinates</em>, which
 no legend could label. AC-coupling cancels in a difference anyway, which is part of why peak-to-peak
 is the honest statistic to take from this point in the pipeline.</p>
-<p>The whole path is behind a <code>wantHeat</code> flag resolved <strong>once per frame</strong>. With no heatmap column open
+<p>The whole path is behind <code>heatCols</code> — a nullable list of the columns wanting heat, resolved
+<strong>once per frame</strong> (<code>NetworkClient.js</code>). With no heatmap column open
 the cost is a scan of at most four columns and a boolean.</p>
 <hr />
 <h2 id="3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context<a class="headerlink" href="#3-why-it-shares-the-columns-webgl2-context" title="Permanent link">#</a></h2>
@@ -334,12 +400,16 @@ pixel and takes the maximum, bounded at 16 fetches.</p>
 Painting them at the bottom of the ramp would draw a solid block of "silence" that is really "no data
 yet" — a lie the operator cannot see.</p>
 <hr />
-<h2 id="5-aggregation-why-the-window-is-8-s-and-not-076-s">5. Aggregation: why the window is 8 s and not 0.76 s<a class="headerlink" href="#5-aggregation-why-the-window-is-8-s-and-not-076-s" title="Permanent link">#</a></h2>
+<h2 id="5-aggregation-why-the-default-window-is-8-s-and-not-076-s">5. Aggregation: why the default window is 8 s and not 0.76 s<a class="headerlink" href="#5-aggregation-why-the-default-window-is-8-s-and-not-076-s" title="Permanent link">#</a></h2>
 <p>Bins arrive at roughly <strong>1000/s</strong> (20 per frame × 50 frames/s). A ring is a few hundred columns wide.
 One texture column per arriving bin therefore wrapped the display in about <strong>three quarters of a
 second</strong> — measured, and unreadable.</p>
 <p>Incoming bins are aggregated by <strong>max</strong> into one texture column per <code>window / bins</code> seconds — about
-10.5 ms at an 8 s window in a 760 px column, so ~95 columns/s instead of ~1000.</p>
+10.5 ms at the 8 s default in a 760 px column, so ~95 columns/s instead of ~1000.</p>
+<p><strong>That rate is a function of the span, not a property of the view</strong> (§1b): columns/s =
+<code>bins / window</code>, so the ladder runs from ~13/s at 1 min to <strong>~760/s at 1 s</strong> — eight times the
+default and most of the way back to the raw bin rate this aggregation exists to avoid. Nothing
+breaks there; it is simply the setting that costs the most, and it is one click away.</p>
 <p><strong>Max, never mean.</strong> The job of this view is to show that a channel <em>did something</em>; averaging a
 burst together with the quiet milliseconds around it is precisely how you fail to see it.</p>
 <p>Aggregation also cuts the upload rate by the same factor, which is why the per-second cost is
@@ -449,8 +519,10 @@ probe bands and leaves NI-DAQ and the ADC in volts, and the legend's unit follow
 </table>
 <p><strong>The draw is flat in channel count</strong> — one draw call of one triangle either way. The upload scales
 linearly, as it must: it is <code>nChannels × 4</code> bytes.</p>
-<p>At 95 columns/s the whole per-second cost of a 384-channel heatmap is about <strong>0.2 ms of CPU — 0.02 %
-of one core.</strong></p>
+<p>At the 8 s default (~95 columns/s) the whole per-second cost of a 384-channel heatmap is about
+<strong>0.2 ms of CPU — 0.02 % of one core.</strong> At the shortest span the operator can pick, 1 s, it is eight
+times that: <strong>~1.6 ms/s, 0.16 % of one core</strong> — still nothing, which is the answer that matters, but
+quote the span with the number or it is not a fact about anything.</p>
 <blockquote>
 <p>Chrome coarsens <code>performance.now()</code> to ~100 µs as a Spectre mitigation unless the page is
 cross-origin isolated, so the first run of the benchmark reported exactly <code>0.000</code> for every cell.
@@ -490,37 +562,44 @@ allocating nothing.</p>
 <hr />
 <h2 id="10-things-that-will-bite-you">10. Things that will bite you<a class="headerlink" href="#10-things-that-will-bite-you" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>Any control added to the column band needs a cell in SIX area maps</strong> — in-flow, collapsed
-  overlay, and <em>vertical</em>, times trace and heatmap. CSS Grid does not error on an unplaced item; it
-  quietly adds an implicit row. This bit twice: three unplaced controls grew the collapsed panel to
-  122 px covering 15 % of the plot, and then the vertical map — which states its own one-row
-  template because a full-width row never needs to collapse — was missed entirely and made the strip
-  66 px instead of 34. <code>layout_matrix</code> caught the second one; nothing caught the first but a
-  measurement.</li>
-<li><strong>Adding a control moves the fold threshold.</strong> The band went from 448 px to 556 px, so on a
+<li><strong>A heatmap-only control needs a cell in EIGHT area maps</strong> — in-flow, the pin variant, and
+  <em>vertical</em>, each with a filters and a no-filters form, plus the two stacked collapsed-overlay
+  templates. CSS Grid does not error on an unplaced item; it quietly adds an implicit row.</li>
+</ul>
+<p><strong>This has now bitten three times.</strong> Three unplaced controls grew the collapsed panel to 122 px
+  covering 15 % of the plot; then the vertical map — which states its own one-row template because a
+  full-width row never needs to collapse — was missed entirely and made the strip 66 px instead of
+  34; then on 2026-09-01 the span selector <code>.cc-hmwin</code> was found to have shipped with a class in
+  <code>ChartColumn.js</code> and <strong>no <code>grid-area</code> at all</strong>, so it had been auto-placing since 2026-08-31.
+  <code>layout_matrix</code> caught the second; nothing caught the first or third but somebody reading the CSS.</p>
+<p><strong>So it is a check now, not a warning.</strong> <code>python/tests/test_column_grid.py</code> asserts the rule rather
+  than the instance: every <code>cc-*</code> class the frontend sets is placed, every area named in a template
+  is defined, and every template declares as many tracks as its widest row uses. Worth knowing that
+  the first fix for the third occurrence was <em>itself</em> incomplete — two of the eight maps were
+  updated and six were missed, and only the check found that.
+- <strong>Adding a control moves the fold threshold.</strong> The band went from 448 px to 556 px, so on a
   1920 px screen the horizontal strip now collapses at three columns instead of four. That is the
   existing mechanism working, but it is a user-visible change and <code>user_docs/GUI-Guide.md</code> states
-  the number.</li>
-<li><strong><code>[hidden]</code> loses to <code>.cc-scale { display: flex }</code>.</strong> The HTML attribute is a UA rule and any
-  class selector setting <code>display</code> outranks it.</li>
-<li><strong><code>setViewMode()</code> early-returns when the mode already matches</strong>, which it does at construction — so
+  the number.
+- <strong><code>[hidden]</code> loses to <code>.cc-scale { display: flex }</code>.</strong> The HTML attribute is a UA rule and any
+  class selector setting <code>display</code> outranks it.
+- <strong><code>setViewMode()</code> early-returns when the mode already matches</strong>, which it does at construction — so
   the initial state of a control belongs where the control is <em>created</em>, not in the handler that
-  changes it.</li>
-<li><strong><code>preserveDrawingBuffer</code> is false.</strong> A <code>readPixels</code> from a later task returns zeros and is
-  indistinguishable from a renderer that draws nothing. Call <code>paint()</code> and read in the same task.</li>
-<li><strong><code>parseInt('all')</code> is <code>NaN</code>, and <code>NaN|0</code> is <code>0</code>.</strong> The All option collapsed a column to one trace.
+  changes it.
+- <strong><code>preserveDrawingBuffer</code> is false.</strong> A <code>readPixels</code> from a later task returns zeros and is
+  indistinguishable from a renderer that draws nothing. Call <code>paint()</code> and read in the same task.
+- <strong><code>parseInt('all')</code> is <code>NaN</code>, and <code>NaN|0</code> is <code>0</code>.</strong> The All option collapsed a column to one trace.
   The shank dropdown's <code>all</code> is deliberately <em>not</em> stored in <code>selectedShank</code> for the same reason: it
   is a separate <code>mergeShanks</code> boolean, so every arithmetic use of <code>selectedShank</code> keeps working
-  without a guard.</li>
-<li><strong>An option that only exists in one mode has to be retired on the way out of it.</strong> <code>setViewMode()</code>
+  without a guard.
+- <strong>An option that only exists in one mode has to be retired on the way out of it.</strong> <code>setViewMode()</code>
   calls <code>refreshFilterOptions()</code> in <em>both</em> directions; a merge left selected after a switch back to
-  traces would render one shank while the control claimed all four.</li>
-<li><strong>No sim source in this repo is multishank.</strong> <code>SimulatedData2Source::loadDefaultImro</code> puts all 384
+  traces would render one shank while the control claimed all four.
+- <strong>No sim source in this repo is multishank.</strong> <code>SimulatedData2Source::loadDefaultImro</code> puts all 384
   channels on shank 0, so the merge option never appears under sim and a test that only ran there
   would be exercising its absence. <code>tests/gui/heatmap_spatial.py</code> injects a synthetic 4-shank
   <code>imroLiveView</code> for the ordering and checks the real model separately; its docstring records the
-  gap that leaves (a real 4-shank probe, which needs hardware).</li>
-</ul></article>
+  gap that leaves (a real 4-shank probe, which needs hardware).</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/HeatmapView.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -533,6 +612,7 @@ allocating nothing.</p>
 <li><a href="#cost-one-sort-cached-against-the-ordering-revision">Cost: one sort, cached against the ordering revision</a></li>
 </ul>
 </li>
+<li><a href="#1b-the-span-is-per-column-and-it-is-not-the-toolbars-time">1b. The span is per column, and it is not the toolbar's Time</a></li>
 <li><a href="#2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design</a></li>
 <li><a href="#3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context</a></li>
 <li><a href="#4-the-ring-is-in-the-texture-and-nothing-scrolls">4. The ring is in the texture, and nothing scrolls</a><ul>
@@ -540,7 +620,7 @@ allocating nothing.</p>
 <li><a href="#never-written-bins-are-their-own-color">Never-written bins are their own color</a></li>
 </ul>
 </li>
-<li><a href="#5-aggregation-why-the-window-is-8-s-and-not-076-s">5. Aggregation: why the window is 8 s and not 0.76 s</a></li>
+<li><a href="#5-aggregation-why-the-default-window-is-8-s-and-not-076-s">5. Aggregation: why the default window is 8 s and not 0.76 s</a></li>
 <li><a href="#6-color-and-the-legend">6. Color, and the legend</a><ul>
 <li><a href="#the-legend">The legend</a></li>
 <li><a href="#the-color-axis-never-auto-ranges">The color axis never auto-ranges</a></li>

@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -173,7 +173,7 @@ once. So each of the 384 channels is wired to <strong>one</strong> electrode cho
    card's analog and digital inputs (that entry appears only when a PXIe module is detected). There is
    no "NPX 1.0" entry, and no <code>PXIe</code> entry either unless a OneBox is attached at the same time and the
    scan has to ask.
-   <img alt="Source dropdown" src="images/source_dropdown.png" /></li>
+   <img alt="Source dropdown" src="images/source_dropdown_2026-08-27.png" /></li>
 <li>Watch the <strong>status box</strong> (right side): <code>Connecting to Neuropixels…</code> → <code>Found Neuropixels 1.0 probe</code> /
    <code>Connected — device ready</code> (green). The <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and <strong>Play</strong>
    becomes available.
@@ -188,7 +188,7 @@ once. So each of the 384 channels is wired to <strong>one</strong> electrode cho
 the map live (each Apply briefly pauses and restarts streaming automatically).</p>
 <hr />
 <h2 id="3-configure-the-channel-map-probe-map-tab">3. Configure the channel map (Probe Map tab)<a class="headerlink" href="#3-configure-the-channel-map-probe-map-tab" title="Permanent link">#</a></h2>
-<p><img alt="NP1 probe map editor" src="images/np1_probemap.png" /></p>
+<p><img alt="NP1 probe map editor" src="images/np1_probemap_2026-08-21.png" /></p>
 <p>The panel shows the shank with its electrodes:
 - <strong>Green</strong> = currently selected to record. <strong>Gray</strong> = available but not selected. <strong>Amber</strong> =
   internal-reference site (can't be selected).</p>
@@ -241,7 +241,7 @@ streaming (if running) → write the new map → <strong>verify</strong> it read
 <h2 id="5-read-the-live-data">5. Read the live data<a class="headerlink" href="#5-read-the-live-data" title="Permanent link">#</a></h2>
 <p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) — the view switches itself to <strong>Live Data</strong> on the
 backend's confirmation.</p>
-<p><img alt="NP1 live view" src="images/np1_liveview.png" /></p>
+<p><img alt="NP1 live view" src="images/np1_liveview_2026-08-21.png" /></p>
 <p><strong>Layout:</strong>
 - One <strong>trace per channel</strong>, stacked vertically and <strong>sorted by depth</strong> — the <strong>deepest</strong> electrode
   (probe tip) is at the <strong>bottom</strong>, shallower going up. The slider rail is labeled <code>shallow</code> (top) /
@@ -303,8 +303,8 @@ and pressing <strong>● Record</strong> again starts writing. SpikesPeak writes
 and LFP</strong>) to <code>&lt;directory&gt;/&lt;name&gt;/&lt;name&gt;_ap_&lt;timestamp&gt;.bin</code> and <code>…_lfp_&lt;timestamp&gt;.bin</code>. Press Record
 again to stop — <strong>streaming keeps going</strong> (only <strong>Pause</strong> stops it).</p>
 <p>The button tells you which of the three states you are in:</p>
-<p><img alt="Armed — a muted-red ready ring; nothing is on disk yet" src="images/record_armed.png" /></p>
-<p><img alt="Recording — Play is a white ⏸ in a green ring (streaming), Record is solid red (writing)" src="images/record_buttons.png" /></p>
+<p><img alt="Armed — a muted-red ready ring; nothing is on disk yet" src="images/record_armed_2026-07-07.png" /></p>
+<p><img alt="Recording — Play is a white ⏸ in a green ring (streaming), Record is solid red (writing)" src="images/record_buttons_2026-07-13.png" /></p>
 <hr />
 <h2 id="7-disconnect-quit">7. Disconnect / quit<a class="headerlink" href="#7-disconnect-quit" title="Permanent link">#</a></h2>
 <ul>

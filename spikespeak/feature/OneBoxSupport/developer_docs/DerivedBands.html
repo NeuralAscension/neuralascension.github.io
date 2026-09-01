@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -168,7 +168,7 @@ side by side, one per row or column.</p>
 <p><strong>This is a 2.0 feature.</strong> A 1.0 probe delivers <code>data.npx.ap</code> and <code>data.npx.lfp</code> from the
 headstage, so it does not need either derived band and nothing here is wired for it. See §8.</p>
 </blockquote>
-<p><img alt="Raw, spike and LFP side by side on a real NP2.0 probe" src="images/band_three_bands_hw.png" /></p>
+<p><img alt="Raw, spike and LFP side by side on a real NP2.0 probe" src="images/band_three_bands_hw_2026-08-23.png" /></p>
 <p><em>Real NP2.0 on PXIe. Left: raw, broadband with slow drift. Middle: spike band — the drift is gone,
 the high-frequency content remains. Right: LFP band — the hash is gone, the slow wander remains.</em></p>
 <hr />
@@ -246,7 +246,7 @@ once, and one that a fourth hand-copied setter would have been free to reintrodu
 <p>The band is doing what it says. On the <strong>simulated</strong> source — a pure low-frequency sine — the spike
 column is almost flat while raw and LFP both show the sine, because a 300–6000 Hz band-pass rejects
 it. That makes a poor demo and a good test:</p>
-<p><img alt="The same three bands on the simulated sine source" src="images/band_three_bands.png" /></p>
+<p><img alt="The same three bands on the simulated sine source" src="images/band_three_bands_2026-08-23.png" /></p>
 <h2 id="3-what-each-band-costs-measured">3. What each band costs, measured<a class="headerlink" href="#3-what-each-band-costs-measured" title="Permanent link">#</a></h2>
 <p>Simulated NP2.0, 384 channels at 30 kHz, backend CPU as a percentage of one core:</p>
 <table>
@@ -444,8 +444,8 @@ is ~3.0 %-core for LFP and 1.33 us x 30 kHz is ~4.0 %-core for spike, which is c
 end-to-end figures measured a different way.</p>
 <h2 id="5-enable-disable">5. Enable / disable<a class="headerlink" href="#5-enable-disable" title="Permanent link">#</a></h2>
 <p><strong>One toolbar button — "Bands" — with a dropdown</strong>, to the left of the audio and ripple buttons.</p>
-<p><img alt="The LFP and Spike switches" src="images/band_buttons_hw.png" /></p>
-<p><img alt="The same switches with the spike band off" src="images/band_buttons_spike_off_hw.png" /></p>
+<p><img alt="The LFP and Spike switches" src="images/band_buttons_hw_2026-08-23.png" /></p>
+<p><img alt="The same switches with the spike band off" src="images/band_buttons_spike_off_hw_2026-08-23.png" /></p>
 <p><em>The screenshots above predate the consolidation and show the two separate buttons this replaced.</em></p>
 <p>The button carries a count of how many bands are <strong>running</strong> — not how many exist — so the toolbar
 answers <em>"is anything filtering?"</em> without being opened, and turns green when the count is non-zero.

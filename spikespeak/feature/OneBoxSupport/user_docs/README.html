@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -201,20 +201,21 @@ ripple module.)</p>
 <li><strong>Pick a source.</strong> Toolbar <strong>Source</strong> ▸ <strong><code>Simulated Data…</code></strong> → <strong>Neuropixels 1.0 — Ripple Detection
    (GUI)</strong>. It connects with no probe attached.</li>
 </ol>
-<p><img alt="Simulated Data picker" src="images/sim_picker.png" />
+<p><img alt="Simulated Data picker" src="images/sim_picker_2026-08-27.png" />
 3. <strong>Play.</strong> Press <strong>▶</strong> — the view switches itself to the <strong>Live Data</strong> tab, and you'll see the live
    waveforms, one trace per channel, stacked by depth.</p>
-<p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview.png" />
-4. <strong>Open Ripple Detection.</strong> Click <strong>SWR Detector</strong> in the toolbar; the dock slides in on the right.
+<p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview_2026-08-21.png" />
+4. <strong>Open the SWR Detector.</strong> Click <strong>SWR Detector</strong> in the toolbar; the dock slides in on the right.
 5. <strong>Add a channel + arm.</strong> Drag an electrode label from the view (or type a number and <strong>Add</strong>), set
-   <strong>Parameter-estimation time = 3 s</strong> (quick test), then press <strong>▶ Start</strong>.</p>
-<p><img alt="Channels added" src="images/ripple/np1_channels.png" />
+   <strong>Parameter-estimation time = 3 s</strong> (quick test — the shot below still shows the 10 s default),
+   then press <strong>▶ Start</strong>.</p>
+<p><img alt="Channels added" src="images/ripple/np1_channels_2026-09-01.png" />
 6. <strong>Watch it fire.</strong> After ~9 s the columns arm and detections start — the cowsay prints <code>Ripple detected!</code>
    The red <strong>STIM LED</strong> does <strong>not</strong> light on detection alone -- it lights only when the
    stimulation server acknowledges a real pulse. Stimulation is also opt-in: the dock's
    <code>enable stimulation</code> gate defaults OFF and the server must be armed, so a detection transmits
    nothing until you do both.</p>
-<p><img alt="Detecting" src="images/ripple/np1_detecting.png" /></p>
+<p><img alt="Detecting" src="images/ripple/np1_detecting_2026-09-01.png" /></p>
 <hr />
 <h2 id="launching-spikespeak">Launching SpikesPeak<a class="headerlink" href="#launching-spikespeak" title="Permanent link">#</a></h2>
 <ol>

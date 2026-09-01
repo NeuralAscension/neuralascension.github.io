@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a class="active" href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -155,7 +155,7 @@ a spatial map shows you <em>where on the shank</em>.</p>
 <p><strong>What the built one hands this one for free:</strong> the metric pipeline. Per-channel per-bin values
 already reach the page (<code>NetworkClient</code>, one subtraction on min/max the display stream was already
 sending), the colormaps already exist as verified 256-entry tables with a shared legend painter
-(<code>GlHeatmap.js</code>: <code>colormapBytes()</code>, six maps, perceptual-first), and the units question is settled
+(<code>GlHeatmap.js</code>: <code>colormapBytes()</code>, five maps, perceptual-first), and the units question is settled
 (display units are 100 µV — see <code>HeatmapView.md</code> §7). §2's "we already have the metric" is
 therefore <em>more</em> true than when it was written, not less.</p>
 <p><strong>What it still owes:</strong> the rendering half, below.</p>
@@ -199,7 +199,15 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
 </blockquote>
 <hr />
 <h2 id="1-how-openephys-does-it-the-thing-to-match">1. How OpenEphys does it (the thing to match)<a class="headerlink" href="#1-how-openephys-does-it-the-thing-to-match" title="Permanent link">#</a></h2>
-<p>From <code>Source-OpenEphys-Neuropixels-PXI/UI/ActivityView.cpp</code>, <code>UI/ProbeBrowser.cpp</code>, <code>UI/ColorScheme.cpp</code>, <code>UI/NeuropixInterface.cpp</code>:</p>
+<p>From <code>Source-OpenEphys-Neuropixels-PXI/UI/ActivityView.cpp</code>, <code>UI/ProbeBrowser.cpp</code>,
+<code>UI/ColourScheme.cpp</code>, <code>UI/NeuropixInterface.cpp</code>:</p>
+<blockquote>
+<p><strong><code>Colour</code>, with the u, is not a typo and must not be "fixed".</strong> This repo writes American
+spelling everywhere, but these are <em>vendored</em> filenames and symbols — <code>ColourScheme.cpp</code>,
+<code>ColourSchemeId</code>, <code>getColourForNormalisedValue</code>. Americanising them here produces citations
+that match nothing on disk, which is exactly what happened until 2026-09-01: this page said
+<code>ColorScheme.cpp</code> and a grep for it returned nothing.</p>
+</blockquote>
 <ul>
 <li><strong>Metric = per-electrode peak-to-peak amplitude</strong> (<code>max − min</code>) over a sliding window, in µV. <em>Not</em> RMS
   or spike rate. (<code>ActivityView.cpp</code> <code>calculatePeakToPeakValues</code> ~344-381.)</li>
@@ -208,7 +216,7 @@ internals are in <a href="LiveDataView.html"><code>LiveDataView.md</code></a> an
 <li><strong>Two modes:</strong> AP-band vs LFP-band activity (a combo box).</li>
 <li><strong>Optional pre-processing (both on by default):</strong> common-average reference (ADC-group-aware) + a
   300-6000 Hz Butterworth band-pass, applied before min/max.</li>
-<li><strong>Colormap = Inferno</strong> (matplotlib), a 256-step LUT (<code>ColorScheme.cpp</code>). Black→purple→orange→yellow —
+<li><strong>Colormap = Inferno</strong> (matplotlib), a 256-step LUT (<code>ColourScheme.cpp</code>). Black→purple→orange→yellow —
   already dark-mode friendly. (Viridis/Plasma/Magma/Jet also available.)</li>
 <li><strong>Normalization = fixed clim</strong>, <em>not</em> auto-scaling: <code>color = inferno(p2p / clim)</code>, clim selectable
   <strong>{250, 500, 750, 1000} µV</strong>, default <strong>500</strong>. No-data sites (sentinel <code>-1</code>) drawn <strong>gray (160,160,160)</strong>.</li>
@@ -292,9 +300,18 @@ recommendation to walk through it: nothing has been prototyped.
   <strong>Withdrawn 2026-08-27</strong> — a recommendation between two unavailable mechanisms is not a
   recommendation.</p>
 </blockquote>
-<h3 id="decision-3-colormap">Decision 3 — colormap<a class="headerlink" href="#decision-3-colormap" title="Permanent link">#</a></h3>
-<p>Inferno (OpenEphys default, dark-mode native), as gradient stops. Offer Viridis as an alternative. (We
-don't need the 256-row LUT — matplotlib gradient stops reproduce it.) <em>(This decision is unaffected by
+<h3 id="decision-3-colormap-answered-by-the-shipped-column-2026-08-31">Decision 3 — colormap  — <strong>ANSWERED by the shipped column, 2026-08-31</strong><a class="headerlink" href="#decision-3-colormap-answered-by-the-shipped-column-2026-08-31" title="Permanent link">#</a></h3>
+<p>The time × channel heatmap settled this, and this one should follow it rather than re-litigate:
+<strong>five perceptually-ordered maps — viridis (default), afmhot, inferno, magma, plasma — no rainbow</strong>,
+built as gradient stops in <code>GlHeatmap.js</code> (<code>STOPS</code>), with one shared LUT that the legend also paints
+so the plot and its key cannot disagree.</p>
+<p>Note the default moved. OpenEphys really does default to Inferno —
+<code>Source-OpenEphys-Neuropixels-PXI/UI/ColourScheme.cpp:14</code> is <code>ColourSchemeId::INFERNO</code>, so the
+premise below was never wrong — but matching OpenEphys was not worth more than being perceptually
+uniform by default, and inferno remains one click away.</p>
+<p><em>(Original text, kept because the reasoning is still the reasoning:)</em> Inferno (OpenEphys default,
+dark-mode native), as gradient stops. Offer Viridis as an alternative. (We don't need the 256-row LUT
+— matplotlib gradient stops reproduce it.) <em>(This decision is unaffected by
 the SciChart removal; only the two API names it used to cite for the gradient —
 <code>GradientColorPalette</code> / <code>HeatmapColorMap</code> — went away, and a color ramp is a handful of lines
 anywhere.)</em></p>
@@ -371,7 +388,8 @@ reads that frame instead of deriving p2p. Steps 2-4 unchanged.</p>
    named mechanisms were removed with SciChart on 2026-08-27. The question that remains is the visual
    one, "recolor the existing map in place, or add a separate full-probe heatmap panel", and it needs
    a costed canvas-2D spike behind it before it is worth putting to the operator.</li>
-<li><strong>Colormap:</strong> Inferno (match OpenEphys) — ok? Viridis alternative?</li>
+<li>~~<strong>Colormap:</strong> Inferno (match OpenEphys) — ok? Viridis alternative?~~ <strong>Answered by the
+   shipped column, 2026-08-31 — see Decision 3.</strong> Five maps, viridis default. Nothing to ask.</li>
 <li><strong>clim values + units:</strong> keep 250/500/750/1000 µV default 500? (pending units check)</li>
 <li><strong>"Blink":</strong> color-intensity tracks activity (A) or literal pulse (B) or both?</li>
 <li><strong>Mode:</strong> auto Activity-Mode while streaming, or a manual toggle?</li>
@@ -401,7 +419,7 @@ the estimate cannot be repaired by adjusting a number. Re-estimate after the can
 <li><a href="#3-design-options">3. Design options</a><ul>
 <li><a href="#decision-1-where-activity-is-computed">Decision 1 — WHERE activity is computed</a></li>
 <li><a href="#decision-2-how-its-rendered-void-2026-08-27-needs-redesign">Decision 2 — HOW it's rendered · VOID 2026-08-27, needs redesign</a></li>
-<li><a href="#decision-3-colormap">Decision 3 — colormap</a></li>
+<li><a href="#decision-3-colormap-answered-by-the-shipped-column-2026-08-31">Decision 3 — colormap — ANSWERED by the shipped column, 2026-08-31</a></li>
 <li><a href="#decision-4-normalization-clim-units">Decision 4 — normalization / clim &amp; units</a></li>
 <li><a href="#decision-5-what-blinking-means-please-pick">Decision 5 — what "blinking" means (please pick)</a></li>
 <li><a href="#decision-6-lifecycle-mode">Decision 6 — lifecycle / mode</a></li>

@@ -84,7 +84,7 @@
 <a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -294,6 +294,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S69</td>
 <td>2026-08-31</td>
 <td><strong>A filter is not a brick wall</strong>: the simulated AP band carried NO ripple because "attenuates" was implemented as "eliminates" — a 300 Hz first-order corner passes 55% of a 200 Hz ripple, and the play-file generator disagreed with the live simulator by 15x. Plus the figure that started it, per-column time bases, and a detachable ripple dock</td>
+</tr>
+<tr>
+<td>S70</td>
+<td>2026-08-31</td>
+<td><strong>Two hardware questions answered on the OneBox, and both close.</strong> #68: the ~22% ADC throughput cost does not reproduce — 4/4 cells at 100.0%, all continuous — on either machine, so the original number was most likely a counting artifact. #67: the comparator band verified against a known square wave, with IO0 shorted to IO11 proving the 24-sample demux. Plus the parallel-gate work, <code>facts.py</code>, and <code>KnowledgeOps.md</code></td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -6610,7 +6615,419 @@ stops that:</p>
 toolbar</strong>, so a change to anything an operator clicks checks <code>user_docs/README.md</code>'s toolbar table and
 <code>user_docs/GUI-Guide.md</code>'s screenshots in the same change. <code>CLAUDE.md</code> had never mentioned <code>user_docs/</code>
 at all, which is why those pages have been repeatedly refreshed after the fact rather than with the
-change that broke them.</p></article>
+change that broke them.</p>
+<hr />
+<h2 id="70-two-hardware-questions-answered-and-closed-2026-08-31-night">70. TWO HARDWARE QUESTIONS, ANSWERED AND CLOSED  (2026-08-31, night)<a class="headerlink" href="#70-two-hardware-questions-answered-and-closed-2026-08-31-night" title="Permanent link">#</a></h2>
+<p>NP2.0 multishank moved onto the OneBox by the operator, with SMA 1 patched to IO11 and <strong>IO11 shorted
+to IO0</strong>, the Pi's stim trigger on IO2, and a 1 Hz / 50 % duty / 5 V square on the SMA. That wiring
+answered both open OneBox questions in one session.</p>
+<h3 id="70a-68-the-adc-stream-costs-nothing-and-probably-never-did">70a. #68 — the ADC stream costs nothing, and probably never did<a class="headerlink" href="#70a-68-the-adc-stream-costs-nothing-and-probably-never-did" title="Permanent link">#</a></h3>
+<p>The four-cell matrix (<code>{with ADC, no ADC} × {t+15 s, t+90 s}</code>, 10 s recordings, both configs selected
+by exact name within a single acquisition):</p>
+<table>
+<thead>
+<tr>
+<th>cell</th>
+<th>band</th>
+<th style="text-align: right;">records in 10 s</th>
+<th style="text-align: right;">throughput</th>
+<th>continuity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>with ADC, t+15</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">300 045</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>with ADC, t+15</td>
+<td><code>adc</code></td>
+<td style="text-align: right;">303 066</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>with ADC, t+90</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">300 000</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>no ADC, t+15</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">299 956</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>no ADC, t+90</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">299 996</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+</tbody>
+</table>
+<p>Against the claim of <strong>78.1 % with ADC / 99.99 % without</strong>.</p>
+<p><strong>Neither the cost nor the time-in-session decay exists here</strong>, and the ADC band is itself at 100 % —
+so it is not the ADC under-delivering to protect the probe.</p>
+<p>The issue's question was whether the effect belonged to the <strong>OneBox/FT601 path</strong> or to <strong>that
+machine</strong>. The answer turned out to be neither: the second machine had already failed to reproduce it
+on 2026-08-26 (4/4 at 100 %), so it does not reproduce on the machine that produced it. Closed on the
+operator's call, with the likeliest explanation being a <strong>measurement artifact</strong> — the original
+numbers predate both the sidecar-frame-width counting method and the continuity check, and #63's own
+follow-up runbook had to name "the trap that ruined the first attempt".</p>
+<p>What makes closing safe rather than optimistic: <strong>every record stop now prints throughput AND
+continuity</strong>, the latter checked against the probe's own clock over an explicit tick span. If the
+effect returns it announces itself on any machine, with nobody needing to remember the issue.</p>
+<h3 id="70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it">70b. #67 — the comparator band is correct, and the short is what proved it<a class="headerlink" href="#70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it" title="Permanent link">#</a></h3>
+<p>12.5 s recording of <code>raw</code> + <code>adc</code> + <code>adc.di</code>.</p>
+<ul>
+<li><strong>The comparator samples are exactly {0, 1}</strong>, across 377 279 samples × 12 channels. This was the
+  unknown that gated the design: Open Ephys shifts them into an event word <em>without normalising</em>,
+  which is only correct if they are 0/1, and the vendor documentation never says.</li>
+<li><strong>IO11 vs IO0 — one electrical node, two channels at opposite ends of the array — agreed on
+  377 276 / 377 279 samples (99.9992 %)</strong>. All three disagreements are within two samples of an edge
+  (metastability on a shared node); <strong>zero away from an edge</strong>. The characteristic failure of
+  unpacking the last 12 of 24 samples is a stride error putting the signal on channel N±1, and it is
+  invisible with one signal on one channel. The short makes it decidable.</li>
+<li><strong>No other channel moves at all</strong> — 0 transitions on the other ten, and nothing on IO1 or IO10.</li>
+<li><strong>Half-period 500.07 ms</strong> against 500.0 nominal.</li>
+<li><strong>The analog twin is not railed</strong>: 4.960 V peak, 0 samples at ≥98 % of full scale.</li>
+</ul>
+<p>That last one needed <code>adc_voltage_range: 10</code>, added to the profile this session. At the ±5 V default a
+5 V input sits at exactly full scale (5.0 × 6553.6 = 32768, one past <code>int16</code> max), so the analog would
+have clipped flat <strong>while the comparator bit stayed perfectly correct</strong> — a failure invisible in
+precisely the band under test.</p>
+<h3 id="70c-method-notes-worth-keeping">70c. Method notes worth keeping<a class="headerlink" href="#70c-method-notes-worth-keeping" title="Permanent link">#</a></h3>
+<ul>
+<li>Numbers come from the <strong>backend's own</strong> verdict lines, never from the driving script's clock.</li>
+<li>The control profile was <strong>not</strong> regenerated from <code>OneBox.yaml</code>: that records 384 channels where the
+  <code>Npx2*</code> pair records three, a difference large enough to swamp the effect being measured.</li>
+<li>Both ages were taken <strong>inside one acquisition</strong>, so the time-in-session comparison has no reconnect
+  in it.</li>
+<li>One bug caught mid-analysis: <code>spikespeak_io.read_band</code>'s glob <code>*_adc_*</code> also matches <code>*_adc_di_*</code>,
+  so asking for the analog band could silently return the digital one. It now confirms the band from
+  the sidecar — the same failure mode as the frame-header trap, closed the same way.</li>
+<li>Every shutdown was a graceful <code>quit</code>. A force-kill with a real OneBox attached leaves the FT601
+  handle claimed and costs a physical power-cycle.</li>
+</ul>
+<p>Runners: <code>ripple_tools/adc_throughput_matrix.py</code>, <code>ripple_tools/check_digital_in.py</code>.
+Artifacts under <code>RecordingTests/2026-08-31_{adc_matrix,digital_in}/</code> — the <code>.bin</code> files are not committed.</p>
+<hr />
+<h2 id="71-the-swr-dock-looked-like-a-different-application-2026-09-01">71. THE SWR DOCK LOOKED LIKE A DIFFERENT APPLICATION  (2026-09-01)<a class="headerlink" href="#71-the-swr-dock-looked-like-a-different-application-2026-09-01" title="Permanent link">#</a></h2>
+<p>The operator, having just seen the new Convert dock: <em>"I do like the aesthetic of this converter dock
+with regards to the background better than the aesthetic of the ripple detector dock ... change the
+background aesthetic of the SWR detector dock and the color scheme of it to sort of match the
+converter dock such that the SWR detector dock is more similar aesthetically to the GUI itself,
+which right now I just don't think it is."</em></p>
+<h3 id="71a-what-was-actually-wrong">71a. What was actually wrong<a class="headerlink" href="#71a-what-was-actually-wrong" title="Permanent link">#</a></h3>
+<p>Not "the colors are ugly" — the dock was using <strong>green as its general voice</strong>. Headings, the title,
+the column labels and the drop target were all green, with <strong>amber <code>#FFD54F</code> parentheticals on top</strong>
+for unit hints. Amber is the GUI's warning color, so the one thing it was applied to — text that
+merely says <em>"all values in seconds"</em> — read as a caution. Beside the rest of the GUI, whose chrome
+is neutral grey and which spends color only on state, the dock read as a bolted-on tool.</p>
+<p>The rule adopted, and written into <code>RippleModule.js</code> as a <code>PALETTE NOTE</code> so it survives the next
+edit:</p>
+<blockquote>
+<p><strong>Green for function only.</strong> The Start button, a selected-channel chip, the drag target, the armed
+tab, and the detecting/STIM state. An accent that marks everything marks nothing.</p>
+</blockquote>
+<p>Header <code>#222</code>→<code>#2c2c2c</code> with a near-white title, section labels <code>#cdeccd</code>→<code>#8d979e</code>, unit hints
+<code>#FFD54F</code>→<code>#7f8a86</code>, cards <code>#2f2f2f</code>→<code>#2a2a2a</code>, inputs and buttons onto the Convert dock's
+<code>#33393b</code>/<code>#4a5254</code>. The idle drop target lost its green tint and keeps it only on <code>dragover</code>.</p>
+<p>The last one was the least obvious and the most clearly right: <strong><code>.rd-thr</code>, the threshold readout,
+was a green box that never changes on detection.</strong> It encodes nothing, so under the rule above it
+has no claim on the accent — and inside a red <code>.rd-col.detect</code> column a green box actively misreads.</p>
+<h3 id="71b-the-screenshots-were-already-two-generations-stale">71b. The screenshots were already two generations stale<a class="headerlink" href="#71b-the-screenshots-were-already-two-generations-stale" title="Permanent link">#</a></h3>
+<p>Restyling the dock meant checking <code>user_docs/</code>, and every ripple screenshot there was <strong>already</strong>
+wrong before this change: they still showed <strong>"◉ Ripple Detection"</strong>, from before the rename to
+<em>SWR Detector</em>. They were hand-shot, so nothing had ever told anyone they had drifted.</p>
+<p>All eight in-use frames were regenerated from live sim sessions by a scratchpad driver (not
+committed — it is a docs asset generator, not a test). Two further images, <code>np2_livez.png</code> and
+<code>np2_training.png</code>, were referenced from <strong>nothing</strong> and were deleted: an unreferenced screenshot of
+an old UI is pure liability, because the next person to need one will reach for it.</p>
+<h3 id="71c-regenerating-them-found-three-factual-errors-in-the-prose">71c. Regenerating them found three factual errors in the prose<a class="headerlink" href="#71c-regenerating-them-found-three-factual-errors-in-the-prose" title="Permanent link">#</a></h3>
+<p>This is the part worth keeping. Re-shooting a screenshot forces you to reproduce the state the
+caption claims, and the caption is where the rot was:</p>
+<ol>
+<li><strong>The live-z figures were invented.</strong> The text said e0's threshold "jumped from ~45 to ~69". The
+   real numbers are <strong>34.3 → 81.9</strong>. Neither endpoint was close.</li>
+<li><strong>The at-a-glance frame was captioned with a state its own settings forbade.</strong> It claimed three
+   channels in <code>● RIPPLE</code> — but was shot at <strong>quorum 1</strong>, and <em>at quorum 1 the detector reports only
+   the first channel to cross; the rest are suppressed by the lockout.</em> Eleven minutes were spent
+   retrying for a frame the parameters made unreachable before that was understood. Reshot at
+   quorum 3 it genuinely reads <strong><code>3/3 ch 0,10,20</code></strong>. That behaviour is now in the parameter table in
+   <code>user_docs/RippleDetection.md</code>, because it is exactly the thing an operator would otherwise chase.</li>
+<li><strong>The NP2 caption named the wrong channels</strong> (<code>2/3 ch 50,100</code>; the run gives <code>2/3 ch 0,50</code>), and
+   <code>SimulatedData.md</code> described "RAW band, 2 s window, 600 µV" for a frame that is a <strong>dock-only
+   crop</strong> and has never contained the main view at all.</li>
+</ol>
+<p>Also corrected while there: the NP1 at-a-glance frame had been shot on the <strong>AP band</strong> under a
+caption that says the main view is on the <strong>LFP band</strong> "where NP1 ripples live".</p>
+<h3 id="71d-the-method-note">71d. The method note<a class="headerlink" href="#71d-the-method-note" title="Permanent link">#</a></h3>
+<p><strong>A caption is an assertion, and re-shooting is how you test it.</strong> Every one of the errors above
+survived because the image and the sentence were maintained separately, by hand, years apart. The
+driver reaches each state the way an operator does — add channels, set z, press Start, wait for
+training to actually report complete — and prints the values it read, so the captions are written
+from the run rather than from memory.</p>
+<p>One trick worth reusing: the <code>● RIPPLE</code> state is held for <code>lockout</code> (0.200 s) and the burst is ~100 ms
+of every 2 s, so polling-then-shooting loses the race nearly every time. The driver pushes
+<code>detectUntil</code> far into the future <strong>at the instant it observes the state</strong>, which extends the display
+hold only — the <code>lockout</code> parameter visible in the frame still reads 0.200. Freezing on <em>every</em> poll
+instead was wrong and produced a frame that could not occur: two red columns beside a cowsay reading
+<code>1/3</code>, because detections seconds apart had been accumulated into one picture.</p>
+<h3 id="71e-then-every-frame-was-checked-against-its-caption-and-found-five-more">71e. Then every frame was checked against its caption, and found five more<a class="headerlink" href="#71e-then-every-frame-was-checked-against-its-caption-and-found-five-more" title="Permanent link">#</a></h3>
+<p>Regenerating the images fixed the images. It did not prove the <strong>prose</strong> was right, so each of the
+eight frames was re-read against every sentence that captions it, and each claimed mismatch was
+handed to a second reader told to <strong>refute</strong> it. Eight shots, five confirmed, three refuted.</p>
+<p>The three refusals matter as much as the confirmations — one "mismatch" was a caption belonging to a
+neighbouring image, one was a <em>default</em> column in a parameter table rather than a description of the
+picture, and one was a quick-start instruction the frame deliberately precedes. A single-pass check
+would have "fixed" all three into being wrong.</p>
+<p>What survived:</p>
+<ol>
+<li><strong>A caption written in this very session was wrong.</strong> Describing NP2's e100 as <em>"its envelope is
+   climbing but has not crossed"</em> — measured on the pixels, e100's envelope crosses the dashed
+   threshold at ~87% across its plot and ends ~32 px above it in a 70 px box, <strong>the same excursion as
+   the two columns the caption calls detections</strong>. Written from the on-screen label, not from the
+   picture. See below for why the label says what it says.</li>
+<li><strong>Two captions promised a stimulation that provably did not happen.</strong> <em>"...and the stim fires"</em> /
+   <em>"the stimulation trigger fires"</em> — while in both frames <code>enable stimulation</code> is unchecked, the
+   on-screen hint beside it reads <em>"detection only, nothing is transmitted"</em>, the server pill reads
+   <em>disabled</em>, and the STIM LED is unlit. The docs were telling an operator that a rig configured to
+   transmit nothing had transmitted.</li>
+<li><strong>A tip bound itself to the screenshots and then disagreed with them.</strong> <em>"a ~2 s Window and a
+   ~600 µV Scale ... that's what the screenshots below use"</em> — the frames were shot at <strong>1 s and
+   300 µV</strong>, exactly half on both axes. Fixed by re-shooting at the advised values rather than by
+   softening the tip, so the advice is now demonstrated by the picture beneath it.</li>
+</ol>
+<h3 id="71f-the-label-that-asserts-what-the-graph-disproves">71f. The label that asserts what the graph disproves<a class="headerlink" href="#71f-the-label-that-asserts-what-the-graph-disproves" title="Permanent link">#</a></h3>
+<p>Finding 1 is not a documentation bug underneath. <code>_colStatus()</code> returns the literal string
+<strong>"below threshold"</strong> whenever a channel is trained and <code>c.detecting</code> is false — and <code>c.detecting</code> is
+set only from the backend's <code>onDetected</code>, which names the electrodes in the <strong>reported</strong> detection. A
+channel that crosses just outside the coincidence window is therefore labelled <em>below threshold</em>
+while the sparkline directly above it, drawn from the live envelope against that same threshold,
+shows it plainly above.</p>
+<p>It is this repo's recurring defect class inverted: not announcing requested state instead of
+confirmed state, but announcing a claim about the <strong>signal</strong> that the panel's own graph refutes. The
+label should say what is actually true — "not part of a detection" — or be derived from the envelope
+so the two cannot disagree. Flagged as a follow-up rather than changed here: it is operator-facing
+text quoted in two user docs and pictured in a committed screenshot, so the wording is the operator's
+call. <code>user_docs/RippleDetection.md</code> §5 now explains the apparent contradiction in the meantime.</p>
+<h3 id="71g-and-the-dock-could-not-count">71g. And the dock could not count<a class="headerlink" href="#71g-and-the-dock-could-not-count" title="Permanent link">#</a></h3>
+<p>Checking the frames also turned up that the dock's own section headings read <strong>1 · Channels</strong>,
+<strong>2 · Parameters</strong>, <strong>Per channel — …</strong> and <strong>4 · Detection &amp; stimulation</strong>. It numbered 1, 2, _, 4.
+Both user docs refer to that third block as <strong>section ②</strong> — so the docs were right and the UI had
+simply lost the number. Now <code>3 · Per channel — z-score threshold &amp; live envelope</code>, with the reason in
+a comment beside it so it is not "tidied" away again.</p>
+<p>Nothing in the test suites asserted on that string, which is why it survived; it is the kind of thing
+only a person or a caption-checker looking at the rendered panel would ever notice.</p>
+<h3 id="71h-the-re-check-came-back-clean">71h. The re-check came back clean<a class="headerlink" href="#71h-the-re-check-came-back-clean" title="Permanent link">#</a></h3>
+<p>After the fixes and a final re-shoot, the same eight-frames-against-their-captions pass was run
+again: <strong>0 confirmed mismatches</strong>, with three fresh claims raised and all three refuted on review —
+each was a quick-start <em>suggesting</em> a 3 s training time being read as a description of a frame that
+shows the 10 s default. Advice is not a caption.</p>
+<p>Two things this cost, worth knowing before repeating it: the frames had to be re-shot <strong>four</strong> times,
+because each fix found in the pictures (the band, the quorum, the window/scale, the section number)
+invalidated the pictures. Do the reading first. And the play-file run died once on a transient
+<code>the browser closed the CDP connection</code> — re-running it was enough, but the two play-file frames are
+the ones to check first if a future run looks stale.</p>
+<p>The generator and its logs stayed in the session scratchpad. Nothing about this needed a scratch file
+in the repo.</p>
+<hr />
+<h2 id="72-screenshots-now-carry-their-date-2026-09-01">72. SCREENSHOTS NOW CARRY THEIR DATE  (2026-09-01)<a class="headerlink" href="#72-screenshots-now-carry-their-date-2026-09-01" title="Permanent link">#</a></h2>
+<p>Operator, after §71: <em>"Could you actually go through all the screenshots and rename them to include
+the date? This way we'll know if/when we need to update a screenshot."</em></p>
+<p>The right instinct, and §71 is the evidence: a hand-shot screenshot is the only artifact here with
+<strong>no way to say how old it is</strong>. Prose can be read against the code, a test goes red, a derived fact
+recomputes — a picture just sits there looking plausible. Ten of them had been showing a dock renamed
+days earlier and nobody could tell.</p>
+<p><strong>49 screenshots renamed</strong> to <code>&lt;name&gt;_YYYY-MM-DD.&lt;ext&gt;</code>, and <strong>97 references across 19 documents</strong>
+rewritten. Docs book rebuilds at 0 broken links.</p>
+<h3 id="72a-the-date-is-not-today">72a. The date is not today<a class="headerlink" href="#72a-the-date-is-not-today" title="Permanent link">#</a></h3>
+<p>Each file took the date it <strong>last actually changed</strong>, from <code>git log -1 --date=short</code>; only files with
+uncommitted changes took today's. Stamping the whole set with today would have destroyed exactly the
+signal being added. The spread is the payoff — <code>facts.py</code> now reports it directly:</p>
+<pre><code>oldest 2026-07-07   2026-07 x7   2026-08 x28   2026-09 x14
+</code></pre>
+<p>Seven images are two months old. That was previously unknowable without opening each one.</p>
+<h3 id="72b-three-things-the-tooling-caught-that-a-careful-person-would-not-have">72b. Three things the tooling caught that a careful person would not have<a class="headerlink" href="#72b-three-things-the-tooling-caught-that-a-careful-person-would-not-have" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Two basenames were not unique.</strong> <code>frames.png</code> and <code>load_cpu_gpu.png</code> live in <strong>both</strong>
+   <code>benchmarks/plots/</code> and <code>developer_docs/images/renderer/</code>. A basename-level rewrite — the obvious
+   implementation — would have silently repointed the benchmark pages at the renderer's figures.
+   Those two are matched parent-qualified; the tool refuses outright if that is still ambiguous.</li>
+<li><strong>The reference regex matched 16 of 97.</strong> Its left boundary forbade a preceding <code>/</code>, and every
+   markdown reference is a path. Left alone it would have renamed 49 files and left the docs pointing
+   at nothing — and the rename itself would have looked like it worked.</li>
+<li><strong>Runner-written images must NOT be dated</strong>, and they are not where you would guess. A date baked
+   into a name a runner writes is <em>undone</em> on the next run, which recreates the undated twin and
+   leaves the docs pointing at whichever nobody refreshes. The first exemption was the directory
+   <code>developer_docs/images/gui/</code> — wrong the day it was written: a <strong>GUI test</strong> writes
+   <code>user_docs/images/heatmap_column.png</code> and a <strong>benchmark script</strong> writes
+   <code>developer_docs/images/threading_sweep_time.png</code>. Four images, in two directories the rule did not
+   cover.</li>
+</ol>
+<p>The rule that is actually right: <strong>if code names the file, code owns its freshness.</strong> The
+   exemption is now derived by scanning the tree's own source for the basename as a string literal.</p>
+<h3 id="72c-a-date-in-a-filename-is-a-written-fact-so-it-is-checked">72c. A date in a filename is a written fact, so it is checked<a class="headerlink" href="#72c-a-date-in-a-filename-is-a-written-fact-so-it-is-checked" title="Permanent link">#</a></h3>
+<p>Per §1 of <code>KnowledgeOps.md</code> — written facts rot. The very next person to regenerate an image will
+overwrite the pixels and leave the old date sitting there, which is <strong>worse than no date</strong>, because
+it reads as a guarantee. <code>python/tests/test_screenshot_dates.py</code> holds three checks:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>R1</strong></td>
+<td>every hand-maintained screenshot is dated</td>
+</tr>
+<tr>
+<td><strong>R2</strong></td>
+<td>a screenshot edited in the working tree carries <strong>today's</strong> date</td>
+</tr>
+<tr>
+<td><strong>R3</strong></td>
+<td>the runner-directory exemption still has a runner writing to it</td>
+</tr>
+</tbody>
+</table>
+<p>All three were proved able to fail, and <strong>R1 initially could not.</strong> It read <code>git ls-files</code>, so an
+undated image dropped into <code>user_docs/images/</code> was invisible until after it was committed — a check
+that waits for the commit is a code review, not a guard. It now reads
+<code>--cached --others --exclude-standard</code> and fires the moment the file exists.</p>
+<p>R2 also had to learn that <strong>a pure rename is not an edit</strong>: <code>git status</code> reports <code>R</code>, the pixels are
+byte-identical, and the whole 49-file backfill would otherwise have failed its own new rule.</p>
+<p>Ages are queryable with <code>python scripts/facts.py --only screenshots</code>. The convention is written up in
+<code>developer_docs/KnowledgeOps.md</code> §8, next to the decision table that sends people there.</p>
+<hr />
+<h2 id="73-auditing-three-docs-against-the-code-found-two-live-bugs-2026-09-01">73. AUDITING THREE DOCS AGAINST THE CODE FOUND TWO LIVE BUGS  (2026-09-01)<a class="headerlink" href="#73-auditing-three-docs-against-the-code-found-two-live-bugs-2026-09-01" title="Permanent link">#</a></h2>
+<p>Operator: <em>"Ensure the probe heat map and detached view things are also thoroughly documented. As
+well as the most recent profiling of the code — the profiling should be overwritten every time as
+newer versions are being made."</em></p>
+<p>Each of <code>HeatmapView.md</code>, <code>DetachedViews.md</code>, <code>ProbeActivityHeatmap.md</code> and <code>Profiling.md</code> was read
+against the code it describes, and every claimed gap handed to a second reader told to refute it.
+<strong>19 confirmed, 11 refuted.</strong> The refutations mattered as much as the findings — see §73d.</p>
+<h3 id="73a-two-of-the-documentation-gaps-were-shipped-defects">73a. Two of the "documentation gaps" were shipped defects<a class="headerlink" href="#73a-two-of-the-documentation-gaps-were-shipped-defects" title="Permanent link">#</a></h3>
+<p><strong>The heatmap span selector was never placed in the grid.</strong> <code>.cc-hmwin</code> had a class in
+<code>ChartColumn.js</code> and <strong>no <code>grid-area</code> anywhere</strong>, so since 2026-08-31 it had been the one control in
+the band being auto-placed — which in a named-area grid means an implicit row. That is exactly the
+failure <code>HeatmapView.md</code> §10 exists to warn about, in the control added five days after the warning
+was written.</p>
+<p><strong>And the first fix was itself incomplete.</strong> Two of the <strong>eight</strong> heatmap area maps were updated and
+six were missed — the same trap, inside the same hour, while writing the section about it.</p>
+<p><strong>Detached windows have been showing the full module strip.</strong> The rule meant to hide them read
+<code>.detached-view .tb-modules, #ripple-toggle, #audio-toggle</code> — <strong>none of those three selectors exists
+in the tree</strong>; the container is <code>#module-tabs</code>. So a detached view has been offering a second SWR
+Detector — the dock that arms a stimulator — while <code>DetachedViews.md</code> §3 said it "loses the module
+docks". Now hides the container (any list of tab ids is a list the next module falsifies), and
+<code>tests/gui/detached_view.py</code> asserts it. Proved by restoring the old selector and watching the new
+assertion report <code>modules: 'visible'</code>.</p>
+<blockquote>
+<p><strong>A hiding rule with no assertion is a comment.</strong> Both defects were invisible to the entire gate
+because nothing tested the <em>absence</em> of a thing.</p>
+</blockquote>
+<h3 id="73b-third-occurrence-so-the-rule-got-mechanized">73b. Third occurrence, so the rule got mechanized<a class="headerlink" href="#73b-third-occurrence-so-the-rule-got-mechanized" title="Permanent link">#</a></h3>
+<p>§10 said the unplaced-control trap "bit twice". <code>.cc-hmwin</code> made three, and CLAUDE.md's rule is that
+the second occurrence means writing the rule rather than fixing the bug.
+<code>python/tests/test_column_grid.py</code> now asserts the rule, not the instance:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>G1</strong></td>
+<td>every <code>cc-*</code> class the frontend sets has a <code>grid-area</code></td>
+</tr>
+<tr>
+<td><strong>G2</strong></td>
+<td>every area named in a <code>--cc-areas</code> map is defined by some rule</td>
+</tr>
+<tr>
+<td><strong>G3</strong></td>
+<td>every template declares as many tracks as its widest area row uses</td>
+</tr>
+</tbody>
+</table>
+<p>All three proved able to fail; G1 reproduces the real bug exactly. <strong>G3 is what caught the
+incomplete fix</strong> — which is the argument for it existing, made by the thing itself on its first day.</p>
+<h3 id="73c-profiling-overwritten-in-place-and-one-conclusion-reversed">73c. Profiling: overwritten in place, and one conclusion reversed<a class="headerlink" href="#73c-profiling-overwritten-in-place-and-one-conclusion-reversed" title="Permanent link">#</a></h3>
+<p><code>Profiling.md</code> now opens by saying it is <strong>overwritten, never appended to</strong> — the opposite of this
+file, deliberately: Status answers <em>what happened</em>; Profiling answers <em>what is true of the build that
+ships</em>, and a superseded performance number is not history, it is a wrong answer that still reads
+like a right one. History is <code>git log -p</code>.</p>
+<p>All four measurements were re-run. Three were stable. <strong>One reversed:</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>was (n=2)</th>
+<th>now (n=6)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SPIKESPEAK_SIMD=avx2</code></td>
+<td>1.022 cores</td>
+<td><strong>1.020</strong> (1.011–1.029)</td>
+</tr>
+<tr>
+<td><code>SPIKESPEAK_SIMD=scalar</code></td>
+<td>1.019 cores</td>
+<td><strong>1.065</strong> (1.047–1.083)</td>
+</tr>
+<tr>
+<td>conclusion</td>
+<td><em>"No difference."</em></td>
+<td><strong>4.5 pp, ranges do not overlap</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The old number came with an explanation — NP1.0 takes its LFP from the probe, so <code>proc.lfp</code> never
+runs and the filter barely executes — and <strong>the explanation was incomplete, which is worse than the
+number being wrong.</strong> <code>DisplayProcessor.cpp:561</code> dispatches <code>calcMinMaxAvx2</code> for the display min/max,
+which runs on <em>every</em> configuration that draws. The filter was never the only consumer, so there was
+never a reason to expect zero.</p>
+<blockquote>
+<p><em>"No difference, and here is the mechanism"</em> is a dangerous shape. The mechanism made a wrong
+number feel explained, and an explained number is one nobody re-measures. <code>--simd-reps</code> exists now
+so a claim about this can be made at a rep count that supports it.</p>
+</blockquote>
+<p>Also fixed there: <strong>the documented reproduce commands did not run.</strong> <code>bench_filter</code> links <code>Qt6::Core</code>
+and only ctest-registered suites get the Qt <code>PATH</code> injected, so every shell variant in §5 died on
+<code>Qt6Core.dll</code>. And §1's "real work" column was a hand-derivation from a definition nobody had written
+down — <code>profile_frontend.py</code> now emits <code>real_work_ms</code>, so the table regenerates instead of being
+recomputed by whoever edits the page.</p>
+<h3 id="73d-what-the-refutations-were-worth">73d. What the refutations were worth<a class="headerlink" href="#73d-what-the-refutations-were-worth" title="Permanent link">#</a></h3>
+<p>Three examples of the second reader earning its place:</p>
+<ul>
+<li>I asserted <code>ProbeActivityHeatmap.md</code> was a proposal for a <strong>shipped</strong> feature and should be
+  archived. <strong>Wrong</strong> — it is the proposal for the <em>spatial probe-map</em> heatmap, which has not
+  shipped, and the page says so in its first sentence. It does not belong in <code>archive/</code>.</li>
+<li>The audit claimed the page's <em>"Inferno is the OpenEphys default"</em> premise was wrong. It is not:
+  <code>UI/ColourScheme.cpp:14</code> is <code>ColourSchemeId::INFERNO</code>. Only <strong>our</strong> default changed (viridis). Just
+  the true half was corrected.</li>
+<li>Three "missing" screenshot rules were the parameter table's <em>Default</em> column, which the page
+  already explains is the pre-backend placeholder — reading that footnote is what stopped a correct
+  page being "fixed" into a wrong one.</li>
+</ul>
+<p>One refutation was <strong>overruled</strong>: the Qt-<code>PATH</code> gap was refuted on the grounds that a linked page
+states the requirement. True, but §5 is a copy-paste reproduce block and the cross-reference sits in
+a sentence about a different topic. A command block whose commands do not run is broken regardless of
+what another page says.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7049,6 +7466,36 @@ change that broke them.</p></article>
 <li><a href="#70c-the-map-pointed-a-newcomer-at-a-finished-experiment">70c. The map pointed a newcomer at a finished experiment</a></li>
 <li><a href="#70d-eight-pages-were-rendering-under-unsorted">70d. Eight pages were rendering under "Unsorted"</a></li>
 <li><a href="#70e-the-rules-which-are-the-point">70e. The rules, which are the point</a></li>
+</ul>
+</li>
+<li><a href="#70-two-hardware-questions-answered-and-closed-2026-08-31-night">70. TWO HARDWARE QUESTIONS, ANSWERED AND CLOSED (2026-08-31, night)</a><ul>
+<li><a href="#70a-68-the-adc-stream-costs-nothing-and-probably-never-did">70a. #68 — the ADC stream costs nothing, and probably never did</a></li>
+<li><a href="#70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it">70b. #67 — the comparator band is correct, and the short is what proved it</a></li>
+<li><a href="#70c-method-notes-worth-keeping">70c. Method notes worth keeping</a></li>
+</ul>
+</li>
+<li><a href="#71-the-swr-dock-looked-like-a-different-application-2026-09-01">71. THE SWR DOCK LOOKED LIKE A DIFFERENT APPLICATION (2026-09-01)</a><ul>
+<li><a href="#71a-what-was-actually-wrong">71a. What was actually wrong</a></li>
+<li><a href="#71b-the-screenshots-were-already-two-generations-stale">71b. The screenshots were already two generations stale</a></li>
+<li><a href="#71c-regenerating-them-found-three-factual-errors-in-the-prose">71c. Regenerating them found three factual errors in the prose</a></li>
+<li><a href="#71d-the-method-note">71d. The method note</a></li>
+<li><a href="#71e-then-every-frame-was-checked-against-its-caption-and-found-five-more">71e. Then every frame was checked against its caption, and found five more</a></li>
+<li><a href="#71f-the-label-that-asserts-what-the-graph-disproves">71f. The label that asserts what the graph disproves</a></li>
+<li><a href="#71g-and-the-dock-could-not-count">71g. And the dock could not count</a></li>
+<li><a href="#71h-the-re-check-came-back-clean">71h. The re-check came back clean</a></li>
+</ul>
+</li>
+<li><a href="#72-screenshots-now-carry-their-date-2026-09-01">72. SCREENSHOTS NOW CARRY THEIR DATE (2026-09-01)</a><ul>
+<li><a href="#72a-the-date-is-not-today">72a. The date is not today</a></li>
+<li><a href="#72b-three-things-the-tooling-caught-that-a-careful-person-would-not-have">72b. Three things the tooling caught that a careful person would not have</a></li>
+<li><a href="#72c-a-date-in-a-filename-is-a-written-fact-so-it-is-checked">72c. A date in a filename is a written fact, so it is checked</a></li>
+</ul>
+</li>
+<li><a href="#73-auditing-three-docs-against-the-code-found-two-live-bugs-2026-09-01">73. AUDITING THREE DOCS AGAINST THE CODE FOUND TWO LIVE BUGS (2026-09-01)</a><ul>
+<li><a href="#73a-two-of-the-documentation-gaps-were-shipped-defects">73a. Two of the "documentation gaps" were shipped defects</a></li>
+<li><a href="#73b-third-occurrence-so-the-rule-got-mechanized">73b. Third occurrence, so the rule got mechanized</a></li>
+<li><a href="#73c-profiling-overwritten-in-place-and-one-conclusion-reversed">73c. Profiling: overwritten in place, and one conclusion reversed</a></li>
+<li><a href="#73d-what-the-refutations-were-worth">73d. What the refutations were worth</a></li>
 </ul>
 </li>
 </ul>

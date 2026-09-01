@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -155,12 +155,13 @@ command/event <em>contract</em> is in <a href="../developer_docs/RippleGui.html"
 guide does not duplicate them — it is the operation manual.</p>
 </blockquote>
 <p><strong>The whole module at a glance</strong> (NP1 sim, three channels detecting a ripple):</p>
-<p><img alt="Ripple detection — running, detecting" src="images/ripple/np1_detecting.png" /></p>
+<p><img alt="Ripple detection — running, detecting" src="images/ripple/np1_detecting_2026-09-01.png" /></p>
 <p>On the right dock, top→bottom: <strong>① Channels</strong>, <strong>② Parameters</strong> + Train/Retrain + progress bar, <strong>③ per-channel
 columns</strong> (z-score, μ+zσ threshold, rolling envelope), <strong>④ Detection &amp; stimulation</strong> (cowsay, red STIM LED,
 and the stimulation controls — §5a). The main view (left) is the Live Data waveforms on the <strong>LFP band</strong> (where NP1 ripples live — see the tip in
-§5); the ripple burst is the bright vertical band. This shot runs with <strong>quorum = 2</strong>: two channels (e10, e20) are
-in <strong>● RIPPLE</strong> together, so the cowsay reports <strong><code>2/3 ch 10,20</code></strong> and the stim trigger fires.</p>
+§5); the ripple burst is the bright vertical band. This shot runs with <strong>quorum = 3</strong>: all three channels
+(e0, e10, e20) are in <strong>● RIPPLE</strong> together, so the cowsay reports <strong><code>3/3 ch 0,10,20</code></strong>. Stimulation is off in
+these shots — that is why the STIM LED is dark; see the callout in §5.</p>
 <hr />
 <h2 id="1-open-the-module-and-pick-a-source">1. Open the module and pick a source<a class="headerlink" href="#1-open-the-module-and-pick-a-source" title="Permanent link">#</a></h2>
 <ol>
@@ -198,7 +199,7 @@ in <strong>● RIPPLE</strong> together, so the cowsay reports <strong><code>2/3
 <p>(See <a href="SimulatedData.html"><code>SimulatedData.md</code></a> for the full source list and the ripple-injection knobs.)</p>
 <p>The module always starts <strong>paused, with zero channels</strong> — it will not train or detect until you add channels and
 press <strong>Start</strong>:</p>
-<p><img alt="Ripple dock idle — 0 channels" src="images/ripple/np1_idle.png" /></p>
+<p><img alt="Ripple dock idle — 0 channels" src="images/ripple/np1_idle_2026-09-01.png" /></p>
 <p>Note the header shows <strong>▶ Start</strong> (disabled, grayed — no channels yet) and the training bar reads <strong>"not started"</strong>.</p>
 <hr />
 <h2 id="2-select-detection-channels">2. Select detection channels<a class="headerlink" href="#2-select-detection-channels" title="Permanent link">#</a></h2>
@@ -210,7 +211,7 @@ press <strong>Start</strong>:</p>
 </ul>
 <p>Each channel becomes a <strong>chip</strong> (<code>e50 → ch98 ✕</code>, showing the electrode→read-out-channel mapping) and gets its own
 column below. Remove one with its <strong>✕</strong>. Channels are only editable while <strong>paused + Edit</strong> (§4).</p>
-<p><img alt="Channels added, still idle" src="images/ripple/np1_channels.png" /></p>
+<p><img alt="Channels added, still idle" src="images/ripple/np1_channels_2026-09-01.png" /></p>
 <p>Here three electrodes <code>0, 10, 20</code> were added. Each column status reads <strong>"idle — press ▶ Start"</strong> and the
 Train/Retrain button reads <strong>"Train"</strong> (nothing has trained yet). The <strong>Start</strong> button is now enabled.</p>
 <blockquote>
@@ -251,7 +252,7 @@ block-permutation wiring). The chip shows you exactly which read-out channel you
 </tr>
 <tr>
 <td><strong>Channels required (quorum)</strong></td>
-<td>How many selected channels must cross threshold <strong>together</strong> (within the coincidence window) for a true detection + stim. Must be ≤ channels selected. Default 1 = any single channel; the screenshots here use <strong>2</strong> to show the coincidence logic.</td>
+<td>How many selected channels must cross threshold <strong>together</strong> (within the coincidence window) for a true detection + stim. Must be ≤ channels selected. Default 1 = any single channel; the screenshots here use <strong>3</strong> (NP1) and <strong>2</strong> (NP2) to show the coincidence logic. <strong>At quorum 1 a detection reports only the <em>first</em> channel to cross</strong> — the rest are suppressed by the lockout — so if you want to see several channels light up together, raise the quorum.</td>
 <td>1</td>
 </tr>
 <tr>
@@ -289,7 +290,7 @@ hardware profiles. The backend console prints the exact value at connect; that l
   stays live). Press Start to re-lock.</li>
 </ul>
 <p><strong>While training</strong>, each column shows <strong>"training…"</strong> and the progress bar fills:</p>
-<p><img alt="Training in progress" src="images/ripple/np1_training.png" /></p>
+<p><img alt="Training in progress" src="images/ripple/np1_training_2026-09-01.png" /></p>
 <p><strong>Adding a channel to an already-trained set:</strong> pause → <strong>Edit</strong> → drag the new electrode in → <strong>Start</strong>. Existing
 channels keep their baselines; only the <strong>new</strong> channel trains ("train-only-new").</p>
 <hr />
@@ -332,20 +333,27 @@ detected a ripple and having stimulated. To make it light you need the whole sti
 </blockquote>
 <p>A <strong>true detection</strong> fires when <strong>quorum</strong> channels cross within the <strong>coincidence window</strong> — then the stim
 trigger goes out. The cowsay shows <code>k/N</code> and which channels reported. Below, the NP2 sim with <strong>quorum = 2</strong>:
-channels e50 and e100 are both in <strong>● RIPPLE</strong> while e0 stays below threshold, so the cowsay reports
-<strong><code>2/3 ch 50,100</code></strong> and the stim fires (only channels that cross <em>together</em> count):</p>
-<p><img alt="NP2 sim — quorum 2, two channels detecting together" src="images/ripple/np2_detecting.png" /></p>
+channels e0 and e50 are both in <strong>● RIPPLE</strong>, so the cowsay reports <strong><code>2/3 ch 0,50</code></strong> — only channels that
+cross <em>together</em> count. Note that stimulation is <strong>off</strong> in this shot (<code>enable stimulation</code> is unchecked and
+the server pill reads <em>disabled</em>), so the trigger is computed and <strong>nothing is transmitted</strong>:</p>
+<blockquote>
+<p><strong>Why e100 reads <em>below threshold</em> with its envelope over the line.</strong> That label means “not part of the
+reported detection” — it is the backend's detection state, not a measurement of the signal. The sparkline
+above it is the raw envelope, so a channel that crosses a moment outside the coincidence window shows
+exactly this apparent contradiction. The wording is a known bug in the dock, not a fault in the detector.</p>
+</blockquote>
+<p><img alt="NP2 sim — quorum 2, two channels detecting together" src="images/ripple/np2_detecting_2026-09-01.png" /></p>
 <h3 id="live-threshold-tuning">Live threshold tuning<a class="headerlink" href="#live-threshold-tuning" title="Permanent link">#</a></h3>
 <p>You can change any column's <strong>z-score while the module is running</strong> — the threshold recomputes immediately (higher
 z ⇒ higher threshold ⇒ fewer detections). Below, e0's z was raised from 3 to 8 mid-run and its threshold jumped
-from ~45 to ~69:</p>
-<p><img alt="Live z-score tuning" src="images/ripple/np1_livez.png" /></p>
+from ~34 to ~82 — note the other two columns, untouched, still read μ + 3.00σ:</p>
+<p><img alt="Live z-score tuning" src="images/ripple/np1_livez_2026-09-01.png" /></p>
 <hr />
 <h2 id="5a-stimulation-the-other-half-of-the-dock">5a. Stimulation — the other half of the dock<a class="headerlink" href="#5a-stimulation-the-other-half-of-the-dock" title="Permanent link">#</a></h2>
 <p>Everything so far detects. This is what makes something happen when it does. <strong>Two switches, both off
 by default, and BOTH are required</strong> — the master gate decides whether this host may transmit at all,
 the arm toggle decides whether the stimulator will act on it.</p>
-<p><img alt="The ripple dock's Detection &amp; stimulation card, with the ⚡ Test Fire button" src="images/ripple_dock_testfire.png" /></p>
+<p><img alt="The ripple dock's Detection &amp; stimulation card, with the ⚡ Test Fire button" src="images/ripple_dock_testfire_2026-07-13.png" /></p>
 <h3 id="enable-stimulation-the-master-gate"><code>enable stimulation</code> — the master gate<a class="headerlink" href="#enable-stimulation-the-master-gate" title="Permanent link">#</a></h3>
 <p>The checkbox at the top of the <em>Detection &amp; stimulation</em> card. <strong>Unchecked by default, and no shipped
 config turns it on.</strong> While it is off, <strong>no datagram can leave this host</strong>: every send path in the
@@ -378,7 +386,7 @@ the whole path alive?"</em> without waiting for a ripple: press it, and the STIM
 cowsay should read <strong>⚡ Pulse fired (confirmed)</strong>. If it does not, the problem is in the stimulation
 path and has nothing to do with your detection settings.</p>
 <p>Captured on the other end of that path — the biphasic pulse arriving on NI-DAQ <code>ai4</code>:</p>
-<p><img alt="The biphasic stimulus pulse captured on NI-DAQ ai4" src="images/stim_pulse_nidaq_ai4.png" /></p>
+<p><img alt="The biphasic stimulus pulse captured on NI-DAQ ai4" src="images/stim_pulse_nidaq_ai4_2026-07-13.png" /></p>
 <h3 id="trigger-which-path-fires-pi-onebox-dac0-both"><code>trigger</code> — which path fires (Pi / OneBox DAC0 / both)<a class="headerlink" href="#trigger-which-path-fires-pi-onebox-dac0-both" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -457,8 +465,8 @@ number is never sent to the stimulator.</p>
 re-select and pick a valid one.</p>
 <p>The play-file source <strong>renders the Probe Map</strong> like a real probe, and you select detection channels + run exactly
 as above:</p>
-<p><img alt="Play-file — Probe Map renders" src="images/ripple/playfile_probemap.png" />
-<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting.png" /></p>
+<p><img alt="Play-file — Probe Map renders" src="images/ripple/playfile_probemap_2026-09-01.png" />
+<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting_2026-09-01.png" /></p>
 <h3 id="file-format">File format<a class="headerlink" href="#file-format" title="Permanent link">#</a></h3>
 <p>The <code>.h5</code> must contain:
 - a dataset <strong><code>data</code></strong>, <code>int16</code>, shape <strong><code>[nSamples × nChannels]</code></strong> (or 1-D <code>[nSamples]</code> = one trace broadcast to

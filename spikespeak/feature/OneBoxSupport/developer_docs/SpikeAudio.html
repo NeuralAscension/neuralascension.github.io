@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -144,7 +144,7 @@ through a threshold that silences everything small, and played. Spikes become au
 threshold is what separates them from hiss.</p>
 <p>Modelled on <a href="https://bitbucket.org/mkarlsso/trodes/src/master/">Trodes</a>
 (<code>Trodes/src-threads/audioThread.cpp</code>), which does this well and whose approach is worth matching.</p>
-<p><img alt="The audio monitor panel" src="images/audio_monitor_panel.png" /></p>
+<p><img alt="The audio monitor panel" src="images/audio_monitor_panel_2026-08-22.png" /></p>
 <hr />
 <h2 id="1-the-signal-path">1. The signal path<a class="headerlink" href="#1-the-signal-path" title="Permanent link">#</a></h2>
 <p>Everything runs in the backend (<code>src/modules/audio/AudioProcessor.cpp</code>); the panel only sets four
@@ -212,7 +212,7 @@ set by <code>AudioModule.toggle()</code>. Precedence is audio first, then ripple
 a click means "listen to this".</p>
 <p>The channel being listened to is drawn with <code>.channel-label.listening</code> (green, glowing), so the sound
 is always attributable to a visible trace rather than to a number remembered from another panel.</p>
-<p><img alt="The panel over the live view, with the listened-to channel highlighted" src="images/audio_monitor_inview.png" /></p>
+<p><img alt="The panel over the live view, with the listened-to channel highlighted" src="images/audio_monitor_inview_2026-08-22.png" /></p>
 <p>The index sent to the backend is the <strong>read-out channel</strong>, which is what <code>AudioProcessor</code> indexes into
 <code>data.npx.raw</code>. The label may <em>display</em> an electrode number (<code>16L</code>); those are not the same thing and
 the distinction is why the click handler sends <code>ch</code> rather than the label text.</p>

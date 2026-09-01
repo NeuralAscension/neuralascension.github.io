@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -180,7 +180,7 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
 <p><strong>If a OneBox <em>and</em> a PXIe module are both attached</strong>, the auto entry is withdrawn: only one can be
    used at a time, so the menu asks which, offering <strong><code>OneBox</code></strong> / <strong><code>PXIe</code></strong> / <strong><code>PXIe with NI-DAQ</code></strong>.
    Those three are also still selectable by name from the control CLI.</p>
-<p><img alt="Source dropdown" src="images/source_dropdown.png" /></p>
+<p><img alt="Source dropdown" src="images/source_dropdown_2026-08-27.png" /></p>
 <p><strong>You do not tell SpikesPeak which probe you have.</strong> It asks the probe. A Neuropixels 1.0 and a
    2.0 stream different things — a 1.0 gives separate AP and LFP bands, a 2.0 gives one wideband
    stream from which the LFP is computed — and all of that is worked out from the probe itself when
@@ -192,10 +192,10 @@ and <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> for the 1
      probe (<strong>1.0</strong> or <strong>2.0</strong>), and then what to stream (a sine wave, synthetic ripples, a recorded
      file to replay, a ripple-detection scenario). <strong>←</strong> at the top of each step goes back.</li>
 </ul>
-<p><img alt="Simulated Data picker" src="images/sim_picker.png" /></p>
+<p><img alt="Simulated Data picker" src="images/sim_picker_2026-08-27.png" /></p>
 <p>…and then lists the scenarios that match, each showing the exact config name underneath (that is
    the name a script would use):</p>
-<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios.png" /></p>
+<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios_2026-08-27.png" /></p>
 <blockquote>
 <p><strong>Why there is no "NPX 1.0" and "NPX 2.0" in the list any more.</strong> There used to be twelve entries,
 one per probe-and-basestation combination, and picking the wrong one did not give you an error — it
@@ -209,7 +209,7 @@ scripts and published measurements keep running unchanged.</p>
 <p>After connecting, the <strong>Probe Map</strong> tab shows the probe's electrodes. The mode radio has <strong>Edit Map</strong> (set
 the channel map) and <strong>Select Recording Channels</strong> (§4).</p>
 <h3 id="neuropixels-10">Neuropixels 1.0<a class="headerlink" href="#neuropixels-10" title="Permanent link">#</a></h3>
-<p><img alt="NP1 probe map" src="images/np1_probemap.png" /></p>
+<p><img alt="NP1 probe map" src="images/np1_probemap_2026-08-21.png" /></p>
 <ul>
 <li><strong>Green</strong> = an electrode whose channel is active (will stream); <strong>gray</strong> = available; <strong>amber</strong> =
   the internal-reference site (channel 191 — reserved, not recordable).</li>
@@ -223,7 +223,7 @@ the channel map) and <strong>Select Recording Channels</strong> (§4).</p>
   file is rejected).</li>
 </ul>
 <h3 id="neuropixels-20-multishank">Neuropixels 2.0 multishank<a class="headerlink" href="#neuropixels-20-multishank" title="Permanent link">#</a></h3>
-<p><img alt="NP2 4-shank editor" src="images/np2_editor.png" /></p>
+<p><img alt="NP2 4-shank editor" src="images/np2_editor_2026-08-21.png" /></p>
 <p>All <strong>4 shanks</strong> are drawn side by side (labeled <strong>0–3</strong> left→right, matching the manual), each with its
 own shaft + tip. A <strong>Shank</strong> dropdown + <strong>Bank 0–3</strong> buttons fill all 384 channels from the selected shank
 &amp; bank. Because 384 channels are shared across 5120 electrodes, a full map partitions the channels among
@@ -244,9 +244,9 @@ running. (Pausing leaves you on Live Data; it does not jump back to the map.) Tr
 <p>The <strong>▶ / ⏸ Play button</strong> shows its state by color: <strong>green ▶ when paused</strong> (ready — "press to play"), and
 a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (the green ring is the unmistakable "live" cue —
 it mirrors the Record button's armed ring, but green). A disabled button (no source selected) stays gray.</p>
-<p><img alt="Play paused = green ▶" src="images/play_button_green.png" /></p>
-<p><img alt="Streaming = white ⏸ inside a green pulsing ring" src="images/play_button_streaming.png" /></p>
-<p><img alt="NP1 live view" src="images/np1_liveview.png" /></p>
+<p><img alt="Play paused = green ▶" src="images/play_button_green_2026-08-21.png" /></p>
+<p><img alt="Streaming = white ⏸ inside a green pulsing ring" src="images/play_button_streaming_2026-08-21.png" /></p>
+<p><img alt="NP1 live view" src="images/np1_liveview_2026-08-21.png" /></p>
 <ul>
 <li>Each column has dropdowns for <strong>Band</strong>, <strong>Shank</strong> (multishank probes), <strong>L+R / Left / Right</strong>, a
   scale input, and a per-column <strong>channel count</strong> (<code>Ch:Auto / 20 / 40 / 60 / 80 / 120</code>). Drag the
@@ -286,11 +286,11 @@ it — the backend does that, not the browser, so a scripted run gets the same g
   probes. The <strong>Columns/Rows</strong> selector sets how many strips (up to 4); the choice persists across reloads.</p>
 <p><strong>Density costs frame rate, and only frame rate.</strong> Columns × Ch is what the browser has to draw, and since 2026-08-27 it is drawn by a hand-written WebGL2 renderer that holds a solid 60 fps even at four columns of 120 — 480 traces on screen. Nothing is dropped from the data in any case: acquisition, recording and ripple detection are untouched. (What the live view used to do at that density, and why it was replaced, is in <a href="../developer_docs/RendererExperiment.html"><code>RendererExperiment.md</code></a>.)</p>
 </blockquote>
-<p><img alt="Vertical (rows) live view on a portrait monitor" src="images/vertical_liveview.png" />
+<p><img alt="Vertical (rows) live view on a portrait monitor" src="images/vertical_liveview_2026-08-21.png" />
 - With <strong>NI-DAQ</strong>, one column can show the analog channels (a TTL sync pulse is visible on ch 0).
 - On a real probe the traces look like <strong>neural activity</strong> (irregular, noisy). The simulated sources show
   a clean sine (identical on every channel) — e.g. the <strong>NP2 4-shank</strong> live view:</p>
-<p><img alt="NP2 live view" src="images/np2_liveview.png" /></p>
+<p><img alt="NP2 live view" src="images/np2_liveview_2026-08-21.png" /></p>
 <hr />
 <h2 id="3a-heatmap-view-the-whole-probe-at-a-glance">3a. Heatmap view — the whole probe at a glance<a class="headerlink" href="#3a-heatmap-view-the-whole-probe-at-a-glance" title="Permanent link">#</a></h2>
 <p>Any column can be switched from traces to a <strong>heatmap</strong>: time across, channel down, color showing
@@ -314,6 +314,10 @@ its top, middle and bottom.</p>
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><strong>8 s</strong></td>
+<td>the <strong>time span</strong> of this heatmap — 1, 2, 4, 8, 15, 30 s or 1 min. This is <em>not</em> the toolbar's <strong>Time</strong>, which sets the span of trace columns only. A heatmap is usually worth minutes at a glance, while traces want a second or two, so each gets its own. Every column names its span in the readout above the plot, so two columns are never on different time bases without saying so</td>
+</tr>
 <tr>
 <td><strong>Pk-Pk</strong></td>
 <td>the statistic. <em>RMS</em> and <em>Spike rate</em> are listed but grayed out — they need work in the backend that is not built yet, and showing them would mean coloring by peak-to-peak under the wrong label</td>
@@ -395,7 +399,7 @@ you thought you closed is in fact still open, and still costing CPU.</p>
 <hr />
 <h2 id="4-select-which-channels-to-record">4. Select which channels to record<a class="headerlink" href="#4-select-which-channels-to-record" title="Permanent link">#</a></h2>
 <p>Switch the <strong>Select Recording Channels</strong> radio (works any time — before or during Play).</p>
-<p><img alt="Record-channel selection" src="images/record_selection.png" /></p>
+<p><img alt="Record-channel selection" src="images/record_selection_2026-08-21.png" /></p>
 <ul>
 <li>Only the <strong>applied map's</strong> electrodes are shown: <strong>green = will record</strong>, <strong>blue = applied but not
   recording</strong>, <strong>amber = reference (excluded, NP1 only)</strong>.</li>
@@ -414,7 +418,7 @@ you thought you closed is in fact still open, and still costing CPU.</p>
    the SpikesPeak machine (Browse… opens a native folder picker). Click <strong>Set Location</strong> → the recorder is
    <strong>armed</strong> (a muted-red ring on the Record button):</li>
 </ol>
-<p><img alt="Armed" src="images/record_armed.png" /></p>
+<p><img alt="Armed" src="images/record_armed_2026-07-07.png" /></p>
 <ol start="2">
 <li>Press <strong>● Record again to START</strong>. The <strong>Record button turns solid red</strong>, a <strong>● REC → name</strong>
    badge appears, and files write live to <code>&lt;dir&gt;/&lt;name&gt;/&lt;name&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code>.</li>
@@ -425,7 +429,7 @@ you thought you closed is in fact still open, and still costing CPU.</p>
    badge's tooltip.</p>
 <p>(While streaming the Play button is a <strong>white ⏸ in a green ring</strong>; it returns to a <strong>green ▶</strong>
    when paused.):</p>
-<p><img alt="Recording — Play = white ⏸ in a green ring (streaming), Record = solid red (recording)" src="images/record_buttons.png" /></p>
+<p><img alt="Recording — Play = white ⏸ in a green ring (streaming), Record = solid red (recording)" src="images/record_buttons_2026-07-13.png" /></p>
 <ol start="3">
 <li>Press <strong>● Record again to STOP</strong> (files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the
    stream). One start records every configured stream (NPX AP+LFP or RAW, + NI-DAQ) into that one folder.</li>
@@ -444,12 +448,12 @@ you thought you closed is in fact still open, and still costing CPU.</p>
 <li><strong><code>channels.png</code></strong> — the recorded electrodes in µV (AP + LFP). On a real probe you see neural signal;
   known-noisy electrodes stand out:</li>
 </ul>
-<p><img alt="channels.png" src="images/recording_channels.png" /></p>
+<p><img alt="channels.png" src="images/recording_channels_2026-07-07.png" /></p>
 <ul>
 <li><strong><code>sync.png</code></strong> — NI-DAQ ↔ Neuropixels clock alignment from a shared TTL pulse train (recovers the ppm
   drift between the two clocks):</li>
 </ul>
-<p><img alt="sync.png" src="images/recording_sync.png" /></p>
+<p><img alt="sync.png" src="images/recording_sync_2026-07-07.png" /></p>
 <p>See <a href="../python/README.html"><code>../python/README.md</code></a> and
 <a href="../developer_docs/RecordingTest.html"><code>../developer_docs/RecordingTest.md</code></a> (the canonical end-to-end check).</p>
 <hr />

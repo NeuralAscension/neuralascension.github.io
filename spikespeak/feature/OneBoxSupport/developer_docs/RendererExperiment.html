@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -377,14 +377,14 @@ drift cancels.</p>
 being what was removed. <strong>The GPU column does not reproduce on hardware</strong> — treat the sim's 1.43× as
 a simulated-source artifact and the rig's 1.06× as the real answer.</p>
 <h3 id="figures">Figures<a class="headerlink" href="#figures" title="Permanent link">#</a></h3>
-<p><img alt="CPU and GPU load" src="images/renderer/load_cpu_gpu.png" /></p>
+<p><img alt="CPU and GPU load" src="images/renderer/load_cpu_gpu_2026-08-27.png" /></p>
 <p><em>Points are means over five repeats, bars ±1 SD, faint dots the individual repeats. Dashed line is
 the paused control; dotted line at 1.0 is main-thread saturation. Both GPU panels also favor
 WebGL2 </em><em>in the sim only</em><em> — on the real rig at 480 traces the two are at parity (38.0 vs 35.9 %,
 19.8 vs 19.6 W), so read the GPU panels as "no penalty", not as a saving. The one wide error bar —
 WebGL2 power at 20 series — is a single outlying repeat (~20 W against ~11.5 W elsewhere), left in
 rather than trimmed.</em></p>
-<p><img alt="Frame rate and frame-time tail" src="images/renderer/frames.png" /></p>
+<p><img alt="Frame rate and frame-time tail" src="images/renderer/frames_2026-08-27.png" /></p>
 <p><em>Both hold ~57 fps to 240 series. At 320 SciChart drops to 43 fps and its frame-time tail doubles to
 36 ms; WebGL2 stays at 56 fps and 18 ms. This understates the hardware result, where WebGL2 held a
 true 60 ± 0 fps against SciChart's 42 ± 5 at 480 traces (§3a) — the ~57 ceiling here is a
@@ -461,9 +461,9 @@ must ask the thing that is actually drawing.</strong></p>
 </blockquote>
 <hr />
 <hr />
-<p><img alt="SciChart at 480 traces on the rig" src="images/renderer/hw_480_scichart.png" /></p>
+<p><img alt="SciChart at 480 traces on the rig" src="images/renderer/hw_480_scichart_2026-08-27.png" /></p>
 <p><em>SciChart — four columns of 120 NP2.0 channels, 42 ± 5 fps, renderer main thread at 96 %.</em></p>
-<p><img alt="WebGL2 at 480 traces on the rig" src="images/renderer/hw_480_webgl.png" /></p>
+<p><img alt="WebGL2 at 480 traces on the rig" src="images/renderer/hw_480_webgl_2026-08-27.png" /></p>
 <p><em>The WebGL2 renderer — the same 480 traces from the same probe, 60 fps, 22 % of one core. The
 aesthetic is deliberately unchanged: same palette, same per-column bands, same axes.</em></p>
 <h2 id="4-why-it-is-faster-the-mechanism">4. Why it is faster — the mechanism<a class="headerlink" href="#4-why-it-is-faster-the-mechanism" title="Permanent link">#</a></h2>
@@ -684,10 +684,10 @@ to <strong>transparent</strong> so that gradient shows through.</p>
 it checks that a column has a live GL renderer and <strong>refuses to run</strong> if not. A blank canvas is not a
 failing test — every layout assertion would sail straight over it — so the suite has to establish
 that something is drawing before any of its measurements mean anything.</p>
-<p><img alt="The probe map, NP1.0" src="images/renderer/probemap_np1.png" /></p>
+<p><img alt="The probe map, NP1.0" src="images/renderer/probemap_np1_2026-08-27.png" /></p>
 <p><em>NP1.0 in canvas 2D: one shank shaft, the two electrode columns routed to read-out channels in green,
 electrode numbers thinned to whatever fits, and the amber internal-reference site at electrode 191.</em></p>
-<p><img alt="The probe map, NP2.0 multishank" src="images/renderer/probemap_np2.png" /></p>
+<p><img alt="The probe map, NP2.0 multishank" src="images/renderer/probemap_np2_2026-08-27.png" /></p>
 <p><em>NP2.0, four shanks. The read-out channels are all on shank 0 here; the other three shanks draw their
 electrodes in gray with no labels, which is what keeps 5120 sites legible.</em></p>
 <h3 id="how-the-probe-map-is-drawn-now">How the probe map is drawn now<a class="headerlink" href="#how-the-probe-map-is-drawn-now" title="Permanent link">#</a></h3>

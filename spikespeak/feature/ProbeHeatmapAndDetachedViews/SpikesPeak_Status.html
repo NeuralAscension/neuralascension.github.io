@@ -296,6 +296,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>A filter is not a brick wall</strong>: the simulated AP band carried NO ripple because "attenuates" was implemented as "eliminates" — a 300 Hz first-order corner passes 55% of a 200 Hz ripple, and the play-file generator disagreed with the live simulator by 15x. Plus the figure that started it, per-column time bases, and a detachable ripple dock</td>
 </tr>
 <tr>
+<td>S70</td>
+<td>2026-08-31</td>
+<td><strong>Two hardware questions answered on the OneBox, and both close.</strong> #68: the ~22% ADC throughput cost does not reproduce — 4/4 cells at 100.0%, all continuous — on either machine, so the original number was most likely a counting artifact. #67: the comparator band verified against a known square wave, with IO0 shorted to IO11 proving the 24-sample demux. Plus the parallel-gate work, <code>facts.py</code>, and <code>KnowledgeOps.md</code></td>
+</tr>
+<tr>
 <td><strong>S21</strong></td>
 <td><strong>2026-07-09</strong></td>
 <td><strong>Stim closed loop: ripple → UDP <code>fire</code> → ESP32 → biphasic pulse on NI-DAQ ai4</strong></td>
@@ -6610,7 +6615,109 @@ stops that:</p>
 toolbar</strong>, so a change to anything an operator clicks checks <code>user_docs/README.md</code>'s toolbar table and
 <code>user_docs/GUI-Guide.md</code>'s screenshots in the same change. <code>CLAUDE.md</code> had never mentioned <code>user_docs/</code>
 at all, which is why those pages have been repeatedly refreshed after the fact rather than with the
-change that broke them.</p></article>
+change that broke them.</p>
+<hr />
+<h2 id="70-two-hardware-questions-answered-and-closed-2026-08-31-night">70. TWO HARDWARE QUESTIONS, ANSWERED AND CLOSED  (2026-08-31, night)<a class="headerlink" href="#70-two-hardware-questions-answered-and-closed-2026-08-31-night" title="Permanent link">#</a></h2>
+<p>NP2.0 multishank moved onto the OneBox by the operator, with SMA 1 patched to IO11 and <strong>IO11 shorted
+to IO0</strong>, the Pi's stim trigger on IO2, and a 1 Hz / 50 % duty / 5 V square on the SMA. That wiring
+answered both open OneBox questions in one session.</p>
+<h3 id="70a-68-the-adc-stream-costs-nothing-and-probably-never-did">70a. #68 — the ADC stream costs nothing, and probably never did<a class="headerlink" href="#70a-68-the-adc-stream-costs-nothing-and-probably-never-did" title="Permanent link">#</a></h3>
+<p>The four-cell matrix (<code>{with ADC, no ADC} × {t+15 s, t+90 s}</code>, 10 s recordings, both configs selected
+by exact name within a single acquisition):</p>
+<table>
+<thead>
+<tr>
+<th>cell</th>
+<th>band</th>
+<th style="text-align: right;">records in 10 s</th>
+<th style="text-align: right;">throughput</th>
+<th>continuity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>with ADC, t+15</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">300 045</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>with ADC, t+15</td>
+<td><code>adc</code></td>
+<td style="text-align: right;">303 066</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>with ADC, t+90</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">300 000</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>no ADC, t+15</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">299 956</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+<tr>
+<td>no ADC, t+90</td>
+<td><code>raw</code></td>
+<td style="text-align: right;">299 996</td>
+<td style="text-align: right;">100.0 %</td>
+<td>continuous</td>
+</tr>
+</tbody>
+</table>
+<p>Against the claim of <strong>78.1 % with ADC / 99.99 % without</strong>.</p>
+<p><strong>Neither the cost nor the time-in-session decay exists here</strong>, and the ADC band is itself at 100 % —
+so it is not the ADC under-delivering to protect the probe.</p>
+<p>The issue's question was whether the effect belonged to the <strong>OneBox/FT601 path</strong> or to <strong>that
+machine</strong>. The answer turned out to be neither: the second machine had already failed to reproduce it
+on 2026-08-26 (4/4 at 100 %), so it does not reproduce on the machine that produced it. Closed on the
+operator's call, with the likeliest explanation being a <strong>measurement artifact</strong> — the original
+numbers predate both the sidecar-frame-width counting method and the continuity check, and #63's own
+follow-up runbook had to name "the trap that ruined the first attempt".</p>
+<p>What makes closing safe rather than optimistic: <strong>every record stop now prints throughput AND
+continuity</strong>, the latter checked against the probe's own clock over an explicit tick span. If the
+effect returns it announces itself on any machine, with nobody needing to remember the issue.</p>
+<h3 id="70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it">70b. #67 — the comparator band is correct, and the short is what proved it<a class="headerlink" href="#70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it" title="Permanent link">#</a></h3>
+<p>12.5 s recording of <code>raw</code> + <code>adc</code> + <code>adc.di</code>.</p>
+<ul>
+<li><strong>The comparator samples are exactly {0, 1}</strong>, across 377 279 samples × 12 channels. This was the
+  unknown that gated the design: Open Ephys shifts them into an event word <em>without normalising</em>,
+  which is only correct if they are 0/1, and the vendor documentation never says.</li>
+<li><strong>IO11 vs IO0 — one electrical node, two channels at opposite ends of the array — agreed on
+  377 276 / 377 279 samples (99.9992 %)</strong>. All three disagreements are within two samples of an edge
+  (metastability on a shared node); <strong>zero away from an edge</strong>. The characteristic failure of
+  unpacking the last 12 of 24 samples is a stride error putting the signal on channel N±1, and it is
+  invisible with one signal on one channel. The short makes it decidable.</li>
+<li><strong>No other channel moves at all</strong> — 0 transitions on the other ten, and nothing on IO1 or IO10.</li>
+<li><strong>Half-period 500.07 ms</strong> against 500.0 nominal.</li>
+<li><strong>The analog twin is not railed</strong>: 4.960 V peak, 0 samples at ≥98 % of full scale.</li>
+</ul>
+<p>That last one needed <code>adc_voltage_range: 10</code>, added to the profile this session. At the ±5 V default a
+5 V input sits at exactly full scale (5.0 × 6553.6 = 32768, one past <code>int16</code> max), so the analog would
+have clipped flat <strong>while the comparator bit stayed perfectly correct</strong> — a failure invisible in
+precisely the band under test.</p>
+<h3 id="70c-method-notes-worth-keeping">70c. Method notes worth keeping<a class="headerlink" href="#70c-method-notes-worth-keeping" title="Permanent link">#</a></h3>
+<ul>
+<li>Numbers come from the <strong>backend's own</strong> verdict lines, never from the driving script's clock.</li>
+<li>The control profile was <strong>not</strong> regenerated from <code>OneBox.yaml</code>: that records 384 channels where the
+  <code>Npx2*</code> pair records three, a difference large enough to swamp the effect being measured.</li>
+<li>Both ages were taken <strong>inside one acquisition</strong>, so the time-in-session comparison has no reconnect
+  in it.</li>
+<li>One bug caught mid-analysis: <code>spikespeak_io.read_band</code>'s glob <code>*_adc_*</code> also matches <code>*_adc_di_*</code>,
+  so asking for the analog band could silently return the digital one. It now confirms the band from
+  the sidecar — the same failure mode as the frame-header trap, closed the same way.</li>
+<li>Every shutdown was a graceful <code>quit</code>. A force-kill with a real OneBox attached leaves the FT601
+  handle claimed and costs a physical power-cycle.</li>
+</ul>
+<p>Runners: <code>ripple_tools/adc_throughput_matrix.py</code>, <code>ripple_tools/check_digital_in.py</code>.
+Artifacts under <code>RecordingTests/2026-08-31_{adc_matrix,digital_in}/</code> — the <code>.bin</code> files are not committed.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7049,6 +7156,12 @@ change that broke them.</p></article>
 <li><a href="#70c-the-map-pointed-a-newcomer-at-a-finished-experiment">70c. The map pointed a newcomer at a finished experiment</a></li>
 <li><a href="#70d-eight-pages-were-rendering-under-unsorted">70d. Eight pages were rendering under "Unsorted"</a></li>
 <li><a href="#70e-the-rules-which-are-the-point">70e. The rules, which are the point</a></li>
+</ul>
+</li>
+<li><a href="#70-two-hardware-questions-answered-and-closed-2026-08-31-night">70. TWO HARDWARE QUESTIONS, ANSWERED AND CLOSED (2026-08-31, night)</a><ul>
+<li><a href="#70a-68-the-adc-stream-costs-nothing-and-probably-never-did">70a. #68 — the ADC stream costs nothing, and probably never did</a></li>
+<li><a href="#70b-67-the-comparator-band-is-correct-and-the-short-is-what-proved-it">70b. #67 — the comparator band is correct, and the short is what proved it</a></li>
+<li><a href="#70c-method-notes-worth-keeping">70c. Method notes worth keeping</a></li>
 </ul>
 </li>
 </ul>

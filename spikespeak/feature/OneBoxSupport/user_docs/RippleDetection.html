@@ -236,7 +236,7 @@ block-permutation wiring). The chip shows you exactly which read-out channel you
 <tr>
 <td><strong>Parameter-estimation (training) time</strong></td>
 <td>Seconds of LFP used to estimate each channel's baseline mean/σ. Longer = steadier threshold, slower to arm.</td>
-<td>1200 s</td>
+<td>10 s</td>
 </tr>
 <tr>
 <td><strong>Train / Retrain</strong> button</td>
@@ -261,20 +261,25 @@ block-permutation wiring). The chip shows you exactly which read-out channel you
 <tr>
 <td><strong>Coincidence window</strong></td>
 <td>Time window within which the quorum's crossings must all fall.</td>
-<td>0.010 s</td>
+<td>0.050 s</td>
 </tr>
 <tr>
 <td><strong>Per-channel z-score</strong> (section ③)</td>
 <td>Each column's own <strong>z</strong>; threshold = <strong>μ + z·σ</strong>. <strong>Editable any time, even while running</strong> — live sensitivity tuning; the threshold updates instantly.</td>
-<td>3.00</td>
+<td>5.00</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
-<p><strong>The "Default" column is what the dock shows before it has heard from the backend.</strong> The backend then
-sends its real values and the fields update — so if a number here does not match what you see, believe
-the dock, not this table. It matters most for the training time: the panel's 1200 s is a placeholder,
-and a detector that was set up from a script may be running something else entirely.</p>
+<p><strong>These are the DETECTOR's defaults, and the dock now shows nothing until the detector says so.</strong>
+Until 2026-09-01 this column documented the dock's own placeholders instead, and four of the five
+were wrong — 1200 s against a real 10 s, a 10 ms coincidence window against 50 ms, quorum 2 against
+1, z 3.00 against 5.00. The dock rendered those numbers, briefly, before the backend overwrote
+them, which is why this note used to say <em>"believe the dock, not this table"</em>.</p>
+<p>The placeholders are gone: backend-owned fields render <strong>empty</strong> until the detector announces, and
+clear again when no source is held. So this table can simply be true. A profile can still override
+any of these, and a detector set up from a script may be running something else — the dock shows
+what it was told, which is now the only thing it ever shows.</p>
 <p><strong>Tip — for a quick sim test</strong>, set the training time to <strong>3 s</strong> so the module arms in a few seconds instead of
 20 minutes. There is also an amplifier-settle gate before training starts — <strong>6 s</strong> on the simulated
 ripple sources (so first detection is ~9 s after Start with a 3 s training time), <strong>1 s</strong> on several
@@ -318,7 +323,7 @@ that's what the screenshots below use.)</p>
 - a <strong>status line</strong>:
   - <strong>idle — press ▶ Start</strong> — added but not running,
   - <strong>training…</strong> — running, estimating baseline,
-  - <strong>below threshold</strong> — armed and watching,
+  - <strong>no detection</strong> — armed and watching, and not part of a reported detection,
   - <strong>● RIPPLE</strong> — the envelope crossed; the column flashes red for the lockout.</p>
 <p><strong>Detection &amp; stimulation</strong> (section ④):
 - a <strong>cowsay</strong> banner prints each detection: <code>Ripple detected! k/N ch &lt;list&gt;</code> (k of N channels reported, and
@@ -340,10 +345,15 @@ channels e0 and e50 are both in <strong>● RIPPLE</strong>, so the cowsay repor
 cross <em>together</em> count. Note that stimulation is <strong>off</strong> in this shot (<code>enable stimulation</code> is unchecked and
 the server pill reads <em>disabled</em>), so the trigger is computed and <strong>nothing is transmitted</strong>:</p>
 <blockquote>
-<p><strong>Why e100 reads <em>below threshold</em> with its envelope over the line.</strong> That label means “not part of the
-reported detection” — it is the backend's detection state, not a measurement of the signal. The sparkline
-above it is the raw envelope, so a channel that crosses a moment outside the coincidence window shows
-exactly this apparent contradiction. The wording is a known bug in the dock, not a fault in the detector.</p>
+<p><strong>Why e100 can read <em>no detection</em> with its envelope over the line.</strong> Every status label describes what
+the DETECTOR reported, never what the signal is doing. A channel whose envelope crosses a moment outside
+the coincidence window — or while the quorum is already satisfied, or during the lockout — is genuinely
+not part of that detection, and says so. The sparkline above it is the raw envelope and is free to be
+above the line at the same time; the two are answering different questions.</p>
+<p>This label used to read <em>below threshold</em>, which was a claim about the SIGNAL that the sparkline directly
+above it could disprove — and in the previous version of this very screenshot, it did. Changed
+2026-09-01; <code>tests/gui/signal_claims.py</code> now asserts that no column label makes a signal-level claim the
+panel's own graph can refute.</p>
 </blockquote>
 <p><img alt="NP2 sim — quorum 2, two channels detecting together" src="images/ripple/np2_detecting_2026-09-01.png" /></p>
 <h3 id="live-threshold-tuning">Live threshold tuning<a class="headerlink" href="#live-threshold-tuning" title="Permanent link">#</a></h3>
@@ -492,7 +502,7 @@ unaffected (the envelopes + cowsay show the activity).</p>
 <li>Switch the main view to <strong>Live Data</strong>. In the dock, add electrodes <code>0, 10, 20</code> (drag them from the view, or
    type + Add).</li>
 <li>Set <strong>Parameter-estimation time = 3</strong> (for a quick test). Press <strong>▶ Start</strong>.</li>
-<li>Watch the progress bar fill (<strong>"training…"</strong>). After ~9 s the columns arm (<strong>"below threshold"</strong>), thresholds
+<li>Watch the progress bar fill (<strong>"training…"</strong>). After ~9 s the columns arm (<strong>"no detection"</strong>), thresholds
    appear (<strong>μ + 3σ ≈ 45</strong>), and detections start firing — the cowsay prints <code>Ripple detected! 1/3 ch 0</code> and the
    crossing column flashes <strong>● RIPPLE</strong>. The <strong>STIM LED stays dark</strong>, and that is correct: this walkthrough
    never enabled stimulation, and the LED lights only on a confirmed pulse from the stim server (§5a).</li>

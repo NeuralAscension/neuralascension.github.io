@@ -394,8 +394,9 @@ have any reason to look for it in a menu. You will not find it there.</p>
 </ul>
 <p>The NP2 ripple sim detecting live. Here <strong>quorum = 2</strong>: two of the three channels (e0, e50) cross threshold
 together, so the dock's cowsay reports <strong><code>2/3 ch 0,50</code></strong>. Stimulation is switched <strong>off</strong> in this shot, so the
-trigger is computed and nothing is transmitted. (e100 reads <em>below threshold</em> while its envelope is over the
-line — see <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §5 for what that label actually means.)</p>
+trigger is computed and nothing is transmitted. (e100 reads <em>no detection</em> even with its envelope over the
+line — the labels describe what the detector reported, not what the signal is doing; see
+<a href="RippleDetection.html"><code>RippleDetection.md</code></a> §5.)</p>
 <p><img alt="NP2 ripple-detection sim — quorum 2" src="images/ripple/np2_detecting_2026-09-01.png" /></p>
 <hr />
 <h2 id="4-tuning-what-the-simulator-emits-config-knobs">4. Tuning what the simulator emits (config knobs)<a class="headerlink" href="#4-tuning-what-the-simulator-emits-config-knobs" title="Permanent link">#</a></h2>

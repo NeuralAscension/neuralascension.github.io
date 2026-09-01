@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">6</span></summary>
 <a class="active" href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -163,9 +173,19 @@ note under Prerequisites for exactly what is missing.</p>
 <td>run automatically on every build</td>
 </tr>
 <tr>
+<td><strong>Python tests</strong></td>
+<td><code>python -m unittest discover python/tests</code></td>
+<td><code>python3 -m unittest discover python/tests</code></td>
+</tr>
+<tr>
 <td><strong>GUI tests</strong></td>
 <td><code>python scripts/run_gui_tests.py</code></td>
 <td><code>python3 scripts/run_gui_tests.py</code></td>
+</tr>
+<tr>
+<td><strong>All three</strong></td>
+<td><code>python scripts/run_all_tests.py</code></td>
+<td><code>python3 scripts/run_all_tests.py</code></td>
 </tr>
 </tbody>
 </table>
@@ -202,8 +222,8 @@ read <em>those</em>. A frontend edit that was not followed by a build left the b
 version while the build reported success — which silently tested old code. That whole class of
 problem is gone with one copy of each directory.</p>
 <h2 id="first-build-from-a-fresh-clone">First build, from a fresh clone<a class="headerlink" href="#first-build-from-a-fresh-clone" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">build.bat          # Windows
-./build.sh         # Linux
+<pre><code class="language-bash">build.bat --no-pause     # Windows  (drop --no-pause when you double-click it)
+./build.sh               # Linux
 </code></pre>
 <p>That is the whole procedure. On first use it configures <code>build/</code> (Ninja, Release,
 <code>compile_commands.json</code> on) and then builds. It finds the compiler, Qt and Ninja itself.</p>
@@ -250,7 +270,7 @@ problem is gone with one copy of each directory.</p>
 </tr>
 <tr>
 <td>HDF5</td>
-<td>1.14 (vendored runtime DLLs are copied to <code>bin/</code>)</td>
+<td>an SDK (headers + <code>.lib</code>) on <code>CMAKE_PREFIX_PATH</code>. The <strong>runtime</strong> is vendored in <code>external/hdf5/extlibs/</code> (2.x) and copied to <code>bin/</code> only when the build linked 2.x — a 1.x build uses the machine's own runtime, because the vendored DLLs would shadow it</td>
 <td><code>libhdf5-dev</code> -- supplies both <code>CXX</code> and <code>HL</code>. Not optional: the synthetic-ripple <strong>play files</strong> are HDF5</td>
 </tr>
 <tr>
@@ -266,15 +286,26 @@ problem is gone with one copy of each directory.</p>
 </tbody>
 </table>
 <blockquote>
-<p><strong>Clang is not wired up, and macOS is not supported yet.</strong> The AVX2 flags are applied only when the
-compiler identifies as <code>GNU</code> — <code>CMakeLists.txt:101</code> and <code>tests/CMakeLists.txt:91</code> both test
-<code>CMAKE_CXX_COMPILER_ID MATCHES "GNU"</code> — while <code>src/core/Avx2Filter.cpp</code> and
-<code>DisplayProcessor.cpp</code> use <code>_mm256_*</code> intrinsics unconditionally. Under Clang or AppleClang that
-is <code>error: inlining failed in call to 'always_inline' '_mm256_fmadd_ps': target specific option
-mismatch</code>, in the application target, not just the tests.</p>
-<p>Widening both regexes to <code>"GNU|Clang"</code> is the obvious one-line fix and <code>-mavx2 -mfma</code> are valid
-Clang flags — but it has never been compiled, so it is a change to make <strong>on</strong> a Clang box rather
-than from here. macOS needs more than that anyway: the target is declared
+<p><strong>Clang is untried, and macOS is not supported yet.</strong> The <strong>application</strong> target is already
+handled: the guard that puts <code>-mavx2 -mfma</code> on <code>SPIKESPEAK_AVX2_SOURCES</code> in the root
+<code>CMakeLists.txt</code> reads <code>CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR ... "Clang"</code>, and
+<code>DisplayProcessor.cpp</code>'s vector body now carries <code>__attribute__((target("avx2,fma")))</code> rather than
+bare intrinsics, so it needs no flag at all. (That attribute is not a Clang accommodation — it is
+why the scalar twin beside it stays baseline x86-64, which is the whole point of issue #34's
+runtime dispatch. See <a href="SimdDispatch.html"><code>SimdDispatch.md</code></a>.)</p>
+<p><strong>The residual exposure is the TEST targets, which is the opposite way round from how this note
+used to read.</strong> <code>tests/CMakeLists.txt</code> still applies the flags under a bare <code>MATCHES "GNU"</code> — in
+<code>spikespeak_test()</code> and again for <code>bench_filter</code> — and the tests keep the blanket flag
+deliberately (a test that fails to compile is louder than one that silently exercises half the
+dispatch). So under Clang the two targets that compile <code>src/core/Avx2Filter.cpp</code> directly,
+<code>test_avx2filter</code> and <code>test_bandfilterprocessor</code>, get no <code>-mavx2 -mfma</code> and the <code>_mm256_fmadd_ps</code>
+calls fail the same way they failed on GCC before 2026-08-25 — a hard compile error, so the C++
+suite would not build at all.</p>
+<p>Widening those two guards to <code>"GNU|Clang"</code> is the obvious fix and <code>-mavx2 -mfma</code> are valid Clang
+flags — but it has never been compiled, so it is a change to make <strong>on</strong> a Clang box rather than
+from here. Line numbers are omitted on purpose: this note carried two of them, both stale, and a
+stale line number reads as authority. Search for the compiler-ID guards.</p>
+<p>macOS needs more than that anyway: the target is declared
 <code>qt_add_executable(SpikesPeak WIN32 MACOSX_BUNDLE …)</code>, and inside a <code>.app</code> bundle
 <code>applicationDirPath()/../&lt;name&gt;</code> does not resolve to the repo root, which is the assumption the
 whole <code>bin/</code> layout rests on.</p>
@@ -319,14 +350,31 @@ down with <code>quit</code>, or the GUI's Disconnect. See <a href="README.html">
 <p>The <strong>C++ suite runs automatically on every build</strong> and prints a per-suite pass/fail banner (~2 s).
 It does not fail the build by default, so a red suite is easy to walk past — configure with
 <code>-DSPIKESPEAK_TESTS_FATAL=ON</code> to make it fatal.</p>
+<p>The <strong>Python suite</strong> covers the offline half — the SpikeGLX and Open Ephys converters, the loader's
+counts-to-microvolts scale, the config channel spec, the simulator's band-split model, and the sync
+pulse pairing every published closed-loop latency passes through. It is two seconds and needs no
+browser, no backend and no ports, but it is <strong>not</strong> part of the compile either:</p>
+<pre><code class="language-bash">python -m unittest discover python/tests
+</code></pre>
 <p>The <strong>GUI suite is not part of the build</strong> — it needs a browser and a running backend, so you have
 to run it yourself:</p>
-<pre><code class="language-bash">python scripts/run_gui_tests.py            # ~10 min
-python scripts/run_all_tests.py            # C++ then GUI, behind a live progress page
+<pre><code class="language-bash">python scripts/run_gui_tests.py            # ~33 min, measured 2026-08-31
+python scripts/run_all_tests.py            # C++, then Python, then GUI, behind a live progress page
 </code></pre>
 <p>Run the GUI suite whenever you touch <code>webinterface/</code>, the toolbar, the live view or the ripple dock,
 <strong>and before you push</strong> — a red suite that reaches the remote is red for everyone who pulls. Full
-detail in <a href="Testing.html"><code>Testing.md</code></a>.</p>
+detail in <a href="Testing.html"><code>Testing.md</code></a>, which is the only page that carries the suite counts.</p>
+<h3 id="before-you-hand-back">Before you hand back<a class="headerlink" href="#before-you-hand-back" title="Permanent link">#</a></h3>
+<ul>
+<li>[ ] <code>build.bat --no-pause</code> (or <code>./build.sh</code>) → the C++ banner says <strong>ALL N SUITES PASSED</strong>, and the
+      second line says the portable scalar pass did too</li>
+<li>[ ] <code>python -m unittest discover python/tests</code> → <strong>OK</strong></li>
+<li>[ ] <code>python scripts/run_gui_tests.py</code> → <strong>ALL N GUI TESTS PASSED</strong></li>
+<li>[ ] Nothing left running: no <code>SpikesPeak.exe</code>, no stray browser, ports 1234/8234 free</li>
+</ul>
+<p><code>python scripts/run_all_tests.py</code> does the first three in one command. <strong>Check the N in each banner
+against <a href="Testing.html"><code>Testing.md</code></a></strong> — the banners report how many suites ran, not how many exist, so
+a partial run is green.</p>
 <h2 id="vs-code">VS Code<a class="headerlink" href="#vs-code" title="Permanent link">#</a></h2>
 <p><code>.vscode/tasks.json</code> and <code>.vscode/settings.json</code> are set up for this workflow:</p>
 <ul>
@@ -373,6 +421,16 @@ exactly the trap this layout removed.</p>
 <td>install the <code>msvc2019_64</code> kit, or set <code>Qt6_DIR</code></td>
 </tr>
 <tr>
+<td><code>Could NOT find HDF5</code></td>
+<td>no HDF5 <strong>SDK</strong>. The DLLs vendored in <code>external/hdf5/extlibs/</code> are the runtime only — no headers, no <code>.lib</code> — so a fresh clone <em>runs</em> without an HDF5 install but does not <em>build</em> without one</td>
+<td>install an HDF5 SDK (the vendored runtime is 2.x, so a 2.x SDK needs no re-vendoring) and put its prefix on <code>CMAKE_PREFIX_PATH</code>; on Linux <code>apt install libhdf5-dev</code></td>
+</tr>
+<tr>
+<td>configure fails with a git or network error and no compiler ran</td>
+<td>PortAudio and rapidyaml are <code>FetchContent</code>-cloned into <code>ext/</code>, which is git-ignored and empty in a fresh clone</td>
+<td><strong>the first configure needs internet.</strong> Once <code>ext/</code> is populated, later builds are offline</td>
+</tr>
+<tr>
 <td><code>Generator: execution of make failed. Make command was:</code> <em>(empty)</em></td>
 <td>a Windows path reached CMake with its backslashes eaten</td>
 <td>paths passed as <code>-D</code> values need forward slashes</td>
@@ -411,7 +469,10 @@ exactly the trap this layout removed.</p>
 </ul>
 </li>
 <li><a href="#running-it">Running it</a></li>
-<li><a href="#testing">Testing</a></li>
+<li><a href="#testing">Testing</a><ul>
+<li><a href="#before-you-hand-back">Before you hand back</a></li>
+</ul>
+</li>
 <li><a href="#vs-code">VS Code</a></li>
 <li><a href="#making-a-distributable-copy">Making a distributable copy</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>

@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup" open><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup" open><summary>Testing<span class="navcount">6</span></summary>
 <a class="active" href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -176,23 +186,37 @@ power-cycle of the hardware.</p>
 <hr />
 <h2 id="1-running-the-tests">1. Running the tests<a class="headerlink" href="#1-running-the-tests" title="Permanent link">#</a></h2>
 <p>The suite runs <strong>on every build</strong> and prints a pass/fail banner. You do not have to ask for it:</p>
-<pre><code class="language-bash">build.bat            # Windows;  ./build.sh on Linux
+<pre><code class="language-bash">build.bat --no-pause      # Windows;  ./build.sh on Linux
 </code></pre>
+<p>(<code>--no-pause</code> only suppresses the "press a key" hold that stops a double-clicked window closing on
+you; it changes nothing about the build or the suite. Always pass it from a script.)</p>
 <pre><code>──────────────────────────────────────────────────────────────────────────
  SpikesPeak unit tests
 ──────────────────────────────────────────────────────────────────────────
-  ✅ PASS  test_boundedcall      0.78s
+  ✅ PASS  test_boundedcall           0.81s
+  ✅ PASS  test_circularbuffer        0.36s
+  …
+  ✅ PASS  test_bandfilterprocessor   4.01s
+  ✅ PASS  test_oneboxwaveplayer      3.04s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 1 SUITES PASSED
+  ✅ ALL 26 SUITES PASSED
+──────────────────────────────────────────────────────────────────────────
+  ✅ SIMD dispatch: portable scalar path: 26/26 PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
+<p><strong>Read the count in that banner.</strong> <code>ALL 26 SUITES PASSED</code> is a complete run as of 2026-08-31; <code>ALL 3
+SUITES PASSED</code> is a partial one, and it is green. The banner reports how many suites <em>ran</em>, not how
+many exist, so a build that configured only part of the tree, or a <code>ctest -R</code> you forgot you typed,
+passes just as loudly as the real thing. The number is the only thing that tells them apart — which
+is why the totals in this page are worth keeping honest.</p>
 <p>and when something breaks:</p>
-<pre><code>  ✅ PASS  test_boundedcall      0.78s
-  ❌ FAIL  test_redlight_probe   failed
+<pre><code>  ✅ PASS  test_boundedcall           0.81s
+  …
+  ❌ FAIL  test_oneboxwaveplayer      failed
 ──────────────────────────────────────────────────────────────────────────
-  ❌ 1 OF 2 SUITES FAILED
+  ❌ 1 OF 26 SUITES FAILED
 
-     2/2 Test #2: test_redlight_probe ..............***Failed    0.04 sec
+     26/26 Test #26: test_oneboxwaveplayer .........***Failed    0.04 sec
 
      rerun one suite: ctest --test-dir &lt;build&gt; -C Release -R &lt;name&gt; --output-on-failure
 </code></pre>
@@ -221,14 +245,59 @@ file. So a failure used to print a bare <code>***Failed</code> with no case name
 made debugging a red suite guesswork.</p>
 <p>Every suite now writes a Qt Test log via <code>-o &lt;name&gt;.log,txt</code> (see <code>tests/CMakeLists.txt</code>), and
 <code>scripts/run_tests.py</code> prints it for any suite that fails:</p>
-<pre><code>  ❌ 1 OF 18 SUITES FAILED
+<pre><code>  ❌ 1 OF 26 SUITES FAILED
 
      FAIL!  : TestOneBoxWavePlayer::stopIsSilentWhenNeverUsed() Compared values are not the same
         Actual   (FakeNpx::calls().size()): 2
         Expected (size_t(0))              : 0
 </code></pre>
 <p><code>QWARN</code> lines are included deliberately: the bounded-teardown tests report their reason that way.</p>
+<h3 id="the-second-ctest-pass-the-portable-path">The SECOND ctest pass — the portable path<a class="headerlink" href="#the-second-ctest-pass-the-portable-path" title="Permanent link">#</a></h3>
+<p><code>scripts/run_tests.py</code> runs the whole suite <strong>twice</strong>. The second run (<code>scalar_pass()</code>) sets
+<code>SPIKESPEAK_SIMD=scalar</code> for the child, which forces every dispatcher onto its portable body, and
+prints its own line under the main banner:</p>
+<pre><code>  ✅ SIMD dispatch: portable scalar path: 26/26 PASSED
+</code></pre>
+<p><strong>Why it exists.</strong> On a machine with AVX2 — every development machine here — the scalar twin of
+every dispatched routine is dead code at runtime, so the ordinary pass says nothing whatever about
+it. An off-by-one injected into <code>Avx2Filter</code>'s scalar body on <strong>2026-08-29 left all suites GREEN</strong>
+and was caught only by this pass. The portable path is what runs on a CPU without AVX2, and this is
+its only coverage.</p>
+<p>Three things follow, and each of them has bitten:</p>
+<ul>
+<li><strong>It never claims to have covered a path that does not exist.</strong> If you already forced
+  <code>SPIKESPEAK_SIMD=scalar</code> in the environment, the first pass <em>was</em> this pass and the second is
+  skipped outright. If the machine simply has no AVX2, the pass still runs but reports itself dimmed
+  — <code>this CPU has no AVX2, so both passes ran the same code</code> — rather than announcing a second path
+  passed. Whether the CPU has AVX2 is asked of <code>test_cpufeatures --hardware</code>, not guessed, and the
+  answer is three-valued: a <em>failed launch</em> used to read as "no AVX2", which told an AVX2 machine
+  exactly the false thing this check exists to prevent, inverted.</li>
+<li><strong>It only runs when the first pass was green.</strong> A second red banner under a red one is noise.</li>
+<li><strong>Its failures reach <code>test_status.json</code>.</strong> The file carries <code>"scalar_failed"</code>, and <code>"ok"</code> is false
+  when it is non-zero. Before that, a broken portable path published <code>"ok": true</code> to the GUI badge
+  and to the docs book.</li>
+</ul>
+<p>A red scalar pass means the two implementations <strong>disagree</strong>, which is a correctness bug in one of
+them, not a performance question. Reproduce it with:</p>
+<pre><code class="language-bash">SPIKESPEAK_SIMD=scalar ctest --test-dir build -C Release --output-on-failure
+</code></pre>
+<pre><code class="language-powershell">$env:SPIKESPEAK_SIMD='scalar'; ctest --test-dir build -C Release --output-on-failure
+</code></pre>
+<p>The tiers themselves, and how a routine gets dispatched, are in
+<a href="SimdDispatch.html"><code>SimdDispatch.md</code></a>.</p>
+<p>Doubling the run is also where the C++ gate's wall clock goes: the 2026-08-31 pass recorded 8.8 s of
+CTest time, and the gate pays that roughly twice.</p>
 <h3 id="the-suites">The suites<a class="headerlink" href="#the-suites" title="Permanent link">#</a></h3>
+<p><strong>This table is hand-maintained and the build is not.</strong> <code>spikespeak_test()</code> registers, builds and
+runs a new suite the moment its line lands in <code>tests/CMakeLists.txt</code> — nothing consults this page —
+so the only way the inventory stays true is somebody editing it. It did not: on <strong>2026-08-31</strong> four
+registered suites (<code>test_simbandresponse</code>, <code>test_cpufeatures</code>, <code>test_intanpacket</code>,
+<code>test_configuration</code>) were missing from it, and two more rows were undercounted. A suite that is not
+in the table is a suite nobody knows exists, and the coverage arguments made on this page are made
+from the table.</p>
+<p>Counts are Qt Test's own <code>Totals: N passed</code> from <code>build/tests/&lt;suite&gt;.log</code>, which is why a
+data-driven suite reports more cases than it has slots, and why every suite counts two more than its
+test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run and pass).</p>
 <table>
 <thead>
 <tr>
@@ -320,12 +389,12 @@ made debugging a red suite guesswork.</p>
 </tr>
 <tr>
 <td><code>test_npx2scale</code></td>
-<td style="text-align: right;">14</td>
+<td style="text-align: right;">16</td>
 <td>NP2.0 gain/scale arithmetic — microvolts, not counts</td>
 </tr>
 <tr>
 <td><code>test_recordingmetadata</code></td>
-<td style="text-align: right;">25</td>
+<td style="text-align: right;">34</td>
 <td>The sidecar: <code>frame.bytes</code>, channel columns, the part-number-resolved NP2.0 scale, provenance</td>
 </tr>
 <tr>
@@ -349,12 +418,39 @@ made debugging a red suite guesswork.</p>
 <td>Which basestation is attached, and that <code>source.npx.auto</code> REFUSES to pick when both are</td>
 </tr>
 <tr>
+<td><code>test_configuration</code></td>
+<td style="text-align: right;">11</td>
+<td>Config parsing, and that two profiles cannot share a <code>name:</code> (#12)</td>
+</tr>
+<tr>
+<td><code>test_cpufeatures</code></td>
+<td style="text-align: right;">9</td>
+<td>CPUID <strong>and</strong> XCR0 — an OS not saving YMM state advertises AVX2 and then computes wrong answers</td>
+</tr>
+<tr>
+<td><code>test_intanpacket</code></td>
+<td style="text-align: right;">15</td>
+<td>The Intan wire format (#74): the +2 SPI deskew and offset binary, both of which fail as plausible wrong data rather than an error</td>
+</tr>
+<tr>
+<td><code>test_simbandresponse</code></td>
+<td style="text-align: right;">10</td>
+<td>How much of a ripple the simulator lets through to the AP band — the physics kept free of Qt and vendor headers so it is testable at all</td>
+</tr>
+<tr>
 <td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>414</strong></td>
-<td>22 suites, ~1.6 s wall clock (Linux/GCC 13.3; counts re-checked 2026-08-28)</td>
+<td style="text-align: right;"><strong>470</strong></td>
+<td>26 suites, 8.8 s of CTest time per pass (counts re-checked <strong>2026-08-31</strong> against <code>build/tests/*.log</code>)</td>
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p><strong>Counts written into source comments drift too.</strong> <code>scripts/run_tests.py</code> still says <em>"left all 22
+suites GREEN"</em> in <code>scalar_pass()</code>'s docstring — accurate on 2026-08-29, four suites out of date by
+2026-08-31. The sentence around it is the part worth keeping; the number is not. <strong>This table is
+the only count in the repo that is maintained</strong> — take it from here, or from
+<code>build/test_status.json</code>, which the run writes and nobody has to remember.</p>
+</blockquote>
 <p><strong>One suite is written but not built:</strong> <code>tests/test_utils.cpp</code> (31 cases). <code>src/core/Utils.cpp</code> is the
 application's composition root — it holds <code>registerBuiltInTypes()</code>, which constructs every source,
 processor and interpreter — so linking it into a test drags in the whole application (13 unresolved
@@ -363,8 +459,10 @@ so the file cannot be split without touching production code. The fix is archite
 doing deliberately: <strong>extract the non-<code>main</code> sources into a <code>SpikesPeakCore</code> static library</strong> that
 both <code>SpikesPeak.exe</code> and the tests link. That one change unlocks unit-testing every processor and
 source in the codebase, and it is the single highest-leverage next step for this suite.</p>
-<p>A machine-readable result is written to <code>&lt;build&gt;/test_status.json</code> on every run:</p>
-<pre><code class="language-json">{ &quot;generated&quot;: &quot;...&quot;, &quot;total&quot;: 1, &quot;passed&quot;: 1, &quot;failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
+<p>A machine-readable result is written to <code>&lt;build&gt;/test_status.json</code> on every run. <code>scalar_failed</code> is
+the second pass's count, and <code>ok</code> is false when <strong>either</strong> pass failed:</p>
+<pre><code class="language-json">{ &quot;generated&quot;: &quot;2026-08-31T17:33:56&quot;, &quot;total&quot;: 26, &quot;passed&quot;: 26, &quot;failed&quot;: 0,
+  &quot;scalar_failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
 </code></pre>
 <h2 id="1a-running-both-suites-on-linux">1a. Running both suites on Linux<a class="headerlink" href="#1a-running-both-suites-on-linux" title="Permanent link">#</a></h2>
 <p><strong>Verified end to end on 2026-08-26</strong> (Linux Mint 22.1 / Ubuntu 24.04 base, GCC 13.3.0, Qt 6.11.1,
@@ -453,6 +551,79 @@ git-ignored and untracked, so naming them makes git abort the whole command and 
 blanket <code>pkill -f brave</code> closes the operator's real windows. Beware that <code>pkill -f spikespeak_guitest</code>
 also matches <strong>the shell running it</strong>, which kills your own command instead — match on
 <code>user-data-dir=/tmp/spikespeak_guitest</code> and signal the pids.</p>
+<h2 id="1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30">1b. The Python suite — the offline half, and it was ungated until 2026-08-30<a class="headerlink" href="#1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python -m unittest discover python/tests        # 126 tests, ~2 s
+</code></pre>
+<p><strong>It needs numpy.</strong> Five of the six files import it at module scope, so without numpy <code>discover</code>
+reports import errors rather than a green run — which is not the same thing as a pass and does not
+look like one. Nothing else is required: stdlib <code>unittest</code>, no pytest, no browser, no backend, no
+ports. On Ubuntu ≥ 23.04 a bare <code>pip install numpy</code> is refused (PEP 668); use
+<code>sudo apt install python3-numpy</code>, or a venv.</p>
+<p><code>scripts/run_all_tests.py</code> now runs it, <strong>between</strong> the C++ suite and the GUI suite. It needs no
+browser, no backend and no ports, and it finishes in under two seconds — so finding out the offline
+tooling is broken before an eleven-minute browser run is simply the cheap ordering.</p>
+<h3 id="it-existed-it-passed-and-nothing-ran-it">It existed, it passed, and nothing ran it<a class="headerlink" href="#it-existed-it-passed-and-nothing-ran-it" title="Permanent link">#</a></h3>
+<p>Four files, 113 tests, green — and not referenced by <code>run_tests.py</code>, <code>run_all_tests.py</code>, CMake or
+CTest. They ran when somebody remembered.</p>
+<p><strong>That is worse than having no tests there</strong>, because their existence reads as coverage. Anyone
+counting suites saw four Python files and assumed the gate covered them.</p>
+<h3 id="what-it-covers-and-why-that-half-matters">What it covers, and why that half matters<a class="headerlink" href="#what-it-covers-and-why-that-half-matters" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>file</th>
+<th>what</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>test_spikeglx_convert.py</code></td>
+<td>the SpikeGLX converter — tick cadence, sidecar consistency, run-folder naming</td>
+</tr>
+<tr>
+<td><code>test_openephys_export.py</code></td>
+<td>the Open Ephys export</td>
+</tr>
+<tr>
+<td><code>test_reader_scale.py</code></td>
+<td>the loader's counts→microvolts scale</td>
+</tr>
+<tr>
+<td><code>test_config_channels.py</code></td>
+<td>the config channel spec</td>
+</tr>
+<tr>
+<td><code>test_band_response.py</code></td>
+<td>the NP1.0 band split, pinned to the <strong>same numbers as the C++ side</strong> (<code>test_simbandresponse</code>). Added 2026-08-31 after the live simulator and the play-file generator were found to disagree about it by a factor of fifteen, each internally consistent — a per-language test could not have caught it. See <a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
+</tr>
+<tr>
+<td><strong><code>test_sync_pairing.py</code></strong></td>
+<td><strong>the sync pulse pairing every published closed-loop latency passes through</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Six files, <strong>126 tests</strong> as of 2026-08-31. This section said 121 and listed five files until
+<code>test_band_response.py</code> was added on 2026-08-31; the five missing tests were exactly the file the
+table had forgotten. An inventory understates a suite by precisely the thing it omits, which is why
+the omission and the wrong total always arrive together.</p>
+<p>That last one was added on 2026-08-30 and is the reason the gap was worth closing. <code>sync.py</code>'s own
+docstrings record <strong>three separate silent off-by-ones</strong>, one of which <em>"silently added 1.000 s to a
+closed-loop latency"</em> — and the function had no test at all.</p>
+<p>Its failure mode is what makes it dangerous: a pairing shifted by a whole sync period has <strong>identical
+inter-pulse intervals, the same drift ppm, and the same sub-millisecond fit residual</strong>. Every quality
+metric the module reports looks perfect while every aligned timestamp is a second out. There is no
+downstream check that catches it.</p>
+<p>The test that pins it (<code>test_opposite_end_drops_do_not_shift_everything_by_a_whole_period</code>) builds
+the exact case: both trains lose a pulse at <strong>opposite</strong> ends, so the counts are equal — which is
+what hides it — and both the start- and end-anchored offsets are wrong by a period.</p>
+<p><strong>Proved failable:</strong> disabling the wrap fix reproduces the bug precisely, reporting a pairing offset
+of −0.996 s, while the six unrelated cases stay green.</p>
+<h3 id="adding-one">Adding one<a class="headerlink" href="#adding-one" title="Permanent link">#</a></h3>
+<p>stdlib <code>unittest</code> + numpy only, per <code>CLAUDE.md</code> — no pytest, no new dependency. Put the file in
+<code>python/tests/</code>, name it <code>test_*.py</code>, and <code>discover</code> picks it up with no registration anywhere.
+<strong>Then add it to the table above</strong>, for the same reason §2 and §3 say so: <code>discover</code> finds it, this
+page does not.</p>
+<hr />
 <h2 id="2-adding-a-test">2. Adding a test<a class="headerlink" href="#2-adding-a-test" title="Permanent link">#</a></h2>
 <ol>
 <li>Create <code>tests/test_&lt;thing&gt;.cpp</code>.</li>
@@ -461,6 +632,10 @@ also matches <strong>the shell running it</strong>, which kills your own command
    spikespeak_test(test_&lt;thing&gt; SOURCES test_&lt;thing&gt;.cpp)</code>
    For a component that is not header-only, add its production <code>.cpp</code> to the same <code>SOURCES</code>.</li>
 <li>Rebuild. It is registered, run, and reported automatically.</li>
+<li><strong>Add a row to §1's suite table.</strong> This is the step that gets skipped, because step 3 already
+   made the test real: the build needs no help from the docs, so nothing goes red when the table is
+   left behind. Four suites were missing from it on 2026-08-31 for exactly that reason, and the
+   coverage claims on this page are read off that table.</li>
 </ol>
 <p>The file shape is fixed by Qt Test:</p>
 <pre><code class="language-cpp">#include &lt;QtTest&gt;
@@ -470,7 +645,7 @@ class TestThing : public QObject
 {
     Q_OBJECT
 private slots:
-    void behaviour_statedAsAClaim() { QCOMPARE(actual, expected); }
+    void behavior_statedAsAClaim() { QCOMPARE(actual, expected); }
 };
 
 QTEST_GUILESS_MAIN(TestThing)
@@ -514,18 +689,84 @@ row, a column that renders nothing, a stream that loses its label.</p>
 <pre><code>──────────────────────────────────────────────────────────────────────────
  SpikesPeak GUI tests
 ──────────────────────────────────────────────────────────────────────────
-  ✅ PASS  live_view                     71.4s
-  ✅ PASS  toolbar_layout                54.4s
+  ✅ PASS  audio_panel                  133.9s
+  ✅ PASS  band_dependency              101.7s
+  …
+  ✅ PASS  toolbar_layout               118.3s
+  ✅ PASS  window_registry               66.9s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 2 GUI TESTS PASSED
+  ✅ ALL 22 GUI TESTS PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
-<p>Same green/red convention as the C++ light, and a machine-readable <code>gui_test_status.json</code>.
-<code>--only &lt;name&gt;</code> runs one, <code>--fatal</code> makes red a non-zero exit (CI).</p>
-<p><strong>Why these are not part of every compile.</strong> They need a browser, a backend and ~30–70 s each, which
-is the wrong tax on an edit-compile loop. Run them when you touch <code>webinterface/</code>, and before a
-release. The runner starts ONE backend (with <code>--no-browser</code>) and shares it; each test drives its own
-isolated Chrome on the debug port and closes it again.</p>
+<p>Same green/red convention as the C++ light — <strong>including that the count is the only thing separating
+a complete run from a partial one.</strong> <code>ALL 22 GUI TESTS PASSED</code> is the whole suite as of 2026-08-31;
+<code>ALL 3 GUI TESTS PASSED</code> is a <code>--only</code> run, and it is just as green. A machine-readable
+<code>gui_test_status.json</code> carries the same numbers plus per-test seconds.</p>
+<p><strong>Why these are not part of every compile.</strong> They need a browser and a backend, and they are slow:
+the 2026-08-31 run recorded <strong>41 s</strong> (<code>teardown_while_recording</code>) to <strong>212 s</strong> (<code>stream_options</code>)
+per test, <strong>eight of the 22 over 100 s</strong>, and <strong>~33 minutes</strong> for the suite. That is the wrong tax
+on an edit-compile loop. Run them when you touch <code>webinterface/</code>, and before you push. The runner
+starts ONE backend (with <code>--no-browser</code>) and shares it; each test drives its own isolated Chrome on
+the debug port and closes it again.</p>
+<p><strong>Thirty-three minutes changes how you use it.</strong> Iterate with <code>--only &lt;name&gt;</code> — a substring match on
+the filename, so <code>--only ripple</code> runs <code>ripple_detach</code>, <code>ripple_params</code> and <code>ripple_sidecar</code>. Run the
+whole thing before you push, not before you hand back: a red suite that reaches the remote is red
+for everyone who pulls.</p>
+<h3 id="runner-flags">Runner flags<a class="headerlink" href="#runner-flags" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>runner</th>
+<th>flag</th>
+<th>what it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>run_gui_tests.py</code></td>
+<td><code>--only &lt;substr&gt;</code></td>
+<td>run only the test files whose name contains <code>&lt;substr&gt;</code></td>
+</tr>
+<tr>
+<td></td>
+<td><code>--fatal</code></td>
+<td>exit non-zero on a failure. <strong>Without it a suite that never ran still exits 0</strong></td>
+</tr>
+<tr>
+<td></td>
+<td><code>--keep-backend</code></td>
+<td>leave the shared backend up afterwards (debugging; not for a rig)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--porcelain</code></td>
+<td>one unbuffered <code>EVENT {json}</code> line per event, and each test's output as it arrives. This is how <code>run_all_tests.py</code> shows progress; a 33-minute run is otherwise 33 minutes of silence, and a parent process cannot tell a slow test from a hung one</td>
+</tr>
+<tr>
+<td><code>run_all_tests.py</code></td>
+<td><code>--no-browser</code></td>
+<td>serve the dashboard but do not open it. Use this for scripted runs</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--fatal</code></td>
+<td>exit non-zero if anything failed</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--only-cpp</code> / <code>--only-gui</code></td>
+<td>run one of the three suites — <strong>both of these also skip the Python suite</strong>, which is two seconds and needs nothing. <code>--only-cpp</code> is not "the C++ and Python halves"</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--hold</code></td>
+<td>keep serving the dashboard after the run. Never pass it from a script: it does not return</td>
+</tr>
+</tbody>
+</table>
+<p><code>run_all_tests.py</code> runs <strong>all three</strong> suites — C++, then Python, then GUI — behind a live progress
+page with an ETA per test. Python goes second on purpose: two seconds, no browser, no backend, so a
+broken converter is found before the 33-minute browser run rather than after it.</p>
 <p><strong>Why they are not unit tests in the jsdom sense.</strong> <code>fitToolbar()</code> decides whether to fold by
 <em>measuring real layout</em> — it compares row 1's natural width against the wrapper's available width.
 A DOM shim has no layout engine: every width would measure 0 and every assertion would pass
@@ -578,8 +819,17 @@ while the <strong>depth readout stays visible</strong>; a pin holds the strip op
 rebuild</strong>; the vertical layout toggles and still renders; and <code>dataStore.knownStreams</code> is non-empty
 — the exact reading that was <code>[]</code> during the 2026-08-20 dead-probe session.</p>
 <h3 id="adding-a-gui-test">Adding a GUI test<a class="headerlink" href="#adding-a-gui-test" title="Permanent link">#</a></h3>
-<p>Drop a file in <code>tests/gui/</code> (underscore-prefixed files are ignored, which is how <code>_harness.py</code> stays
-out of the run). The harness gives you a backend, an isolated Chrome and a streaming sim source:</p>
+<ol>
+<li>Drop a file in <code>tests/gui/</code> (underscore-prefixed files are ignored, which is how <code>_harness.py</code>
+   stays out of the run). <code>run_gui_tests.py</code> globs the directory, so that is the whole registration.</li>
+<li><strong>Add a row to <a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a> §1.</strong> Same trap as §2 step 4, same cost:
+   the glob needs no help from the docs, so nothing goes red when the inventory is left behind. On
+   2026-08-31 <strong>five</strong> GUI suites were missing from that table (<code>heatmap_spatial</code>,
+   <code>intan_not_implemented</code>, <code>ripple_detach</code>, <code>state_consistency</code>, <code>window_registry</code>) while the prose
+   above it still said "All thirteen". That page is where the "what is NOT covered" argument is
+   made, and it cannot be made from an inventory that is five suites short.</li>
+</ol>
+<p>The harness gives you a backend, an isolated Chrome and a streaming sim source:</p>
 <pre><code class="language-python">from _harness import Gui, Checks
 
 def main():
@@ -803,6 +1053,7 @@ setter set something.</p>
 <li><a href="#why-this-exists">Why this exists</a></li>
 <li><a href="#1-running-the-tests">1. Running the tests</a><ul>
 <li><a href="#reading-a-red-suite">Reading a red suite</a></li>
+<li><a href="#the-second-ctest-pass-the-portable-path">The SECOND ctest pass — the portable path</a></li>
 <li><a href="#the-suites">The suites</a></li>
 </ul>
 </li>
@@ -814,8 +1065,15 @@ setter set something.</p>
 <li><a href="#tear-down-and-mind-the-operators-browser">Tear down, and mind the operator's browser</a></li>
 </ul>
 </li>
+<li><a href="#1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30">1b. The Python suite — the offline half, and it was ungated until 2026-08-30</a><ul>
+<li><a href="#it-existed-it-passed-and-nothing-ran-it">It existed, it passed, and nothing ran it</a></li>
+<li><a href="#what-it-covers-and-why-that-half-matters">What it covers, and why that half matters</a></li>
+<li><a href="#adding-one">Adding one</a></li>
+</ul>
+</li>
 <li><a href="#2-adding-a-test">2. Adding a test</a></li>
 <li><a href="#3-gui-tests-the-frontend-is-a-unit-too">3. GUI tests — the frontend is a unit too</a><ul>
+<li><a href="#runner-flags">Runner flags</a></li>
 <li><a href="#toolbar_layout-15-viewport-widths-1920-820">toolbar_layout — 15 viewport widths, 1920 → 820</a></li>
 <li><a href="#live_view-traces-labels-strips-pinning">live_view — traces, labels, strips, pinning</a></li>
 <li><a href="#adding-a-gui-test">Adding a GUI test</a></li>

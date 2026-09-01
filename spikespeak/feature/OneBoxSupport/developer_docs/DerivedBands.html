@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup" open><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup" open><summary>Signal processing<span class="navcount">4</span></summary>
 <a class="active" href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -186,6 +196,18 @@ rewrite.</p>
 sample means 48 FMA chains rather than 384 scalar ones. Nothing about that changed for the spike
 band: <code>addSample()</code> loops <code>mNumBCoefs</code> / <code>mNumACoefs</code>, so it is order-generic and the 5-tap
 band-pass drops straight in where the 3-tap low-pass was.</p>
+<blockquote>
+<p><strong>"AVX2" is the fast path, not the only path.</strong> Since runtime SIMD dispatch landed, <code>Avx2Filter</code> has
+a <strong>scalar twin</strong> producing bit-identical output, chosen once at load from what the CPU and OS
+actually support. <code>SPIKESPEAK_SIMD=scalar</code> forces it — for an A/B, or to bisect a numerical
+difference — and <code>SPIKESPEAK_SIMD=avx2</code> demands the vector path (falling back with a warning if the
+CPU cannot). See <a href="SimdDispatch.html"><code>SimdDispatch.md</code></a>. <strong>Every CPU figure on this page is an
+AVX2-path measurement.</strong> On the scalar path the filter itself costs <strong>3.10×</strong> more — and yet the
+whole backend measures 101.9 % of a core scalar against 102.2 % AVX2, i.e. no difference at all
+(<a href="Profiling.html"><code>Profiling.md</code></a> §4). Both readings are correct: the filter is a small fraction of a
+backend dominated by acquisition and delivery. Quote whichever one answers the question you are
+actually asking, and say which.</p>
+</blockquote>
 <p>The four <code>setDefault*Coefs()</code> methods were near-identical 40-line blocks. They now share one
 <code>loadCoefs()</code> body, which is also where the "REPLACE, do not append" discipline lives — a real bug
 once, and one that a fourth hand-copied setter would have been free to reintroduce.</p>
@@ -483,7 +505,7 @@ declares. It runs when one of three things happens:</p>
 </tr>
 </tbody>
 </table>
-<p>This was not the old behaviour and the change is deliberate. <code>mEnabled</code> used to default <strong>true</strong>, so
+<p>This was not the old behavior and the change is deliberate. <code>mEnabled</code> used to default <strong>true</strong>, so
 merely listing <code>proc.lfp</code> in a profile meant every 2.0 session filtered all 384 channels through a
 band nobody had asked to see, and the GUI button was green before the operator touched anything.
 The rule now is the one an operator would state: <em>minimal things running.</em></p>
@@ -492,7 +514,9 @@ band is the raw band with a documented filter on it, so it can be reproduced exa
 (coefficients in <a href="#2-the-filtering-is-avx2-8-channels-at-a-time">§2</a>, and
 <code>ripple_tools/validate_filters.py</code> checks the reproduction to float32 rounding). Recording it would
 double the disk cost for something the raw file already contains. If a profile ever does need one on
-disk, it must also say <code>enabled: true</code> — a recorder pointed at a band that is off writes silence.</p>
+disk, it must also say <code>enabled: true</code> — a recorder pointed at a band that is off writes silence —
+<strong>and it must be tested first</strong>: <code>proc.npx.recorder</code> expects int16 and these bands are float, nothing
+refuses the config, and nobody has checked what comes out. See <a href="#9-known-gaps">§9</a>.</p>
 <p>Before this work, a profile written before the bands existed left the operator with no LFP button at
 all, and a profile that declared <code>proc.lfp</code> but never listed <code>data.lfp</code> under the display <code>inputs:</code>
 gave them a green button and no way to look at the band.</p>
@@ -569,9 +593,17 @@ came down to timing. <code>AppController.handleNewStream()</code> now refuses to
 <p><code>DataStore.forgetStream()</code> also drops the stream's buffers, not just its name: <code>handleNewStream</code> is
 gated on <code>!streams[id]</code>, so keeping them would make the band unable to come <em>back</em> — its next frame
 would early-return out of <code>initializeStream()</code> and never re-register the id.</p>
-<h2 id="7-which-configs-have-it">7. Which configs have it<a class="headerlink" href="#7-which-configs-have-it" title="Permanent link">#</a></h2>
-<p><code>SimNpx2.yaml</code> (no hardware needed) and <code>Npx2Pxi.yaml</code> (real 2.0 on PXIe). Both declare the two
-processors <strong>before</strong> the display, so the output buffers are sized before the display binds them:</p>
+<h2 id="7-which-configs-have-it-and-why-the-question-barely-matters-any-more">7. Which configs have it — and why the question barely matters any more<a class="headerlink" href="#7-which-configs-have-it-and-why-the-question-barely-matters-any-more" title="Permanent link">#</a></h2>
+<p><strong>Both bands are auto-provisioned for any source with <code>data.npx.raw</code> and no <code>data.npx.lfp</code>, whether or
+not the profile lists them</strong> (§5). So the honest answer to "which configs have derived bands?" is
+<em>every 2.0 source</em>, including the OneBox family that postdates this section, and including a profile
+written before the bands existed.</p>
+<p>What a declaration still buys is <strong>ordering and display binding</strong>. <code>SimNpx2.yaml</code> (no hardware needed)
+and <code>Npx2Pxi.yaml</code> (real 2.0 on PXIe) are the only two that declare <strong>both</strong> bands; thirteen further
+profiles declare <code>proc.lfp</code> alone, because it is the ripple detector's input on a 2.0 — the four
+OneBox profiles, the PXIe + NI-DAQ profiles, the NI-DAQ and ripple sims, the simulated OneBox, and
+the play-file source. A declared band is placed <strong>before</strong> the display, so its output buffer is sized
+before the display binds it:</p>
 <pre><code class="language-yaml">  - name: &quot;proc.lfp&quot;      # 2nd-order Bessel LOW-PASS  400 Hz       -&gt; data.lfp
   - name: &quot;proc.spike&quot;    # 2nd-order Bessel BAND-PASS 300-6000 Hz  -&gt; data.spike
 
@@ -584,7 +616,9 @@ processors <strong>before</strong> the display, so the output buffers are sized 
       - data: &quot;spike&quot;
         name: &quot;data.spike&quot;
 </code></pre>
-<p>An optional <code>enabled: false</code> on either processor starts that band switched off.</p>
+<p>An optional <code>enabled: false</code> on either processor starts that band switched off — which is what the
+auto-provisioned nodes say too, so a declared band and an auto-provisioned one behave identically
+unless the profile explicitly says <code>enabled: true</code>.</p>
 <h2 id="8-scope-20-only-and-why-10-is-a-different-question">8. Scope: 2.0 only, and why 1.0 is a different question<a class="headerlink" href="#8-scope-20-only-and-why-10-is-a-different-question" title="Permanent link">#</a></h2>
 <p>Both bands exist because a 2.0 probe has <strong>no hardware ap/lfp split</strong>: one 30 kHz stream, and
 anything else you want has to be computed. A 1.0 probe has the opposite situation — the headstage
@@ -599,13 +633,22 @@ would collide with the bands the hardware already provides (two things called "t
 different sample rates, with different scale factors), and the ripple detector already prefers the
 native <code>data.npx.lfp</code> on a 1.0 probe. Treat 1.0 as unsupported until that discussion happens.</p>
 <h2 id="9-known-gaps">9. Known gaps<a class="headerlink" href="#9-known-gaps" title="Permanent link">#</a></h2>
+<h3 id="recording-a-derived-band-is-untested-and-nothing-stops-you-trying">⚠️ Recording a derived band is UNTESTED — and nothing stops you trying<a class="headerlink" href="#recording-a-derived-band-is-untested-and-nothing-stops-you-trying" title="Permanent link">#</a></h3>
+<p><code>proc.npx.recorder</code> expects the <strong>int16</strong> interpreter. <code>data.lfp</code> and <code>data.spike</code> are <strong>float</strong>.
+Nothing in the config layer refuses a <code>recordings:</code> entry naming one, and <strong>nobody has checked what
+comes out</strong> — so the failure mode is unknown, and "unknown" on a recorder means a file that may look
+plausible and be wrong. If you need a derived band on disk, treat that as a piece of work with a test
+attached, not as a config line. And remember §5's rule: a recorder pointed at a band that is <strong>off</strong>
+writes silence, so such a profile would also have to say <code>enabled: true</code>.</p>
+<p>The design position is that you should not need to. A derived band is the raw band plus documented
+coefficients, reproducible offline to float32 rounding (<code>ripple_tools/validate_filters.py</code>), so
+recording it doubles the disk cost for something the raw file already contains.</p>
+<h3 id="smaller">Smaller<a class="headerlink" href="#smaller" title="Permanent link">#</a></h3>
 <ul>
-<li><strong>Not covered by <code>tests/gui/</code>.</strong> Driven by hand for this change (buttons, ordering, dropdown
-  contents, toggle round-trip, three bands side by side, on both sim and the real probe). A
-  <code>tests/gui/bands.py</code> following <code>stream_options.py</code> is the natural next step.</li>
-<li><strong>The filter state shift</strong> described in §3 is the one clear remaining optimisation.</li>
-<li><strong>Recording a derived band is untested.</strong> <code>proc.npx.recorder</code> expects the int16 interpreter; these
-  bands are float. Nothing stops a config trying it, and nothing has checked what happens.</li>
+<li><strong>The filter state shift</strong> described in §3 is the one clear remaining optimization.</li>
+<li>The <strong><code>tests/gui/</code></strong> coverage that this section used to say was missing now exists:
+  <code>tests/gui/band_dependency.py</code> (§5) pins available-not-running, the dropdown round-trip, the
+  backend-enforced detector dependency and its dialog, and the 1.0 case where no bands appear at all.</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/DerivedBands.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -636,9 +679,13 @@ native <code>data.npx.lfp</code> on a 1.0 probe. Treat 1.0 as unsupported until 
 <li><a href="#picking-a-band-per-rowcolumn">Picking a band per row/column</a></li>
 </ul>
 </li>
-<li><a href="#7-which-configs-have-it">7. Which configs have it</a></li>
+<li><a href="#7-which-configs-have-it-and-why-the-question-barely-matters-any-more">7. Which configs have it — and why the question barely matters any more</a></li>
 <li><a href="#8-scope-20-only-and-why-10-is-a-different-question">8. Scope: 2.0 only, and why 1.0 is a different question</a></li>
-<li><a href="#9-known-gaps">9. Known gaps</a></li>
+<li><a href="#9-known-gaps">9. Known gaps</a><ul>
+<li><a href="#recording-a-derived-band-is-untested-and-nothing-stops-you-trying">⚠️ Recording a derived band is UNTESTED — and nothing stops you trying</a></li>
+<li><a href="#smaller">Smaller</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

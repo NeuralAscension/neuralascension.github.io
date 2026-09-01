@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a class="active" href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,13 +131,15 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="offline-analysis-of-closed-loop-ripplestim-recordings">Offline analysis of closed-loop ripple→stim recordings<a class="headerlink" href="#offline-analysis-of-closed-loop-ripplestim-recordings" title="Permanent link">#</a></h1>
-<p><strong>This is the canonical reference for analysing a recorded closed-loop test offline, and for the
+<p><strong>This is the canonical reference for analyzing a recorded closed-loop test offline, and for the
 NI-DAQ↔Neuropixels clock/sync machinery every recorded latency depends on.</strong> It covers (a) reproducing
 the online detector <strong>exactly</strong> from disk, (b) the <strong>closed-loop latency</strong> measurement method
 (detection → current into the electrode), and (c) the <strong>sync fit + the three clock/sync bugs</strong> that were
@@ -157,24 +167,32 @@ saline + NI-DAQ + the Pi/AM 2300 stim server): the 1000-detection quorum matrix
 derives from <code>raw</code>. To reproduce it bit-for-bit (not approximately) the offline analysis replays the whole
 front-end (all coefficients live in <code>src/core/Common.hpp</code>):</p>
 <ol>
-<li><strong><code>data.lfp</code></strong> — <code>src/modules/lfp/LFPProcessor.cpp</code> runs <code>Avx2Filter::setDefaultLFPFilterCoefs</code> on the
+<li><strong><code>data.lfp</code></strong> — <code>src/core/BandFilterProcessor.cpp</code> runs <code>Avx2Filter::setDefaultLFPFilterCoefs</code> on the
    30 kHz raw: a <strong>2nd-order Bessel low-pass, −3 dB @ 400 Hz</strong> (<code>LFPFilterCoefficients30KHz</code>:
    <code>b=[0.00163508, 0.00327016, 0.00163508]</code>, <code>a=[1, −1.85831868, 0.86485901]</code>), Direct-Form-I
    <code>y[n]=Σb·x − Σ_{i≥1}a·y</code>, <strong>zero initial state</strong>. No DC removal anywhere. (Applied offline without scipy as
    the IIR's zero-state impulse response convolved in — exact to ~1e-16.)</li>
-<li><strong>Decimate</strong> — the detector takes <strong>every 12th sample</strong> (<code>RippleDetector.cpp</code>,
+</ol>
+<blockquote>
+<p>The loop used to live in <code>src/modules/lfp/LFPProcessor.cpp</code>; that file no longer exists. It was lifted
+into the shared base <code>src/core/BandFilterProcessor.cpp</code> when the spike band arrived, and <code>LFPProcessor</code>
+is now a header that names the coefficients (see <a href="DerivedBands.html"><code>DerivedBands.md</code></a> §1).
+<strong>Nothing about this reproduction changed</strong> — the coefficients are still <code>LFPFilterCoefficients30KHz</code>
+in <code>src/core/Common.hpp</code>, the filter is still the same 2nd-order Bessel, and all six steps below are
+unaffected. Only the file to read them in moved.
+2. <strong>Decimate</strong> — the detector takes <strong>every 12th sample</strong> (<code>RippleDetector.cpp</code>,
    <code>mCurrRawDataInd % mDecimationFactor == 0</code>); simple decimation, no anti-alias (the Bessel already
-   band-limited it). NP1 skips steps 1–2: it records <code>data.npx.lfp</code> directly (decimation 1).</li>
-<li><strong>Ripple band</strong> — 26-tap 150–250 Hz FIR (<code>RippleBandFilterCoefficients2_5kHz</code>, a=[1] → pure FIR).</li>
-<li><strong><code>abs()</code></strong>, then <strong>envelope</strong> — 10-tap FIR (<code>EnvelopeFilter2_5kHz</code>, a=[1]).</li>
-<li><strong>Threshold</strong> — mean + z·σ (z=2.5) trained on the baseline window. Because the exact Bessel puts the offline
+   band-limited it). NP1 skips steps 1–2: it records <code>data.npx.lfp</code> directly (decimation 1).
+3. <strong>Ripple band</strong> — 26-tap 150–250 Hz FIR (<code>RippleBandFilterCoefficients2_5kHz</code>, a=[1] → pure FIR).
+4. <strong><code>abs()</code></strong>, then <strong>envelope</strong> — 10-tap FIR (<code>EnvelopeFilter2_5kHz</code>, a=[1]).
+5. <strong>Threshold</strong> — mean + z·σ (z=2.5) trained on the baseline window. Because the exact Bessel puts the offline
    envelope in the <strong>same scale</strong> the live detector used, the ONLINE per-channel threshold (from the WS
    <code>rippleBaseline</code>, keyed by electrode → remapped to read-out channel via the <code>_ripple.json</code> sidecar) applies
-   directly — identical to the live detector.</li>
-<li><strong>Quorum</strong> — per-channel rising-edge → per-channel lockout → count channels whose <code>lastCrossTime</code> is within
+   directly — identical to the live detector.
+6. <strong>Quorum</strong> — per-channel rising-edge → per-channel lockout → count channels whose <code>lastCrossTime</code> is within
    the coincidence window (includes self) → fire if <code>reporting ≥ quorum</code> and past the shared stim-lockout, then
-   bump all channels' lockout (<code>RippleDetector.cpp</code> ~728–769). Reproduced in <code>quorum_detections()</code>.</li>
-</ol>
+   bump all channels' lockout (<code>RippleDetector.cpp</code> ~728–769). Reproduced in <code>quorum_detections()</code>.</p>
+</blockquote>
 <p><strong>Validation:</strong> with this exact chain the offline reconstruction reproduces the online detector on the clean
 tests (offline-quorum crossings match the recorded online-instant firings, 0 unmatched). <strong>Historical note —
 do not reintroduce this:</strong> an earlier <code>raw÷12</code> windowed-sinc approximation of <code>data.lfp</code> <strong>plus a DC-removal
@@ -207,7 +225,7 @@ left a ~10 ppm SCALE error, so apparent latency <strong>ramped with recording le
 (slope 10.7 µs/s, r = 0.99), invisible on the ~70 s recordings used earlier. It also manufactured a spurious
 "latency rises with quorum" trend (the tests had different durations). <strong>Fix:</strong> convert detections back to
 hardware ticks with the same nominal constant the backend used, then map ticks→seconds with the measured rate —
-one conversion, no scale error. Every recording was re-analysed; all numbers published before 2026-07-21 were
+one conversion, no scale error. Every recording was re-analyzed; all numbers published before 2026-07-21 were
 inflated by this.</p>
 <h3 id="bug-2-matchend-off-by-one-fixed-2026-07-17">Bug #2 — <code>match="end"</code> off-by-one (fixed 2026-07-17)<a class="headerlink" href="#bug-2-matchend-off-by-one-fixed-2026-07-17" title="Permanent link">#</a></h3>
 <p>A recording's NI-DAQ captured <strong>one fewer</strong> sync pulse than the NPX (78 vs 79 — it stopped ~0.8 s before the
@@ -225,7 +243,7 @@ and end-anchored offsets are wrong by a whole period (observed <code>off_start=+
 1 Hz train), so picking the smaller-magnitude one still shifted every timestamp by ~<strong>1.000 s</strong>. Same invisible
 signature — 617 pulses, 9.78 ppm, 0.012 ms residual all looked perfect. It hit <code>np1_4ch_q3_asap</code> (257 of 995
 pulses left unpaired, a physically impossible 0.433 ms minimum). <strong>Fix:</strong> both clocks are started by one host
-command, so the true offset is milliseconds; any whole-period component is a pairing artefact. <code>_pair_edges_auto</code>
+command, so the true offset is milliseconds; any whole-period component is a pairing artifact. <code>_pair_edges_auto</code>
 now <strong>reduces the coarse offset modulo the sync period</strong> into (−IPI/2, +IPI/2], with a warning when it fires.
 After the fix: unmatched 257→0, and the healthy recordings are bit-identical. It surfaced only because the
 <strong>burst-start-anchored</strong> cross-check (aperiodic ripple-burst gaps) disagreed with nearest-before by ~1 s.</p>

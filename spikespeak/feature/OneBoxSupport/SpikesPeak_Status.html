@@ -52,58 +52,66 @@
 <a href="developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="developer_docs/Profiling.html">Profiling — where the time actually goes</a>
 <a href="developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="developer_docs/DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="developer_docs/Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="developer_docs/Recording.html">SpikesPeak — Recording</a>
 <a href="developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
 <a href="developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="developer_docs/Contributing.html">Contributing</a>
+<a href="developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="developer_docs/NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="developer_docs/NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -264,6 +274,26 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td>S65</td>
 <td>2026-08-28</td>
 <td><strong>The morning of an in-vivo session</strong>: the recording sidecar and the live view disagreed about microvolts; a GUI-started recording wrote no ripple sidecar; the tab bar highlighted one panel over another; and the SpikeGLX export described a prototype probe with fabricated geometry. Plus #50 and #59 closed, and the first conversion documentation</td>
+</tr>
+<tr>
+<td>S66</td>
+<td>2026-08-28</td>
+<td><strong>A recording now carries its own provenance</strong>: the two operator-facing gaps §65g warned about, closed</td>
+</tr>
+<tr>
+<td>S67</td>
+<td>2026-08-28</td>
+<td><strong>The control surface answers back</strong>: #51, #63, #64, #61/#62 — three of them the same defect wearing different clothes</td>
+</tr>
+<tr>
+<td>S68</td>
+<td>2026-08-29</td>
+<td><strong>What the clock says, and what the host believes</strong>: finishing #61/#62/#63 and #52 configuration 3; four defects</td>
+</tr>
+<tr>
+<td>S69</td>
+<td>2026-08-31</td>
+<td><strong>A filter is not a brick wall</strong>: the simulated AP band carried NO ripple because "attenuates" was implemented as "eliminates" — a 300 Hz first-order corner passes 55% of a 200 Hz ripple, and the play-file generator disagreed with the live simulator by 15x. Plus the figure that started it, per-column time bases, and a detachable ripple dock</td>
 </tr>
 <tr>
 <td><strong>S21</strong></td>
@@ -439,6 +469,11 @@ Sections S1-S12 are <strong>thematic</strong> (the original IMRO/architecture ma
 <td><strong>S55</strong></td>
 <td><strong>2026-08-24</strong></td>
 <td><strong>The DAC was never switched on, and the OneBox stopped streaming.</strong> <a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed: <code>arm()</code> never called <code>np_DAC_enableOutput</code>, so a correct WavePlayer drove nothing. Output measured on <strong>DAC0 → breakout BNC IO0</strong>, NOT the SMA; sync provably undisturbed; 6553.6 codes/V confirmed twice. New <code>dac_trigger</code> fires both trigger paths from one crossing. Then the OneBox stopped delivering packets — bisected to acquisition start with vendor-API-only programs (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/59">#59</a>), which blocks the latency A/B (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/60">#60</a>). New references: <code>ConfigReference.md</code>, <code>ClosedLoopDriving.md</code>.</td>
+</tr>
+<tr>
+<td><strong>S70</strong></td>
+<td><strong>2026-08-31</strong></td>
+<td><strong>The front door, and the rules that keep it from rotting again.</strong> A four-workstream documentation pass. The repo README was a bracketed TODO addressed to an agent, so the public GitHub front page showed the note and not the screenshot; the map still listed two OneBox latency briefs as NEXT UP eleven days after they completed, which is a session of rig time in saline; three files each carried their own C++ case count and all three were wrong; eight pages rendered under Unsorted. New <code>developer_docs/Contributing.md</code>. Four durable rules adopted -- counts live only in Testing.md, a finished brief is archived in the commit that finishes it, a current-behavior claim carries the date it was checked, and a README row and its GROUPS entry move together</td>
 </tr>
 </tbody>
 </table>
@@ -6339,7 +6374,243 @@ probe to the other box and the same script verifies the mirror with no edit — 
 the <strong>shared</strong> <code>NpInterface</code> base (<code>NpInterface.cpp:1907</code>). Only <code>detectProbePort()</code> is
 platform-specific — PXIe gates on <code>np_openPort</code> then <code>np_detectHeadStage</code>, the OneBox overrides it to
 call <code>np_detectHeadStage</code> directly over its two ports — and both failures converge on the same
-reporting path.</p></article>
+reporting path.</p>
+<hr />
+<h2 id="69-a-filter-is-not-a-brick-wall-2026-08-31">69. A FILTER IS NOT A BRICK WALL  (2026-08-31)<a class="headerlink" href="#69-a-filter-is-not-a-brick-wall-2026-08-31" title="Permanent link">#</a></h2>
+<p>Started as a complaint about a figure and ended in the signal model. The operator looked at the
+heatmap page in the user docs and asked why the report showed the <strong>AP</strong> view when the heatmap
+presumably showed <strong>LFP</strong>. Both halves of the answer were defects.</p>
+<h3 id="69a-the-figure-was-comparing-two-unrelated-things">69a. The figure was comparing two unrelated things<a class="headerlink" href="#69a-the-figure-was-comparing-two-unrelated-things" title="Permanent link">#</a></h3>
+<p><code>user_docs/images/heatmap_column.png</code> was shot by hand, and <code>tests/gui/heatmap_view.py</code> only ever
+sets <strong>column 0</strong>. So the left column was an LFP heatmap of 384 channels and the right column was
+whatever the source defaults to — the <strong>AP band</strong>, 20 channels, e20–e39. The caption said <em>"Right:
+the same source as traces"</em>, which is literally true and reads as <em>the same data drawn two ways</em> —
+contradicting the feature's actual claim, that a heatmap shows the same channels in the same order.</p>
+<p>Both figures are now a <strong>product of the test</strong> (<code>python tests/gui/heatmap_view.py --figures</code>), which
+sets both columns explicitly. A hand-shot figure has no way to be wrong-and-noticed.</p>
+<p>The claim itself was also <strong>asserted in prose and nowhere checked</strong>. It is now an assertion: at a
+given density with shanks unmerged, <code>heatmapChannels()</code> returns <code>visibleChannels.slice()</code>, so the
+test compares the two lists elementwise.</p>
+<h3 id="69b-attenuates-had-been-implemented-as-eliminates">69b. "Attenuates" had been implemented as "eliminates"<a class="headerlink" href="#69b-attenuates-had-been-implemented-as-eliminates" title="Permanent link">#</a></h3>
+<p>The operator's real point: a 300 Hz high-pass does not remove a 150–250 Hz oscillation, so ripples
+must appear in <strong>both</strong> bands. The simulator injected the burst into the LFP band only, justified by
+a comment in <code>generateApSample</code> that got the premise right and the conclusion wrong.</p>
+<p>A first-order 300 Hz corner passes <strong>0.5547</strong> of a 200 Hz signal — −5.1 dB. Relative to the LFP band
+(itself down 0.9285 from its own 500 Hz low-pass) the AP band carries <strong>0.597</strong>.</p>
+<p>The corner is not a guess: the vendor API exposes exactly one control for it,
+<code>setAPCornerFrequency(..., bool disable_high_pass)</code>, documented as <em>"true for disabling the 300Hz
+high-pass cut-off filter"</em>. <strong>The filter ORDER is an assumption</strong> — imec publishes corners, not
+orders — and first order is both the conservative choice (a steeper filter attenuates more) and the
+physically likely one for a per-channel stage repeated 384 times.</p>
+<h3 id="69c-and-the-two-simulators-disagreed-by-15">69c. And the two simulators disagreed by 15×<a class="headerlink" href="#69c-and-the-two-simulators-disagreed-by-15" title="Permanent link">#</a></h3>
+<p>Chasing 69b turned up the other half. <code>scripts/gen_synthetic_ripples.py</code> <strong>did</strong> filter the AP band —
+with <code>sosfiltfilt(butter(4, 300, 'high'))</code>. Zero-phase filtering applies the response twice, so a
+4th-order design rolled off like an 8th-order one. Measured: <strong>0.0375</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>path</th>
+<th>AP gain at 200 Hz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>live simulator (before)</td>
+<td>0 — no ripple injected at all</td>
+</tr>
+<tr>
+<td>play-file generator (before)</td>
+<td>0.0375</td>
+</tr>
+<tr>
+<td>both (now)</td>
+<td><strong>0.5547</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Both files said <em>"as on real hardware"</em>. Neither number was reachable from the other file, and each
+path was internally consistent, so nothing could go red.</p>
+<p><strong><code>filtfilt</code> is an analysis tool, not a hardware model.</strong> It doubles the effective order and is
+acausal; a probe can do neither.</p>
+<h3 id="69d-what-was-actually-built">69d. What was actually built<a class="headerlink" href="#69d-what-was-actually-built" title="Permanent link">#</a></h3>
+<ul>
+<li><code>src/modules/neuropixels/SimBandResponse.hpp</code> — the model, free of Qt and the vendor API so it is
+  cheap to test. <code>tests/test_simbandresponse.cpp</code>, 7 cases.</li>
+<li><code>scripts/np1_band_model.py</code> — the Python half, deliberately <strong>separate from the generator</strong>, which
+  imports <code>h5py</code> and therefore cannot be imported by the gate's Python. That is not hypothetical: it
+  is precisely why the drift survived.</li>
+<li><code>python/tests/test_band_response.py</code> — pins the same numbers, asserts the filter is <strong>causal</strong> (an
+  impulse test <code>sosfiltfilt</code> fails), and parses the constants out of the C++ header so changing one
+  side alone goes red.</li>
+<li><code>rippleAmplitude</code> is now defined as the burst peak <strong>in the LFP band</strong>, so the LFP band — and every
+  validated detector threshold — is bit-for-bit unchanged. The AP band gains signal; nothing loses it.</li>
+</ul>
+<p><strong>Verified end to end on a recording</strong>, not just in unit tests:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th style="text-align: right;">measured</th>
+<th style="text-align: right;">expected</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AP burst amplitude</td>
+<td style="text-align: right;">59.5 counts</td>
+<td style="text-align: right;">59.7 (<code>0.597 × 100</code>)</td>
+</tr>
+<tr>
+<td>AP / LFP ratio</td>
+<td style="text-align: right;">0.582</td>
+<td style="text-align: right;">0.597</td>
+</tr>
+<tr>
+<td>burst interval</td>
+<td style="text-align: right;">2.00 s</td>
+<td style="text-align: right;">2.0</td>
+</tr>
+<tr>
+<td>AP burst over its own in-band noise floor</td>
+<td style="text-align: right;">43×</td>
+<td style="text-align: right;">—</td>
+</tr>
+</tbody>
+</table>
+<p>The ratio scatters while the amplitude does not, because the LFP band's in-band noise floor is 3.5×
+the AP band's (4.99 vs 1.41 counts): same per-sample noise, a twelfth of the bandwidth.</p>
+<h3 id="69e-two-traps-that-cost-real-time-now-written-down">69e. Two traps that cost real time, now written down<a class="headerlink" href="#69e-two-traps-that-cost-real-time-now-written-down" title="Permanent link">#</a></h3>
+<p>Both are in <code>developer_docs/AgentTraps.md</code>:</p>
+<ul>
+<li><strong>Recording <code>.bin</code> frames carry a 6-byte header.</strong> <code>np.fromfile(...).reshape(-1, nch)</code> produces
+  garbage that <em>looks like data</em> — full-scale rails, plausible "bursts" at almost-right spacing. The
+  tell is amplitude: simulated counts should be in the hundreds, not railing at ±32768.</li>
+<li><strong>Revert the regression, then REBUILD.</strong> Proving a test can fail leaves the regression in
+  <code>bin/SpikesPeak.exe</code> after the source is clean. A record-and-measure cycle was spent measuring a
+  brick-wall binary; the analysis was right and the binary was stale.</li>
+</ul>
+<h3 id="69f-time-bases-and-a-dock-that-leaves">69f. Time bases, and a dock that leaves<a class="headerlink" href="#69f-time-bases-and-a-dock-that-leaves" title="Permanent link">#</a></h3>
+<p>Three operator requests came out of the same session, all about ambiguity the figure exposed.</p>
+<p><strong>The heatmap's span was a hardcoded 8 s</strong> (<code>HEATMAP_WINDOW_SEC</code>; <code>heatmapWindowSec</code> was never
+assigned) with <strong>no control and no label</strong>, while trace columns follow the toolbar's control, default
+<strong>1 s</strong>. Two columns of the same probe, x axes differing by 8×, nothing on screen saying so. Now: the
+span is <strong>selectable per column</strong>, and <strong>every column names its own time base</strong> in the readout — in
+both view modes, because a label that appears in only one mode is a label nobody learns to look for.</p>
+<p>The readout is one element with a re-applied suffix rather than a sibling span: <code>.page-info</code> is
+<code>grid-area: depth</code>, so a second element with that class would have rendered <em>on top of</em> the depth
+readout.</p>
+<p><strong>Toolbar "Window" → "Time".</strong> Since detached windows landed, "Window" read as "which window".</p>
+<p><strong>The ripple dock detaches.</strong> One <code>⧉</code> button in the dock header, which becomes <code>⧉ Dock</code> in the
+detached window — one control, two directions, in the place the operator already found it. The
+detached window is <code>?view=ripple</code> and builds <strong>zero</strong> ChartColumns: Chrome allows ~16 WebGL contexts
+per renderer process and force-loses the oldest silently, so contexts allocated in a window that
+never shows them would blank a live view the operator <em>is</em> watching. It registers as its own
+<code>ripple</code> role so it does not take a number in the operator's "View 2 of 3". Closing it by any route —
+redock, the X, a crashed tab — restores the in-page dock, because the main window keys on the peer
+set rather than on the redock message.</p>
+<hr />
+<h2 id="70-the-front-door-and-the-rules-that-keep-it-from-rotting-again-2026-08-31">70. THE FRONT DOOR, AND THE RULES THAT KEEP IT FROM ROTTING AGAIN  (2026-08-31)<a class="headerlink" href="#70-the-front-door-and-the-rules-that-keep-it-from-rotting-again-2026-08-31" title="Permanent link">#</a></h2>
+<p>A documentation pass across the whole book, run as <strong>four workstreams in parallel over disjoint file
+sets</strong> so no two writers touched the same page. This section records the <em>entry documents</em> set --
+<code>README.md</code>, <code>CLAUDE.md</code>, <code>developer_docs/README.md</code>, the new <code>developer_docs/Contributing.md</code>,
+<code>scripts/build_docs.py</code>, and the two finished OneBox briefs -- plus the rules the whole pass adopts.
+The other three workstreams are recorded by their own edits.</p>
+<h3 id="70a-the-public-front-page-was-a-note-addressed-to-an-agent">70a. The public front page was a note addressed to an agent<a class="headerlink" href="#70a-the-public-front-page-was-a-note-addressed-to-an-agent" title="Permanent link">#</a></h3>
+<p><code>README.md</code> was 616 bytes. Line 5 was a bracketed TODO -- "re-capture this screenshot..." -- with the
+image markdown nested <em>inside</em> the parenthesis, so the picture never rendered and the note did. That
+was what <a href="https://github.com/NeuralAscension/SpikesPeak">https://github.com/NeuralAscension/SpikesPeak</a> showed a visitor: a tagline, an instruction
+to an AI, and an architecture diagram.</p>
+<p>It is now a front door written for a human: what the system is, the hardware it drives, a quick start
+(<code>build.bat --no-pause</code> then <code>run_spikespeak.bat --no-browser</code> then <code>http://localhost:8234</code>), where
+the four doc entry points are, and the issue-tracker URL. <strong>No page in this repo said where issues
+live</strong>, while the docs cite #11/#16/#18/#34/#49/#51/#59/#65/#69/#70 throughout.</p>
+<p>The screenshot problem itself is real and was not deleted, only moved: <code>images/maindisplay.PNG</code> is the
+July build with a <strong>SciChart watermark burned into all four live-view columns</strong>, and SciChart was
+removed on 2026-08-27. It is now an item in <code>developer_docs/NextTask_DocsRefresh.md</code> with the
+recapture recipe attached, rather than a note on the front page.</p>
+<p>There was also no CONTRIBUTING-style page anywhere -- <code>find . -iname "CONTRIBUTING*"</code> hit only
+vendored rapidyaml. <code>developer_docs/Contributing.md</code> is new: branch and commit style <strong>as practiced</strong>,
+the agent rule (do not <code>git add</code>/commit/push unless the operator asks) beside the human flow, the gate
+as a pointer rather than a number, and the doc conventions.</p>
+<h3 id="70b-three-documents-three-case-counts-all-three-wrong">70b. Three documents, three case counts, all three wrong<a class="headerlink" href="#70b-three-documents-three-case-counts-all-three-wrong" title="Permanent link">#</a></h3>
+<p><code>CLAUDE.md</code> said the C++ suite was "~1.6 s, 316 cases"; <code>Testing.md</code> said 414. Both are documents a
+newcomer is <em>told to read first</em>, so the two mandatory entry points disagreed with each other before
+the tree was touched. <code>CLAUDE.md</code> also said "13 tests" for the GUI suite and "121 tests" for the
+Python suite. Ground truth on 2026-08-31: <strong>26 registered C++ suites</strong>, <strong>22 GUI tests</strong>, <strong>126 Python
+tests</strong>.</p>
+<p>Updating three numbers would have bought a few weeks. The fix is structural: counts live in
+<code>Testing.md</code> and nowhere else, and every other page quotes the file. <code>CLAUDE.md</code> and
+<code>developer_docs/README.md</code> now say so explicitly, and the hand-back checklist carries it as a rule.</p>
+<p>Two related corrections in the same file: <code>CLAUDE.md</code> said "until <strong>BOTH</strong> suites pass" while the
+checklist three lines below listed three and the next heading read "One command for all three"; and
+every <code>build.bat</code> invocation now carries <code>--no-pause</code>. That trap was recorded in 64c and 65a -- it
+hangs a scripted chain at <em>"Press any key to continue"</em> -- and had never been promoted into the file
+agents actually read.</p>
+<h3 id="70c-the-map-pointed-a-newcomer-at-a-finished-experiment">70c. The map pointed a newcomer at a finished experiment<a class="headerlink" href="#70c-the-map-pointed-a-newcomer-at-a-finished-experiment" title="Permanent link">#</a></h3>
+<p><code>developer_docs/README.md</code> listed <code>NextTask_OneBoxClosedLoopLatency.md</code> as <strong>"NEXT UP"</strong> and
+<code>NextTask_OneBoxLatencyMatrix.md</code> as <strong>"Ready to run"</strong>. Both completed on <strong>2026-08-20</strong> -- section
+48, the full 3x2 matrix on both probes, 11,000 detections / 11,000 confirmed fires / 0 unmatched.
+Anyone following the map would have spent a session of rig time, in saline with a live stimulator,
+re-running a matrix that was already in the log.</p>
+<p>Both are now in <code>developer_docs/archive/</code>, each with a dated DONE banner and its whole body kept: the
+positional-<code>recdir</code> trap, inner-vs-outer directory, "do not pipe the runner into <code>tail</code>" (a shell
+pipeline exits with the status of its <em>last</em> member, which is how five cells were "analyzed" without
+producing a number), gate-vs-arm, and <code>--stim-band adc --stim-channel N</code>. None of that is specific to
+the matrix, which is why the files stay. Two corrections went in with the move: the wiring snapshot is
+marked as the 2026-08-24 bench with <code>OneBoxWiring.md</code> section 4 named as the current authority (it
+shows the SMA on IO9, two rewires ago), and a dead cross-reference to "Recording.md section 5" for the
+pulse-width note now points at <code>LatencyProfiling.md</code>, where it actually is.</p>
+<p>Other reference-layer fixes on the same page: the banner was dated 2026-07-21 and named in-vivo as the
+<em>next</em> milestone, which passed on 2026-08-28 (section 65) -- and it predated the entire OneBox
+transport (sections 48, 51, 55) although the working branch is called <code>feature/OneBoxSupport</code>. The
+green box said "<strong>Both</strong> suites" over a two-command block and then claimed <code>CLAUDE.md</code> "carries the
+same checklist", which gave a newcomer an explicit reason not to cross-check and to skip the Python
+suite that covers the converters and the sync pairing every published latency passes through. The
+Windows quick start was textually corrupted -- <code>exe -&gt; binrun_spikespeak.bat</code>, two commands fused by a
+missing newline. "A fresh clone needs no setup" (said twice) is now qualified with the two things the
+same page's own dependency table says are needed: HDF5 on <code>CMAKE_PREFIX_PATH</code>, and internet at first
+configure for PortAudio and rapidyaml. And the hardware table said slot/port/dock were <strong>hard-coded</strong>
+when they are detected at runtime by <code>BasestationScan</code> + <code>NeuropixelsSource::discoverProbeHardware()</code>;
+it also had no OneBox row at all.</p>
+<p>One entry was actively harmful. "Working in parallel" listed <code>webinterface/index.html #selectSource</code>
+as a shared hotspot needing "one option per source" -- following it writes dead markup into the very
+file that warns against it, whose own comment reads <em>"Do not add profiles here"</em>. The <code>&lt;select&gt;</code> is a
+hidden two-entry pre-connect fallback; the real list is rebuilt by <code>main.js rebuildSourceOptions()</code>
+from the backend's <code>configList</code>.</p>
+<h3 id="70d-eight-pages-were-rendering-under-unsorted">70d. Eight pages were rendering under "Unsorted"<a class="headerlink" href="#70d-eight-pages-were-rendering-under-unsorted" title="Permanent link">#</a></h3>
+<p><code>DetachedViews.md</code>, <code>HeatmapView.md</code>, <code>IntanOpenQuestions.md</code>, <code>OneBoxWiring.md</code>,
+<code>RendererContract.md</code>, <code>SecondMachineRunbooks.md</code>, <code>SimdDispatch.md</code> and <code>SimulatedSignals.md</code> were in
+no <code>GROUPS</code> entry in <code>scripts/build_docs.py</code>, so the book filed them at the bottom of the nav -- which
+the README itself calls "where docs go to be missed". Three <code>GROUPS</code> entries pointed at files that had
+already moved to <code>archive/</code>, and two pages (<code>AudioVideoLatency.md</code>, <code>CodeStyle.md</code>) were in one group
+in the README and a different one in <code>GROUPS</code>. <code>Building.md</code> was in <code>GROUPS</code> with no README row at
+all.</p>
+<p>All nine pages (the eight plus the new <code>Contributing.md</code>) are now grouped in both places, the stale
+entries are gone, and the two disagreements are resolved. The book builds with <strong>no</strong> not-in-GROUPS
+warning and no missing-file warning. One row was also factually wrong and is corrected:
+<code>RippleDetectorThreading.md</code> does <em>not</em> cover "why the stim socket/ACK path is thread-safe" -- it is a
+measured per-electrode threading trade-off report (~28 ns per channel-sample; one thread covers
+~14,000 channels; the whole probe costs 2.7 % of a core).</p>
+<h3 id="70e-the-rules-which-are-the-point">70e. The rules, which are the point<a class="headerlink" href="#70e-the-rules-which-are-the-point" title="Permanent link">#</a></h3>
+<p>The individual corrections above will be re-earned by the next six months of work. These four are what
+stops that:</p>
+<ol>
+<li><strong>Suite and case counts live in <code>developer_docs/Testing.md</code> and nowhere else.</strong> Quote the file,
+   never the number. Three files each carried their own on 2026-08-31 and all three were wrong.</li>
+<li><strong>A finished <code>NextTask_*</code> brief is archived in the commit that finishes it</strong> -- not in a later
+   cleanup pass. A completed brief left under "Plans and open briefs" reads as work waiting to be
+   done, and on this repo that costs rig time.</li>
+<li><strong>A page making a "current behavior" claim carries the date it was checked.</strong> An undated claim
+   outlives the behavior it describes and there is then no way to tell which.</li>
+<li><strong>A page's README table row and its <code>scripts/build_docs.py</code> <code>GROUPS</code> entry move in the same
+   commit.</strong> They are the same list twice -- the map a human reads and the map the book renders -- and
+   two maps that disagree are worse than one.</li>
+</ol>
+<p><code>CLAUDE.md</code> gained one more repo convention on the same principle: <strong><code>user_docs/</code> goes stale with the
+toolbar</strong>, so a change to anything an operator clicks checks <code>user_docs/README.md</code>'s toolbar table and
+<code>user_docs/GUI-Guide.md</code>'s screenshots in the same change. <code>CLAUDE.md</code> had never mentioned <code>user_docs/</code>
+at all, which is why those pages have been repeatedly refreshed after the fact rather than with the
+change that broke them.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -6761,6 +7032,23 @@ reporting path.</p></article>
 <li><a href="#68f-63s-decay-does-not-reproduce-here">68f. #63's decay does not reproduce here</a></li>
 <li><a href="#68g-channels-recorded-by-default-confirmed-and-now-enforced">68g. Channels recorded by default — confirmed, and now enforced</a></li>
 <li><a href="#68h-the-both-attached-check-is-now-symmetric">68h. The both-attached check is now symmetric</a></li>
+</ul>
+</li>
+<li><a href="#69-a-filter-is-not-a-brick-wall-2026-08-31">69. A FILTER IS NOT A BRICK WALL (2026-08-31)</a><ul>
+<li><a href="#69a-the-figure-was-comparing-two-unrelated-things">69a. The figure was comparing two unrelated things</a></li>
+<li><a href="#69b-attenuates-had-been-implemented-as-eliminates">69b. "Attenuates" had been implemented as "eliminates"</a></li>
+<li><a href="#69c-and-the-two-simulators-disagreed-by-15">69c. And the two simulators disagreed by 15×</a></li>
+<li><a href="#69d-what-was-actually-built">69d. What was actually built</a></li>
+<li><a href="#69e-two-traps-that-cost-real-time-now-written-down">69e. Two traps that cost real time, now written down</a></li>
+<li><a href="#69f-time-bases-and-a-dock-that-leaves">69f. Time bases, and a dock that leaves</a></li>
+</ul>
+</li>
+<li><a href="#70-the-front-door-and-the-rules-that-keep-it-from-rotting-again-2026-08-31">70. THE FRONT DOOR, AND THE RULES THAT KEEP IT FROM ROTTING AGAIN (2026-08-31)</a><ul>
+<li><a href="#70a-the-public-front-page-was-a-note-addressed-to-an-agent">70a. The public front page was a note addressed to an agent</a></li>
+<li><a href="#70b-three-documents-three-case-counts-all-three-wrong">70b. Three documents, three case counts, all three wrong</a></li>
+<li><a href="#70c-the-map-pointed-a-newcomer-at-a-finished-experiment">70c. The map pointed a newcomer at a finished experiment</a></li>
+<li><a href="#70d-eight-pages-were-rendering-under-unsorted">70d. Eight pages were rendering under "Unsorted"</a></li>
+<li><a href="#70e-the-rules-which-are-the-point">70e. The rules, which are the point</a></li>
 </ul>
 </li>
 </ul>

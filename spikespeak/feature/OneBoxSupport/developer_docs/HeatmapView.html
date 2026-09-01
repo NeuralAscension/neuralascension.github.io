@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The heatmap column — time × channel, on the GPU - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Live view and GUI / The heatmap column — time × channel, on the GPU</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup" open><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a class="active" href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="the-heatmap-column-time-channel-on-the-gpu">The heatmap column — time × channel, on the GPU<a class="headerlink" href="#the-heatmap-column-time-channel-on-the-gpu" title="Permanent link">#</a></h1>
+<p>A live-view column draws either <strong>traces</strong> or a <strong>heatmap</strong> of the same channels: time on one axis,
+channel on the other, color carrying a per-bin statistic. It is the Open Ephys <code>probe-viewer</code> idea,
+built to this codebase's rules.</p>
+<p><strong>This is not the probe-map heatmap.</strong> That is a different, still-unbuilt feature — coloring the
+<em>spatial</em> electrode map by activity, with no time axis, the way SpikeGLX's Shank Viewer does. See
+<a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a>. The two share a metric and nothing else.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Renderer</td>
+<td><code>webinterface/GlHeatmap.js</code></td>
+</tr>
+<tr>
+<td>Column wiring, legend, controls</td>
+<td><code>webinterface/ChartColumn.js</code></td>
+</tr>
+<tr>
+<td>Mode switch</td>
+<td><code>GlColumnRenderer.setViewMode()</code> in <code>webinterface/GlRenderer.js</code></td>
+</tr>
+<tr>
+<td>Data tap</td>
+<td><code>webinterface/NetworkClient.js</code></td>
+</tr>
+<tr>
+<td>Test</td>
+<td><code>tests/gui/heatmap_view.py</code></td>
+</tr>
+<tr>
+<td>Benchmark</td>
+<td><code>ripple_tools/bench_heatmap.py</code> → <code>heatmap_bench.json</code></td>
+</tr>
+<tr>
+<td>Comparison figure</td>
+<td><code>ripple_tools/plot_heatmap_comparison.py</code> → <code>heatmap_comparison.png</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-what-it-shows">1. What it shows<a class="headerlink" href="#1-what-it-shows" title="Permanent link">#</a></h2>
+<p><strong>Whatever stream the column's dropdown is on.</strong> The heatmap is a rendering mode, not a band: point
+the column at <code>ap</code>, <code>lfp</code>, <code>raw</code>, <code>adc</code> or <code>nidaq</code> and it colors that.</p>
+<p><strong>Statistic: peak-to-peak per channel per time bin</strong>, in the stream's own units (µV for a probe band,
+V for NI-DAQ and the OneBox ADC).</p>
+<p><strong>Window: 8 seconds</strong>, newest at the right edge. Matches probe-viewer's <code>TRANSPORT_WINDOW_TIMEBASE</code>.</p>
+<p><strong>Channel axis: the same channels, in the same order, as the traces</strong> — so switching modes never
+moves a channel. The density dropdown gains an <strong>All</strong> option in heatmap mode: 384 traces in one
+column is unreadable, 384 rows of heatmap is the ordinary way to look at a probe, and on the GPU it
+is the same single draw call as 20.</p>
+<p><strong>Or every shank at once, ordered by depth</strong> — the shank dropdown gains <strong>All shanks · depth</strong>. See
+§1a.</p>
+<hr />
+<h2 id="1a-merged-shanks-ordered-by-depth">1a. Merged shanks, ordered by depth<a class="headerlink" href="#1a-merged-shanks-ordered-by-depth" title="Permanent link">#</a></h2>
+<p>On a multishank NP2.0 the shank dropdown offers <strong>All shanks · depth</strong>: every channel from every
+shank in one column, sorted by physical depth with the shallowest at the top.</p>
+<p><strong>Neither existing ordering can express this, and that is the whole point.</strong> Both sort by shank
+<em>first</em> — packed is <code>(shank, col, row)</code> and interleaved is <code>(shank, row, col)</code>, both built in
+<code>ImroManager.recomputeDepthOrdering()</code> — so each stacks one whole shank above the next and two
+electrodes at the same depth on different shanks land ~96 rows apart. Sorting by row first
+interleaves them:</p>
+<pre><code>                    packed / interleaved          merged · depth
+    top     shank 0, shallow → deep          all shanks at the shallowest row
+            shank 1, shallow → deep          all shanks one row down
+            shank 2, shallow → deep          …
+    bottom  shank 3, shallow → deep          all shanks at the tip
+</code></pre>
+<p>The comparator is <code>descending row</code>, then <code>shank</code>, then <code>column</code>:</p>
+<pre><code class="language-js">const depth = (c) =&gt; lv.isRef(c) ? Infinity : lv.rowOf(c);
+out.sort((a, b) =&gt; (depth(b) - depth(a))
+                || (lv.shankOf(a) - lv.shankOf(b))
+                || (lv.colOf(a) - lv.colOf(b)));
+</code></pre>
+<p>The tiebreaks are not decoration. <code>Array.prototype.sort</code> is stable only for <em>equal</em> keys, and "same
+depth, different shank" is exactly the case that must not be left to that guarantee — a total order
+is what makes two runs comparable. Reference channels are pinned to the shallow end with the same
+<code>Infinity</code> sentinel the packed ordering uses: a REF sitting at its nominal depth is a dead row in
+the middle of the data.</p>
+<h3 id="the-depth-model-is-faithful-the-lateral-one-is-not">The depth model is faithful; the lateral one is not<a class="headerlink" href="#the-depth-model-is-faithful-the-lateral-one-is-not" title="Permanent link">#</a></h3>
+<p>Ordering by depth is sound on both generations: <code>y</code> depends only on the row (<code>electrode &gt;&gt; 1</code>) and
+the shanks are tip-aligned, so equal rows really are equal depths. The <strong>x</strong> model is a
+simplification — NP1.0 electrodes actually stagger over four x positions (11, 27, 43, 59 µm) and the
+frontend's even = Left / odd = Right split flattens that to two columns. Which is precisely why this
+option orders by depth and says nothing about lateral position.</p>
+<h3 id="the-axis-becomes-micrometres">The axis becomes micrometres<a class="headerlink" href="#the-axis-becomes-micrometres" title="Permanent link">#</a></h3>
+<p>With shanks merged, an electrode number is the wrong label: numbering restarts per shank, so <code>e300</code>
+names up to four sites, and at any one height there are up to eight electrodes (4 shanks × 2
+columns). Naming one implies a precision the row does not have. So the ticks switch to <strong>depth in
+µm</strong> — <code>lv.rowPitchUm()</code>, <strong>20 µm on NP1.0</strong> and <strong>15 µm on NP2.0</strong>.</p>
+<p><strong>Two independent sources already in this repo agree on those numbers</strong>, which is why they are
+constants and not a guess:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>NP1.0</th>
+<th>NP2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vendored Open Ephys <code>Geometry.cpp:180</code> / <code>:267</code></td>
+<td><code>y = (i - i%2) * 10</code> → <strong>20 µm/row</strong></td>
+<td><code>y = (l - l%2) * 7.5</code> → <strong>15 µm/row</strong></td>
+</tr>
+<tr>
+<td><code>python/spikespeak_convert/spikeglx.py</code> <code>ProbeSpec</code> (from SpikeGLX's <code>IMROTbl</code>)</td>
+<td><code>z_pitch=20.0</code> (<code>:164</code>)</td>
+<td><code>z_pitch=15.0</code> (<code>:168</code>, <code>:173</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>spikeglx.py</code> computes <code>z = row * z_pitch</code> (<code>:144</code>) over <code>row = electrode // 2</code> (<code>:142</code>) — bit for
+bit the frontend's <code>e &gt;&gt; 1</code>.</p>
+<p><strong>Do not reach for <code>ROW_SPACING</code> or <code>NP2_SHANK_SPACING</code> in <code>ImroManager.js</code></strong> — those are canvas
+drawing units for the probe map, not microns, and they are 9 and 6. Do not import <code>shank_pitch</code>
+either: the ordering never compares lateral position.</p>
+<p><strong>It is distance from the probe TIP, not depth in tissue.</strong> Nothing in this codebase knows the
+insertion depth. The readout says <code>· from tip</code> for that reason; calling it depth would be free to
+write and impossible for the operator to catch.</p>
+<h3 id="why-it-is-an-option-on-the-shank-dropdown">Why it is an option on the <em>shank</em> dropdown<a class="headerlink" href="#why-it-is-an-option-on-the-shank-dropdown" title="Permanent link">#</a></h3>
+<p>Because a fourth heatmap control would widen the column band, and the band's width decides at how
+many columns the whole strip folds behind the reveal chip — the view selector alone moved that from
+four columns to three (§10). It would also mean editing <strong>six</strong> CSS area maps. And it belongs there
+on its merits: that dropdown <em>is</em> the "which shanks" control.</p>
+<p>It is offered only in heatmap mode, and only when <code>lv.shanks().length &gt; 1</code>. <strong>Traces cannot do it:</strong>
+the vertical offset is baked into the shared sample data, so one global ordering serves every trace
+column, and a merged-across-shank ordering would need a <em>third</em> baked series alongside the packed
+and interleaved ones. The heatmap has no such constraint — it permutes rows of a texture, which
+costs one upload.</p>
+<h3 id="cost-one-sort-cached-against-the-ordering-revision">Cost: one sort, cached against the ordering revision<a class="headerlink" href="#cost-one-sort-cached-against-the-ordering-revision" title="Permanent link">#</a></h3>
+<p><code>heatmapChannels()</code> is called from <code>syncHeatmap()</code>, which is called from <code>draw()</code>, which runs per
+frame. A 384-element sort per frame is the kind of cost that never shows up in a profile as one line
+and does show up in the total. So the permutation is cached, keyed on
+<code>imroLiveView.rev() + '|' + selectedColKey</code> — the ordering revision and the side filter, which are
+its only two inputs. <code>rev()</code> is bumped in <code>recomputeDepthOrdering()</code> and nowhere else, so the cache
+is rebuilt when a probe map is applied or cleared, and at no other time.</p>
+<p>Keying on <code>lvAtSlot</code> by identity would work today and stop working the moment somebody sorts in
+place; comparing contents is 384 elements on a per-frame path.</p>
+<hr />
+<h2 id="2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design<a class="headerlink" href="#2-peak-to-peak-was-free-and-that-decided-the-design" title="Permanent link">#</a></h2>
+<p>The display stream <strong>already carries min and max per channel per time bin</strong> — that is what makes a
+trace's vertical segment. So <code>max - min</code> is one subtraction on two values the parse loop has already
+loaded into registers:</p>
+<pre><code class="language-js">if (heatCols) heatPk[ch] = (vMax - vMin) * heatUnitScale;
+</code></pre>
+<p>No new processor, no new stream, no extra byte on the socket, and no new thread. The entire backend
+cost of the headline statistic is zero.</p>
+<p><strong>It is taken BEFORE the display baking.</strong> Two lines later <code>vMin</code>/<code>vMax</code> acquire the vertical offset,
+the per-column zoom and (for <code>raw</code>) an AC-coupling baseline — they become <em>plot coordinates</em>, which
+no legend could label. AC-coupling cancels in a difference anyway, which is part of why peak-to-peak
+is the honest statistic to take from this point in the pipeline.</p>
+<p>The whole path is behind a <code>wantHeat</code> flag resolved <strong>once per frame</strong>. With no heatmap column open
+the cost is a scan of at most four columns and a boolean.</p>
+<hr />
+<h2 id="3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context<a class="headerlink" href="#3-why-it-shares-the-columns-webgl2-context" title="Permanent link">#</a></h2>
+<p><strong>Not an optimization. A hard constraint.</strong></p>
+<p>Chrome grants roughly <strong>16 WebGL2 contexts per renderer process</strong> and, when you exceed that, force-loses
+the <strong>oldest</strong> ones — <em>silently, asynchronously</em>, with <code>getContext</code> still returning non-null every
+time. Measured, not recalled: creating 40 contexts in one document returned non-null 40 times, killed
+indices 0–23 oldest-first, and left exactly 16 alive.</p>
+<p>So the over-budget failure mode is not an error you can branch on. It is <strong>another column going
+black</strong>, some time later, for no visible reason.</p>
+<p>Four columns already cost four contexts. A canvas per heatmap would double that before any detached
+window exists. <code>GlHeatmap</code> is therefore handed the column's existing <code>gl</code> and owns one program and
+two textures inside it. An unused heatmap costs one unused shader, not a context.</p>
+<p><code>GlColumnRenderer</code> builds it <strong>lazily</strong>, on the first switch — features arrive available and off,
+applied to GPU objects.</p>
+<hr />
+<h2 id="4-the-ring-is-in-the-texture-and-nothing-scrolls">4. The ring is in the texture, and nothing scrolls<a class="headerlink" href="#4-the-ring-is-in-the-texture-and-nothing-scrolls" title="Permanent link">#</a></h2>
+<pre><code>data texture   R32F, width = time bins, height = channels
+one time bin = ONE COLUMN, written with a single texSubImage2D of channels × 4 bytes
+a write cursor advances and wraps; the fragment shader adds it modulo the width
+</code></pre>
+<p>Per bin the CPU uploads 1.5 kB for a 384-channel probe. Per <strong>frame</strong> it issues <strong>one draw call of one
+full-viewport triangle</strong>. There is no per-cell CPU work anywhere in the path, and nothing is ever
+copied to make room.</p>
+<p>A triangle rather than a quad, and from <code>gl_VertexID</code> rather than a buffer: three vertices, no VAO
+state to save or restore, and it touches none of the trace renderer's bindings.</p>
+<h3 id="more-channels-than-pixels-take-the-max-never-a-sample">More channels than pixels: take the MAX, never a sample<a class="headerlink" href="#more-channels-than-pixels-take-the-max-never-a-sample" title="Permanent link">#</a></h3>
+<p>384 channels in a 200 px column has fewer pixels than channels. Nearest-neighbour sampling would
+silently <strong>drop</strong> channels — and the one it drops could be the only one firing, which makes the
+display actively misleading rather than merely coarse. The shader loops over the channels inside its
+pixel and takes the maximum, bounded at 16 fetches.</p>
+<p>Averaging was rejected for the same reason: it hides a hot channel among quiet neighbours.</p>
+<h3 id="never-written-bins-are-their-own-color">Never-written bins are their own color<a class="headerlink" href="#never-written-bins-are-their-own-color" title="Permanent link">#</a></h3>
+<p>The texture is initialized to <code>NaN</code> and the shader paints those in the plot-background color.
+Painting them at the bottom of the ramp would draw a solid block of "silence" that is really "no data
+yet" — a lie the operator cannot see.</p>
+<hr />
+<h2 id="5-aggregation-why-the-window-is-8-s-and-not-076-s">5. Aggregation: why the window is 8 s and not 0.76 s<a class="headerlink" href="#5-aggregation-why-the-window-is-8-s-and-not-076-s" title="Permanent link">#</a></h2>
+<p>Bins arrive at roughly <strong>1000/s</strong> (20 per frame × 50 frames/s). A ring is a few hundred columns wide.
+One texture column per arriving bin therefore wrapped the display in about <strong>three quarters of a
+second</strong> — measured, and unreadable.</p>
+<p>Incoming bins are aggregated by <strong>max</strong> into one texture column per <code>window / bins</code> seconds — about
+10.5 ms at an 8 s window in a 760 px column, so ~95 columns/s instead of ~1000.</p>
+<p><strong>Max, never mean.</strong> The job of this view is to show that a channel <em>did something</em>; averaging a
+burst together with the quiet milliseconds around it is precisely how you fail to see it.</p>
+<p>Aggregation also cuts the upload rate by the same factor, which is why the per-second cost is
+0.2 ms of CPU rather than 2 ms.</p>
+<hr />
+<h2 id="6-color-and-the-legend">6. Color, and the legend<a class="headerlink" href="#6-color-and-the-legend" title="Permanent link">#</a></h2>
+<p><strong>The colormap is a 256×1 RGB texture</strong>, sampled once per fragment by the hardware's own filtering
+unit. Coloring is free.</p>
+<p>Five maps. The dropdown order is the table order and the first is the default:</p>
+<table>
+<thead>
+<tr>
+<th>map</th>
+<th>note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>viridis</strong> (default)</td>
+<td>perceptually uniform, color-blind safe</td>
+</tr>
+<tr>
+<td><strong>afmhot</strong></td>
+<td>monotonically increasing luminance; prints and photocopies legibly</td>
+</tr>
+<tr>
+<td>inferno, magma, plasma</td>
+<td>perceptually uniform</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Every map on the list is perceptually ordered, and that is a closed list rather than an
+oversight.</strong> <code>jet</code> was offered until 2026-08-30 and was removed at the operator's request. A rainbow
+map is not a neutral choice of palette: its cyan and yellow bands are <em>perceived</em> as edges, so it
+draws boundaries across smooth data and flattens the real gradient elsewhere, and it is not
+color-blind safe. Open Ephys' probe-viewer offers it; that is not an argument. Adding one back is
+an operator's decision, and it belongs at the end of <code>STOPS</code>, never first — the first entry is what
+every new column starts with.</p>
+<p>They are stored as <strong>nine published anchor stops each</strong>, interpolated to 256 entries — 36 strings.
+<code>afmhot</code> is reproduced <em>exactly</em> rather than approximately: matplotlib defines it piecewise-linearly
+with breakpoints at 0.25, 0.5 and 0.75, and all three fall on anchors.</p>
+<blockquote>
+<p><strong>Anchors, not polynomial fits, and this was learned the hard way.</strong> The first version used
+coefficients written from memory. It rendered viridis as <strong>mauve</strong>: <code>readPixels</code> returned
+<code>[153,129,154]</code> where the map says <code>[59,82,139]</code>. A screenshot looked entirely plausible. A
+colormap that is subtly wrong is worse than an obviously wrong one — nobody notices, and every
+judgement is made against a scale the legend misdescribes. Anchors are checkable by inspection:
+viridis really does run <code>#440154 → #FDE725</code>.</p>
+</blockquote>
+<h3 id="the-legend">The legend<a class="headerlink" href="#the-legend" title="Permanent link">#</a></h3>
+<p>A vertical color bar with its two ends and midpoint labeled, plus the unit. It sits <strong>in</strong> the flex
+row beside the plot rather than over it: overlaying would cover data, and the operator would have to
+move the thing they are trying to read.</p>
+<p><strong>It is painted from <code>colormapBytes()</code> — the same table the shader samples.</strong> A CSS gradient would
+have been fewer lines and a second source of truth; a legend that disagrees with its plot is worse
+than no legend.</p>
+<p>Open Ephys' probe-viewer <strong>has no color key at all</strong> — verified by reading its source: the only
+callers of <code>getColorForNormalizedValueInScheme</code> are the three heat-cell writers, and there is no
+color-bar widget. The operator reads a color against two unlabeled spin boxes. SpikeGLX does have
+one (<code>ShankViewLut</code>), labeled 0 → range.</p>
+<h3 id="the-color-axis-never-auto-ranges">The color axis never auto-ranges<a class="headerlink" href="#the-color-axis-never-auto-ranges" title="Permanent link">#</a></h3>
+<p>It is set by the operator, remembered per statistic, and fixed. A scale that moves on its own makes
+two moments of the same recording incomparable, which defeats the point of having a legend. SpikeGLX
+takes the same position; probe-viewer does too, but with nothing to read the number against.</p>
+<hr />
+<h2 id="7-units-the-factor-of-100-that-nearly-shipped">7. Units — the factor of 100 that nearly shipped<a class="headerlink" href="#7-units-the-factor-of-100-that-nearly-shipped" title="Permanent link">#</a></h2>
+<p>Values arrive from the display stream in <strong>display units</strong>, not microvolts:
+<code>DisplayProcessor</code> multiplies volts by <code>1e4</code> where true microvolts need <code>1e6</code>, so <strong>one display unit
+is 100 µV</strong> (<code>Config.MICROVOLTS_PER_DISPLAY_UNIT</code>, already used by the per-column µV scale control).</p>
+<p>The first build pushed <code>0.21</code> to the texture under a legend reading "500 µV" — off by a hundred, in
+the direction that makes a healthy probe look silent. <code>NetworkClient</code> now applies the factor for
+probe bands and leaves NI-DAQ and the ADC in volts, and the legend's unit follows the stream.</p>
+<p><code>tests/gui/heatmap_view.py</code> asserts a peak above 5, which no display-unit value can reach.</p>
+<hr />
+<h2 id="8-what-it-costs">8. What it costs<a class="headerlink" href="#8-what-it-costs" title="Permanent link">#</a></h2>
+<p>Measured on this machine by <code>ripple_tools/bench_heatmap.py</code>, in the shipped renderer, with
+<code>gl.finish()</code> inside every timed block so WebGL's asynchrony cannot hide the work:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>384 ch</th>
+<th>960 ch</th>
+<th>1536 ch</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>texSubImage2D</code> of one time bin</td>
+<td>2.10 µs</td>
+<td>5.15 µs</td>
+<td>7.85 µs</td>
+</tr>
+<tr>
+<td>one heatmap paint (GPU included)</td>
+<td><strong>0.001 ms</strong></td>
+<td><strong>0.001 ms</strong></td>
+<td><strong>0.001 ms</strong></td>
+</tr>
+<tr>
+<td>the same column as traces</td>
+<td>0.006 ms</td>
+<td>0.004 ms</td>
+<td>0.004 ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The draw is flat in channel count</strong> — one draw call of one triangle either way. The upload scales
+linearly, as it must: it is <code>nChannels × 4</code> bytes.</p>
+<p>At 95 columns/s the whole per-second cost of a 384-channel heatmap is about <strong>0.2 ms of CPU — 0.02 %
+of one core.</strong></p>
+<blockquote>
+<p>Chrome coarsens <code>performance.now()</code> to ~100 µs as a Spectre mitigation unless the page is
+cross-origin isolated, so the first run of the benchmark reported exactly <code>0.000</code> for every cell.
+Each timed block is now 2000 uploads or 200 paints and the per-operation figure is the division. If
+you write a browser microbenchmark here, size it for the clock before you believe it.</p>
+</blockquote>
+<p><code>ripple_tools/plot_heatmap_comparison.py</code> renders the comparison against probe-viewer and SpikeGLX.
+Every competitor number on that figure is <strong>derived from source constants and labeled as such on the
+figure itself</strong>; the only measured numbers are ours.</p>
+<hr />
+<h2 id="9-adding-a-statistic">9. Adding a statistic<a class="headerlink" href="#9-adding-a-statistic" title="Permanent link">#</a></h2>
+<p><code>Pk-Pk</code> works. <strong><code>RMS</code> and <code>Spike rate</code> are listed and disabled</strong>, because the browser cannot compute
+them: it receives per-bin min and max and nothing else. RMS needs every sample squared; a spike rate
+needs thresholding at 30 kHz. Offering them would relabel the legend and its units while the shader
+went on coloring by peak-to-peak — plausible-looking and wrong.</p>
+<p>To add one:</p>
+<ol>
+<li><strong>Compute it in the backend</strong>, over the band the audio path uses — <code>data.npx.ap</code> on NP1.0 (the
+   probe high-passes it in hardware) or the derived 300–6000 Hz Bessel on NP2.0
+   (<code>SpikeBandFilterCoefficients30kHz</code>). This is where the AVX2 dispatch from issue #34 pays: the
+   statistic is over 384 channels, and <code>Avx2Filter</code> already runs 8 lanes at a time with a scalar
+   twin and a runtime check.</li>
+<li><strong>Publish it per bin</strong> on a module channel, one value per channel — the same shape the heatmap
+   already consumes.</li>
+<li>Add the case to <code>ChartColumn.HEATMAP_DEFAULT_MAX</code> and <code>HEATMAP_UNITS</code>, and enable the option.</li>
+</ol>
+<blockquote>
+<p><strong>The audio processor's "threshold" is NOT a spike threshold.</strong> It is a subtractive dead-zone
+waveshaper — a digital diode on the audio waveform. Reuse the audio path's <em>band</em>; a spike-rate
+statistic needs a real threshold-crossing detector, and should carry SpikeGLX's "stay low for N
+samples" anti-bounce criterion, which probe-viewer's pure-hysteresis version lacks.</p>
+</blockquote>
+<p><strong>Band power should be a Goertzel, not an FFT.</strong> probe-viewer runs a full 256-point real FFT per
+channel per pixel column and reads exactly <strong>one</strong> of the 129 output bins — 99.2 % of the transform
+is discarded, ~92 000 FFTs/s at 384 channels. A Goertzel computes the one bin that is used, in O(N),
+allocating nothing.</p>
+<hr />
+<h2 id="10-things-that-will-bite-you">10. Things that will bite you<a class="headerlink" href="#10-things-that-will-bite-you" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Any control added to the column band needs a cell in SIX area maps</strong> — in-flow, collapsed
+  overlay, and <em>vertical</em>, times trace and heatmap. CSS Grid does not error on an unplaced item; it
+  quietly adds an implicit row. This bit twice: three unplaced controls grew the collapsed panel to
+  122 px covering 15 % of the plot, and then the vertical map — which states its own one-row
+  template because a full-width row never needs to collapse — was missed entirely and made the strip
+  66 px instead of 34. <code>layout_matrix</code> caught the second one; nothing caught the first but a
+  measurement.</li>
+<li><strong>Adding a control moves the fold threshold.</strong> The band went from 448 px to 556 px, so on a
+  1920 px screen the horizontal strip now collapses at three columns instead of four. That is the
+  existing mechanism working, but it is a user-visible change and <code>user_docs/GUI-Guide.md</code> states
+  the number.</li>
+<li><strong><code>[hidden]</code> loses to <code>.cc-scale { display: flex }</code>.</strong> The HTML attribute is a UA rule and any
+  class selector setting <code>display</code> outranks it.</li>
+<li><strong><code>setViewMode()</code> early-returns when the mode already matches</strong>, which it does at construction — so
+  the initial state of a control belongs where the control is <em>created</em>, not in the handler that
+  changes it.</li>
+<li><strong><code>preserveDrawingBuffer</code> is false.</strong> A <code>readPixels</code> from a later task returns zeros and is
+  indistinguishable from a renderer that draws nothing. Call <code>paint()</code> and read in the same task.</li>
+<li><strong><code>parseInt('all')</code> is <code>NaN</code>, and <code>NaN|0</code> is <code>0</code>.</strong> The All option collapsed a column to one trace.
+  The shank dropdown's <code>all</code> is deliberately <em>not</em> stored in <code>selectedShank</code> for the same reason: it
+  is a separate <code>mergeShanks</code> boolean, so every arithmetic use of <code>selectedShank</code> keeps working
+  without a guard.</li>
+<li><strong>An option that only exists in one mode has to be retired on the way out of it.</strong> <code>setViewMode()</code>
+  calls <code>refreshFilterOptions()</code> in <em>both</em> directions; a merge left selected after a switch back to
+  traces would render one shank while the control claimed all four.</li>
+<li><strong>No sim source in this repo is multishank.</strong> <code>SimulatedData2Source::loadDefaultImro</code> puts all 384
+  channels on shank 0, so the merge option never appears under sim and a test that only ran there
+  would be exercising its absence. <code>tests/gui/heatmap_spatial.py</code> injects a synthetic 4-shank
+  <code>imroLiveView</code> for the ordering and checks the real model separately; its docstring records the
+  gap that leaves (a real 4-shank probe, which needs hardware).</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/HeatmapView.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-what-it-shows">1. What it shows</a></li>
+<li><a href="#1a-merged-shanks-ordered-by-depth">1a. Merged shanks, ordered by depth</a><ul>
+<li><a href="#the-depth-model-is-faithful-the-lateral-one-is-not">The depth model is faithful; the lateral one is not</a></li>
+<li><a href="#the-axis-becomes-micrometres">The axis becomes micrometres</a></li>
+<li><a href="#why-it-is-an-option-on-the-shank-dropdown">Why it is an option on the shank dropdown</a></li>
+<li><a href="#cost-one-sort-cached-against-the-ordering-revision">Cost: one sort, cached against the ordering revision</a></li>
+</ul>
+</li>
+<li><a href="#2-peak-to-peak-was-free-and-that-decided-the-design">2. Peak-to-peak was free, and that decided the design</a></li>
+<li><a href="#3-why-it-shares-the-columns-webgl2-context">3. Why it shares the column's WebGL2 context</a></li>
+<li><a href="#4-the-ring-is-in-the-texture-and-nothing-scrolls">4. The ring is in the texture, and nothing scrolls</a><ul>
+<li><a href="#more-channels-than-pixels-take-the-max-never-a-sample">More channels than pixels: take the MAX, never a sample</a></li>
+<li><a href="#never-written-bins-are-their-own-color">Never-written bins are their own color</a></li>
+</ul>
+</li>
+<li><a href="#5-aggregation-why-the-window-is-8-s-and-not-076-s">5. Aggregation: why the window is 8 s and not 0.76 s</a></li>
+<li><a href="#6-color-and-the-legend">6. Color, and the legend</a><ul>
+<li><a href="#the-legend">The legend</a></li>
+<li><a href="#the-color-axis-never-auto-ranges">The color axis never auto-ranges</a></li>
+</ul>
+</li>
+<li><a href="#7-units-the-factor-of-100-that-nearly-shipped">7. Units — the factor of 100 that nearly shipped</a></li>
+<li><a href="#8-what-it-costs">8. What it costs</a></li>
+<li><a href="#9-adding-a-statistic">9. Adding a statistic</a></li>
+<li><a href="#10-things-that-will-bite-you">10. Things that will bite you</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

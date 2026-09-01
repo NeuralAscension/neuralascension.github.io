@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -136,7 +146,7 @@ chat logs do not survive, do not move between machines, and do not reach the nex
 <p>If you lose time to something not on this list, <strong>add it</strong>. That is the point of the file.</p>
 <blockquote>
 <p>Scope note: this is the "you will misread this" list. Repo rules live in
-<a href="../CLAUDE.html"><code>CLAUDE.md</code></a>, how to test lives in <a href="Testing.html"><code>Testing.md</code></a>, and the map of
+<code>CLAUDE.md</code>, how to test lives in <a href="Testing.html"><code>Testing.md</code></a>, and the map of
 everything is <a href="README.html"><code>README.md</code></a>.</p>
 </blockquote>
 <hr />
@@ -177,8 +187,8 @@ everything is <a href="README.html"><code>README.md</code></a>.</p>
 </tr>
 <tr>
 <td><code>getConfigValue&lt;T&gt;()</code></td>
-<td><strong>Integer-only.</strong> It goes through ryml's <code>read_dec</code>, so it cannot read a YAML <code>true</code> or a float.</td>
-<td>Silent zero/false. Parse bools and floats as strings (<code>v == "true" \|\| v == "1" \|\| ...</code>, <code>std::stof</code>) — the <code>low_latency:</code> and <code>enabled:</code> keys both do this, and so must yours.</td>
+<td><strong>Still integer-only</strong>, so it cannot read a YAML <code>true</code> or a float — but no longer silent. Since 2026-08-30 (#71) it is a <code>[[nodiscard]] bool</code> over <code>std::from_chars</code> that requires the whole string, and <code>readConfigInt()</code> logs <code>qCritical</code> … <code>must be an integer; got</code> before most call sites <code>return false</code> and abandon the whole processor graph.</td>
+<td>The <em>silence</em> is gone; the <em>integer-only</em> half is not. A float or a bool handed to it now <strong>fails the connect</strong> instead of becoming 0. Parse bools and floats as strings (<code>v == "true" \|\| v == "1" \|\| ...</code>, <code>std::stof</code>) — the <code>low_latency:</code> and <code>enabled:</code> keys both do this, and so must yours. Full before/after table: <a href="ConfigReference.html"><code>ConfigReference.md</code></a> rule 3.</td>
 </tr>
 <tr>
 <td>a config's filename</td>
@@ -300,10 +310,23 @@ because the merged version looks tidier and someone will try to merge it back.</
 <hr />
 <h2 id="5-windows-the-shell-and-the-build">5. Windows, the shell, and the build<a class="headerlink" href="#5-windows-the-shell-and-the-build" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>The build needs <code>vcvars64</code>.</strong> A bare <code>cmake --build …</code> from a plain shell fails with
-  <code>Cannot open include file: 'assert.h'</code> — which reads like a broken toolchain and is really a
-  missing environment. Run it as
-  <code>cmd /c "\"…\VC\Auxiliary\Build\vcvars64.bat\" &amp;&amp; cmake --build …"</code>.</li>
+<li><strong>The build needs <code>vcvars64</code> — so use <code>build.bat</code>, never a bare <code>cmake --build</code>.</strong> A bare
+  <code>cmake --build …</code> from a plain shell fails with <code>Cannot open include file: 'assert.h'</code> (or
+  <code>'type_traits'</code>), which reads like a broken toolchain and is really a missing environment.
+  <code>build.bat</code> locates Visual Studio with <code>vswhere</code> and enters that environment itself, so nothing is
+  hardcoded to one machine's install path — and it runs the C++ suite afterwards, which a hand-rolled
+  <code>cmake --build</code> does not. The old workaround
+  (<code>cmd /c "\"…\VC\Auxiliary\Build\vcvars64.bat\" &amp;&amp; cmake --build …"</code>) is what <code>CLAUDE.md</code> now tells
+  you not to reach for: it produced a binary and no test result, and "it compiled" was reported as
+  green more than once.</li>
+<li><strong><code>build.bat</code> PAUSES when it finishes, and a scripted chain hangs on it.</strong> It ends at
+  <code>Press any key to continue . . .</code> waiting on a keypress that a non-interactive runner will never
+  send, so the calling script sits there until its timeout and reports a build failure that never
+  happened. <strong><code>build.bat --no-pause</code></strong> exists for exactly this (<code>SP_NO_PAUSE=1</code> does the same). The
+  cost is recorded twice in <code>SpikesPeak_Status.md</code>, §64c and §65a, before it was finally written into
+  the build file's own header — which is the tell that a trap belongs here. Related: that same pause
+  line is the <em>launcher's</em> stdout, not the
+  application log — see <a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a> §4.</li>
 <li><strong><code>QProcess::startDetached("cmd", {"/c", "&lt;compound command&gt;"})</code> silently does nothing.</strong>
   <code>QProcess</code> quotes the whole argument, so <code>cmd</code> receives nested quotes around a path with spaces and
   gives up — and <code>startDetached</code> still returns <code>true</code>. Write a script file and run that instead.
@@ -621,7 +644,117 @@ CONFIRMED one</strong> (issue #18, and it keeps coming back in new places):</p>
   matching on the label makes one processor's readiness stand in for another's.</li>
 </ul>
 <p>The rule, cheap to apply and expensive to skip: <strong>the GUI renders what the backend confirmed.</strong> If
-you are about to write frontend state from a click handler, stop and make the backend say it instead.</p></article>
+you are about to write frontend state from a click handler, stop and make the backend say it instead.</p>
+<hr />
+<h2 id="7-a-filter-is-not-a-brick-wall">7. A filter is not a brick wall<a class="headerlink" href="#7-a-filter-is-not-a-brick-wall" title="Permanent link">#</a></h2>
+<p><code>generateApSample</code> used to inject <strong>no</strong> ripple into the simulated AP band, on this reasoning:</p>
+<blockquote>
+<p><em>"NO ripple here: on a real 1.0 probe the AP band is high-passed (~300 Hz), which attenuates the
+150-250 Hz ripple band"</em></p>
+</blockquote>
+<p>The premise is correct and the conclusion does not follow. A first-order 300 Hz corner passes
+<strong>0.55</strong> of a 200 Hz signal — <em>attenuates</em> by 5 dB, which is not <em>removes</em>. The simulated AP band was
+therefore silent where a real one plainly shows ripples.</p>
+<p>The play-file generator had the same bug from the opposite direction: it <em>did</em> filter, with
+<code>sosfiltfilt(butter(4, 300))</code>. Zero-phase filtering applies the response <strong>twice</strong>, so a 4th-order
+design rolls off like an 8th-order one and the ripple came out at <strong>0.0375</strong>. Two simulators, both
+claiming "as on real hardware", disagreeing by 15×.</p>
+<p><strong>The general form:</strong> a band edge is a slope, not a wall, and neighbouring-band content survives it
+by a computable amount. Whenever a comment justifies dropping a signal because a filter "removes" or
+"attenuates" it, compute the gain. And <strong><code>filtfilt</code> is an analysis tool, not a hardware model</strong> — it
+doubles the effective order and is acausal, neither of which a probe can do.</p>
+<p>The deeper trap is that both claims lived in <strong>prose</strong>, where nothing could contradict them. The
+model now sits in <code>src/modules/neuropixels/SimBandResponse.hpp</code> and
+<code>scripts/np1_band_model.py</code>, both deliberately free of heavy dependencies so
+they are cheap to test, with a cross-language test comparing them. See
+<a href="SimulatedSignals.html"><code>SimulatedSignals.md</code></a>.</p>
+<hr />
+<h2 id="8-recording-bin-frames-have-a-6-byte-header">8. Recording <code>.bin</code> frames have a 6-byte header<a class="headerlink" href="#8-recording-bin-frames-have-a-6-byte-header" title="Permanent link">#</a></h2>
+<p>A recording is <strong>not</strong> a flat <code>[samples × channels]</code> int16 array. Each frame is</p>
+<pre><code>[6-byte header][num_channels × int16]
+</code></pre>
+<p>and the sidecar's <code>frame.bytes</code> is the stride. <code>np.fromfile(...).reshape(-1, nch)</code> therefore
+<strong>silently produces garbage that looks like data</strong>: full-scale ±32768 rails, std ~7700, and
+peak-finding that returns plausible "bursts" at almost-but-not-quite the right spacing. It cost a
+whole analysis round before the raw min/max were looked at.</p>
+<p>Use the reader in <code>ripple_tools/fair_ab.py</code>:</p>
+<pre><code class="language-python">raw = np.fromfile(path, dtype=np.uint8)
+n   = len(raw) // fb
+ch  = raw[:n*fb].reshape(n, fb)[:, 6:].copy().view(np.int16).reshape(n, nch)
+</code></pre>
+<p><strong>The tell:</strong> simulated counts should be in the hundreds. If a band is railing at ±32768, you are
+reading the header as signal.</p>
+<hr />
+<h2 id="9-revert-the-regression-then-rebuild">9. Revert the regression, then REBUILD<a class="headerlink" href="#9-revert-the-regression-then-rebuild" title="Permanent link">#</a></h2>
+<p>Proving a new test can fail means injecting a regression, watching it go red, and reverting. The
+step that is easy to skip is the <strong>rebuild after the revert</strong> — the source is clean, <code>git status</code>
+agrees, and <code>bin/SpikesPeak.exe</code> still contains the regression.</p>
+<p>This burned a full record-and-analyse cycle: the measurement said the AP band carried no ripple, and
+it was measuring a binary built from the brick-wall injection. The analysis was right; the binary was
+stale. <strong>After reverting an injected regression, rebuild before measuring anything.</strong></p>
+<hr />
+<h2 id="10-a-running-gate-has-moments-with-no-backend-process">10. A running gate has moments with no backend process<a class="headerlink" href="#10-a-running-gate-has-moments-with-no-backend-process" title="Permanent link">#</a></h2>
+<p><code>run_all_tests.py</code> is a ~15 minute run, and the backend <strong>auto-quits about 2 s after the last
+WebSocket client disconnects</strong>. Between two GUI tests there is therefore a real window in which the
+suite is very much still running and <code>tasklist | grep SpikesPeak</code> returns <strong>nothing</strong>.</p>
+<p>Reading that as "the gate has finished" and starting a second one is expensive and the symptom is
+misleading: two gates fight over ports 1234/8234 and over the browser profiles, and what you see is
+<strong>every GUI test failing</strong>, in sequence, on unrelated assertions — <code>audio_panel</code>, <code>band_dependency</code>,
+<code>command_surface</code>, <code>detached_view</code> — with <code>[harness] reusing the backend on :1234</code> in the log and
+CDP dying mid-<code>Runtime.evaluate</code> (<code>ConnectionAbortedError 10053</code>) as the other run's teardown takes
+the browser away. It reads exactly like "my frontend change broke page load".</p>
+<p>Worse, if the second thing you do is <code>build.bat</code>, you have also swapped <code>bin/SpikesPeak.exe</code> under a
+live run.</p>
+<p><strong>Ask the task, not the process table.</strong> A backgrounded gate reports completion; wait for that.
+<code>4 of 4 unrelated GUI tests failing</code> is far more often a second runner than a real regression --
+check for a concurrent run BEFORE reading the failures. And note the corollary: <code>run_all_tests.py</code>
+exits 0 whatever happened unless you pass <strong><code>--fatal</code></strong>, so an exit code of 0 from a run whose output
+you did not capture is not evidence of anything.</p>
+<hr />
+<h2 id="11-webinterface-is-served-from-the-working-tree-every-frontend-edit-is-a-live-edit">11. <code>webinterface/</code> is served from the WORKING TREE — every frontend edit is a live edit<a class="headerlink" href="#11-webinterface-is-served-from-the-working-tree-every-frontend-edit-is-a-live-edit" title="Permanent link">#</a></h2>
+<p><code>src/main.cpp</code> sets <code>webRoot = exePath.filePath("../webinterface")</code>, and the exe lives in <code>bin/</code>. So
+the HTTP server serves <strong>the repo's <code>webinterface/</code> directory itself</strong>. There is no deployed copy for
+serving, and <strong>no rebuild is needed for a frontend change to go live</strong> — a browser refresh is enough.</p>
+<p>That is convenient and it is a trap, because it means <strong>editing a frontend file while a backend is up
+changes the code under test, mid-run</strong>. An editor or a script write truncates before rewriting, so a
+page that fetches during that window gets a <strong>half-written module</strong>, fails to parse, and never
+finishes booting. Its WebSocket then dies.</p>
+<p>What that looks like from the outside is nothing like its cause:</p>
+<ul>
+<li>the GUI suite <strong>hangs</strong> on whichever test happened to be loading (<code>cdp.py</code> used to have no socket
+  timeout, so it hung <em>indefinitely</em> — see §12);</li>
+<li>the backend stays alive, because the harness's own WSClient is still connected, so auto-quit never
+  fires and there is no crash to find;</li>
+<li>the test <strong>passes when re-run alone</strong>, because nothing is editing then;</li>
+<li>and the failure moves to a different test next time.</li>
+</ul>
+<p>On 2026-08-31 this cost a 13-minute stall at <code>probe_map</code> and invalidated an entire gate run, because
+tests before and after the edit ran different frontend code.</p>
+<p><strong>The rule:</strong> never edit <code>webinterface/</code> while a backend or a GUI suite is running. Prototype in the
+session scratchpad, and apply only when <code>tasklist</code> shows no <code>SpikesPeak.exe</code> and ports 1234/8234 are
+free. When you do apply, prefer writing a temp file beside the target and renaming over it, so a
+server that <em>is</em> running can never observe a partial file.</p>
+<p>Note the older phrasing "the frontend is served from the build tree" is close but not sharp enough to
+prevent this. The operative fact is that <strong>the working tree IS the deployment.</strong></p>
+<hr />
+<h2 id="12-a-dead-browser-used-to-hang-the-suite-forever">12. A dead browser used to hang the suite forever<a class="headerlink" href="#12-a-dead-browser-used-to-hang-the-suite-forever" title="Permanent link">#</a></h2>
+<p><code>python/tools/cdp.py</code> created its WebSocket with no timeout, so <code>ws.recv()</code> blocked forever whenever
+the browser died without closing the socket cleanly. "The browser is gone" was indistinguishable from
+"the browser is thinking", for an unbounded time.</p>
+<p>Fixed 2026-08-31, and the fix needs <strong>two</strong> numbers rather than one, for a reason worth knowing before
+anyone tunes them:</p>
+<ul>
+<li><code>send()</code> does not wait for one message. It <strong>loops</strong>, discarding CDP events (console, network,
+  lifecycle) whose <code>id</code> does not match. So on a BUSY page a per-<code>recv</code> timeout never fires even when
+  the reply is never coming.</li>
+<li>On a QUIET page, a legitimately slow call — a full-window <code>Page.captureScreenshot</code>, a
+  <code>Runtime.evaluate</code> with <code>awaitPromise</code> on a settling page — can outlast any short timeout with
+  nothing wrong.</li>
+</ul>
+<p>So <code>RECV_TIMEOUT_S</code> (20 s) exists only to notice a socket that will never speak again, and
+<code>DEADLINE_S</code> (180 s) bounds the whole call across any number of interleaved events. Collapsing them
+into one value breaks one case or the other.</p>
+<p>The raised error names §11 as the likely cause, because that is what it was both times.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AgentTraps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -641,6 +774,12 @@ you are about to write frontend state from a click handler, stop and make the ba
 <li><a href="#5h-a-win32-binary-has-no-stdout-so-redirecting-it-captures-nothing">5h. A WIN32 binary has no stdout, so redirecting it captures nothing</a></li>
 <li><a href="#5i-the-simulator-uses-the-prototype-part-id-the-hardware-reports-the-real-one">5i. The simulator uses the PROTOTYPE part id; the hardware reports the real one</a></li>
 <li><a href="#6-saying-what-is-true">6. Saying what is true</a></li>
+<li><a href="#7-a-filter-is-not-a-brick-wall">7. A filter is not a brick wall</a></li>
+<li><a href="#8-recording-bin-frames-have-a-6-byte-header">8. Recording .bin frames have a 6-byte header</a></li>
+<li><a href="#9-revert-the-regression-then-rebuild">9. Revert the regression, then REBUILD</a></li>
+<li><a href="#10-a-running-gate-has-moments-with-no-backend-process">10. A running gate has moments with no backend process</a></li>
+<li><a href="#11-webinterface-is-served-from-the-working-tree-every-frontend-edit-is-a-live-edit">11. webinterface/ is served from the WORKING TREE — every frontend edit is a live edit</a></li>
+<li><a href="#12-a-dead-browser-used-to-hang-the-suite-forever">12. A dead browser used to hang the suite forever</a></li>
 </ul>
 </div>
 </aside>

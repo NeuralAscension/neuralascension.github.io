@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a class="active" href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,12 +131,33 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="simulated-np10-source-fully-working-on-linux-spec-plan-approved-2026-07-06">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)<a class="headerlink" href="#simulated-np10-source-fully-working-on-linux-spec-plan-approved-2026-07-06" title="Permanent link">#</a></h1>
+<blockquote>
+<h2 id="read-this-first-what-this-page-is-as-of-2026-08-31">Read this first: what this page is, as of 2026-08-31<a class="headerlink" href="#read-this-first-what-this-page-is-as-of-2026-08-31" title="Permanent link">#</a></h2>
+<p><strong>A finished design record from 2026-07-06, not onboarding.</strong> It records a specific moment: the
+hardware rig had moved to a labmate, development had relocated to a Linux box with no probe and no
+NI-DAQ, and the simulated NP1.0 source therefore had to become the only data path. That is the
+context every "the hardware is gone" sentence below was written in, and <strong>none of it describes this
+repo now.</strong></p>
+<p>What is true today: <strong>Linux is a supported, hardware-free dev path — one of several.</strong> The tree is
+proven on five machine configurations (<a href="SecondMachineRunbooks.html"><code>SecondMachineRunbooks.md</code></a>), the
+primary checkout is Windows with a live OneBox and both probes, <code>CLAUDE.md</code> carries a
+hardware-safety section for exactly that reason, and <code>SpikesPeak_Status.md</code> §65 is an <em>in vivo</em>
+session on 2026-08-28. Build and test instructions for every platform are in
+<a href="Building.html"><code>Building.md</code></a> and <a href="Testing.html"><code>Testing.md</code></a>; this page is not the place to learn
+them.</p>
+<p><strong>What is still load-bearing here</strong> is the design: Option A (sim rides the real
+<code>data.npx.ap</code>/<code>.lfp</code> → display + record pipeline, so the GUI cannot tell sim from hardware), and
+the <em>Simulated sources are PER-MODULE</em> correction below, which
+<a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a> cites as a standing rule. Read it for that.</p>
+</blockquote>
 <p><strong>Goal:</strong> on a <strong>Linux</strong> dev machine with <strong>no Neuropixels/NI-DAQ hardware</strong>, get the <em>simulated</em> NP1.0
 source working <strong>exactly like a real 1.0 probe</strong> — it builds, streams to the GUI through the normal
 display pipeline (depth-sorted AP + LFP columns, channel labels, per-column scale), and <strong>records</strong> so
@@ -140,40 +169,37 @@ synthripples records + fires the ripple detector, decision #5). See <code>Spikes
 outcome + file list. All five open decisions were answered by the user on 2026-07-06
 (see <a href="#decisions-resolved-2026-07-06">Decisions</a>). This remains the design record; the phase notes below
 are what was built.</p>
-<p>Build/verify specifics on THIS box: Qt <strong>6.11.1</strong> (<code>~/Qt/6.11.1/gcc_64</code>), cmake/ninja from <code>~/Qt/Tools</code>;
-the real blocker was the vendored <code>v4/NeuropixAPI.h</code> MSVC macros (<code>__declspec</code>/<code>__stdcall</code>) — now guarded
-<code>#ifndef _WIN32</code> like the v3 header. Launch headless with <code>QT_QPA_PLATFORM=offscreen ./bin/SpikesPeak
---no-browser</code> (offscreen because WebEngineWidgets needs a platform plugin and there's no display).
-matplotlib/pip are absent here, so <code>plot_recording.py</code>'s PNGs were replaced by a numpy check.
-Context switch: the rig moved to a labmate; dev + CI now happen on Linux against the sim source. This
-supersedes the old "do NOT use Simulated Data" note (that was specific to the <em>Windows hardware box</em>,
-where connecting sim while real hardware was attached was the wrong path). See [[hardware-connected-testing]].</p>
+<p>Build/verify specifics on the 2026-07-06 box: Qt <strong>6.11.1</strong> (<code>~/Qt/6.11.1/gcc_64</code>), cmake/ninja from
+<code>~/Qt/Tools</code>; the real blocker was the vendored <code>v4/NeuropixAPI.h</code> MSVC macros
+(<code>__declspec</code>/<code>__stdcall</code>) — now guarded <code>#ifndef _WIN32</code> like the v3 header. Launch headless with
+<code>QT_QPA_PLATFORM=offscreen</code> (offscreen because WebEngineWidgets needs a platform plugin and there
+was no display); today <code>./run_spikespeak.sh --no-browser</code> does the environment for you.
+matplotlib/pip were absent there, so <code>plot_recording.py</code>'s PNGs were replaced by a numpy check.
+The rig had moved to a labmate, so dev happened on Linux against the sim source — which is what
+superseded the older "do NOT use Simulated Data" note (that one was specific to the <em>Windows
+hardware box</em>, where connecting sim while real hardware was attached was the wrong path).</p>
 </blockquote>
 <hr />
-<h2 id="for-the-new-linux-agent-start-here">🐧 For the new Linux agent — START HERE<a class="headerlink" href="#for-the-new-linux-agent-start-here" title="Permanent link">#</a></h2>
-<p>You are picking this up on a <strong>fresh Linux machine</strong>. Important context transfer:</p>
+<h2 id="the-context-this-was-written-in-2026-07-06-historical">The context this was written in (2026-07-06 — historical)<a class="headerlink" href="#the-context-this-was-written-in-2026-07-06-historical" title="Permanent link">#</a></h2>
+<p>Kept because the plan below only makes sense against it, and rewritten in the past tense on
+2026-08-31 because it was framed as a briefing for "the new Linux agent" and read as current.</p>
 <ul>
-<li><strong>The previous agent's <code>~/.claude</code> memories do NOT travel to this machine.</strong> Everything you need has been
-  written into the <strong>repo docs</strong> instead. Read, in order: this file → <a href="README.html"><code>README.md</code></a> (doc index +
-  Linux build recipe) → <a href="../SpikesPeak_Status.html"><code>../SpikesPeak_Status.md</code></a> (canonical running status; §9 =
-  the whole NP1.0 pipeline, §13 = the Windows→Linux move) → <a href="ControlCLI.html"><code>ControlCLI.md</code></a> (how to drive
-  the backend headlessly) → <a href="RecordingTest.html"><code>RecordingTest.md</code></a> (the end-to-end check you'll reproduce
-  hardware-free).</li>
-<li><strong>The hardware is gone.</strong> There is no Neuropixels probe or NI-DAQ on this box. <code>NPX_HW_ENABLED</code> /
-  <code>NIDAQ_HW_ENABLED</code> are off; the real <code>source.npx.pxi</code> + NI-DAQ modules are compiled out and NeuropixAPI
-  is stubbed. The <strong>sim source is your only data path</strong> — making it "fully working" (this task) is what
-  unblocks all further Linux dev.</li>
-<li><strong>Two tasks live here.</strong> (1) This sim task (below). (2) Once sim streams, the <strong>NPX 1.0 display /
-  recording-channel selection UI (Status §10 "parts 4+5")</strong> — frontend work — is also expected to
-  be done on this Linux box against the sim source. Frontend facts you'll need are in
-  <a href="#frontend-notes-for-the-display-selection-work">Frontend notes</a>.</li>
-<li><strong>Build recipe + the one known build-breaker</strong> (<code>CalibrationInfo/</code> copy) are in Phase 0. Do Phase 0
-  first and confirm a green build + a served page before touching sim internals.</li>
-<li><strong>Commit discipline:</strong> the previous user's standing rule is <em>commit/push only when explicitly asked.</em>
-  Keep Recording tests <strong>&lt; 30 s</strong>, saved as consecutive <code>testN/</code> folders.</li>
+<li><strong>On that box the hardware was gone.</strong> No Neuropixels probe, no NI-DAQ. <code>NPX_HW_ENABLED</code> /
+  <code>NIDAQ_HW_ENABLED</code> off; the real <code>source.npx.pxi</code> and the NI-DAQ modules compiled out and
+  NeuropixAPI stubbed. The sim source was the only data path, which is why making it "fully working"
+  was the task that unblocked everything else there. <strong>A Linux build still has exactly this shape</strong> —
+  it is the reason "run it in sim first" is a real diagnostic — but it is now one supported
+  configuration among several, not the only one.</li>
+<li><strong>A second task was queued behind it:</strong> the NPX 1.0 display / recording-channel selection UI
+  (Status §10 "parts 4+5"), to be done against the sim source. The frontend facts gathered for it are
+  in <a href="#frontend-notes-for-the-display-selection-work">Frontend notes</a> and have been kept current.</li>
+<li><strong>The <code>CalibrationInfo/</code> copy was the one known build-breaker</strong> on a fresh clone; see Phase 0.</li>
+<li>Two standing rules stated here have since moved into <code>CLAUDE.md</code>, which is where they belong:
+  commit or push only when the operator asks, and keep Recording tests short (&lt; 30 s), saved as
+  consecutive <code>testN/</code> folders.</li>
 </ul>
 <hr />
-<h2 id="what-exists-today-verified-2026-07-06">What exists today (verified 2026-07-06)<a class="headerlink" href="#what-exists-today-verified-2026-07-06" title="Permanent link">#</a></h2>
+<h2 id="what-existed-when-this-was-written-verified-2026-07-06">What existed when this was written (verified 2026-07-06)<a class="headerlink" href="#what-existed-when-this-was-written-verified-2026-07-06" title="Permanent link">#</a></h2>
 <p><strong>Build (CMakeLists.txt) is already cross-platform:</strong>
 - <code>if (WIN32)</code> → defines <code>NPX_HW_ENABLED</code> + <code>NIDAQ_HW_ENABLED</code>, links <code>NeuropixAPI_x64_4_1_3.lib</code>, copies
   hardware DLLs (FTD3XX, FpgaManager, NeuropixAPI) + <code>CalibrationInfo/</code>.
@@ -189,7 +215,7 @@ where connecting sim while real hardware was attached was the wrong path). See [
 <code>source.npx.pxi</code> and the NI-DAQ source/recorder/display are <code>#ifdef NPX_HW_ENABLED</code> / <code>NIDAQ_HW_ENABLED</code>
 → <strong>absent on Linux</strong>. <code>proc.npx.display</code>, <code>proc.lfp</code>, <code>proc.npx.recorder</code>, interpreters are always
 registered.</p>
-<p><strong>Why sim is currently "disabled":</strong> <code>SimulatedDataSource::processAndEmitBatch()</code> emits the <strong>old</strong>
+<p><strong>Why sim was "disabled" at that point:</strong> <code>SimulatedDataSource::processAndEmitBatch()</code> emits the <strong>old</strong>
 wire format — <code>[u32 numPoints][f32 ts][f32 min,f32 max × 384]</code> — and <code>WebSocketServer</code> <strong>special-cases</strong>
 <code>"Simulated Data"</code> (lines ~257/282: it wires the sim source's <code>dataReady</code> straight to <code>broadcastData</code>,
 bypassing the display processors). But the current <code>NetworkClient.handleMessage</code> reads a <strong>stream-id
@@ -236,19 +262,30 @@ header</strong> first (<code>[u8 idLen][idStr][u32 numCh][u32 numBins]…</code>
 <h2 id="phased-plan">Phased plan<a class="headerlink" href="#phased-plan" title="Permanent link">#</a></h2>
 <h3 id="phase-0-linux-build-green">Phase 0 — Linux build green<a class="headerlink" href="#phase-0-linux-build-green" title="Permanent link">#</a></h3>
 <ol>
-<li>Configure + build on Linux (<code>cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release &amp;&amp; cmake --build build</code>)
-   with a system Qt 6.7.x (<code>qt6-base</code> + websockets/webchannel) and HDF5 (<code>libhdf5-dev</code>). Fix whatever the
-   Linux branch hasn't been exercised on (the stub file, PortAudio fetch, HDF5 <code>find_package</code>, install dirs).</li>
-<li><strong><code>CalibrationInfo/</code> POST_BUILD is a build-breaker on a fresh clone</strong> (it is <strong>intentionally
+<li>Configure + build on Linux:</li>
+</ol>
+<p><code>bash
+   ./build.sh                    # Linux/macOS;  build.bat --no-pause on Windows</code></p>
+<p>That configures <code>build/</code> on first use and runs the C++ suite. <strong>Do not reach for a bare
+   <code>cmake -S . -B build &amp;&amp; cmake --build build</code></strong>, which is what this step used to say: on Windows it
+   dies on <code>Cannot open include file: 'type_traits'</code> without the MSVC environment, and on every
+   platform it skips the test gate, so it produces a binary and no statement about whether it works.
+   See <a href="Building.html"><code>Building.md</code></a> and <a href="Testing.html"><code>Testing.md</code></a>.</p>
+<p><strong>Qt 6.7 or newer, and not the distro's.</strong> The floor is 6.7 and it fails at <em>configure</em>, not
+   compile. Ubuntu 24.04 ships 6.4.2, which is below it — point <code>CMAKE_PREFIX_PATH</code> at a Qt-installer
+   kit (the 2026-07-06 box used 6.11.1 from <code>~/Qt/6.11.1/gcc_64</code>; an earlier draft of this step said
+   "system Qt 6.7.x", which contradicted it and is not achievable on Ubuntu anyway). HDF5 comes from
+   <code>libhdf5-dev</code>. Fix whatever the Linux branch hasn't been exercised on (the stub file, PortAudio
+   fetch, HDF5 <code>find_package</code>, install dirs).
+2. <strong><code>CalibrationInfo/</code> POST_BUILD is a build-breaker on a fresh clone</strong> (it is <strong>intentionally
    git-untracked</strong> — per-probe/per-lab CSVs, decision #3 / Status §13.3 — and the <code>copy_directory</code> is
    unconditional → fails when the dir is absent). Make that copy <strong>conditional</strong> (<code>if(EXISTS …)</code>), since sim
-   needs no calibration. (Same for the Windows-only DLL copies — already guarded by <code>if(WIN32)</code>.)</li>
-<li>Confirm <code>SpikesPeak</code> launches headless on Linux and serves HTTP:8234 + WS:1234 (drive with
+   needs no calibration. (Same for the Windows-only DLL copies — already guarded by <code>if(WIN32)</code>.)
+3. Confirm <code>SpikesPeak</code> launches headless on Linux and serves HTTP:8234 + WS:1234 (drive with
    <code>spikespeak_cli.py --host localhost</code>). No <code>--no-browser</code>/<code>Start-Process</code> needed; Linux launch is just
    <code>./bin/SpikesPeak</code> (set <code>LD_LIBRARY_PATH</code> to the Qt/HDF5 libs if not system-installed, or just
    use <code>./run_spikespeak.sh</code>, which does it for you). The exe moved from <code>build/bin/</code> to the repo's
-   own <code>bin/</code> on 2026-08-26.</li>
-</ol>
+   own <code>bin/</code> on 2026-08-26.</p>
 <h3 id="phase-1-sim-source-produces-real-np10-data-decisions-1-2">Phase 1 — Sim source produces real NP1.0 data (decisions #1, #2)<a class="headerlink" href="#phase-1-sim-source-produces-real-np10-data-decisions-1-2" title="Permanent link">#</a></h3>
 <ol>
 <li>Rework <code>SimulatedDataSource</code> to write <strong>int16 NP1.0 packets</strong> into the registered <code>data.npx.ap</code> (30 kHz)
@@ -286,9 +323,15 @@ simulated waveforms; <code>sync.png</code> renders (or notes "no shared pulse tr
 source and confirm the ripple detector fires. This becomes the <strong>Linux CI smoke test</strong> and a hardware-free
 variant of <a href="RecordingTest.html">RecordingTest.md</a>.</p>
 <h3 id="phase-4-docs-status">Phase 4 — Docs + status<a class="headerlink" href="#phase-4-docs-status" title="Permanent link">#</a></h3>
-<p>Update [[spikespeak-build]] (Linux recipe), [[hardware-connected-testing]] (Windows-box-specific; Linux =
-sim), <a href="RecordingTest.html">RecordingTest.md</a> (add the sim/Linux variant), <a href="ControlCLI.html">ControlCLI.md</a>
-(Linux launch), and log the outcome in <code>SpikesPeak_Status.md</code>.</p>
+<p>Update the build page (<a href="Building.html"><code>Building.md</code></a>, the Linux recipe), the hardware-testing rules
+(which are Windows-box-specific; on Linux everything is sim — now in
+<a href="Testing.html"><code>Testing.md</code></a> §1a and §4), <a href="RecordingTest.html">RecordingTest.md</a> (add the sim/Linux
+variant), <a href="ControlCLI.html">ControlCLI.md</a> (Linux launch), and log the outcome in
+<code>SpikesPeak_Status.md</code>.</p>
+<p><em>(This step originally named two <code>[[wiki-links]]</code> into a previous author's private note store. They
+rendered as literal brackets and resolved to nothing — on a page whose own header promised everything
+had been written into the repo instead. Replaced with the repo pages that carry that material,
+2026-08-31.)</em></p>
 <hr />
 <h2 id="simulated-sources-are-per-module-design-corrected-2026-07-06">Simulated sources are PER-MODULE (design corrected 2026-07-06)<a class="headerlink" href="#simulated-sources-are-per-module-design-corrected-2026-07-06" title="Permanent link">#</a></h2>
 <blockquote>
@@ -320,13 +363,14 @@ a leaky abstraction. So:</p>
 </ul>
 <hr />
 <h2 id="frontend-notes-for-the-display-selection-work">Frontend notes (for the display-selection work)<a class="headerlink" href="#frontend-notes-for-the-display-selection-work" title="Permanent link">#</a></h2>
-<p>The NPX 1.0 <strong>recording-channel selection UI</strong> (Status §10 "parts 4+5") is frontend work expected
-on this Linux box once sim streams. Facts carried over from the prior machine's notes (they weren't in the
-repo before):</p>
+<p>The NPX 1.0 <strong>recording-channel selection UI</strong> (Status §10 "parts 4+5") was queued as frontend work
+to be done against the sim source once it streamed. The facts below were carried over from the prior
+machine's private notes because they were not in the repo at all, and they have been kept current
+since — the SciChart bullet is dated 2026-08-27, well after the rest of this page:</p>
 <ul>
 <li>The web UI is an <strong>external browser</strong> (served HTTP:8234, one WebSocket:1234) — <strong>not</strong> an embedded
   <code>QWebEngineView</code>. Native Qt dialogs are valid and land on the SpikesPeak machine. See
-  [[spikespeak-web-architecture]] / the architecture review.</li>
+  <a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a>.</li>
 <li><strong>There is no charting library in the tree.</strong> The vendored SciChart bundle was deleted on
   2026-08-27. The probe / electrode map is plain <strong>canvas 2D</strong> (<code>webinterface/ProbeMap.js</code>) and the
   live-view traces are <strong>WebGL2</strong> (<code>webinterface/GlRenderer.js</code>), both written here. So anything new
@@ -343,8 +387,9 @@ repo before):</p>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#for-the-new-linux-agent-start-here">🐧 For the new Linux agent — START HERE</a></li>
-<li><a href="#what-exists-today-verified-2026-07-06">What exists today (verified 2026-07-06)</a></li>
+<li><a href="#read-this-first-what-this-page-is-as-of-2026-08-31">Read this first: what this page is, as of 2026-08-31</a></li>
+<li><a href="#the-context-this-was-written-in-2026-07-06-historical">The context this was written in (2026-07-06 — historical)</a></li>
+<li><a href="#what-existed-when-this-was-written-verified-2026-07-06">What existed when this was written (verified 2026-07-06)</a></li>
 <li><a href="#design-decision-route-sim-through-the-real-pipeline-option-a-chosen">Design decision: route sim through the REAL pipeline (Option A — chosen)</a></li>
 <li><a href="#decisions-resolved-2026-07-06">Decisions (resolved 2026-07-06)</a></li>
 <li><a href="#phased-plan">Phased plan</a><ul>

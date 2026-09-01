@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup" open><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup" open><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a class="active" href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,6 +131,8 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
@@ -133,6 +143,18 @@
 configs relate to the probe, and the failure modes you will actually hit (a stuck reservation, the
 probe hang). Written after the 2026-07 closed-loop bring-up, where the Pi stimulator's pulse is
 captured on NI-DAQ <strong>ai4</strong>.</p>
+<blockquote>
+<p><strong>Currency, 2026-08-31.</strong> The engineering below — DIFF-only, the <code>-200077</code> and <code>-50103</code> failures,
+<code>teardownManagers</code>, the DI stream — is <strong>current and correct</strong>; it is the oldest page in this
+cluster and it has held up. What changed underneath it is the <strong>profiles</strong>: the 2026-08-26 source
+refactor replaced the per-probe hardware profiles with basestation-resolved ones, so the Configs
+table below has been rewritten and the streaming-label table completed. Everything else is as it
+was written.</p>
+<p><strong>A OneBox rig has no NI-DAQ, and needs none.</strong> The box carries its own <strong>12-channel ADC</strong>, on the
+same device and the same 100 kHz clock as the probe — so a stimulus monitor or a sync line captured
+there needs no cross-device sync fit at all. If you are on a OneBox, this page is not your page:
+read <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a> §6, <em>The OneBox ADC band</em>.</p>
+</blockquote>
 <h2 id="the-device-at-a-glance">The device at a glance<a class="headerlink" href="#the-device-at-a-glance" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -172,39 +194,79 @@ captured on NI-DAQ <strong>ai4</strong>.</p>
 </tr>
 </tbody>
 </table>
-<h2 id="configs">Configs<a class="headerlink" href="#configs" title="Permanent link">#</a></h2>
+<h2 id="configs-rewritten-for-the-post-2026-08-26-source-model">Configs (rewritten for the post-2026-08-26 source model)<a class="headerlink" href="#configs-rewritten-for-the-post-2026-08-26-source-model" title="Permanent link">#</a></h2>
+<p><strong>The operator-facing profile is one entry: <code>PXIe with NI-DAQ</code></strong> (<code>config/NeuropixelsNiDaq.yaml</code>).
+It appears in the Source dropdown only when a PXIe basestation is detected, and it names neither the
+basestation nor the probe — both are read from the rig.</p>
 <table>
 <thead>
 <tr>
 <th>Config (<code>name:</code>)</th>
 <th>Probe</th>
 <th>NI-DAQ</th>
-<th>Use it for</th>
+<th>Where it appears</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>NI-DAQ only (real)</strong> (<code>NiDaqOnly.yaml</code>)</td>
+<td><strong><code>PXIe with NI-DAQ</code></strong> (<code>NeuropixelsNiDaq.yaml</code>)</td>
+<td>any, auto-detected</td>
+<td>real</td>
+<td><strong>The Source dropdown.</strong> Use this.</td>
+</tr>
+<tr>
+<td><strong><code>PXIe + NI-DAQ</code></strong> (<code>PxieNiDaq.yaml</code>)</td>
+<td>any</td>
+<td>real</td>
+<td><code>gui_hidden</code>. <strong>Superseded by the row above</strong> — it is the told-what-to-open form, kept as the explicit override when a OneBox and a PXIe module are attached at once. Selectable by name.</td>
+</tr>
+<tr>
+<td><code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank with NI-DAQ</code>, and the <code>(ASAP)</code> variants</td>
+<td>fixed per file</td>
+<td>real</td>
+<td><code>gui_hidden</code> legacy, selectable by name; published measurements reference these names and must stay reproducible.</td>
+</tr>
+<tr>
+<td><strong><code>NI-DAQ only (real)</code></strong> (<code>NiDaqOnly.yaml</code>)</td>
 <td>none</td>
 <td>real</td>
-<td>The <strong>probe-independent</strong> path — proves the NI-DAQ streams stand-alone (no probe needed).</td>
+<td>The <strong>Simulated Data</strong> picker (<code>sim_variant:</code>), not the Source dropdown. The probe-independent path — proves the NI-DAQ streams stand-alone.</td>
 </tr>
 <tr>
-<td><strong>Simulated NPX 1.0 + Real NI-DAQ + Ripples</strong> (<code>SimNpx1NiDaqRipples.yaml</code>)</td>
+<td><strong><code>Simulated NPX 1.0 + Real NI-DAQ + Ripples</code></strong> (<code>SimNpx1NiDaqRipples.yaml</code>)</td>
 <td>sim NP1</td>
 <td>real</td>
-<td>Closed-loop demo: sim ripple → detector → Pi pulse → captured on NI-DAQ ai4.</td>
+<td>Simulated Data picker. Closed-loop demo: sim ripple → detector → Pi pulse → captured on NI-DAQ ai4.</td>
 </tr>
 <tr>
-<td><strong>Simulated NPX 2.0 Multishank + Real NI-DAQ + Ripples</strong> (<code>SimNpx2RealNiDaqRipples.yaml</code>)</td>
+<td><strong><code>Simulated NPX 2.0 Multishank + Real NI-DAQ + Ripples</code></strong> (<code>SimNpx2RealNiDaqRipples.yaml</code>)</td>
 <td>sim NP2</td>
 <td>real</td>
-<td>Same, on the 2.0 geometry (derived <code>data.lfp</code> → detector).</td>
+<td>Simulated Data picker. Same, on the 2.0 geometry (derived <code>data.lfp</code> → detector).</td>
 </tr>
 </tbody>
 </table>
-<p>The sim "probe" always initializes (no hardware), so for these sim+NI-DAQ configs <code>deviceReady</code>
+<blockquote>
+<p><strong>Careful with <code>PxieNiDaq.yaml</code>'s own superseding comment</strong>: it names <em>"Neuropixels + NI-DAQ"</em>, and
+<strong>no profile has that name.</strong> The shipped name is <strong><code>PXIe with NI-DAQ</code></strong>. Use that.</p>
+</blockquote>
+<p>The sim "probe" always initializes (no hardware), so for the sim+NI-DAQ configs <code>deviceReady</code>
 depends <strong>only</strong> on the NI-DAQ being free.</p>
+<h3 id="why-the-basestation-is-auto-detected-and-the-ni-daq-deliberately-is-not">Why the basestation is auto-detected and the NI-DAQ deliberately is not<a class="headerlink" href="#why-the-basestation-is-auto-detected-and-the-ni-daq-deliberately-is-not" title="Permanent link">#</a></h3>
+<p><code>source.npx.auto</code> resolves the OneBox or the PXIe source <strong>from a scan that opens nothing</strong> —
+<code>np_scanBS()</code> enumerates both and <code>np_getDeviceList()</code> reports each one's platform, so which source
+class to build is a fact, not a question. The NI-DAQ could be detected just as cheaply:
+<code>DAQmxGetSysDevNames</code> lists devices without claiming any, and the exclusive reservation is not taken
+until <code>DAQmx_Val_Task_Commit</code> at connect. <strong>So the reason is not that we cannot look.</strong></p>
+<p>The reason is that <strong>whether the DAQ was captured is a provenance fact about the recording, and its
+absence is only discoverable after the experiment.</strong> With no <code>_nidaq_</code> file there is no ai4 edge, so
+closed-loop latency cannot be computed at all and the NPX↔NI-DAQ sync fit has nothing to fit.
+Auto-using a card "if one is there" turns a loud pre-experiment failure — <em>you picked this profile and
+no card was found</em> — into a quiet post-experiment discovery. On a rig judged on closed-loop latency,
+that is the wrong trade. You already asked for the basestation when you asked for a probe; you did not
+ask for the DAQ.</p>
+<p><em>(That reasoning lived only in <code>NeuropixelsNiDaq.yaml</code>'s header comment until 2026-08-31. It is a
+design decision, not a config detail, so it belongs here too.)</em></p>
 <h2 id="the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe">The probe codependence (why the NI-DAQ can look "dead" without a probe)<a class="headerlink" href="#the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe" title="Permanent link">#</a></h2>
 <p>The GUI's <strong>real</strong>-NI-DAQ profiles historically bundle a <strong>real</strong> probe (<code>source.npx.pxi</code>). Two
 things couple them:</p>
@@ -272,6 +334,8 @@ connect returns <code>deviceReady False</code> <strong>immediately</strong> (no 
 <h2 id="streaming-options-nidaq-aio-and-nidaq-dio">Streaming options: "NIDAQ AI/O" and "NIDAQ DI/O"<a class="headerlink" href="#streaming-options-nidaq-aio-and-nidaq-dio" title="Permanent link">#</a></h2>
 <p>The live-view stream selector labels are mapped centrally in <code>webinterface/ChartColumn.js</code>
 (<code>static streamLabel(streamId)</code>):</p>
+<p>Anything <strong>not</strong> in the map falls through to <code>streamId.toUpperCase() + ' Band'</code>, so a stream with no
+entry still gets a label — just not an authored one.</p>
 <table>
 <thead>
 <tr>
@@ -292,14 +356,27 @@ connect returns <code>deviceReady False</code> <strong>immediately</strong> (no 
 <td><code>data.nidaq.di</code> (port0 lines as 0/1 channels) — <strong>done + verified</strong></td>
 </tr>
 <tr>
-<td><code>ap</code> / <code>lfp</code></td>
-<td>AP Band / LFP Band</td>
-<td>probe bands (unchanged)</td>
+<td><code>adc</code></td>
+<td><strong>OneBox ADC (SDR)</strong></td>
+<td><code>data.npx.adc</code> — the OneBox's own 12 analog inputs. Named for the <strong>SDR</strong> connector because that is the physical breakout the BNCs are on; the word ADC stays so the screen names what the disk names (<code>&lt;name&gt;_adc_&lt;stamp&gt;.bin</code>).</td>
+</tr>
+<tr>
+<td><code>spike</code></td>
+<td><strong>Spike Band</strong></td>
+<td><code>data.spike</code>, derived — spelled out rather than left to the fallback's <code>SPIKE Band</code>.</td>
+</tr>
+<tr>
+<td><code>ap</code> / <code>lfp</code> / <code>raw</code></td>
+<td>AP Band / LFP Band / RAW Band</td>
+<td>probe bands, via the fallback</td>
 </tr>
 </tbody>
 </table>
-<p>"Separate tabs" = two live-view <strong>columns</strong> (top toolbar <code>Columns:</code>), one set to NIDAQ AI/O and one
-to NIDAQ DI/O — no new tab widget is needed once the DI stream exists.</p>
+<p>"Separate tabs" = two live-view <strong>columns</strong>, one set to NIDAQ AI/O and one to NIDAQ DI/O — no new tab
+widget is needed once the DI stream exists. The column count is the toolbar's <strong><code>Cols</code></strong> control —
+this page called it <code>Columns:</code> until 2026-08-31; the label was shortened in the 2026-08-18 toolbar
+relayout. On a narrow toolbar it folds with the rest of the view group behind the <strong><code>▾ view</code></strong> peek
+chip — hover to peek, click or <code>Ctrl+Shift+V</code> to pin.</p>
 <h3 id="digital-io-stream-what-is-already-there">Digital I/O stream — what is already there<a class="headerlink" href="#digital-io-stream-what-is-already-there" title="Permanent link">#</a></h3>
 <p>The digital lines are <strong>already acquired</strong>. In <code>NIDAQDevice::acquireData</code> (<code>NiDaqInterface.cpp</code>), each
 active digital port is read with <code>DAQmxReadDigitalU8</code>/<code>U32</code>, bit-shifted by port index into a single
@@ -359,7 +436,10 @@ always flushed to disk before any teardown, so recordings are never lost.</p></a
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
 <li><a href="#the-device-at-a-glance">The device at a glance</a></li>
-<li><a href="#configs">Configs</a></li>
+<li><a href="#configs-rewritten-for-the-post-2026-08-26-source-model">Configs (rewritten for the post-2026-08-26 source model)</a><ul>
+<li><a href="#why-the-basestation-is-auto-detected-and-the-ni-daq-deliberately-is-not">Why the basestation is auto-detected and the NI-DAQ deliberately is not</a></li>
+</ul>
+</li>
 <li><a href="#the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe">The probe codependence (why the NI-DAQ can look "dead" without a probe)</a></li>
 <li><a href="#the-intermittent-setupsources-failure-its-a-stuck-reservation-not-a-bad-config">The "intermittent setupSources failure" — it's a stuck reservation, not a bad config</a></li>
 <li><a href="#robustness-fixes-2026-07-14">Robustness fixes (2026-07-14)</a></li>

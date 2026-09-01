@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpikesPeak — Recording (Task 2 runbook) - SpikesPeak Docs</title>
+<title>SpikesPeak — Recording - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Recording and headless control / SpikesPeak — Recording (Task 2 runbook)</span>
+  <span class="crumb">Developer Docs / Recording and headless control / SpikesPeak — Recording</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -52,58 +52,66 @@
 <a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
 <a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
 </details>
-<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">5</span></summary>
-<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support (Task 3 runbook)</a>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
 <a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
 <a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
 <a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
 <a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
 </details>
-<details class="navgroup"><summary>Signal processing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
 <a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
 <a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
 <a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
 </details>
-<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
 <a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
 <a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
 <a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
 <a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
 <a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
 <a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
 </details>
-<details class="navgroup"><summary>Live view and GUI<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
 <a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached view windows</a>
 </details>
 <details class="navgroup" open><summary>Recording and headless control<span class="navcount">4</span></summary>
-<a class="active" href="Recording.html">SpikesPeak — Recording (Task 2 runbook)</a>
+<a class="active" href="Recording.html">SpikesPeak — Recording</a>
 <a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
 <a href="ControlCLI.html">Control CLI — headless command interface</a>
 <a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
 </details>
-<details class="navgroup"><summary>Testing<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
 <a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
 <a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">4</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
-<a href="NextTask_OneBoxClosedLoopLatency.html">NEXT TASK — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
-<a href="NextTask_OneBoxLatencyMatrix.html">Next task — finish the OneBox closed-loop latency matrix</a>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">2</span></summary>
-<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
-<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -123,17 +131,21 @@
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
 <a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
 <a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="spikespeak-recording-task-2-runbook">SpikesPeak — Recording (Task 2 runbook)<a class="headerlink" href="#spikespeak-recording-task-2-runbook" title="Permanent link">#</a></h1>
-<p>How disk recording works, how to verify it for NP1.0, and the known sharp edges. Goal of Task 2:
-<strong>confirm NP1.0 recording produces correct files</strong>, then fix anything that's wrong.</p>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-recording">SpikesPeak — Recording<a class="headerlink" href="#spikespeak-recording" title="Permanent link">#</a></h1>
+<p>How disk recording works, what a recording contains, how to verify one, and the known sharp edges.</p>
 <blockquote>
 <p>Recording is a <strong>sink/processor</strong> — see [<code>AddingASinkModule.md</code>] for the sink lifecycle, and
 [<code>SpikesPeak_Architecture_Review.md</code>] for the data plane.</p>
+<p><strong>Reading order.</strong> §0 is how to record. §2 is what lands on disk and §2b is the sidecar that makes
+it readable — those two are current to 2026-08-29 and are what most readers want. §4 is the NP1.0
+verification checklist, §6 the dated history of the original bring-up.</p>
 </blockquote>
 <hr />
 <h2 id="0-how-to-record-usage">0. How to record (usage)<a class="headerlink" href="#0-how-to-record-usage" title="Permanent link">#</a></h2>
@@ -154,8 +166,8 @@
    declares. On NP1.0 at bank 0 these happen to equal electrode numbers; on NP2.0, and on any NP1.0 map
    that is not bank 0, they do not — the sidecar's <code>columns.electrode</code> array records which electrode
    each recorded column actually read. Only those are written; the
-   sample configs record electrodes <code>[1,2,3]</code> (NPX) and NI-DAQ <code>[0..7]</code>. <em>(A GUI record-channel picker is
-   coming — §7.)</em></li>
+   sample configs record electrodes <code>[1,2,3]</code> (NPX) and NI-DAQ <code>[0..7]</code>. <em>(Or pick them visually —
+   the GUI record-channel picker has existed since 2026-07-06; §7.)</em></li>
 <li><strong>Press ● Record again to stop.</strong> Files close; <strong>streaming keeps going</strong> — only <strong>Pause</strong> stops the
    stream. You can arm + start a new recording (fresh folder + timestamp) without pausing.</li>
 </ol>
@@ -173,7 +185,7 @@ which drives the backend over the WebSocket; an open browser mirrors it live. Se
 <p><strong>Metadata + postprocessing.</strong> Each <code>.bin</code> is written with a self-describing <strong><code>&lt;file&gt;.bin.json</code>
 sidecar</strong> (band, record layout, sample rate, units, the electrode/channel list, and -- since
 <code>metadata_version: 2</code> -- the <strong>counts-to-microvolts conversion, the applied IMRO and the probe
-identity</strong>; see <a href="#2a-the-sidecar-turning-counts-back-into-microvolts">§2a</a>). The
+identity</strong>; see <a href="#2b-the-sidecar-turning-counts-back-into-microvolts">§2b</a>). The
 <strong><code>python/spikespeak_postprocess</code></strong> package reads those and returns a band for the electrode numbers you
 want, as NumPy or xarray:</p>
 <pre><code class="language-python">from spikespeak_postprocess import Recording
@@ -227,11 +239,15 @@ and a <strong>white ⏸ inside a green pulsing ring while streaming</strong> (se
 <h2 id="2-how-many-channels-all-of-them-on-every-profile-an-operator-can-pick">2. How many channels? All of them, on every profile an operator can pick<a class="headerlink" href="#2-how-many-channels-all-of-them-on-every-profile-an-operator-can-pick" title="Permanent link">#</a></h2>
 <p><strong>Every hardware profile the source picker offers records all 384 probe channels.</strong> A recording block
 with no <code>channels:</code> key records the whole row — the serializers write <code>sampleDimensions()</code> values when
-the filter is empty — and none of the operator-facing hardware profiles has one:</p>
+the filter is empty — and none of the operator-facing hardware profiles has one.</p>
+<p><strong>The picker offers exactly two of these</strong>, since the 2026-08-26 source-selection refactor: the probe
+and the basestation are both read from the rig, so the only thing left to choose is whether to claim
+the NI-DAQ card.</p>
 <table>
 <thead>
 <tr>
 <th>profile (<code>name:</code>)</th>
+<th>in the dropdown?</th>
 <th>probe bands</th>
 <th>channels</th>
 </tr>
@@ -239,31 +255,42 @@ the filter is empty — and none of the operator-facing hardware profiles has on
 <tbody>
 <tr>
 <td><code>Neuropixels</code></td>
-<td>ap, lfp, raw</td>
-<td><strong>all</strong></td>
-</tr>
-<tr>
-<td><code>OneBox</code></td>
-<td>ap, lfp, raw</td>
-<td><strong>all</strong></td>
-</tr>
-<tr>
-<td><code>PXIe</code></td>
-<td>ap, lfp, raw</td>
-<td><strong>all</strong></td>
-</tr>
-<tr>
-<td><code>PXIe + NI-DAQ</code></td>
+<td><strong>yes</strong> — any basestation, any probe, all resolved by scan</td>
 <td>ap, lfp, raw</td>
 <td><strong>all</strong></td>
 </tr>
 <tr>
 <td><code>PXIe with NI-DAQ</code></td>
+<td><strong>yes</strong>, when a PXIe module is detected</td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>OneBox</code></td>
+<td><code>gui_hidden</code> — the explicit basestation override</td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>PXIe</code></td>
+<td><code>gui_hidden</code> — the explicit basestation override</td>
+<td>ap, lfp, raw</td>
+<td><strong>all</strong></td>
+</tr>
+<tr>
+<td><code>PXIe + NI-DAQ</code></td>
+<td><code>gui_hidden</code> — <strong>superseded by <code>PXIe with NI-DAQ</code></strong></td>
 <td>ap, lfp, raw</td>
 <td><strong>all</strong></td>
 </tr>
 </tbody>
 </table>
+<p><code>PXIe + NI-DAQ</code> (<code>config/PxieNiDaq.yaml</code>) is the older, told-what-to-open form of the profile
+directly below it in that table; <code>PXIe with NI-DAQ</code> (<code>config/NeuropixelsNiDaq.yaml</code>) is the
+replacement, and resolves the basestation from a scan instead. All three hidden profiles <strong>remain
+selectable by exact name</strong> from the control CLI — deliberately, because they are the explicit override
+when a OneBox and a PXIe module are attached at once (the scan refuses to guess between them) and
+because published measurements name them.</p>
 <p>Confirmed on hardware, not only from the YAML: a PXIe + NP1.0 recording writes <strong>774-byte frames</strong>,
 which is <code>6 + 2·384</code> — the header plus every channel.</p>
 <p>The <code>adc</code>, <code>nidaq</code> and <code>nidaq_di</code> bands do carry explicit lists (<code>[0..11]</code>, <code>[0..7]</code>), but those are
@@ -277,7 +304,8 @@ benches and as #63's ADC-throughput control, whose published 78.1 % / 99.99 % pa
 against the three-channel pair. Widening them would destroy that comparison.</p>
 <p>They are hidden from the dropdown, but <strong>they remain selectable by exact name</strong> — which is how the
 OneBox latency matrix drove them. So a script that names one gets three channels, by design. If you
-are scripting a real session, name one of the five profiles above.</p>
+are scripting a real session, name one of the five record-everything profiles in the table above —
+<code>Neuropixels</code> unless you have a reason not to.</p>
 <p>Simulated and play-file profiles also record three channels, to keep the test suites fast.</p>
 <p><strong>This is enforced, not just documented.</strong> <code>python/tests/test_config_channels.py</code> fails if an
 operator-facing profile ever acquires a <code>channels:</code> list, and separately if a <em>new</em> profile records a
@@ -286,7 +314,7 @@ narrowed recording looks completely normal afterwards — the sidecar honestly d
 and every converter honestly exports three — and the channels that were never written cannot be
 recovered.</p>
 <hr />
-<h2 id="2-what-gets-written-and-where">2. What gets written, and where<a class="headerlink" href="#2-what-gets-written-and-where" title="Permanent link">#</a></h2>
+<h2 id="2a-what-gets-written-and-where">2a. What gets written, and where<a class="headerlink" href="#2a-what-gets-written-and-where" title="Permanent link">#</a></h2>
 <p><strong>The Record button prompts (2026-06-26).</strong> Clicking Record opens a GUI modal
 (<code>AppController.showRecordDialog</code>) for a <strong>recording name</strong> (animal/id) and an <strong>output directory</strong> on
 the SpikesPeak machine — pick it with the <strong>Browse…</strong> button (a native backend folder dialog; see below)
@@ -341,7 +369,7 @@ record layout, sample rate, units and the electrode/channel list -- written by
 on it; a reader does NOT need to know N and the rate out-of-band.</li>
 </ul>
 <hr />
-<h2 id="2a-the-sidecar-turning-counts-back-into-microvolts">2a. The sidecar: turning counts back into microvolts<a class="headerlink" href="#2a-the-sidecar-turning-counts-back-into-microvolts" title="Permanent link">#</a></h2>
+<h2 id="2b-the-sidecar-turning-counts-back-into-microvolts">2b. The sidecar: turning counts back into microvolts<a class="headerlink" href="#2b-the-sidecar-turning-counts-back-into-microvolts" title="Permanent link">#</a></h2>
 <p><strong>The requirement:</strong> every bit of the signal has to be reconstructible from the recorded data.</p>
 <p>Until 2026-08-25 the sidecar failed that. It declared <code>units: "adc_int16"</code> and gave no way to convert.
 The per-channel amplifier gain that sets the microvolt scale is fixed by the <strong>applied IMRO</strong> and lives
@@ -415,7 +443,7 @@ future reader disputing a scale factor must be able to tell which one they are h
 </tr>
 <tr>
 <td><code>data.npx.raw</code> (NP2.0)</td>
-<td><code>1.0 V / gain / 2^adc_bits</code>, <strong>resolved from the probe's own part number</strong> via <code>Npx2Scale.hpp</code> -- commercial parts (NP2003/4/13/14) are 12-bit gain-100 = 2.4414 uV/count, prototypes (NP2000/NP2010) are 14-bit gain-80 = 0.7629, a 3.2x spread. NP2 is fixed-gain: <code>np_setGain</code> is never called. An unrecognised part falls back to the commercial figure AND writes an <code>unavailable_reason</code> saying so. <strong>Corrected 2026-08-28</strong>: this block hardcoded gain 84 -- a value belonging to no variant -- so the sidecar was 1.190x high while the LIVE VIEW, which had used the part-resolved value since #65, was right. One recording, two scales</td>
+<td><code>1.0 V / gain / 2^adc_bits</code>, <strong>resolved from the probe's own part number</strong> via <code>Npx2Scale.hpp</code> -- commercial parts (NP2003/4/13/14) are 12-bit gain-100 = 2.4414 uV/count, prototypes (NP2000/NP2010) are 14-bit gain-80 = 0.7629, a 3.2x spread. NP2 is fixed-gain: <code>np_setGain</code> is never called. An unrecognized part falls back to the commercial figure AND writes an <code>unavailable_reason</code> saying so. <strong>Corrected 2026-08-28</strong>: this block hardcoded gain 84 -- a value belonging to no variant -- so the sidecar was 1.190x high while the LIVE VIEW, which had used the part-resolved value since #65, was right. One recording, two scales</td>
 <td><code>device-readback</code> (the part number comes from the probe)</td>
 </tr>
 <tr>
@@ -475,7 +503,7 @@ should read the published gains / the sidecar instead.</p>
 has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>proc.nidaq.recorder</code> both map to the <strong>same</strong>
 <code>RecordProcessor</code> class (registered in <code>Utils.cpp</code>); only the configured interpreters/streams differ.</p>
 <hr />
-<h2 id="4-task-2-test-checklist-np10">4. Task 2 test checklist (NP1.0)<a class="headerlink" href="#4-task-2-test-checklist-np10" title="Permanent link">#</a></h2>
+<h2 id="4-verification-checklist-np10">4. Verification checklist (NP1.0)<a class="headerlink" href="#4-verification-checklist-np10" title="Permanent link">#</a></h2>
 <ol>
 <li>Play → Record (enter a name + directory in the prompt) ~5 s → Stop. Confirm <code>&lt;name&gt;_ap_&lt;ts&gt;.bin</code> +
    <code>&lt;name&gt;_lfp_&lt;ts&gt;.bin</code> (+ <code>&lt;name&gt;_nidaq_&lt;ts&gt;.bin</code> if NI-DAQ) appear in the directory you chose.</li>
@@ -548,14 +576,15 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 </tbody>
 </table>
 <hr />
-<h2 id="6-status-2026-06-25">6. Status (2026-06-25)<a class="headerlink" href="#6-status-2026-06-25" title="Permanent link">#</a></h2>
+<h2 id="6-history-the-original-np10-bring-up">6. History — the original NP1.0 bring-up<a class="headerlink" href="#6-history-the-original-np10-bring-up" title="Permanent link">#</a></h2>
+<p><em>Kept for the dates and what they proved; nothing here is a current instruction.</em></p>
 <ul>
-<li>Recording path implemented + wired for NP1.0 (AP + LFP). <strong>Code fixes above applied and the C++ +
-  webinterface rebuilt clean</strong> (CMake/Ninja/MSVC2019, exit 0). The on-disk format is now correct and
-  documented (774-byte records, real sync). <code>verify_npx_recording.py</code> added at the repo root.</li>
-<li><strong>Done on hardware.</strong> NP1.0 recording is since verified on the real probe + NI-DAQ — the §4 checklist
-  passed during the 2026-07-07 hardware bring-up (Status §16), and recording rode along in the ripple
-  closed-loop hardware tests (both AP/LFP bands written and loaded back via <code>spikespeak_postprocess</code>;
+<li><strong>2026-06-25.</strong> Recording path implemented + wired for NP1.0 (AP + LFP); the §5 code fixes applied
+  and the C++ + webinterface rebuilt clean. The on-disk format became correct and documented
+  (774-byte records, real sync). <code>verify_npx_recording.py</code> added at the repo root.</li>
+<li><strong>2026-07-07.</strong> Verified on the real probe + NI-DAQ — the §4 checklist passed during the hardware
+  bring-up (Status §16), and recording rode along in the ripple closed-loop hardware tests (both
+  AP/LFP bands written and loaded back via <code>spikespeak_postprocess</code>;
   <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</li>
 </ul>
 <hr />
@@ -576,10 +605,38 @@ selection; <code>webinterface/ImroManager.js</code> <code>renderRecordSelection<
   electrodes in that row band (the reserved reference ch 191 is always skipped).
 - <strong>Unselect all</strong> clears; <strong>Record all</strong> re-selects every applied channel; <strong>Set recording channels</strong>
   commits the current selection.
-- On commit the browser stores the read-out channel list in <code>window.recordChannels</code> (electrode →
-  read-out channel is <code>electrode % 384</code>, taken from the applied map). <code>main.js toggleRecord</code> passes it to
-  every recorder as the 4th arg of <code>setRecording(true, dir, name, channels)</code>. Empty/none ⇒ the YAML
-  default (headless/CLI parity).</p>
+- On commit the browser stores the read-out channel list in <code>window.recordChannels</code>, taken from the
+  applied map. <code>main.js toggleRecord</code> passes it to every recorder as the 4th arg of
+  <code>setRecording(true, dir, name, channels)</code>. Empty/none ⇒ the YAML default (headless/CLI parity).</p>
+<blockquote>
+<p><strong>⚠️ The electrode → channel rule above is NP1.0 ONLY, and the page did not used to say so.</strong></p>
+<table>
+<thead>
+<tr>
+<th>probe</th>
+<th>electrode → read-out channel</th>
+<th>reserved channel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>NP1.0</strong></td>
+<td><code>electrode % 384</code></td>
+<td><strong>191</strong> — its sites (191, 575, 959) are internal reference, drawn amber, never selectable</td>
+</tr>
+<tr>
+<td><strong>NP2.0</strong></td>
+<td>a <strong>per-shank block permutation</strong>, keyed <code>"&lt;shank&gt;_&lt;electrodeId&gt;"</code> — <code>Np2::electrodeToChannel(shank, electrode)</code> in <code>Npx.hpp</code>, mirrored in JS as <code>NP2_electrodeToChannel</code>. The bank is <code>electrode_local / 384</code>; the channel is a table lookup, deliberately scrambled by the probe.</td>
+<td><strong>none</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Applying the NP1 rule to a 2.0 probe gives you <strong>the wrong channel</strong> for every electrode and a
+<strong>phantom exclusion</strong> at 191 that the hardware does not have. The permutation was verified against
+all 5,120 rows of imec's official Electrode-Channel spreadsheet (2026-07-07; see
+<a href="Neuropixels2.0.html"><code>Neuropixels2.0.md</code></a> §7). The record-selection UI branches correctly — the
+prose is what was NP1-shaped.</p>
+</blockquote>
 <p><strong>Backend</strong> (<code>RecordProcessor</code>, §Part 3 rules): <code>setRecording</code> gained a <code>channels</code> (QVariantList) arg.
 When non-empty on start it's validated (<code>0..kMaxChannels</code>, unique) and becomes the session's
 <code>activeRecordIndices</code>, overriding the YAML <code>channels:</code> for that session <strong>only</strong> (the configured default
@@ -685,7 +742,53 @@ the timestamp of the data files:</p>
     logdemo_20260819_231117.log
     logdemo_raw_20260819_231117.bin        + .bin.json
     logdemo_adc_20260819_231117.bin        + .bin.json
+    logdemo_ripple.json                    (if the detector had channels at record start)
+    logdemo_events.jsonl                   (if the detector ran during the recording)
 </code></pre>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Written by</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&lt;name&gt;_&lt;band&gt;_&lt;ts&gt;.bin</code></td>
+<td><code>RecordProcessor</code></td>
+<td>one band's samples</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_&lt;band&gt;_&lt;ts&gt;.bin.json</code></td>
+<td><code>RecordProcessor</code></td>
+<td>that band's sidecar — §2b</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_&lt;ts&gt;.log</code></td>
+<td><code>RecordProcessor</code></td>
+<td>the backend log for the life of this recording</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_ripple.json</code></td>
+<td><code>RippleDetector::slWriteRippleSidecar</code></td>
+<td>the online thresholds and the <strong>resolved</strong> detection channels, at record start</td>
+</tr>
+<tr>
+<td><code>&lt;name&gt;_events.jsonl</code></td>
+<td><code>RippleDetector</code>, appended live</td>
+<td><strong>one JSON object per line</strong> for every detection, latency measurement and confirmed stimulus, for the span of the recording. Open only while recording. Before 2026-08-28 these existed <strong>only</strong> as live WebSocket messages — if the stream was not captured at the time, they are gone.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Where the sidecars live, and the one date that changes it.</strong> Since <strong>2026-08-28</strong> everything
+above lands <strong>inside <code>&lt;dir&gt;/&lt;name&gt;/</code></strong>. In recordings made before that, the bands were already in
+<code>&lt;dir&gt;/&lt;name&gt;/</code> but <code>&lt;name&gt;_ripple.json</code> was written <strong>one level up, in <code>&lt;dir&gt;/</code></strong> — so copying
+"the recording folder" silently left the detection channels and trained thresholds behind. The
+analysis tools read both layouts and report which one they found; for an older recording, take the
+parent directory.</p>
+</blockquote>
 <p>It exists because <code>output.log</code> is truncated on every start and so cannot answer "what was this rig
 doing when this file was written?" for data analyzed later. It covers the <strong>recording</strong>, not the
 session -- only the source connected while recording, nothing before Record was pressed or after it
@@ -701,12 +804,12 @@ rationale and the format of a line: <a href="Logging.html"><code>Logging.md</cod
 <li><a href="#the-profiles-that-record-three-channels-and-why-they-stay-that-way">The profiles that record three channels, and why they stay that way</a></li>
 </ul>
 </li>
-<li><a href="#2-what-gets-written-and-where">2. What gets written, and where</a></li>
-<li><a href="#2a-the-sidecar-turning-counts-back-into-microvolts">2a. The sidecar: turning counts back into microvolts</a></li>
+<li><a href="#2a-what-gets-written-and-where">2a. What gets written, and where</a></li>
+<li><a href="#2b-the-sidecar-turning-counts-back-into-microvolts">2b. The sidecar: turning counts back into microvolts</a></li>
 <li><a href="#3-wiring-np10">3. Wiring (NP1.0)</a></li>
-<li><a href="#4-task-2-test-checklist-np10">4. Task 2 test checklist (NP1.0)</a></li>
+<li><a href="#4-verification-checklist-np10">4. Verification checklist (NP1.0)</a></li>
 <li><a href="#5-known-sharp-edges">5. Known sharp edges</a></li>
-<li><a href="#6-status-2026-06-25">6. Status (2026-06-25)</a></li>
+<li><a href="#6-history-the-original-np10-bring-up">6. History — the original NP1.0 bring-up</a></li>
 <li><a href="#7-gui-record-channel-selection-built-2026-07-06">7. GUI record-channel selection (BUILT 2026-07-06)</a></li>
 <li><a href="#did-the-recording-get-everything-two-answers-and-which-to-believe">Did the recording get everything? Two answers, and which to believe</a><ul>
 <li><a href="#1-the-wall-clock-ratio-how-many">1. The wall-clock ratio — "how many"</a></li>

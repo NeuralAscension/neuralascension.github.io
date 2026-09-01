@@ -140,9 +140,38 @@
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="exporting-recordings-to-spikeglx-or-open-ephys">Exporting recordings to SpikeGLX or Open Ephys<a class="headerlink" href="#exporting-recordings-to-spikeglx-or-open-ephys" title="Permanent link">#</a></h1>
 <p>SpikesPeak records its own <code>.bin</code> files with a JSON sidecar. Two converters turn a finished session
-into the formats the analysis ecosystem already reads:</p>
-<pre><code class="language-bash">cd python
-python python/convert_to_openephys.py openephys  &lt;recording-dir&gt;  &lt;output-dir&gt;
+into the formats the analysis ecosystem already reads — <strong>from the GUI, or from a terminal.</strong></p>
+<hr />
+<h2 id="from-the-gui-the-usual-way">From the GUI (the usual way)<a class="headerlink" href="#from-the-gui-the-usual-way" title="Permanent link">#</a></h2>
+<p><strong>The <code>⇄ Convert</code> tab appears only when no source is connected.</strong> That is deliberate: conversion is a
+batch job that competes for exactly the disks the recorder uses, so there is no case where running it
+mid-acquisition is right. Disconnect first and the tab appears; connect a source and it goes away
+again.</p>
+<p><img alt="The Convert panel" src="images/convert_panel.png" /></p>
+<p>Each recording is listed with how many bands it holds, and a tick appears once a format has been
+written. Press <strong>To SpikeGLX</strong> or <strong>To Open Ephys</strong>; the output lands <strong>beside the recording</strong>, in
+<code>spikeglx_format/</code> or <code>open_ephys_format/</code>, so an export never gets separated from the data it came
+from.</p>
+<p><img alt="A finished conversion" src="images/convert_done.png" /></p>
+<p>The panel reports success only when the converter <strong>exited cleanly and actually wrote files</strong> — not
+when the job was launched. If it failed you get the converter's own words, not a generic error.</p>
+<h3 id="if-the-panel-says-conversion-is-unavailable">If the panel says conversion is unavailable<a class="headerlink" href="#if-the-panel-says-conversion-is-unavailable" title="Permanent link">#</a></h3>
+<p><img alt="No Python interpreter" src="images/convert_no_python.png" /></p>
+<p><strong>The converters need Python with <code>numpy</code>. SpikesPeak itself does not</strong> — the app builds, streams and
+records on a machine with no Python at all, which is why nothing else is affected and why this is a
+notice rather than a fault. When no interpreter is found the panel says so and offers <strong>no buttons</strong>,
+rather than presenting a control that would fail when clicked.</p>
+<p>To enable it, make a virtual environment and put <code>numpy</code> in it. SpikesPeak looks for <code>.venv</code> beside
+the repository first, then for <code>python</code> on <code>PATH</code>:</p>
+<pre><code class="language-bash">python -m venv .venv
+.venv\Scripts\python -m pip install numpy      # Windows
+./.venv/bin/python -m pip install numpy          # Linux / macOS
+</code></pre>
+<p>Then press <strong>Refresh</strong> in the panel. A virtual environment is worth preferring over a system Python:
+it keeps <code>numpy</code> pinned for the converters without touching anything else on an acquisition machine.</p>
+<hr />
+<h2 id="from-a-terminal">From a terminal<a class="headerlink" href="#from-a-terminal" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python python/convert_to_openephys.py openephys  &lt;recording-dir&gt;  &lt;output-dir&gt;
 python python/convert_to_spikeglx.py             &lt;recording-dir&gt;  &lt;output-dir&gt;
 </code></pre>
 <p>Both read the recording's <code>.bin.json</code> sidecars, so neither needs to be told the sample rate, the
@@ -303,6 +332,11 @@ first time you feed it to a new tool.</p>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
+<li><a href="#from-the-gui-the-usual-way">From the GUI (the usual way)</a><ul>
+<li><a href="#if-the-panel-says-conversion-is-unavailable">If the panel says conversion is unavailable</a></li>
+</ul>
+</li>
+<li><a href="#from-a-terminal">From a terminal</a></li>
 <li><a href="#what-converts">What converts</a><ul>
 <li><a href="#why-the-np10-ap-band-is-refused">Why the NP1.0 AP band is refused</a></li>
 <li><a href="#what-is-not-a-gap">What is not a gap</a></li>

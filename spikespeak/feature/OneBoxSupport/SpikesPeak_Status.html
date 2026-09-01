@@ -7027,7 +7027,178 @@ recomputed by whoever edits the page.</p>
 <p>One refutation was <strong>overruled</strong>: the Qt-<code>PATH</code> gap was refuted on the grounds that a linked page
 states the requirement. True, but §5 is a copy-paste reproduce block and the cross-reference sits in
 a sentence about a different topic. A command block whose commands do not run is broken regardless of
-what another page says.</p></article>
+what another page says.</p>
+<hr />
+<h2 id="74-configuration-4-on-the-rig-pxie-no-onebox-2026-09-01">74. CONFIGURATION 4 ON THE RIG — PXIe, NO OneBox  (2026-09-01)<a class="headerlink" href="#74-configuration-4-on-the-rig-pxie-no-onebox-2026-09-01" title="Permanent link">#</a></h2>
+<p>Operator switched the NP2.0 multishank probe to the PXIe basestation and powered the OneBox off.
+Confirmed independently before starting: no FTDI device present on USB, <code>PXI-6133</code> OK. That is what</p>
+<h1 id="52s-configuration-4-asks-for-off-not-merely-unplugged-from-the-probe">52's Configuration 4 asks for — <em>off</em>, not merely unplugged from the probe.<a class="headerlink" href="#52s-configuration-4-asks-for-off-not-merely-unplugged-from-the-probe" title="Permanent link">#</a></h1>
+<h3 id="74a-the-four-checks">74a. The four checks<a class="headerlink" href="#74a-the-four-checks" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>check</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>the basestation scan resolves without ambiguity</td>
+<td><strong>PASS</strong> — <code>{"ambiguous": false, "oneBox": 0, "pxie": 1, "summary": "1 PXIe module"}</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>the dropdown offers no OneBox profile that cannot work</td>
+<td><strong>PASS</strong> — it offers none at all</td>
+</tr>
+<tr>
+<td>3</td>
+<td>connect / stream / record / disconnect / <strong>reconnect</strong></td>
+<td><strong>PASS</strong></td>
+</tr>
+<tr>
+<td>4</td>
+<td>all three suites</td>
+<td><strong>PASS</strong> — C++ 26/26, Python 133, GUI 23/23</td>
+</tr>
+</tbody>
+</table>
+<p><strong>On check 2.</strong> The three refactored profiles — <code>OneBox</code>, <code>PXIe</code>, <code>PXIe + NI-DAQ</code> — are all
+<code>gui_hidden: true</code>, which looked wrong until the files explained themselves: they are <strong>superseded
+for everyday use by <code>Neuropixels</code></strong>, which resolves the basestation from the scan instead of being
+told, and are kept as the EXPLICIT OVERRIDE for when a OneBox and a PXIe module are attached at once
+(auto refuses to guess between them). So the dropdown offering <code>Neuropixels</code> and no OneBox entry is
+the design working, not a gap.</p>
+<p><strong>On check 3</strong>, the state machine, which is worth having written down:</p>
+<pre><code>at rest      acquisition=no_source
+selectSource -&gt; connected  (~8 s)   source.npx.pxi, state=idle, cyclesTotal=0
+setPlaying   -&gt; acquiring           state=producing, cyclesTotal 4936 -&gt; 13130
+Disconnect   -&gt; no_source, sources=0            (released, and stayed released)
+RECONNECT    -&gt; connected  (~8 s)   fresh instance, cyclesTotal back to 0
+setPlaying   -&gt; acquiring           4934 -&gt; 13129   &lt;- the same rate as the first connect
+</code></pre>
+<p>The reconnect is the point (#54 is about the <em>second</em> connect). It re-opens and streams at a rate
+indistinguishable from the first. Recording wrote 232,203,096 B — 300004 frames x 774 B, which is
+384 channels of int16 plus the 6-byte header, exactly right for 10 s of NP2.0 at 30 kHz.</p>
+<h3 id="74b-two-rounds-of-the-failure-being-mine-not-the-rigs">74b. Two rounds of the failure being MINE, not the rig's<a class="headerlink" href="#74b-two-rounds-of-the-failure-being-mine-not-the-rigs" title="Permanent link">#</a></h3>
+<p>The first run reported <em>"the source never opened"</em> and <em>"not committing data"</em> — <strong>in the same run
+that recorded 232 MB of probe data.</strong> The contradiction was the tell. <code>wait_for</code> asserted against a
+state vocabulary I had guessed, before any <code>systemState</code> had been pushed.</p>
+<p>The second run reported <code>cyclesTotal 937 -&gt; 937</code>, frozen, while a diagnostic had just watched it
+climb to 20430. Reading <code>state["latest"]</code> immediately after sending <code>getSystemState</code> returns the
+PREVIOUS reply; the counter has to be sampled from two states that are genuinely different messages.</p>
+<blockquote>
+<p><strong>Instrument first, assert second.</strong> Both rounds were fixed by printing the transitions instead of
+predicting them. On a rig, a failing check is at least as likely to be a wrong probe as a wrong
+system — and the cost of believing it is a hardware hunt that finds nothing.</p>
+</blockquote>
+<h3 id="74c-what-config-4-actually-found-the-single-reader-refused-the-recording">74c. What Config 4 actually found: the single reader refused the recording<a class="headerlink" href="#74c-what-config-4-actually-found-the-single-reader-refused-the-recording" title="Permanent link">#</a></h3>
+<p>The recording is good. <code>python/spikespeak_io.py</code> — introduced as <strong>the</strong> single <code>.bin</code> reader, so
+that two readers could not disagree about a recording — would not open it:</p>
+<pre><code>frame is 774 B but 6 + 2*0 = 6 B. Refusing to guess.
+</code></pre>
+<p>The sidecar says <code>num_channels: 0</code>, <code>channels: []</code>. That is <strong>not</strong> corruption; it is a sentinel the
+writer documents where it writes it (<code>src/core/RecordingMetadata.cpp</code>): <em>"Empty =&gt; the whole block
+was written (no filter) and the reader infers N from the file size."</em> It is also the <strong>common</strong> case,
+because omitting <code>channels:</code> from a profile means record-everything, the safe default every general
+profile uses — <code>config/Neuropixels.yaml</code> says so in as many words.</p>
+<p>So the single reader rejected exactly the recordings an operator is most likely to make, while
+<code>convert_to_spikeglx.py</code> and <code>convert_to_openephys.py</code> both read the same file without complaint
+(300004 x 385 int16, and 384 ch / 0 dropped, respectively). <strong>Two readers in one repo disagreeing
+about a documented sentinel is the precise thing that module was created to prevent.</strong></p>
+<p>Fixed by honouring the sentinel — there was never anything to guess, <code>frame.bytes</code> gives N directly —
+while keeping the hard refusal for a NON-empty channel list that contradicts the frame.
+<code>python/tests/test_reader_all_channels.py</code> pins <strong>both</strong> directions, because a fix that merely
+deleted the guard would pass the first and reintroduce the plausible-garbage the guard exists for.
+Both proved able to fail.</p>
+<hr />
+<h2 id="75-the-architecture-artifacts-one-generator-no-hand-drawn-rivals-2026-09-01">75. THE ARCHITECTURE ARTIFACTS: ONE GENERATOR, NO HAND-DRAWN RIVALS  (2026-09-01)<a class="headerlink" href="#75-the-architecture-artifacts-one-generator-no-hand-drawn-rivals-2026-09-01" title="Permanent link">#</a></h2>
+<p>Operator: <em>"confirm that the architecture files are all fully up-to-date"</em>, then <em>"plantuml things
+can be removed as that's no longer the technique … remove duplicate/older ones."</em></p>
+<h3 id="75a-what-was-there">75a. What was there<a class="headerlink" href="#75a-what-was-there" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>artifact</th>
+<th>kind</th>
+<th>state</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>developer_docs/images/architecture*.svg</code> (37)</td>
+<td><strong>generated</strong> from <code>src/core/Utils.cpp</code> + <code>config/*.yaml</code>, git-ignored</td>
+<td>current; <code>--check</code> clean</td>
+</tr>
+<tr>
+<td><code>images/architecture.svg</code> + <code>.txt</code></td>
+<td>hand-patched <strong>PlantUML</strong>, embedded by <code>README.md</code></td>
+<td><strong>stale</strong></td>
+</tr>
+<tr>
+<td><code>images/plantuml_export.svg</code> + <code>.txt</code></td>
+<td>PlantUML class diagram, embedded by the overview</td>
+<td><strong>stale</strong> (last rendered 2026-07-22)</td>
+</tr>
+<tr>
+<td><code>images/Architecture.pdf</code></td>
+<td>older export</td>
+<td>referenced by nothing</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The stale one was the front page.</strong> <code>images/architecture.svg</code> contained <strong>zero</strong> occurrences of
+<code>OneBox</code>, <code>PxieNiDaq</code>, <code>Npx2OneBoxDigitalIn</code> or <code>SimNpx2RippleModule</code> — the generated overview has 18
+<code>OneBox</code> references alone. So the first picture anyone saw of this system on GitHub was months out of
+date, <strong>on a branch named <code>feature/OneBoxSupport</code></strong>.</p>
+<p>Its own source admitted the problem in a comment: <em>"HAND-PATCHED RENDER (2026-08-27) … there is no
+PlantUML or Java in this repo to re-render with."</em> The class diagram carried the same confession in
+prose: <em>"not regenerated by the build, so treat it as a snapshot."</em> Both were honest, and neither
+stopped the drift, because a caveat is not a mechanism.</p>
+<h3 id="75b-what-it-is-now">75b. What it is now<a class="headerlink" href="#75b-what-it-is-now" title="Permanent link">#</a></h3>
+<p><code>plantuml_export.svg</code>, <code>plantuml_export.txt</code>, <code>architecture.txt</code> and <code>Architecture.pdf</code> are
+<strong>deleted</strong> — nothing in this repo can rebuild them, so they could only ever rot.</p>
+<p><code>images/architecture.svg</code> is now a <strong>copy of the generated overview</strong>, refreshed by
+<code>scripts/build_docs.py</code> on every build. It stays committed because GitHub renders the README from the
+repository and a git-ignored file does not appear — but committed is not the same as hand-drawn.</p>
+<p>The class diagram is not replaced by another picture. The <strong>layered structure prose</strong> in
+<code>images/architecture_overview.md</code> is the maintained form: it describes C++ types, which the pipeline
+generator does not cover, and prose can at least be checked against the headers.</p>
+<h3 id="75c-why-these-are-not-dated-when-screenshots-are">75c. Why these are NOT dated, when screenshots are<a class="headerlink" href="#75c-why-these-are-not-dated-when-screenshots-are" title="Permanent link">#</a></h3>
+<p>The operator asked for these to be dated too. They should not be, and the reason is worth writing
+down because it is the same rule from the other side.</p>
+<p>§72 dated the screenshots because a hand-made artifact <strong>cannot say how old it is</strong> and nothing
+re-derives it. The architecture diagrams are the opposite: a function of the wiring, re-derived on
+every build. Dating them would mean a new filename on every build — and stamping a date <em>inside</em> the
+SVG would be worse still, because <code>make_architecture.py --check</code> compares the file on disk against a
+fresh render. A date in the image would make that comparison fail <strong>every day</strong>, destroying the one
+mechanism that actually guarantees freshness in order to display a claim about it.</p>
+<blockquote>
+<p><strong>Date what cannot be re-derived. Check what can.</strong> A date is a promise a human has to keep; a
+check is one the build keeps. Where both are available the check wins, and adding the date on top
+breaks it.</p>
+</blockquote>
+<p><code>python/tests/test_architecture_current.py</code> holds the two halves:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>the generated SVGs match what the code would produce right now (<code>--check</code>)</td>
+<td>proved by adding a config and watching it go red</td>
+</tr>
+<tr>
+<td><code>images/architecture.svg</code> is byte-identical to the generated overview</td>
+<td>proved by hand-editing the committed copy — the exact historical failure</td>
+</tr>
+</tbody>
+</table></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7496,6 +7667,18 @@ what another page says.</p></article>
 <li><a href="#73b-third-occurrence-so-the-rule-got-mechanized">73b. Third occurrence, so the rule got mechanized</a></li>
 <li><a href="#73c-profiling-overwritten-in-place-and-one-conclusion-reversed">73c. Profiling: overwritten in place, and one conclusion reversed</a></li>
 <li><a href="#73d-what-the-refutations-were-worth">73d. What the refutations were worth</a></li>
+</ul>
+</li>
+<li><a href="#74-configuration-4-on-the-rig-pxie-no-onebox-2026-09-01">74. CONFIGURATION 4 ON THE RIG — PXIe, NO OneBox (2026-09-01)</a><ul>
+<li><a href="#74a-the-four-checks">74a. The four checks</a></li>
+<li><a href="#74b-two-rounds-of-the-failure-being-mine-not-the-rigs">74b. Two rounds of the failure being MINE, not the rig's</a></li>
+<li><a href="#74c-what-config-4-actually-found-the-single-reader-refused-the-recording">74c. What Config 4 actually found: the single reader refused the recording</a></li>
+</ul>
+</li>
+<li><a href="#75-the-architecture-artifacts-one-generator-no-hand-drawn-rivals-2026-09-01">75. THE ARCHITECTURE ARTIFACTS: ONE GENERATOR, NO HAND-DRAWN RIVALS (2026-09-01)</a><ul>
+<li><a href="#75a-what-was-there">75a. What was there</a></li>
+<li><a href="#75b-what-it-is-now">75b. What it is now</a></li>
+<li><a href="#75c-why-these-are-not-dated-when-screenshots-are">75c. Why these are NOT dated, when screenshots are</a></li>
 </ul>
 </li>
 </ul>

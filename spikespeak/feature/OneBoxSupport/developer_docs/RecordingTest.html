@@ -254,7 +254,10 @@ python python/spikespeak_cli.py --host localhost --script \
 <p>The <code>raw</code> .bin is a clean sine IDENTICAL on every channel (10 Hz + 4 Hz components; the 4 Hz shows up in the
 derived LFP), with a ~1 Hz <code>sync</code> square. <code>select 'Simulated NPX 2.0 Multishank + NI-DAQ'</code> also records the
 NI-DAQ band and <code>rec.synchronize(reference_band="raw", nidaq_sync_channel=0)</code> recovers the ~10 ppm drift.
-A headless-Chrome CDP smoke test of the 4-shank editor / record-selection / live view is <code>cdp_np2_smoke.py</code>.</p>
+A headless-Chrome smoke test of the 4-shank editor / record-selection / live view is the GUI
+suite: <code>python scripts/run_gui_tests.py</code>. (This line used to name <code>cdp_np2_smoke.py</code>, a
+one-off that has not existed since those checks moved into <code>tests/gui/</code> — a runbook naming a
+script nobody can find is worse than one that names none.)</p>
 <p><strong>Real 2.0 probe:</strong> <code>select 'NPX 2.0 Multishank'</code>, then the same flow. Confirm the log shows
 <code>writeProbeConfiguration VERIFIED OK</code> on <code>probemap default</code>/Apply. Pick NP2 read-out channels for the
 <code>channels:</code> list (the default map is all shank 0). <strong>VERIFIED (2026-07-15/16 → 2026-07-21):</strong> a real 2.0

@@ -275,7 +275,8 @@ whether what is on disk matches what the code would produce.</p>
 derived, and the repo's rule is not to record what can be recomputed. Track the generator instead.</p>
 <blockquote>
 <p>This replaced a hand-maintained PlantUML pair (<code>images/architecture.txt</code> +
-<code>plantuml_export.txt</code>) whose sources are gone. That approach had two faults worth remembering: the
+<code>plantuml_export.txt</code>), <strong>both deleted on 2026-09-01</strong> along with their renders: there is no
+PlantUML in this repo to rebuild them with, so they could only ever drift. That approach had two faults worth remembering: the
 text drifted from the code as modules were added, and because nothing rendered it during the build
 it <strong>shipped invisible</strong> -- the book referenced an SVG that was never produced. For a while
 afterwards the opposite held: 29 generated SVGs sat untracked in one working tree while the single

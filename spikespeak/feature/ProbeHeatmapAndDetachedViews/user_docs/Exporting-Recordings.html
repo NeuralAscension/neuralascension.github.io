@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -148,25 +148,25 @@ a batch job that competes for exactly the disks the recorder uses, so there is n
 it mid-acquisition is right.</p>
 <p><strong>While a source is connected there is no Convert tab at all</strong> — not a greyed-out one. Only the
 <code>♪</code> and <code>SWR Detector</code> tabs are present:</p>
-<p><img alt="No Convert tab while a source is connected" src="images/convert_0_no_tab.png" /></p>
+<p><img alt="No Convert tab while a source is connected" src="images/convert_0_no_tab_2026-09-01.png" /></p>
 <p><strong>Disconnect, and the tab appears.</strong> The panel itself stays closed until you click it:</p>
-<p><img alt="The Convert tab, before opening the panel" src="images/convert_1_tab_closed.png" /></p>
+<p><img alt="The Convert tab, before opening the panel" src="images/convert_1_tab_closed_2026-09-01.png" /></p>
 <p><strong>Click it and the panel opens on the right</strong>, listing every recording it found with how many bands
 it holds. A tick appears beside a format once that format has been written:</p>
-<p><img alt="The Convert panel open" src="images/convert_2_open.png" /></p>
+<p><img alt="The Convert panel open" src="images/convert_2_open_2026-09-01.png" /></p>
 <p><strong>While a conversion runs</strong>, that row reads <em>Converting…</em> and <strong>every button is disabled</strong> — including
 the other recordings' — so a second job cannot be started on top of the first:</p>
-<p><img alt="A conversion in progress" src="images/convert_3_running.png" /></p>
+<p><img alt="A conversion in progress" src="images/convert_3_running_2026-09-01.png" /></p>
 <p>For recordings of a few seconds this is over almost immediately; you are more likely to see the
 result than the progress.</p>
 <p><strong>When it finishes</strong> the panel reports where the output went. Output lands <strong>beside the recording</strong>,
 in <code>spikeglx_format/</code> or <code>open_ephys_format/</code>, so an export never gets separated from the data it
 came from:</p>
-<p><img alt="A finished conversion" src="images/convert_4_done.png" /></p>
+<p><img alt="A finished conversion" src="images/convert_4_done_2026-09-01.png" /></p>
 <p>The panel reports success only when the converter <strong>exited cleanly and actually wrote files</strong> — not
 when the job was launched. If it failed you get the converter's own words, not a generic error.</p>
 <h3 id="if-the-panel-says-conversion-is-unavailable">If the panel says conversion is unavailable<a class="headerlink" href="#if-the-panel-says-conversion-is-unavailable" title="Permanent link">#</a></h3>
-<p><img alt="No Python interpreter" src="images/convert_no_python.png" /></p>
+<p><img alt="No Python interpreter" src="images/convert_no_python_2026-09-01.png" /></p>
 <p><strong>The converters need Python with <code>numpy</code>. SpikesPeak itself does not</strong> — the app builds, streams and
 records on a machine with no Python at all, which is why nothing else is affected and why this is a
 notice rather than a fault. When no interpreter is found the panel says so and offers <strong>no buttons</strong>,

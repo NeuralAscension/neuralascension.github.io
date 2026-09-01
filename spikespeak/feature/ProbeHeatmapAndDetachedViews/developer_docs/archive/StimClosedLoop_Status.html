@@ -84,7 +84,7 @@
 <a href="../RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../DetachedViews.html">Detached view windows</a>
+<a href="../DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../Recording.html">SpikesPeak — Recording</a>
@@ -191,12 +191,12 @@ multi-channel-quorum tests, and the biphasic stim pulse was <strong>captured on 
 <tr>
 <td>Manual <strong>⚡ Test Fire</strong> button (arm+fire, no detection)</td>
 <td>✅ implemented + used on hardware</td>
-<td><code>ripple_dock_testfire.png</code></td>
+<td><code>ripple_dock_testfire_2026-07-13.png</code></td>
 </tr>
 <tr>
 <td><strong>Real hardware loop (ESP32 + NI-DAQ)</strong></td>
 <td>✅ <strong>VERIFIED</strong> — pulse on NI-DAQ <strong>ai4</strong></td>
-<td><code>stim_pulse_nidaq_ai4.png</code>, §6a</td>
+<td><code>stim_pulse_nidaq_ai4_2026-07-13.png</code>, §6a</td>
 </tr>
 <tr>
 <td><strong>Fully closed loop: real ripple → stim (NP1.0 + Pi 3B+ + NI-DAQ)</strong></td>
@@ -278,7 +278,7 @@ sends the 4-byte <code>"fire"</code> (firmware null-terminates it). Verified on 
   + <code>fire()</code>, so it arms and fires one pulse with <strong>no detection required</strong> (ideal for bench-testing the stimulator).
 - <strong>Result:</strong> firing produced clean biphasic <strong>~131 µs pulses on NI-DAQ analog input 4</strong> (shown as trace "4"
   in the NI-DAQ display (now 0-indexed to match the ai0..ai7 hardware labels)) while the real NP1 AP band streamed live. Screenshots:
-  <code>user_docs/images/stim_pulse_nidaq_ai4.png</code> (5 spaced pulses on ai4) and <code>ripple_dock_testfire.png</code> (the dock +
+  <code>user_docs/images/stim_pulse_nidaq_ai4_2026-07-13.png</code> (5 spaced pulses on ai4) and <code>ripple_dock_testfire_2026-07-13.png</code> (the dock +
   Test Fire button + green stim LED). <strong>No <code>.ino</code> change was needed</strong> — the firmware already fires on <code>"fire"</code>.
 - <strong>Files:</strong> <code>src/modules/swr/RippleDetector.cpp</code> (<code>testFire</code> case), <code>webinterface/RippleModule.js</code> (the button).</p>
 <h2 id="7-what-remains">7. What remains<a class="headerlink" href="#7-what-remains" title="Permanent link">#</a></h2>

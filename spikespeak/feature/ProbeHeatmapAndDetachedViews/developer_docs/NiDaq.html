@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -409,7 +409,7 @@ On this rig the 8 lines are currently <strong>static HIGH</strong> (confirmed at
 fire does not toggle any of them -- the stim gate is on the <em>analog</em> line ai4), so the DI traces are
 flat-high; when a wired source drives a line, the 40 kHz-clocked DI stream shows it live.</p>
 <p><strong>Real-probe sync pulse (2026-07-14):</strong> with the <strong>real NP1.0</strong> probe running (<code>Npx1PxiNiDaq.yaml</code>, which now also carries the <code>di</code> output + <code>nidaq_di</code> display input), the probe's sync output appears on <strong>port0/line2</strong> and shows as a clean ~1 Hz square wave in the NIDAQ DI/O column (the other 7 lines stay high). This is the definitive dynamic verification of the DI stream.</p>
-<p><img alt="Neuropixels 1.0 sync pulse on NIDAQ DI/O line 2 (real probe running), the other 7 lines flat-high" src="images/nidaq_dio_syncpulse.png" /></p>
+<p><img alt="Neuropixels 1.0 sync pulse on NIDAQ DI/O line 2 (real probe running), the other 7 lines flat-high" src="images/nidaq_dio_syncpulse_2026-07-14.png" /></p>
 <h2 id="recording-both-bands-a-teardown-caveat-2026-07-14">Recording both bands + a teardown caveat (2026-07-14)<a class="headerlink" href="#recording-both-bands-a-teardown-caveat-2026-07-14" title="Permanent link">#</a></h2>
 <p>Recording works for <strong>both</strong> NI-DAQ streams: <code>proc.nidaq.recorder</code> writes <code>data.nidaq.raw</code> (band
 <code>nidaq</code>, analog volts) and <code>data.nidaq.di</code> (band <code>nidaq_di</code>, digital 0/1 lines) — both are

@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -457,7 +457,7 @@ request (the exe sits in <code>&lt;repo&gt;/bin</code>, so <code>../webinterface
 <code>webinterface/RippleModule.js</code> and hard-reloading the browser is the whole loop. See
 <a href="RendererContract.html"><code>RendererContract.md</code></a> T-27 for the one caveat: the handler does not strip a
 query string, so a <code>…js?flag=…</code> URL 404s.</p>
-<p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labeled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview.png" /></p>
+<p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labeled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview_2026-08-21.png" /></p>
 <h2 id="clickable-armdisarm-stim-toggle-2026-07-16">Clickable arm/disarm stim toggle (2026-07-16)<a class="headerlink" href="#clickable-armdisarm-stim-toggle-2026-07-16" title="Permanent link">#</a></h2>
 <p>The small <strong>stim-server LED</strong> in the Detection &amp; stimulation card is a <strong>clickable toggle</strong>
 (<code>#rd-stim-toggle</code>, a pill wrapping the LED + status text + a ⏻ power icon) that arms/disarms the Pi —

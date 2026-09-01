@@ -84,7 +84,7 @@
 <a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="../developer_docs/DetachedViews.html">Detached view windows</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
@@ -174,8 +174,8 @@ anything on screen saying so. The <strong>config-name subtitle is the only thing
 which is why the picker shows it; and if a future config reintroduces a duplicate label, that subtitle
 is again the whole defense.</p>
 </blockquote>
-<p><img alt="Simulated Data picker" src="images/sim_picker.png" /></p>
-<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios.png" /></p>
+<p><img alt="Simulated Data picker" src="images/sim_picker_2026-08-27.png" /></p>
+<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios_2026-08-27.png" /></p>
 <p>Most scenarios need no hardware — but three <strong>do</strong>: <code>NI-DAQ only (real, no probe)</code>,
 <code>Neuropixels 1.0 + Real NI-DAQ + Ripples</code> and <code>NPX 2.0 Multishank + Real NI-DAQ + Ripples</code> all drive
 a real NI-DAQ card, as their names say.</p>
@@ -389,10 +389,11 @@ have any reason to look for it in a menu. You will not find it there.</p>
   <a href="RippleDetection.html"><code>RippleDetection.md</code></a>). Any source with an LFP band works; the "… Ripple Detection (GUI)"
   configs are purpose-built (ripples injected, 0 channels, waits for you).</li>
 </ul>
-<p>The NP2 ripple sim detecting live — RAW band, 2 s window, 600 µV (the ripple bursts show as bright vertical bands).
-Here <strong>quorum = 2</strong>: two of the three channels (e50, e100) cross threshold together, so the dock's cowsay reports
-<strong><code>2/3 ch 50,100</code></strong> and the stimulation trigger fires:</p>
-<p><img alt="NP2 ripple-detection sim — quorum 2" src="images/ripple/np2_detecting.png" /></p>
+<p>The NP2 ripple sim detecting live. Here <strong>quorum = 2</strong>: two of the three channels (e0, e50) cross threshold
+together, so the dock's cowsay reports <strong><code>2/3 ch 0,50</code></strong>. Stimulation is switched <strong>off</strong> in this shot, so the
+trigger is computed and nothing is transmitted. (e100 reads <em>below threshold</em> while its envelope is over the
+line — see <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §5 for what that label actually means.)</p>
+<p><img alt="NP2 ripple-detection sim — quorum 2" src="images/ripple/np2_detecting_2026-09-01.png" /></p>
 <hr />
 <h2 id="4-tuning-what-the-simulator-emits-config-knobs">4. Tuning what the simulator emits (config knobs)<a class="headerlink" href="#4-tuning-what-the-simulator-emits-config-knobs" title="Permanent link">#</a></h2>
 <p>The sim sources read optional knobs from their YAML node — <strong>edit <code>config/&lt;file&gt;.yaml</code> and re-select the source</strong>
@@ -481,8 +482,8 @@ detection — exactly like a live source. There are two:</p>
 <li><strong>Simulated Neuropixels 1.0 (play file)</strong> — <strong>dual-band</strong>: an AP file (30 kHz) → <code>data.npx.ap</code> <strong>and</strong> an LFP
   file (2.5 kHz) → <code>data.npx.lfp</code>, streamed together on the 12 AP : 1 LFP superframe cadence, like a real 1.0 probe.</li>
 </ul>
-<p><img alt="Play-file — probe map renders" src="images/ripple/playfile_probemap.png" />
-<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting.png" /></p>
+<p><img alt="Play-file — probe map renders" src="images/ripple/playfile_probemap_2026-09-01.png" />
+<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting_2026-09-01.png" /></p>
 <h3 id="61-choosing-the-file-two-ways">6.1 Choosing the file — two ways<a class="headerlink" href="#61-choosing-the-file-two-ways" title="Permanent link">#</a></h3>
 <p>When you pick a <code>(play file)</code> source, the picker shows a <strong>path line edit</strong>:
 - <strong>Type/paste</strong> a full <code>.h5</code> path → <strong>▶ Play file</strong> (uses it directly).

@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -204,6 +204,11 @@ Write prose only for WHY.</strong></p>
 <td>An operator-facing behaviour change</td>
 <td><code>user_docs/</code>, and check the screenshots</td>
 <td>The GUI's labels are in there; a rename silently makes six pages wrong</td>
+</tr>
+<tr>
+<td>A screenshot you took by hand</td>
+<td><code>&lt;name&gt;_YYYY-MM-DD.png</code>, dated the day you took it</td>
+<td>A picture cannot say how old it is. §8</td>
 </tr>
 </tbody>
 </table>
@@ -325,7 +330,39 @@ exists. If a recording, a config, or a rig session is within reach, use it.</p>
 the same defect four times before anyone noticed the shape (<a href="InvariantTests.html"><code>InvariantTests.md</code></a>),
 and had three instances of "edited something the running suite reads" in a single day.</p>
 <hr />
-<h2 id="8-related">8. Related<a class="headerlink" href="#8-related" title="Permanent link">#</a></h2>
+<h2 id="8-screenshots-carry-their-date">8. Screenshots carry their date<a class="headerlink" href="#8-screenshots-carry-their-date" title="Permanent link">#</a></h2>
+<p>A hand-shot screenshot is the one artifact here with <strong>no way to say how old it is</strong>. Prose can be
+read against the code; a test goes red; a derived fact recomputes. A picture just sits there looking
+plausible.</p>
+<p>On 2026-09-01 every ripple screenshot in <code>user_docs/</code> still showed a dock titled <strong>"Ripple
+Detection"</strong> — renamed to <em>SWR Detector</em> days earlier — and, underneath that, a color scheme that had
+since been replaced. Nothing said so. Two of the images were referenced by nothing at all. The drift
+was discoverable only by a person opening each file and remembering what the GUI looks like now.</p>
+<p><strong>So the capture date goes in the filename</strong>: <code>np1_detecting_2026-09-01.png</code>. Age is then visible in
+a directory listing and in the markdown source, without opening anything.</p>
+<p>Three rules, and two of them are enforced by <code>python/tests/test_screenshot_dates.py</code>:</p>
+<ol>
+<li><strong>Every hand-maintained screenshot is dated.</strong> Checked, including files not yet committed — a
+   guard that waits for the commit is a code review, not a guard.</li>
+<li><strong>An edited screenshot is re-dated.</strong> Checked. A stale date is <em>worse</em> than no date, because it
+   reads as a guarantee. (A pure rename is not an edit; the pixels are identical.)</li>
+<li><strong>The date is when the picture was taken</strong>, not when you happened to touch it. Backfilling a
+   batch? Take each date from <code>git log -1 --date=short</code>, not from today — stamping everything with
+   today's date destroys precisely the signal being added.</li>
+</ol>
+<p><strong>Runner-written images are exempt, and the exemption is derived rather than listed.</strong> Anything a
+runner writes at a fixed name — <code>Gui.shoot()</code>, <code>layout_matrix.py --shots</code>, <code>plot_bench.py</code> — cannot
+go stale, because the next run rewrites it; and a date baked into such a name would be <em>undone</em> by
+that run, leaving an undated twin beside it. The test finds these by looking for the basename as a
+string literal in the tree's own source. That mattered: the first version of this exemption was a
+hardcoded directory, and it was wrong the day it was written — a GUI test writes
+<code>user_docs/images/heatmap_column.png</code> and a benchmark script writes
+<code>developer_docs/images/threading_sweep_time.png</code>, neither of which is in the runner directory. <strong>If
+code names the file, code owns its freshness.</strong></p>
+<p>Ages are reported by <code>python scripts/facts.py --only screenshots</code>, so "which of these is old" is a
+question you ask the tree rather than a person.</p>
+<hr />
+<h2 id="9-related">9. Related<a class="headerlink" href="#9-related" title="Permanent link">#</a></h2>
 <ul>
 <li><a href="AgentTraps.html"><code>AgentTraps.md</code></a> — the traps themselves</li>
 <li><a href="InvariantTests.html"><code>InvariantTests.md</code></a> — testing the rule instead of the bug</li>
@@ -348,7 +385,8 @@ and had three instances of "edited something the running suite reads" in a singl
 </ul>
 </li>
 <li><a href="#7-the-trigger-for-all-of-this">7. The trigger for all of this</a></li>
-<li><a href="#8-related">8. Related</a></li>
+<li><a href="#8-screenshots-carry-their-date">8. Screenshots carry their date</a></li>
+<li><a href="#9-related">9. Related</a></li>
 </ul>
 </div>
 </aside>

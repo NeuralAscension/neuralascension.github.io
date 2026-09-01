@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Detached view windows - SpikesPeak Docs</title>
+<title>Detached windows - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Live view and GUI / Detached view windows</span>
+  <span class="crumb">Developer Docs / Live view and GUI / Detached windows</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a class="active" href="DetachedViews.html">Detached view windows</a>
+<a class="active" href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -138,9 +138,56 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="detached-view-windows">Detached view windows<a class="headerlink" href="#detached-view-windows" title="Permanent link">#</a></h1>
-<p>A second (or third) browser window showing more columns and rows of the same live streams, with no
-toolbar. Opened from the ⧉ button in the view group.</p>
+  <main class="content"><article class="markdown-body"><h1 id="detached-windows">Detached windows<a class="headerlink" href="#detached-windows" title="Permanent link">#</a></h1>
+<p><strong>Two different things detach</strong>, and they are separate mechanisms that share one registry:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><strong>detached view</strong></th>
+<th><strong>detached SWR dock</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>what</td>
+<td>more columns of the same live streams, no toolbar</td>
+<td>the SWR Detector dock as its own window</td>
+</tr>
+<tr>
+<td>opened from</td>
+<td>⧉ in the view group</td>
+<td>⧉ in the dock header (<code>#rd-dockbtn</code>)</td>
+</tr>
+<tr>
+<td>URL</td>
+<td><code>index.html?view=detached</code></td>
+<td><code>index.html?view=ripple</code></td>
+</tr>
+<tr>
+<td>marker on <code>&lt;html&gt;</code></td>
+<td><code>.detached-view</code></td>
+<td><code>.ripple-window</code></td>
+</tr>
+<tr>
+<td>predicate</td>
+<td><code>detachedView()</code> — <code>webinterface/main.js</code></td>
+<td><code>rippleWindow()</code> — same file</td>
+</tr>
+<tr>
+<td>registry role</td>
+<td><code>view</code></td>
+<td><code>ripple</code></td>
+</tr>
+<tr>
+<td>redock</td>
+<td>close it</td>
+<td>the same button, both directions</td>
+</tr>
+</tbody>
+</table>
+<p>They are <strong>mutually exclusive</strong> — both read <code>?view=</code>, so no page is ever both. §1–§5 are written about
+the view window, which came first; §6 is the dock.</p>
 <table>
 <thead>
 <tr>
@@ -154,12 +201,16 @@ toolbar. Opened from the ⧉ button in the view group.</p>
 <td><code>AppController.openDetachedView()</code> / <code>detachedView()</code> in <code>webinterface/main.js</code></td>
 </tr>
 <tr>
-<td>Styling</td>
-<td><code>.detached-view</code> rules in <code>webinterface/toolbar.css</code></td>
+<td>Ripple-only mode</td>
+<td><code>RippleModule.detach()</code> / <code>rippleWindow()</code> in <code>webinterface/main.js</code></td>
 </tr>
 <tr>
-<td>Test</td>
-<td><code>tests/gui/detached_view.py</code></td>
+<td>Styling</td>
+<td><code>.detached-view</code> rules in <code>webinterface/toolbar.css</code>; <code>html.ripple-window</code> in <code>RippleModule.js</code></td>
+</tr>
+<tr>
+<td>Tests</td>
+<td><code>tests/gui/detached_view.py</code>, <code>tests/gui/ripple_detach.py</code></td>
 </tr>
 </tbody>
 </table>
@@ -324,6 +375,11 @@ that runs acquisition.</p>
 <p><code>postTo(id, type, payload)</code> routes a small control message to one window. It earns its keep on the
 one thing <code>noopener</code> made impossible: a popup cannot be focused from the opener, because there is no
 handle. Clicking the count badge sends <code>identify</code> to every peer, and <strong>each window focuses itself</strong>.</p>
+<p>There are <strong>two</strong> message types, not one. <code>identify</code> is above; <code>ripple-redock</code> is the detached SWR
+dock handing itself back (§6). Note the asymmetry, because it is the design rule worth copying: the
+dock's <em>restore</em> is keyed on the <strong>peer set</strong> disappearing, not on the message arriving — so the
+message is an optimization for the common case, and every other way of losing the window still works.
+A control message you must receive is a control message that strands you when you don't.</p>
 <p>It carries presence and control only, never sample data — see (C) above for what routing data
 through it would cost.</p>
 <h3 id="one-real-scoping-limit">One real scoping limit<a class="headerlink" href="#one-real-scoping-limit" title="Permanent link">#</a></h3>
@@ -343,9 +399,22 @@ it. The chip was the more conventional answer and the width decided against it.<
 view-shape controls — column count, channels per strip, orientation. A window you cannot reshape is
 a window you have to close and reopen.</p>
 <p><strong>Loses:</strong> everything that drives the rig — transport, record, source selection, the probe-map tab
-and the module docks. The rig has one operator, and two play buttons in two windows is an invitation
-to a mistake nobody needs. The probe map goes too: its editor writes to the probe, which is rig
-control.</p>
+and the module tabs (<code>#module-tabs</code>: SWR Detector, Convert, audio, bands). The rig has one operator,
+and two play buttons in two windows is an invitation to a mistake nobody needs. The probe map goes
+too: its editor writes to the probe, which is rig control.</p>
+<blockquote>
+<p><strong>That rule was dead for months.</strong> It was written as `.detached-view .tb-modules, #ripple-toggle,</p>
+<h1 id="audio-toggle-and-none-of-those-three-selectors-has-existed-in-the-tree-for-a-long-time-so-the">audio-toggle` — and none of those three selectors has existed in the tree for a long time, so the<a class="headerlink" href="#audio-toggle-and-none-of-those-three-selectors-has-existed-in-the-tree-for-a-long-time-so-the" title="Permanent link">#</a></h1>
+<p>rule matched nothing and every detached window has been offering a second SWR Detector while this
+page said it did not. Found 2026-09-01 by checking the selectors against the DOM instead of
+re-reading the sentence. It now hides the <strong>container</strong>, because each module appends its own button
+and any list of ids is a list the next module falsifies — and <code>tests/gui/detached_view.py</code> asserts
+it, since a hiding rule with no assertion is a comment.</p>
+</blockquote>
+<p><strong>Shared, and easy to miss:</strong> the view-shape controls write the <strong>same <code>localStorage</code> keys</strong> the main
+window reads at load. Change the column count in a detached window and the main window adopts it next
+time it opens. That is one remembered shape per browser, not per window — defensible, but it is not
+what "keeps its own shape" would lead you to expect.</p>
 <p><strong>A detached window cannot spawn its own children.</strong> Each would open another socket and another full
 decode with nothing counting them.</p>
 <hr />
@@ -378,7 +447,48 @@ the whole request-target, so <code>/?view=detached&amp;cols=2</code> did not equ
 <p>This was never specific to detached views: <strong>any URL with a query string 404'd</strong>, and nothing in the
 tree had ever used one. The server now strips query and fragment before resolving, and refuses paths
 containing <code>..</code> — every asset it serves is addressed from the root, so a traversal is never a
-legitimate request.</p></article>
+legitimate request.</p>
+<hr />
+<h2 id="6-the-detached-swr-dock">6. The detached SWR dock<a class="headerlink" href="#6-the-detached-swr-dock" title="Permanent link">#</a></h2>
+<p>Added 2026-08-31. The dock's header carries the same ⧉ button in both directions: in the main window
+it detaches, in the detached window it redocks.</p>
+<pre><code>main window                                    detached dock (?view=ripple)
+  #rd-dockbtn ──detach()──▶ window.open(?view=ripple, &quot;noopener,popup=yes,560x980&quot;)
+                            dock.classList.remove(&quot;open&quot;)      html.ripple-window
+                                                               dock fills the page (inset: 0)
+  reattach()  ◀──ripple-redock──  postTo(main.id, ...) ◀──── #rd-dockbtn ──redock()
+                                                               window.close()
+</code></pre>
+<p><strong>560 × 980, tall and narrow</strong>, because the dock is a column of per-channel strips: height is the
+dimension it actually wants. <code>noopener</code> for the same reason as the view window (§2) — the popup gets
+its own browsing-context group and therefore its own WebGL context budget.</p>
+<p><strong>A blocked popup must not close the in-page dock.</strong> If <code>window.open</code> returns null the dock stays
+where it is and says why. Closing it first and <em>then</em> discovering the popup was blocked would leave
+the operator with no ripple UI at all and nothing on screen explaining it — and this dock is the one
+that arms a stimulator.</p>
+<h3 id="restore-is-keyed-on-the-peer-set-not-on-the-message">Restore is keyed on the PEER SET, not on the message<a class="headerlink" href="#restore-is-keyed-on-the-peer-set-not-on-the-message" title="Permanent link">#</a></h3>
+<p>The redock button sends <code>ripple-redock</code>, but that is not what restores the dock. <code>onChange</code> does:</p>
+<pre><code class="language-js">const anyRipple = this.windows.list().some((w) =&gt; w.role === 'ripple' &amp;&amp; !w.self);
+if (!anyRipple) window.rippleModule.reattach();
+</code></pre>
+<p><strong>Every way of losing that window converges on one path</strong> — the redock button, the window's own X,
+a crashed tab, a laptop lid. The message only makes the common case immediate; the peer set is what
+makes the uncommon ones work at all. A design keyed on the message would restore the dock when the
+operator pressed the button and silently strand it in every other case, and those other cases are
+exactly the ones nobody tests by hand.</p>
+<p>Symmetrically, <code>redock()</code> calls <code>window.close()</code> <strong>regardless</strong> of whether it found a main window to
+post to: if the main window has gone the dock has nowhere to return, and leaving this one open
+strands the operator in a window with no toolbar.</p>
+<h3 id="what-the-badge-counts">What the badge counts<a class="headerlink" href="#what-the-badge-counts" title="Permanent link">#</a></h3>
+<p><code>renderWindowCount()</code> uses <code>windows.count()</code> over <strong>every role</strong>, so detaching the dock makes the
+main window's title read <em>"SpikesPeak (2 windows)"</em> — the dock is a window and is counted like one.
+<code>View n</code> numbers <strong>views only</strong>. The two are counted differently on purpose: the badge answers "how
+many of these am I running", which is about sockets and decode cost, while the view number answers
+"which view is this", which only views have.</p>
+<h3 id="testing-it">Testing it<a class="headerlink" href="#testing-it" title="Permanent link">#</a></h3>
+<p><code>tests/gui/ripple_detach.py</code>, and it is the harder of the two to test: the assertion has to survive
+the dock existing in a <em>different window</em> from the one the harness drove. <code>tests/gui/detached_view.py</code>
+covers the view window and now also asserts that <code>#module-tabs</code> is absent there — see §3.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/DetachedViews.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -404,6 +514,12 @@ legitimate request.</p></article>
 </ul>
 </li>
 <li><a href="#5-a-backend-bug-this-surfaced">5. A backend bug this surfaced</a></li>
+<li><a href="#6-the-detached-swr-dock">6. The detached SWR dock</a><ul>
+<li><a href="#restore-is-keyed-on-the-peer-set-not-on-the-message">Restore is keyed on the PEER SET, not on the message</a></li>
+<li><a href="#what-the-badge-counts">What the badge counts</a></li>
+<li><a href="#testing-it">Testing it</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

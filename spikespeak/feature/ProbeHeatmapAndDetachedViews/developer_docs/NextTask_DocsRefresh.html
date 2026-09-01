@@ -84,7 +84,7 @@
 <a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
 <a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
 <a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
-<a href="DetachedViews.html">Detached view windows</a>
+<a href="DetachedViews.html">Detached windows</a>
 </details>
 <details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
 <a href="Recording.html">SpikesPeak — Recording</a>
@@ -161,51 +161,51 @@ and vertical full-screen on the portrait display:</p>
 </thead>
 <tbody>
 <tr>
-<td><code>user_docs/images/np1_liveview.png</code></td>
+<td><code>user_docs/images/np1_liveview_2026-08-21.png</code></td>
 <td>3 columns: <strong>AP Band + LFP Band + OneBox ADC (SDR)</strong>, band names visible — on the 1920 landscape display the strips are already open in flow at 3 columns, so pin nothing (see the trap below)</td>
 </tr>
 <tr>
-<td><code>user_docs/images/vertical_liveview.png</code></td>
+<td><code>user_docs/images/vertical_liveview_2026-08-21.png</code></td>
 <td>same three bands, vertical, portrait 1080×2560 full screen</td>
 </tr>
 <tr>
-<td><code>user_docs/images/np1_probemap.png</code></td>
+<td><code>user_docs/images/np1_probemap_2026-08-21.png</code></td>
 <td>Probe Map, Edit Map mode</td>
 </tr>
 <tr>
-<td><code>user_docs/images/record_selection.png</code></td>
+<td><code>user_docs/images/record_selection_2026-08-21.png</code></td>
 <td>Select Recording Channels mode</td>
 </tr>
 <tr>
-<td><code>user_docs/images/play_button_green.png</code></td>
+<td><code>user_docs/images/play_button_green_2026-08-21.png</code></td>
 <td>paused: green ▶ (cropped to the transport group)</td>
 </tr>
 <tr>
-<td><code>user_docs/images/play_button_streaming.png</code></td>
+<td><code>user_docs/images/play_button_streaming_2026-08-21.png</code></td>
 <td>streaming: white ⏸ + green ring</td>
 </tr>
 <tr>
-<td><code>user_docs/images/ripple/np1_idle.png</code></td>
+<td><code>user_docs/images/ripple/np1_idle_2026-09-01.png</code></td>
 <td>ripple dock, paused, no channels</td>
 </tr>
 <tr>
-<td><code>user_docs/images/ripple/np1_channels.png</code></td>
+<td><code>user_docs/images/ripple/np1_channels_2026-09-01.png</code></td>
 <td>two electrodes added as per-channel chips</td>
 </tr>
 <tr>
-<td><code>developer_docs/images/ripple_detection_module.png</code></td>
+<td><code>developer_docs/images/ripple_detection_module_2026-08-21.png</code></td>
 <td>whole ripple module in one frame</td>
 </tr>
 <tr>
-<td><code>developer_docs/images/stim_pulse_preview.png</code></td>
+<td><code>developer_docs/images/stim_pulse_preview_2026-08-21.png</code></td>
 <td>stim pulse preview (phase/gap/freq/train)</td>
 </tr>
 <tr>
-<td><code>developer_docs/images/system_state_panel.png</code></td>
+<td><code>developer_docs/images/system_state_panel_2026-08-21.png</code></td>
 <td>System-state panel on a real streaming rig</td>
 </tr>
 <tr>
-<td><code>developer_docs/images/quickstart_sim_streaming.png</code></td>
+<td><code>developer_docs/images/quickstart_sim_streaming_2026-08-21.png</code></td>
 <td>quick-start end state, three bands</td>
 </tr>
 </tbody>
@@ -215,26 +215,26 @@ and vertical full-screen on the portrait display:</p>
 "detecting" screenshot with nothing detecting is worse than a stale one — it documents behaviour that
 is not happening.</p>
 <ul>
-<li><code>user_docs/images/ripple/np1_training.png</code> — per-channel training progress</li>
-<li><code>user_docs/images/ripple/np1_livez.png</code> — editing a z-score while running</li>
-<li><code>user_docs/images/ripple/np1_detecting.png</code> — live detection (referenced by TWO docs)</li>
-<li><code>user_docs/images/ripple/np2_detecting.png</code> — NP2 quorum detection</li>
+<li><code>user_docs/images/ripple/np1_training_2026-09-01.png</code> — per-channel training progress</li>
+<li><code>user_docs/images/ripple/np1_livez_2026-09-01.png</code> — editing a z-score while running</li>
+<li><code>user_docs/images/ripple/np1_detecting_2026-09-01.png</code> — live detection (referenced by TWO docs)</li>
+<li><code>user_docs/images/ripple/np2_detecting_2026-09-01.png</code> — NP2 quorum detection</li>
 </ul>
 <p><strong>Need the NP2.0 probe</strong> (the OneBox had NP1.0):</p>
 <ul>
-<li><code>user_docs/images/np2_liveview.png</code>, <code>user_docs/images/np2_editor.png</code>, and <code>np2_detecting.png</code></li>
+<li><code>user_docs/images/np2_liveview_2026-08-21.png</code>, <code>user_docs/images/np2_editor_2026-08-21.png</code>, and <code>np2_detecting_2026-09-01.png</code></li>
 </ul>
 <p><strong>Need something else entirely:</strong></p>
 <ul>
-<li><code>user_docs/images/ripple/playfile_probemap.png</code>, <code>playfile_detecting.png</code> — an HDF5 play file</li>
-<li><code>developer_docs/images/nidaq_dio_syncpulse.png</code> — the NI-DAQ DI/O stream</li>
-<li><code>user_docs/images/record_armed.png</code>, <code>record_buttons.png</code> — the recording flow (armed / recording);
+<li><code>user_docs/images/ripple/playfile_probemap_2026-09-01.png</code>, <code>playfile_detecting_2026-09-01.png</code> — an HDF5 play file</li>
+<li><code>developer_docs/images/nidaq_dio_syncpulse_2026-07-14.png</code> — the NI-DAQ DI/O stream</li>
+<li><code>user_docs/images/record_armed_2026-07-07.png</code>, <code>record_buttons_2026-07-13.png</code> — the recording flow (armed / recording);
   capturable any time, simply not done yet</li>
 </ul>
 <h3 id="deliberately-left-alone-these-are-not-stale">Deliberately left alone — these are NOT stale<a class="headerlink" href="#deliberately-left-alone-these-are-not-stale" title="Permanent link">#</a></h3>
 <p>They are measurements and plots, not GUI screenshots. Do not "refresh" them:</p>
 <p><code>developer_docs/images/threading_per_channel_cost.png</code>, <code>threading_sweep_time.png</code>,
-<code>user_docs/images/recording_channels.png</code>, <code>recording_sync.png</code>.</p>
+<code>user_docs/images/recording_channels_2026-07-07.png</code>, <code>recording_sync_2026-07-07.png</code>.</p>
 <h3 id="how-to-recapture">How to recapture<a class="headerlink" href="#how-to-recapture" title="Permanent link">#</a></h3>
 <p><code>tests/gui/_harness.py</code> drives it. Set the source with the env var, and use the right display:</p>
 <pre><code class="language-python">os.environ[&quot;SPIKESPEAK_GUI_SOURCE&quot;] = &quot;NPX 1.0 (OneBox)&quot;   # or a Simulated … name

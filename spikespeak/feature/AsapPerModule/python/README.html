@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spikespeakpostprocess - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Tooling / spikespeakpostprocess</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
+<a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
+<a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a class="active" href="README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak_postprocess">spikespeak_postprocess<a class="headerlink" href="#spikespeak_postprocess" title="Permanent link">#</a></h1>
+<blockquote>
+<p><strong>Looking for how to EXPORT a session?</strong> This file documents the <em>loader</em> — reading a recording
+directly as NumPy/xarray. For converting to SpikeGLX or Open Ephys see
+<a href="../user_docs/Exporting-Recordings.html"><code>user_docs/Exporting-Recordings.md</code></a> (how) and
+<a href="../developer_docs/DataConversion.html"><code>developer_docs/DataConversion.md</code></a> (the contract).</p>
+</blockquote>
+<p>Load <a href="../developer_docs/Recording.html">SpikesPeak</a> recordings — Neuropixels 1.0 <strong>AP</strong> / <strong>LFP</strong> bands
+and <strong>NI-DAQ</strong> — addressed by the <strong>electrode number you saw on screen</strong>, as NumPy arrays or xarray
+DataArrays.</p>
+<h2 id="why-it-just-works">Why it "just works"<a class="headerlink" href="#why-it-just-works" title="Permanent link">#</a></h2>
+<p>Every recorded <code>.bin</code> file has a self-describing <strong><code>&lt;file&gt;.bin.json</code> metadata sidecar</strong> written by the
+SpikesPeak backend (<code>RecordProcessor</code>) at record time. It carries the band, record layout, sample rate,
+units, and the channel/electrode list — so this package needs no out-of-band knowledge of the recording.</p>
+<h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">cd python
+pip install -e .            # core (numpy)
+pip install -e .[xarray,plot]   # + xarray + matplotlib for the example
+</code></pre>
+<h2 id="use">Use<a class="headerlink" href="#use" title="Permanent link">#</a></h2>
+<pre><code class="language-python">from spikespeak_postprocess import Recording
+
+rec = Recording(r&quot;C:/Data/mouse42&quot;)     # the folder you chose in the Record dialog
+rec.bands()                              # ['ap', 'lfp', 'nidaq', 'nidaq_di']
+rec.channels(&quot;ap&quot;)                       # electrodes recorded for AP, e.g. [1, 2, 3]
+
+# --- NumPy ---
+sig = rec.load(channels=[1, 2], band=&quot;ap&quot;, output=&quot;numpy&quot;)
+sig.data            # (n_samples, 2) int16 ADC
+sig.time            # (n_samples,) seconds
+sig.channels        # [1, 2]  (electrode numbers, column order)
+sig.fs              # 30000.0
+uv = sig.to_microvolts()                 # (n_samples, 2) in µV
+
+# LFP electrode 2, and all NI-DAQ channels
+lfp = rec.load(channels=2, band=&quot;lfp&quot;)
+daq = rec.load(band=&quot;nidaq&quot;)             # all recorded NI-DAQ analog channels (volts)
+
+# --- NI-DAQ DIGITAL lines (DI/O) ---
+# The NI-DAQ port0 lines are recorded as the &quot;nidaq_di&quot; band: each channel is a 0/1 logic line
+# (e.g. the Neuropixels 1.0 sync pulse rides one of them). It loads as a digital Signal.
+rec.digital_lines(&quot;nidaq_di&quot;)            # {0:('high',0), 1:('low',0), 2:('toggling',N), ...}
+di  = rec.load(band=&quot;nidaq_di&quot;)          # di.units == &quot;logic&quot;, di.digital is True, values are 0.0/1.0
+hi  = di.as_bool()                       # boolean (n_samples, n_lines); to_microvolts() is refused
+sync = rec.load(channels=2, band=&quot;nidaq_di&quot;)   # just the toggling sync line
+
+# --- xarray ---
+da = rec.load(channels=[1], band=&quot;ap&quot;, output=&quot;xarray&quot;)   # dims (time, channel)
+</code></pre>
+<p><code>channels</code> are <strong>electrode numbers</strong> for <code>ap</code>/<code>lfp</code> (what the live view shows; equal to the read-out
+channel for the default Bank-0 map) and <strong>channel indices</strong> for <code>nidaq</code>. Requesting an electrode that
+wasn't recorded raises a clear error listing what was.</p>
+<h2 id="synchronizing-ni-daq-neuropixels-clock-drift-correction">Synchronizing NI-DAQ ↔ Neuropixels (clock-drift correction)<a class="headerlink" href="#synchronizing-ni-daq-neuropixels-clock-drift-correction" title="Permanent link">#</a></h2>
+<p>Feed one shared TTL/sync pulse train to <strong>both</strong> the Neuropixels sync input (recorded in the NPX
+<code>sync</code> field) <strong>and</strong> one NI-DAQ analog channel. The same pulses then appear in both files, so their
+rising edges pin the two clocks together and correct for drift:</p>
+<pre><code class="language-python">model = rec.synchronize(reference_band=&quot;ap&quot;, nidaq_sync_channel=0)   # NI-DAQ ch 0 carries the pulses
+print(model.drift_ppm, model.residual_ms)     # e.g. -51.3 ppm, 0.02 ms RMS  (alignment quality)
+
+daq = rec.load(band=&quot;nidaq&quot;, sync=True)        # daq.time is now on the Neuropixels clock
+# or apply the map yourself:
+t_npx = model.apply(daq.raw_timestamps / daq.fs)
+</code></pre>
+<p>This ports <code>polling-latency.ipynb</code>'s <code>align_with_drift_correction</code> with improvements:
+- <strong>Linear warp by default</strong> — clock drift is a near-constant rate, so a least-squares line is robust
+  and won't blow up on extrapolation the way the notebook's quadratic <code>interp1d</code> can
+  (<code>kind="quadratic"</code>/<code>"interp"</code> reproduce it; <code>"interp"</code> needs SciPy).
+- <strong>Adaptive edge threshold</strong> (per-signal min/max midpoint) — handles a 0/1 NPX bit <em>and</em> a several-volt
+  NI-DAQ analog pulse without tuning.
+- <strong>Robust nearest-edge pairing by default (<code>match="auto"</code>)</strong> — pairs the two pulse trains by nearest
+  edge, so a capture-count asymmetry at <em>either</em> end can't cause the off-by-one that silently shifts
+  latency by a whole sync period. A pulse-count mismatch (and any residual interval disagreement) is
+  <strong>warned about, not hidden</strong>; <code>match="end"</code>/<code>"start"</code> remain for explicit one-to-one end/start pairing.
+- <strong>Diagnostics</strong> — <code>drift_ppm</code> and <code>residual_ms</code> so you can <em>see</em> the alignment quality (residual
+  should be sub-millisecond).</p>
+<p>The low-level function is exposed too:
+<code>align_timestamps(ref_time, ref_sync, target_time, target_sync, kind="linear", match="auto")</code>.
+Example with the before/after verification plot: <code>python examples/synchronize_nidaq.py &lt;dir&gt; [ch] [band]</code>.</p>
+<h2 id="example-plot-a-channel">Example — plot a channel<a class="headerlink" href="#example-plot-a-channel" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python examples/plot_channel.py C:/Data/mouse42            # random AP electrode
+python examples/plot_channel.py C:/Data/mouse42 lfp 2      # LFP electrode 2
+python examples/plot_channel.py C:/Data/mouse42 nidaq 3    # NI-DAQ channel 3
+</code></pre>
+<h2 id="example-save-the-two-standard-plots-into-a-recording-folder">Example — save the two standard plots into a recording folder<a class="headerlink" href="#example-save-the-two-standard-plots-into-a-recording-folder" title="Permanent link">#</a></h2>
+<pre><code class="language-bash">python examples/plot_recording.py C:/Data/mouse42          # writes sync.png + channels.png in that dir
+</code></pre>
+<p><code>sync.png</code> = NI-DAQ↔NPX timestamp sync (before/after drift correction); <code>channels.png</code> = the recorded AP
+electrodes over the first 2 s on a shared µV scale (so a noisier/damaged channel stands out). 12×4-inch
+PNGs. Robust: if there's no shared sync pulse train, <code>sync.png</code> still renders the raw signals.</p>
+<h2 id="record-layouts-from-the-sidecar-record_format">Record layouts (from the sidecar <code>record_format</code>)<a class="headerlink" href="#record-layouts-from-the-sidecar-record_format" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th><code>record_format</code></th>
+<th>bytes per record</th>
+<th>units</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npx</code></td>
+<td><code>uint32 ts</code> · <code>uint16 sync</code> · <code>int16 × N</code></td>
+<td><code>adc_int16</code> (→ µV via default gains: AP 500, LFP 250)</td>
+</tr>
+<tr>
+<td><code>nidaq</code></td>
+<td><code>float64 ts</code> · <code>float64 × N</code></td>
+<td><code>volts</code> (→ µV = ×1e6)</td>
+</tr>
+<tr>
+<td><code>nidaq_di</code></td>
+<td><code>float64 ts</code> · <code>float64 × N</code> (same <code>nidaq</code> format)</td>
+<td><code>logic</code> (0/1 digital lines; <code>.digital=True</code>, use <code>.as_bool()</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><code>N</code> = number of channels in the recording's <code>channels:</code> list.</p>
+<p><strong><code>to_microvolts()</code> takes the scale from the recording.</strong> A <code>metadata_version</code> 2 sidecar carries
+<code>scale.volts_per_count</code>, resolved by the backend from the applied IMRO and the probe part number, and
+the loader uses it — so changing the gain in the IMRO panel no longer silently invalidates the
+conversion. The compiled defaults (AP 500 / LFP 250) are the fallback for <code>metadata_version</code> 1
+recordings only, which predate that block.</p>
+<p>An NP2.0 <code>raw</code> band from a version 1 recording raises instead of guessing: its scale is 0.7629
+µV/count on the NP2000/NP2010 prototypes and 2.4414 on the commercial parts — a 3.2× spread — and a
+version 1 sidecar does not say which probe it was. See
+<a href="../developer_docs/DataConversion.html"><code>developer_docs/DataConversion.md</code> §3</a>.</p>
+<h2 id="export-to-open-ephys-binary-convert_to_openephyspy">Export to Open Ephys binary — <code>convert_to_openephys.py</code><a class="headerlink" href="#export-to-open-ephys-binary-convert_to_openephyspy" title="Permanent link">#</a></h2>
+<p>Offline converter to the Open Ephys <strong>"Binary"</strong> record-engine format (the tree the Open Ephys GUI,
+<code>open-ephys-python-tools</code> and SpikeInterface open). Nothing touches the acquisition path; numpy only.</p>
+<pre><code class="language-bash"># ALWAYS scan first: it reconstructs the sample index and reports dropped samples. Writes nothing.
+python python/convert_to_openephys.py scan  RecordingTests/2026-08-25_throughput_repro/A_withadc_t15
+python python/convert_to_openephys.py openephys &lt;recording_dir&gt; &lt;out_dir&gt;
+python python/convert_to_openephys.py openephys &lt;in&gt; &lt;out&gt; --adc-range 2.5      # ADC not at ±5 V
+python python/convert_to_openephys.py openephys &lt;in&gt; &lt;out&gt; --bit-volts ap=0.195 # gain not default
+</code></pre>
+<pre><code class="language-python">from spikespeak_postprocess import openephys
+openephys.scan(src)                 # gap report, no writes
+openephys.export(src, out_dir)      # -&gt; &lt;out&gt;/Record Node 101/experiment1/recording1/
+</code></pre>
+<p>Every <code>(recording_name, timestamp)</code> session in the directory becomes its own <code>recording&lt;M&gt;</code>, and
+every band becomes a <code>continuous/SpikesPeak-101.&lt;band&gt;/</code> stream. The per-frame <code>sync</code> word is
+decoded to a TTL event channel when it actually has edges.</p>
+<p><strong>Dropped samples survive.</strong> Open Ephys carries an explicit <code>sample_numbers.npy</code>, and a gap lives in
+the <em>divergence</em> between the row index in <code>continuous.dat</code> and the value there — <code>continuous.dat</code> is
+never padded, exactly as the Open Ephys writer behaves. So
+<code>sample_numbers[-1] - sample_numbers[0] + 1 &gt; len(sample_numbers)</code> precisely when samples were lost,
+and <code>scan</code> prints where and how many. (The GUI's own File Reader <em>ignores</em> interior gaps — it reads
+<code>sample_numbers[0]</code> and treats the rest as contiguous — so a replay inside the GUI slides post-gap
+data earlier. The gap is in the file and numpy readers see it; that is their reader, not a reason to
+pad.)</p>
+<p>Reconstructing the index is the whole job, because <strong>the NPX frame timestamp is 100 kHz hardware
+ticks, not samples</strong> (<code>kHeadstageSamplingRate</code>): at 30 kHz consecutive frames differ by 3 or 4 and
+never by 1, so <code>diff != 1</code> is not a gap test. The rule is per-frame,
+<code>advance = max(1, round(Δticks / (100000/fs)))</code> then <code>cumsum</code>, with the uint32 wrap corrected first.
+NI-DAQ is different again — its float64 timestamp already <em>is</em> a sample index.</p>
+<p><strong>A fabricated gap is refused too.</strong> The mirror of the rule above: the converter must not <em>invent</em>
+sample numbers either. Where a frame's timestamp does not advance, the reconstruction has to force
+<code>+1</code> to keep the index increasing — fine for one damaged frame, catastrophic when it is systematic.
+<strong>Real NP1.0 <code>ap</code> bands are systematic</strong>: inside each 12-sample IMEC packet the stamps run ahead at
+~4.36 ticks/sample and then step back by 8 (netting exactly 40 ticks = 12 samples), so one frame in
+twelve goes backwards. Reconstructed naively that band comes out <strong>1.3055× too long with 5 671 337
+invented single-sample gaps</strong> — measured on <code>RecordingTests/np1_2ch_q2_asap</code>, a recording that lost
+nothing (its <code>lfp</code> band is exactly uniform and the <code>ap</code> tick span matches the frame count). So the
+band is <strong>refused</strong>, with the measured inflation in the message; convert <code>--bands lfp</code> instead.
+<code>scan</code> reports it as <code>timestamps_usable: false</code> + <code>index_inflation</code> without raising, so the dry run
+still tells you everything. The check is a <strong>pre-flight over every band before a byte is written</strong>,
+so a refusal never leaves a half-written tree.</p>
+<p><strong>NP2.0 microvolts: settled 2026-08-28, and the old numbers were wrong.</strong> This README used to
+record a 3.81× disagreement between the two exporters and leave it to the operator. It is resolved,
+and neither of the two figures it quoted was right:</p>
+<ul>
+<li>the backend's own constant was <code>1.0 V / 84 / 4096 = 2.9064 µV/count</code> — <strong>gain 84 belongs to no
+  NP2.0 variant</strong>;</li>
+<li>the SpikeGLX exporter used the <em>prototype</em> four-shank spec (<code>0.5 / 8192 / 80 = 0.7629</code>), which is
+  correct for an NP2010 and wrong by 3.2× for the shipping part.</li>
+</ul>
+<p>The truth depends on the probe, and the probe is recorded. Commercial parts (NP2003/4/13/14) are
+12-bit, gain 100 → <strong>2.4414 µV/count</strong>; the prototypes (NP2000/NP2010) are 14-bit, gain 80 → 0.7629.
+The backend resolves this from <code>acquisition.probe.part_number</code>, writes it into the sidecar's <code>scale</code>
+block, and both exporters now agree with it. See <code>developer_docs/DataConversion.md</code> §3.</p>
+<p><strong>How much data is actually affected: almost none.</strong> Checked against every NP2.0 sidecar in
+<code>RecordingTests/</code> (53 of them):</p>
+<ul>
+<li><strong>46 are <code>metadata_version</code> 1 and carry no <code>scale</code> block at all.</strong> They never claimed a microvolt,
+  so there is nothing in them to be wrong — the factor came from whatever read them, and the loader
+  and live view have been right since #65.</li>
+<li><strong>7 carry <code>gain: 84</code>, and every one is dated 2026-08-26</strong> — the window between the <code>scale</code> block
+  being introduced and the fix. All seven are bench tests (<code>adc50_baseline</code>, <code>comparator_sweep</code>,
+  <code>issue63_decay</code>, <code>issue67_diband</code>), not experimental data.</li>
+</ul>
+<p>So this is a metadata defect with a two-day blast radius, not an archive-wide one. The int16 counts
+were never affected in any of them. If you do need to correct one of those seven, divide a
+2.9064-scaled figure by 1.190; a SpikeGLX export made from one before today would instead have been
+0.7629-scaled, so divide by 0.3125. Check which the file used rather than assuming.</p>
+<p><strong>Scaling is a pass-through and says so.</strong> int16 counts in, the same int16 counts out, with only
+<code>bit_volts</code> declared — exact and reversible, unlike Open Ephys's native <code>round(µV/bit_volts)</code> path.
+Since 2026-08-28 the sidecar carries a <code>scale</code> block (<code>volts_per_count</code> + <code>provenance</code>, resolved from
+the probe's part number via <code>Npx2Scale.hpp</code>), and the converter uses it <strong>in preference to anything
+compiled in</strong> — the channel <code>description</code> then records the value and where it came from. The table
+below is the <strong>fallback</strong>, used only for a <code>metadata_version 1</code> recording with no <code>scale</code> block, or
+for a band the recording cannot scale (<code>adc</code>, <code>nidaq</code>). Do not override <code>bit_volts</code> on a recording
+that has a <code>scale</code> block — on a prototype NP2000/NP2010 that turns a correct 0.7629 into 2.4414.</p>
+<table>
+<thead>
+<tr>
+<th>band</th>
+<th>bit_volts</th>
+<th>units</th>
+<th>assumes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ap</code></td>
+<td>1.2e6/1024/500 = 2.34375</td>
+<td>µV</td>
+<td>IMEC AP gain 500</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td>1.2e6/1024/250 = 4.6875</td>
+<td>µV</td>
+<td>IMEC LFP gain 250</td>
+</tr>
+<tr>
+<td><code>raw</code></td>
+<td>1e6/100/4096 = 2.4414</td>
+<td>µV</td>
+<td>NP2.0 commercial part, fixed gain 100 (prototypes: 1e6/80/16384 = 0.7629)</td>
+</tr>
+<tr>
+<td><code>adc</code></td>
+<td><code>--adc-range</code>/32768</td>
+<td>V</td>
+<td>OneBox ADC range, default ±5 V — <strong>not</strong> recorded in the sidecar</td>
+</tr>
+<tr>
+<td><code>nidaq</code></td>
+<td><code>--nidaq-range</code>/32768</td>
+<td>V</td>
+<td>float64 volts → int16 is <strong>lossy</strong>; refused unless you opt in</td>
+</tr>
+</tbody>
+</table>
+<p>A band with no known factor is <strong>refused</strong>, not guessed — a wrong <code>bit_volts</code> silently misscales
+every trace and nothing in the output would reveal it. The same goes for a sidecar that contradicts
+itself, an unknown <code>record_format</code>, or a channel list that disagrees with the frame width.</p>
+<p>Tests: <code>python python/tests/test_openephys_export.py</code> (stdlib <code>unittest</code> + numpy, no hardware).</p>
+<h2 id="sibling-tool-spikespeak_clipy-headless-control">Sibling tool: <code>spikespeak_cli.py</code> (headless control)<a class="headerlink" href="#sibling-tool-spikespeak_clipy-headless-control" title="Permanent link">#</a></h2>
+<p><code>python/spikespeak_cli.py</code> drives a <em>running</em> SpikesPeak backend over its WebSocket with no GUI clicking
+— <code>select → probemap → play → record &lt;dir&gt; &lt;name&gt; → stop → quit</code> — so you can script a whole acquire +
+record run and then load it back with this package. Zero dependencies (stdlib only). It's how the
+recording pipeline is regression-tested end-to-end. See
+<a href="../developer_docs/ControlCLI.html"><code>developer_docs/ControlCLI.md</code></a>.</p>
+<h2 id="sibling-tool-convert_to_spikeglxpy-export-to-spikeglx">Sibling tool: <code>convert_to_spikeglx.py</code> (export to SpikeGLX)<a class="headerlink" href="#sibling-tool-convert_to_spikeglxpy-export-to-spikeglx" title="Permanent link">#</a></h2>
+<p><code>python/convert_to_spikeglx.py</code> converts a finished recording into <strong>SpikeGLX 3.0</strong> <code>.bin</code>/<code>.meta</code>
+pairs so it can be read by SpikeGLX's own FileViewer, CatGT, TPrime and SpikeInterface. Offline, numpy
+only, nothing on the acquisition path.</p>
+<pre><code class="language-bash">python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt;
+python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np2014   # only for a metadata_version 1 recording with no part number
+python convert_to_spikeglx.py &lt;recording_dir&gt; &lt;out_dir&gt; --probe np1 --band raw --dry-run
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>SpikesPeak band</th>
+<th>SpikeGLX stream</th>
+<th>notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>raw</code></td>
+<td><code>&lt;run&gt;_g0_t0.imec0.ap</code></td>
+<td>probe, <code>~imroTbl</code> and <code>~snsGeomMap</code> all come from the sidecar; <code>--probe</code> only for a <code>metadata_version 1</code> file</td>
+</tr>
+<tr>
+<td><code>ap</code> (NP1.0)</td>
+<td>—</td>
+<td><strong>REFUSED</strong>: the per-frame timestamp is not a per-sample clock (~8 % of frames do not advance). Convert <code>lfp</code> instead.</td>
+</tr>
+<tr>
+<td><code>lfp</code></td>
+<td><code>&lt;run&gt;_g0_t0.imec0.lf</code></td>
+<td>acquisition indices 384..767</td>
+</tr>
+<tr>
+<td><code>adc</code></td>
+<td><code>&lt;run&gt;_g0_t0.obx0.obx</code></td>
+<td>OneBox ADC; <code>--adc-range</code> (default 5 V)</td>
+</tr>
+<tr>
+<td><code>nidaq</code></td>
+<td><code>&lt;run&gt;_g0_t0.nidq</code></td>
+<td>float64 volts → int16 is <strong>lossy</strong>, so it needs <code>--nidaq-range</code></td>
+</tr>
+<tr>
+<td><code>nidaq_di</code></td>
+<td><code>&lt;run&gt;_g0_t0.nidq</code></td>
+<td>0/1 lines packed losslessly into one XD word</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A gapped recording is REFUSED, never padded.</strong> A SpikeGLX <code>.bin</code> is a dense int16 matrix whose
+<code>.meta</code> holds exactly one time anchor (<code>firstSample</code>), so a dropped-sample gap is inexpressible;
+padding it would make a fault look like clean data. The converter audits the recorded per-frame
+timestamps first and, on any gap, rollover or off-grid step, prints where and how much and exits
+non-zero <strong>without writing anything</strong>. There is deliberately no <code>--pad</code> and no <code>--force</code>. (The
+timestamp is a <strong>100 kHz tick counter</strong>, not a sample index — consecutive deltas legitimately
+alternate 3 and 4 at 30 kHz — so the test is <code>rint(Δ / (100000/fs)) == 1</code>.)</p>
+<p>The samples themselves are copied <strong>bit-for-bit</strong>: SpikeGLX's <code>V = i·imAiRangeMax/imMaxInt/gain</code> is
+numerically identical to this package's µV/LSB, so the conversion lives entirely in the <code>.meta</code>.
+<code>--probe</code> is <strong>optional</strong>. The sidecar records the probe (<code>acquisition.probe.part_number</code>, read from
+the device at record time) and the converter resolves imMaxInt / imAiRangeMax / gain from it. Pass
+<code>--probe</code> only for a pre-2026-08-28 <code>metadata_version 1</code> recording that has no part number; a
+<code>--probe</code> that contradicts the recorded part is <strong>refused</strong>, not silently honoured. Geometry is not
+assumed either: <code>~imroTbl</code> is the applied map copied verbatim from <code>acquisition.imro.text</code>, and
+<code>~snsGeomMap</code> uses the per-channel <code>columns.shank</code> / <code>columns.electrode</code>. Only what genuinely is not
+in the recording — the ADC range, and the probe when you had to name it — goes into <code>userNotes</code>.</p>
+<pre><code class="language-python">from spikespeak_convert import convert_to_spikeglx, ConversionRefused
+convert_to_spikeglx(r&quot;C:/Data/mouse42&quot;, r&quot;C:/Export&quot;, probe=&quot;np1&quot;)
+</code></pre>
+<p>Tests: <code>python tests/test_spikeglx_convert.py</code> (stdlib <code>unittest</code> + numpy).</p></article>
+    <footer class="pagefoot">Generated from <code>python/README.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#why-it-just-works">Why it "just works"</a></li>
+<li><a href="#install">Install</a></li>
+<li><a href="#use">Use</a></li>
+<li><a href="#synchronizing-ni-daq-neuropixels-clock-drift-correction">Synchronizing NI-DAQ ↔ Neuropixels (clock-drift correction)</a></li>
+<li><a href="#example-plot-a-channel">Example — plot a channel</a></li>
+<li><a href="#example-save-the-two-standard-plots-into-a-recording-folder">Example — save the two standard plots into a recording folder</a></li>
+<li><a href="#record-layouts-from-the-sidecar-record_format">Record layouts (from the sidecar record_format)</a></li>
+<li><a href="#export-to-open-ephys-binary-convert_to_openephyspy">Export to Open Ephys binary — convert_to_openephys.py</a></li>
+<li><a href="#sibling-tool-spikespeak_clipy-headless-control">Sibling tool: spikespeak_cli.py (headless control)</a></li>
+<li><a href="#sibling-tool-convert_to_spikeglxpy-export-to-spikeglx">Sibling tool: convert_to_spikeglx.py (export to SpikeGLX)</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

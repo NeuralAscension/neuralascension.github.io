@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Simulated Data (complete operating guide) - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">User Guide / SpikesPeak — Simulated Data (complete operating guide)</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="README.html">SpikesPeak — User Guide</a>
+<a class="active" href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
+<a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
+<a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-simulated-data-complete-operating-guide">SpikesPeak — Simulated Data (complete operating guide)<a class="headerlink" href="#spikespeak-simulated-data-complete-operating-guide" title="Permanent link">#</a></h1>
+<p>SpikesPeak can stream <strong>hardware-free simulated data</strong> through the <em>exact same</em> pipeline as a real probe — display,
+probe-map editor, recording, channel selection, and ripple detection all work with <strong>no probe attached</strong>. Use it to
+learn the UI, develop, demo, or validate the ripple detector. This guide covers <strong>every simulated source and every
+way to drive it</strong> (GUI clicks <em>and</em> the command-line/WebSocket interface).</p>
+<blockquote>
+<p>See also: <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> (toolbar + views), <a href="RippleDetection.html"><code>RippleDetection.md</code></a> (the
+ripple module), <a href="../developer_docs/SyntheticSources.html"><code>../developer_docs/SyntheticSources.md</code></a> (the C++/<code>.h5</code>
+internals), <a href="../developer_docs/ControlCLI.html"><code>../developer_docs/ControlCLI.md</code></a> (headless control).</p>
+</blockquote>
+<hr />
+<h2 id="1-selecting-a-simulated-source">1. Selecting a simulated source<a class="headerlink" href="#1-selecting-a-simulated-source" title="Permanent link">#</a></h2>
+<p>In the toolbar <strong>Source</strong> dropdown, choose <strong><code>Simulated Data ›</code></strong>. The menu drills down in place and
+asks three short questions:</p>
+<ol>
+<li><strong>Which system</strong> — <code>OneBox</code> or <code>PXIe</code>.</li>
+<li><strong>Which probe</strong> — <code>Neuropixels 1.0</code> (hardware AP + LFP bands) or <code>Neuropixels 2.0</code> (one wideband
+   stream, LFP derived).</li>
+<li><strong>What to stream</strong> — a sine wave, synthetic ripples, a recorded <code>.h5</code> to replay, a
+   ripple-detection scenario, and so on.</li>
+</ol>
+<p><strong>←</strong> at the top of each step goes back. It used to be one flat list of sixteen, which had stopped being a menu.
+Each choice now shows its exact config name underneath, which is the name a script would use.</p>
+<blockquote>
+<p><strong>Two configs can still share a picker label — read the config name underneath.</strong> Three configs declare
+<code>sim_variant: "Neuropixels 1.0 — Ripple Detection (GUI)"</code>, which once put <strong>three identical-looking
+buttons</strong> in front of the operator. That was fixed by <em>hiding</em> two of them, not by renaming: the two
+<strong>Latency Bench</strong> profiles carry <code>gui_hidden: true</code> (§2.2), so only
+<code>Simulated NPX 1.0 + Ripple Detection (no channels)</code> reaches the menu.</p>
+<p><strong>Why this is worth knowing rather than a curiosity.</strong> Two of those three differ by one line —
+<code>low_latency</code>, i.e. ASAP delivery, which is a <strong>deliberate busy-wait costing about a whole CPU core</strong>.
+Picking the wrong one of two same-named buttons would have meant burning a core, or failing to, without
+anything on screen saying so. The <strong>config-name subtitle is the only thing that distinguishes them</strong>,
+which is why the picker shows it; and if a future config reintroduces a duplicate label, that subtitle
+is again the whole defense.</p>
+</blockquote>
+<p><img alt="Simulated Data picker" src="images/sim_picker_2026-08-27.png" /></p>
+<p><img alt="Choosing a scenario" src="images/sim_picker_scenarios_2026-08-27.png" /></p>
+<p>Most scenarios need no hardware — but three <strong>do</strong>: <code>NI-DAQ only (real, no probe)</code>,
+<code>Neuropixels 1.0 + Real NI-DAQ + Ripples</code> and <code>NPX 2.0 Multishank + Real NI-DAQ + Ripples</code> all drive
+a real NI-DAQ card, as their names say.</p>
+<p>Some scenarios appear under <strong>both</strong> systems. That is deliberate, not a duplicate: the plain
+sine-wave sources do not open a basestation at all, so they are genuinely independent of that choice
+and filing them under one would be inventing a distinction.</p>
+<p>There is nothing else to install: the picker is built from the backend's loaded configs, so any
+<code>config/*.yaml</code> with a <code>sim_variant:</code> key shows up automatically — and its <code>sim_basestation:</code> /
+<code>sim_probe:</code> keys, if present, decide where in the cascade. Two names matter per config: the
+<strong>picker label</strong> (<code>sim_variant:</code>) and the <strong>exact name</strong> (<code>name:</code>) you pass to <code>selectSource</code> over
+the WebSocket — they differ.</p>
+<hr />
+<h2 id="2-the-simulated-sources-what-each-one-is">2. The simulated sources (what each one is)<a class="headerlink" href="#2-the-simulated-sources-what-each-one-is" title="Permanent link">#</a></h2>
+<h3 id="21-in-the-picker">2.1 In the picker<a class="headerlink" href="#21-in-the-picker" title="Permanent link">#</a></h3>
+<p>All fourteen, grouped the way the picker groups them. <strong>Hardware needed</strong> is <code>no</code> unless the row says
+otherwise — the three that say yes drive a <strong>real NI-DAQ card</strong>, as their labels announce.</p>
+<table>
+<thead>
+<tr>
+<th>Picker label (<code>sim_variant</code>)</th>
+<th>Probe</th>
+<th>Bands / devices</th>
+<th>Ripples?</th>
+<th>Real HW?</th>
+<th>WS <code>selectSource</code> name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Neuropixels 1.0 — sine wave</strong></td>
+<td>NP1</td>
+<td><code>data.npx.ap</code> (30 kHz) + <code>data.npx.lfp</code> (2.5 kHz)</td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated Data</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank — sine wave</strong></td>
+<td>NP2</td>
+<td>single <code>data.npx.raw</code> (30 kHz) + derived <code>data.lfp</code></td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated NPX 2.0 Multishank</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 1.0 (OneBox + ADC)</strong></td>
+<td>NP1</td>
+<td>NP1 bands + a simulated <strong>12-channel OneBox ADC</strong> in volts</td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated NPX 1.0 (OneBox)</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank (OneBox + ADC)</strong></td>
+<td>NP2</td>
+<td>NP2 raw + a simulated <strong>12-channel OneBox ADC</strong> in volts</td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated NPX 2.0 Multishank (OneBox)</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 1.0 + NI-DAQ</strong></td>
+<td>NP1 + NI-DAQ</td>
+<td>NP1 bands + 8 analog ch @ 40 kHz</td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated NPX 1.0 + NI-DAQ</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank + NI-DAQ</strong></td>
+<td>NP2 + NI-DAQ</td>
+<td>NP2 raw + 8 analog ch @ 40 kHz</td>
+<td>no</td>
+<td>no</td>
+<td><code>Simulated NPX 2.0 Multishank + NI-DAQ</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank + NI-DAQ + Ripples</strong></td>
+<td>NP2 + NI-DAQ</td>
+<td>NP2 raw (+<code>proc.lfp</code>) + NI-DAQ, ripples</td>
+<td><strong>yes</strong></td>
+<td>no</td>
+<td><code>Simulated NPX 2.0 Multishank + NI-DAQ + Ripples</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 1.0 — Ripple Detection (GUI)</strong></td>
+<td>NP1</td>
+<td>NP1 bands, ripples injected into <code>data.npx.lfp</code></td>
+<td><strong>yes</strong></td>
+<td>no</td>
+<td><code>Simulated NPX 1.0 + Ripple Detection (no channels)</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 2.0 Multishank — Ripple Detection (GUI)</strong></td>
+<td>NP2</td>
+<td>NP2 raw → <code>proc.lfp</code> → <code>data.lfp</code>, ripples in raw</td>
+<td><strong>yes</strong></td>
+<td>no</td>
+<td><code>Simulated NPX 2.0 + Ripple Detection (no channels)</code></td>
+</tr>
+<tr>
+<td><strong>Neuropixels 1.0 + Real NI-DAQ + Ripples</strong></td>
+<td>NP1 + <strong>real</strong> NI-DAQ</td>
+<td>simulated NP1 ripples against a <strong>real card</strong> — the closed-loop bench without a probe</td>
+<td><strong>yes</strong></td>
+<td><strong>YES</strong></td>
+<td><code>Simulated NPX 1.0 + Real NI-DAQ + Ripples</code></td>
+</tr>
+<tr>
+<td><strong>NPX 2.0 Multishank + Real NI-DAQ + Ripples</strong></td>
+<td>NP2 + <strong>real</strong> NI-DAQ</td>
+<td>the same, NP2 side</td>
+<td><strong>yes</strong></td>
+<td><strong>YES</strong></td>
+<td><code>Simulated NPX 2.0 Multishank + Real NI-DAQ + Ripples</code></td>
+</tr>
+<tr>
+<td><strong>NI-DAQ only (real, no probe)</strong></td>
+<td>—</td>
+<td>a <strong>real</strong> NI-DAQ card and nothing else: 8 analog in, TTL sync. No probe, no probe map</td>
+<td>no</td>
+<td><strong>YES</strong></td>
+<td><code>NI-DAQ only (real)</code></td>
+</tr>
+<tr>
+<td><strong>Simulated Neuropixels 1.0 (play file)</strong></td>
+<td>NP1</td>
+<td><strong>dual-band</strong>: replays an AP <code>.h5</code> (30 kHz)→<code>data.npx.ap</code> <strong>and</strong> an LFP <code>.h5</code> (2.5 kHz)→<code>data.npx.lfp</code></td>
+<td>file-dependent</td>
+<td>no</td>
+<td><code>NPX 1.0 Synthetic Ripples (play file)</code></td>
+</tr>
+<tr>
+<td><strong>Simulated Neuropixels 2.0 (play file)</strong></td>
+<td>NP2</td>
+<td>replays one <code>.h5</code> (30 kHz) → <code>data.npx.raw</code></td>
+<td>file-dependent</td>
+<td>no</td>
+<td><code>NPX 2.0 Synthetic Ripples (play file)</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two <strong>(OneBox + ADC)</strong> rows are the ones to practice on before touching a real OneBox: they give you the
+box's 12-channel ADC as a live stream alongside the probe, so the device tab, the <code>IO0…IO11</code> trace labels and
+the volts-per-row scale all behave as they will on the bench.</p>
+<h3 id="22-not-in-the-picker-selectable-by-name-only">2.2 Not in the picker (selectable <strong>by name</strong> only)<a class="headerlink" href="#22-not-in-the-picker-selectable-by-name-only" title="Permanent link">#</a></h3>
+<p>Four configs are deliberately held out of the picker (<code>gui_hidden: true</code>) and remain selectable by their exact
+name over the CLI/WebSocket:</p>
+<table>
+<thead>
+<tr>
+<th>WS <code>selectSource</code> name</th>
+<th>Probe</th>
+<th>Why it is hidden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Simulated NPX 1.0 Ripples</code></td>
+<td>NP1</td>
+<td><strong>automated ripple validation</strong> — ripples in <code>data.npx.lfp</code>; drive channels + Start over WS</td>
+</tr>
+<tr>
+<td><code>Simulated NPX 2.0 Ripples</code></td>
+<td>NP2</td>
+<td>the same, via <code>proc.lfp</code> → <code>data.lfp</code></td>
+</tr>
+<tr>
+<td><code>Latency Bench NP1 (ASAP delivery)</code></td>
+<td>NP1</td>
+<td>a <strong>benchmark</strong>, not an experiment scenario: identical to the NP1 ripple-module config except ripples every <strong>0.5 s</strong> (so 1000 closed-loop samples take ~9 min instead of ~33), dumps off, and <code>low_latency: true</code></td>
+</tr>
+<tr>
+<td><code>Latency Bench NP1 (baseline delivery)</code></td>
+<td>NP1</td>
+<td>its A/B partner, with <code>low_latency: false</code></td>
+</tr>
+</tbody>
+</table>
+<p>The two Latency Bench profiles are what <code>ripple_tools/latency_breakdown.py</code> drives, and
+<code>Latency Bench NP1 (baseline delivery)</code> is a worked <code>select</code> example in
+<a href="../developer_docs/ControlCLI.html"><code>../developer_docs/ControlCLI.md</code></a> — so you can meet the name before you
+have any reason to look for it in a menu. You will not find it there.</p>
+<h3 id="23-the-underlying-source-classes">2.3 The underlying source classes<a class="headerlink" href="#23-the-underlying-source-classes" title="Permanent link">#</a></h3>
+<ul>
+<li><strong><code>source.npx.simdata</code></strong> — the NP1 <em>generator</em> (synthesizes int16 into <code>data.npx.ap</code> + <code>data.npx.lfp</code>).</li>
+<li><strong><code>source.npx.sim2</code></strong> — the NP2 multishank generator (writes the single <code>data.npx.raw</code>; <code>proc.lfp</code> derives LFP).</li>
+<li><strong><code>source.npx.simadc</code></strong> — a simulated <strong>OneBox ADC</strong>: the box's 12 analog BNCs (<code>IO0</code>–<code>IO11</code>) in volts,
+  streaming alongside the simulated probe on the two <code>(OneBox + ADC)</code> profiles.</li>
+<li><strong><code>source.nidaq.sim</code></strong> — a simulated NI-DAQ: <strong>8 analog channels @ 40 kHz, ±5 V</strong>, channel 0 is a <strong>TTL sync</strong>
+  pulse aligned to the NPX sim (with ~10 ppm drift, recoverable via <code>synchronize()</code>).</li>
+<li><strong><code>source.nidaq</code></strong> — the <strong>real</strong> NI-DAQ driver. It appears in three of the "simulated" profiles above,
+  which is the whole point of those: a simulated probe against a real card.</li>
+<li><strong><code>source.npx.synthripples</code></strong> — the HDF5 <strong>play-file</strong> source (§6). It is <strong>single-band</strong> for NP2 (one file →
+  <code>data.npx.raw</code>) and <strong>dual-band</strong> for NP1 (an AP file → <code>data.npx.ap</code> @30 kHz <em>and</em> an LFP file →
+  <code>data.npx.lfp</code> @2.5 kHz, on the 12 AP : 1 LFP superframe cadence), selected by which outputs the config binds.</li>
+</ul>
+<hr />
+<h2 id="3-what-you-can-do-with-a-simulated-source">3. What you can do with a simulated source<a class="headerlink" href="#3-what-you-can-do-with-a-simulated-source" title="Permanent link">#</a></h2>
+<p>Everything a real probe supports, minus the physical device:</p>
+<ul>
+<li><strong>Stream</strong> — press <strong>▶ Play</strong>. Watch the <strong>Live Data</strong> view (depth-sorted waveforms). The <strong>sine-wave</strong> sims show
+  clear moving waves; the <strong>ripple</strong> sims show low-amplitude LFP with periodic bursts.</li>
+<li><strong>Probe Map</strong> — the <strong>Probe Map</strong> tab shows the channel-map editor (NP1 shaft / NP2 4-shank). You can edit the
+  map, pick banks, <strong>Apply Map to Hardware</strong> (accepted as the sim's map), <strong>Load/Save .imro</strong>.</li>
+<li><strong>Select recording channels</strong> — in the Probe Map tab, switch to <strong>Select Recording Channels</strong>, pick electrodes
+  (green = record), and <strong>Set</strong>.</li>
+<li><strong>Record</strong> — press <strong>⏺ Record</strong> while playing (writes <code>.bin</code> + <code>.json</code> under the chosen folder/name). NI-DAQ
+  streams record too.</li>
+<li><strong>Ripple detection</strong> — open the <strong>SWR Detector</strong> dock and run it live (full guide:
+  <a href="RippleDetection.html"><code>RippleDetection.md</code></a>). Any source with an LFP band works; the "… Ripple Detection (GUI)"
+  configs are purpose-built (ripples injected, 0 channels, waits for you).</li>
+</ul>
+<p>The NP2 ripple sim detecting live. Here <strong>quorum = 2</strong>: two of the three channels (e0, e50) cross threshold
+together, so the dock's cowsay reports <strong><code>2/3 ch 0,50</code></strong>. Stimulation is switched <strong>off</strong> in this shot, so the
+trigger is computed and nothing is transmitted. (e100 reads <em>below threshold</em> while its envelope is over the
+line — see <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §5 for what that label actually means.)</p>
+<p><img alt="NP2 ripple-detection sim — quorum 2" src="images/ripple/np2_detecting_2026-09-01.png" /></p>
+<hr />
+<h2 id="4-tuning-what-the-simulator-emits-config-knobs">4. Tuning what the simulator emits (config knobs)<a class="headerlink" href="#4-tuning-what-the-simulator-emits-config-knobs" title="Permanent link">#</a></h2>
+<p>The sim sources read optional knobs from their YAML node — <strong>edit <code>config/&lt;file&gt;.yaml</code> and re-select the source</strong>
+(no rebuild needed). The knobs on the <strong>ripple</strong> configs (<code>SimNpx1RippleModule.yaml</code>, <code>SimNpx2RippleModule.yaml</code>,
+<code>SimNpx1Ripples.yaml</code>, <code>SimNpx2Ripples.yaml</code>), under <code>source.npx.simdata</code> / <code>source.npx.sim2</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Knob</th>
+<th>Meaning</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>inject_ripples</code></td>
+<td>turn ripple bursts on/off</td>
+<td><code>true</code> (ripple configs)</td>
+</tr>
+<tr>
+<td><code>ripple_amplitude</code></td>
+<td>burst peak, ADC counts (pre-noise)</td>
+<td><code>100</code></td>
+</tr>
+<tr>
+<td><code>ripple_freq_hz</code></td>
+<td>center of the 150–250 Hz ripple band</td>
+<td><code>200</code></td>
+</tr>
+<tr>
+<td><code>ripple_period_s</code></td>
+<td>one Gaussian burst every N seconds (centered at t = 1, 3, 5 … s)</td>
+<td><code>2.0</code></td>
+</tr>
+<tr>
+<td><code>noise_amplitude</code></td>
+<td>per-channel Gaussian background, ADC counts — <strong>essential</strong>: a noiseless signal has σ≈0, making the z-score threshold meaningless</td>
+<td><code>15</code></td>
+</tr>
+</tbody>
+</table>
+<p>The <strong>NI-DAQ</strong> sim node accepts <code>sample_rate_hz</code> (default <code>40000</code>) and analog-channel settings. The <strong>sine-wave</strong>
+sims use fixed AP/LFP frequencies + amplitudes chosen so traces are clearly visible at the default µV scale.</p>
+<hr />
+<h2 id="5-driving-simulated-data-from-the-command-line-websocket">5. Driving simulated data from the command line / WebSocket<a class="headerlink" href="#5-driving-simulated-data-from-the-command-line-websocket" title="Permanent link">#</a></h2>
+<p>Everything the GUI does maps to a WebSocket command on <code>ws://localhost:1234</code>. An open browser mirrors a CLI session
+live. Two ways:</p>
+<blockquote>
+<p><strong>Launching the backend:</strong> run it from a real terminal with <code>run_spikespeak.bat --no-browser</code>
+(<code>./run_spikespeak.sh --no-browser</code> on Linux/macOS), from the repo root. The launcher puts Qt + the
+Neuropixels API + HDF5 on <code>PATH</code>; started <em>without</em> them, <code>bin/SpikesPeak.exe</code> silently exits at load with
+<code>0xC0000135</code> (STATUS_DLL_NOT_FOUND) — which is what "a window flashed and closed" means. <code>--no-browser</code>
+keeps it from opening a GUI on top of the session you are scripting.</p>
+</blockquote>
+<h3 id="51-spikespeak_clipy-built-in-verbs">5.1 <code>spikespeak_cli.py</code> (built-in verbs)<a class="headerlink" href="#51-spikespeak_clipy-built-in-verbs" title="Permanent link">#</a></h3>
+<pre><code class="language-powershell">python python\spikespeak_cli.py --script `
+  &quot;list; select 'Simulated NPX 1.0 + NI-DAQ'; waitready 25; probemap default; play; sleep 3; `
+   record RecordingTests test1; sleep 20; stop; sleep 1; disconnect; quit&quot;
+</code></pre>
+<p>Verbs: <code>list</code>, <code>select "&lt;name&gt;"</code>, <code>waitready [s]</code>, <code>probemap &lt;default|bank0..2|PATH.imro&gt;</code>, <code>play</code>, <code>pause</code>,
+<code>record &lt;dir&gt; &lt;name&gt;</code>, <code>stop</code>, <code>disconnect</code>, <code>quit</code>, <code>sleep &lt;s&gt;</code>. See
+<a href="../developer_docs/ControlCLI.html"><code>../developer_docs/ControlCLI.md</code></a>.</p>
+<h3 id="52-raw-websocket-json-for-anything-the-cli-lacks-eg-ripple-control">5.2 Raw WebSocket JSON (for anything the CLI lacks — e.g. ripple control)<a class="headerlink" href="#52-raw-websocket-json-for-anything-the-cli-lacks-eg-ripple-control" title="Permanent link">#</a></h3>
+<p>Send text frames of JSON:</p>
+<pre><code class="language-json">{&quot;command&quot;:&quot;selectSource&quot;,&quot;value&quot;:&quot;Simulated NPX 2.0 + Ripple Detection (no channels)&quot;}
+{&quot;command&quot;:&quot;setPlaying&quot;,&quot;value&quot;:true}
+{&quot;command&quot;:&quot;setProbeMap&quot;,&quot;value&quot;:&quot;default&quot;}
+{&quot;command&quot;:&quot;setRecording&quot;,&quot;value&quot;:true,&quot;dir&quot;:&quot;RecordingTests&quot;,&quot;name&quot;:&quot;test1&quot;}
+{&quot;command&quot;:&quot;ripple&quot;,&quot;action&quot;:&quot;setChannels&quot;,&quot;electrodes&quot;:[0,50,100]}
+{&quot;command&quot;:&quot;ripple&quot;,&quot;action&quot;:&quot;setParam&quot;,&quot;name&quot;:&quot;estimation_seconds&quot;,&quot;value&quot;:3}
+{&quot;command&quot;:&quot;ripple&quot;,&quot;action&quot;:&quot;setParam&quot;,&quot;name&quot;:&quot;quorum_count&quot;,&quot;value&quot;:2}
+{&quot;command&quot;:&quot;ripple&quot;,&quot;action&quot;:&quot;start&quot;}
+{&quot;command&quot;:&quot;Disconnect&quot;,&quot;value&quot;:true}
+{&quot;command&quot;:&quot;quit&quot;}
+</code></pre>
+<p>The backend broadcasts <code>rippleState</code> / <code>rippleTraining</code> / <code>rippleBaseline</code> / <code>rippleEnvelope</code> / <code>rippleDetected</code>
+events you can listen for. (This is how the ripple detector is validated headlessly, since the configs no longer
+pre-select channels.) The ripple→stimulation closed loop adds <code>{"command":"ripple","action":"setStimServer",
+"ip":"&lt;ip[:port]&gt;"}</code> (see <a href="RippleDetection.html"><code>RippleDetection.md</code></a>).</p>
+<hr />
+<h2 id="6-hdf5-play-file-sources">6. HDF5 "play file" sources<a class="headerlink" href="#6-hdf5-play-file-sources" title="Permanent link">#</a></h2>
+<p>A <strong>(play file)</strong> source replays a saved <code>.h5</code> through the full pipeline — probe map, display, recording, ripple
+detection — exactly like a live source. There are two:</p>
+<ul>
+<li><strong>Simulated Neuropixels 2.0 (play file)</strong> — one file → <code>data.npx.raw</code> (30 kHz).</li>
+<li><strong>Simulated Neuropixels 1.0 (play file)</strong> — <strong>dual-band</strong>: an AP file (30 kHz) → <code>data.npx.ap</code> <strong>and</strong> an LFP
+  file (2.5 kHz) → <code>data.npx.lfp</code>, streamed together on the 12 AP : 1 LFP superframe cadence, like a real 1.0 probe.</li>
+</ul>
+<p><img alt="Play-file — probe map renders" src="images/ripple/playfile_probemap_2026-09-01.png" />
+<img alt="Play-file — detecting on the replayed file" src="images/ripple/playfile_detecting_2026-09-01.png" /></p>
+<h3 id="61-choosing-the-file-two-ways">6.1 Choosing the file — two ways<a class="headerlink" href="#61-choosing-the-file-two-ways" title="Permanent link">#</a></h3>
+<p>When you pick a <code>(play file)</code> source, the picker shows a <strong>path line edit</strong>:
+- <strong>Type/paste</strong> a full <code>.h5</code> path → <strong>▶ Play file</strong> (uses it directly).
+- Blank → <strong>📂 Browse…</strong> opens your machine's native file dialog.
+- Over the WebSocket, add a <code>playbackFile</code> field to <code>selectSource</code> to skip the dialog:
+  <code>{"command":"selectSource","value":"NPX 2.0 Synthetic Ripples (play file)","playbackFile":"C:/path/to.h5"}</code>.</p>
+<p>The last path is remembered. A <strong>missing/corrupt file streams silence + warns</strong> (no crash) — re-select and retry.</p>
+<h3 id="62-file-format-generate-any-synthetic-data-not-just-ripples">6.2 File format (generate ANY synthetic data, not just ripples)<a class="headerlink" href="#62-file-format-generate-any-synthetic-data-not-just-ripples" title="Permanent link">#</a></h3>
+<p>The <code>.h5</code> format is deliberately simple — <strong>one dataset of int16 samples + a rate attribute</strong> — so you can replay
+<em>any</em> signal (spikes, drift, test patterns, a real recording), not only ripples:</p>
+<ul>
+<li>dataset <strong><code>data</code></strong>, <strong><code>int16</code></strong>, shape <strong><code>[nSamples × nChannels]</code></strong> (sample-major), or 1-D <strong><code>[nSamples]</code></strong> to
+  <strong>broadcast</strong> one series to every channel;</li>
+<li>attribute <strong><code>sampling_rate</code></strong> (<code>int32</code>, Hz) — <strong>30000</strong> for an AP/raw file, <strong>2500</strong> for an NP1 LFP file;</li>
+<li>optional attribute <strong><code>num_channels</code></strong> (<code>int32</code>, informational).</li>
+</ul>
+<p>The reader <strong>tiles</strong> the file across all 384 read-out channels (file channel <code>c % nChannels</code> → read-out channel
+<code>c</code>): a full 384-channel file maps 1:1, a partial file repeats, a 1-channel/1-D file broadcasts. Files loop when
+they reach the end.</p>
+<p>Minimal example — write your <em>own</em> signal (here a 10 Hz sine + per-channel noise) with just numpy + h5py:</p>
+<pre><code class="language-python">import numpy as np, h5py
+fs, secs, nch = 30000, 6, 384          # 30 kHz raw/AP file; use fs=2500 for an NP1 LFP file
+t = np.arange(fs * secs) / fs
+sig = 300*np.sin(2*np.pi*10*t)[:, None] + 20*np.random.randn(fs*secs, nch)   # put ANY signal here
+data = np.clip(np.round(sig), -32768, 32767).astype(np.int16)                # [nSamples x nChannels] int16
+with h5py.File(&quot;data/my_signal.h5&quot;, &quot;w&quot;) as f:
+    d = f.create_dataset(&quot;data&quot;, data=data, compression=&quot;gzip&quot;, compression_opts=4)
+    d.attrs[&quot;sampling_rate&quot;] = np.int32(fs)
+    d.attrs[&quot;num_channels&quot;]  = np.int32(nch)
+</code></pre>
+<p>Then replay it: pick <strong>Simulated Neuropixels 2.0 (play file)</strong> and paste the path (or pass <code>playbackFile</code>).</p>
+<p><strong>For an NP1 dual-band pair</strong> (both AP + LFP), write <strong>two</strong> files whose names share a base and differ only by the
+<code>_ap</code> / <code>_lfp</code> tag, e.g. <code>my_signal_ap.h5</code> (<code>sampling_rate=30000</code>) and <code>my_signal_lfp.h5</code> (<code>sampling_rate=2500</code>).
+Selecting <strong>Simulated Neuropixels 1.0 (play file)</strong> and pointing it at the <code>_lfp</code> file auto-loads the <code>_ap</code> sibling
+(and vice-versa); if the sibling is missing, that band streams silence.</p>
+<h3 id="63-generating-a-synthetic-ripple-file-the-built-in-generator">6.3 Generating a synthetic ripple file (the built-in generator)<a class="headerlink" href="#63-generating-a-synthetic-ripple-file-the-built-in-generator" title="Permanent link">#</a></h3>
+<p>The bundled generator makes physiologically-shaped sharp-wave ripples:</p>
+<pre><code class="language-powershell">:: NP2 (single 30 kHz raw file -&gt; data/synthetic_ripples.h5)
+conda run -n sp python scripts\gen_synthetic_ripples.py --duration 6 --num_channels 384
+
+:: NP1 (dual-band pair -&gt; data/synthetic_ripples_np1_ap.h5 + _lfp.h5)
+conda run -n sp python scripts\gen_synthetic_ripples.py --probe 1.0 --duration 6 --num_channels 384
+</code></pre>
+<p>It emits per-channel bandpassed-noise background + a <strong>depth-weighted</strong> ripple train (strongest mid-probe,
+detectable on every channel). Args: <code>--probe {1.0,2.0}</code>, <code>--duration</code>, <code>--num_channels</code>, <code>--peak</code>, <code>--noise_std</code>,
+<code>--ripple_event_freq</code>, <code>--depth_floor</code>, <code>--ripple_low_freq</code>, <code>--ripple_high_freq</code>, <code>--sampling_rate</code>, <code>--no_compress</code>.
+The <code>--probe 1.0</code> path high-passes the AP band (300 Hz, first-order and causal — a model of the probe, not an
+analysis filter) and low-passes+decimates the LFP band (400 Hz, ÷12) — so the 150–250 Hz ripple is strongest in
+the LFP band (which the detector reads) and <strong>also present in AP at about 60%</strong>, as on real hardware. It is
+attenuated there by ~5 dB, not removed; measured on a recording, a burst configured at 100 counts arrives in the
+AP band at 59.5. See <a href="../developer_docs/SimulatedSignals.html"><code>SimulatedSignals.md</code></a> for the model, the
+assumptions behind it, and how to re-verify it. Output <code>.h5</code> files are git-ignored — regenerate as needed, and copy them next to the exe under
+<code>&lt;build&gt;/data/</code> if you run the built tree from elsewhere.</p>
+<p><strong>Conda environment:</strong> the scripts need only <strong>numpy, scipy, h5py</strong> (the dev box's <code>sp</code> env is a broader analysis
+env, but those three are all that's required). Set it up with:</p>
+<pre><code class="language-powershell">scripts\setup_sp_env.bat                      :: creates/updates the `sp` env
+:: or manually:
+conda env create -f scripts\environment.yml   :: fresh `sp` env (python 3.9 + numpy/scipy/h5py)
+conda install -n &lt;yourenv&gt; numpy scipy h5py    :: add to an existing env instead
+</code></pre>
+<p><strong>ghostipy is NOT required</strong> — the generator was reimplemented on scipy. (The original used ghostipy:
+<a href="https://github.com/kemerelab/ghostipy">https://github.com/kemerelab/ghostipy</a> — install with <code>pip install ghostipy</code> only if you want it for other analysis.)</p>
+<blockquote>
+<p><strong>Coming later:</strong> replaying the recorder's own <code>.bin</code> + <code>.json</code> output (a converter to the playback <code>.h5</code>) — so
+you can record a probe once and replay it forever.</p>
+</blockquote>
+<hr />
+<h2 id="7-quick-recipes">7. Quick recipes<a class="headerlink" href="#7-quick-recipes" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>See NP2 ripple detection end-to-end:</strong> Source → <em>Neuropixels 2.0 Multishank — Ripple Detection (GUI)</em> → Play →
+  open Ripple dock → add electrodes <code>0, 50, 100</code> → set training <code>3 s</code>, quorum <code>2</code> → Start → detections in ~10 s.</li>
+<li><strong>Replay your generated NP2 file:</strong> Source → <em>Simulated Neuropixels 2.0 (play file)</em> → paste
+  <code>…/data/synthetic_ripples.h5</code> → <strong>Play file</strong> → Probe Map renders → add channels → Start.</li>
+<li><strong>Replay your generated NP1 file (dual-band):</strong> Source → <em>Simulated Neuropixels 1.0 (play file)</em> → paste
+  <code>…/data/synthetic_ripples_np1_lfp.h5</code> → <strong>Play file</strong> → BOTH the AP (30 kHz) and LFP (2.5 kHz) bands stream (the
+  <code>_ap</code> sibling loads automatically) → add channels → Start → detections on the LFP band.</li>
+<li><strong>Record 20 s of simulated NP1 + NI-DAQ:</strong> Source → <em>Neuropixels 1.0 + NI-DAQ</em> → Play → ⏺ Record → wait → stop.</li>
+<li><strong>Headless validation:</strong> use the raw-WebSocket recipe in §5.2 with <em>Simulated NPX 1.0 Ripples</em>, or the ripple
+  play-file harness in <code>python/tools/stim_fire_test.py</code>.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>user_docs/SimulatedData.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-selecting-a-simulated-source">1. Selecting a simulated source</a></li>
+<li><a href="#2-the-simulated-sources-what-each-one-is">2. The simulated sources (what each one is)</a><ul>
+<li><a href="#21-in-the-picker">2.1 In the picker</a></li>
+<li><a href="#22-not-in-the-picker-selectable-by-name-only">2.2 Not in the picker (selectable by name only)</a></li>
+<li><a href="#23-the-underlying-source-classes">2.3 The underlying source classes</a></li>
+</ul>
+</li>
+<li><a href="#3-what-you-can-do-with-a-simulated-source">3. What you can do with a simulated source</a></li>
+<li><a href="#4-tuning-what-the-simulator-emits-config-knobs">4. Tuning what the simulator emits (config knobs)</a></li>
+<li><a href="#5-driving-simulated-data-from-the-command-line-websocket">5. Driving simulated data from the command line / WebSocket</a><ul>
+<li><a href="#51-spikespeak_clipy-built-in-verbs">5.1 spikespeak_cli.py (built-in verbs)</a></li>
+<li><a href="#52-raw-websocket-json-for-anything-the-cli-lacks-eg-ripple-control">5.2 Raw WebSocket JSON (for anything the CLI lacks — e.g. ripple control)</a></li>
+</ul>
+</li>
+<li><a href="#6-hdf5-play-file-sources">6. HDF5 "play file" sources</a><ul>
+<li><a href="#61-choosing-the-file-two-ways">6.1 Choosing the file — two ways</a></li>
+<li><a href="#62-file-format-generate-any-synthetic-data-not-just-ripples">6.2 File format (generate ANY synthetic data, not just ripples)</a></li>
+<li><a href="#63-generating-a-synthetic-ripple-file-the-built-in-generator">6.3 Generating a synthetic ripple file (the built-in generator)</a></li>
+</ul>
+</li>
+<li><a href="#7-quick-recipes">7. Quick recipes</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

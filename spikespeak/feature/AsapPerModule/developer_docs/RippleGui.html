@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ripple-detection GUI — design, WS contract, and integration plan - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Ripple detection and closed loop / Ripple-detection GUI — design, WS contract, and integration plan</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup" open><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a class="active" href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="ripple-detection-gui-design-ws-contract-and-integration-plan">Ripple-detection GUI — design, WS contract, and integration plan<a class="headerlink" href="#ripple-detection-gui-design-ws-contract-and-integration-plan" title="Permanent link">#</a></h1>
+<p>The RippleDetection panel is a <strong>right-side dock column</strong> (≤ ¼ width, stretchable) that coexists with the
+Probe Map / Live Data views (a toolbar tab <strong>toggles</strong> the dock; it does not replace the main view). It drives
+<code>proc.rippledetector</code> and visualizes its per-channel state.</p>
+<blockquote>
+<p><strong>Scope — this doc is the GUI ↔ backend WS contract only.</strong> How to <em>operate</em> the dock (with annotated
+screenshots): <a href="../user_docs/RippleDetection.html"><code>../user_docs/RippleDetection.md</code></a>. The detection
+<em>algorithm</em> + per-probe data path: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>. This doc does not repeat
+either.</p>
+</blockquote>
+<p>Status: <strong>BUILT + WIRED END-TO-END (2026-07-08).</strong> The frontend panel (<code>webinterface/RippleModule.js</code>) sends WS
+commands and renders live backend events; the backend <code>RippleDetector</code> emits <code>rippleEnvelope</code>/<code>rippleTraining</code>/
+<code>rippleBaseline</code>/<code>rippleDetected</code>/<code>rippleState</code>, and applies frontend commands (start/pause/setChannels/setParam/
+setZ/retrain/enable) at runtime (queued onto its worker thread, applied safely between loop iterations).
+<strong>Verified:</strong> a WS listener saw 649 envelope + 24 training + 2 baseline + 5 detection events over 26 s, and a
+runtime <code>setChannels [5,15]</code> was resolved + took effect live (detections then fired on [5,15]). The layout
+<strong>shrinks the main view</strong> (no overlap); two spinboxes added: <strong>quorum count</strong> + <strong>coincidence window (10 ms
+default, ±0.001)</strong>. <strong>Start/Pause + Edit-lock verified headless (2026-07-08):</strong> Play auto-started (<code>enabled=true</code>,
+3 channels trained), <code>pause</code>→<code>enabled=false</code> (0 detections while paused), <code>setChannels[0,10,20,30]</code> while paused
+merged to 4 channels, <code>start</code>→resume trained ONLY the new e30 (e0/e10/e20 kept their baselines), 7 detections
+total, no crash across the runtime channel-set mutations. <strong>Ctrl+drag channel selection is DONE:</strong> a shared <code>RippleModule.beginElectrodeDrag</code>
+custom-drag (works over the probe-map canvas AND the live-view DOM labels, unlike HTML5 DnD) — the probe view
+hooks it on <code>Ctrl+mousedown</code> via <code>electrodeUnderCursor</code>/<code>np2ElectrodeUnderCursor</code> (NP2 → global
+<code>shank*1280+e</code>); the live view hooks it on the electrode labels (<code>Ctrl+mousedown</code>, normal Ctrl-click select
+skipped). Verified headless: drop-on-dock → <code>addElectrode</code> (chip + per-channel column appear). The
+stim-server IP selector is wired too — <code>setStimServer</code> re-points <code>StimulatorClient</code> live (§2).</p>
+<h2 id="1-layout-top-bottom-per-the-spec">1. Layout (top → bottom, per the spec)<a class="headerlink" href="#1-layout-top-bottom-per-the-spec" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Header:</strong> a single <strong><code>▶ Start</code> / <code>⏸ Pause</code></strong> button (consolidates the old Enable+Begin) + an <strong><code>✎ Edit</code></strong>
+  button. Semantics:</li>
+<li><strong>Start</strong> — begins the module: first-ever Start trains μ/σ from now, then detects; a Start <em>after</em> a Pause
+    just <strong>resumes</strong> with the existing baselines (no retrain). Disabled with no channels selected.</li>
+<li><strong>Pause</strong> — stops detection + stimulation (envelopes keep streaming, so the panel stays live); baselines kept.</li>
+<li><strong>Edit</strong> — only enabled while paused; <strong>unlocks</strong> the config (channels + global params) for changes. While
+    running, channels + global params are <strong>locked</strong> — <strong>EXCEPT the per-channel z-score, which stays editable
+    live</strong> for real-time sensitivity tuning (<code>setZ</code> recomputes the threshold on the fly). Start re-locks the rest.
+    (Backend is the source of truth: <code>rippleState.enabled</code> drives the button + lock.)</li>
+<li><strong>Row 1 — Channels:</strong> electrode chips (<code>e50 → ch98 ✕</code>). <em>Editable when paused + Edit engaged.</em> Add by
+  <strong>left-drag</strong> an electrode from the Live Data / Probe view into the dropzone — <strong>hold Ctrl, OR just drag while
+  the dock is open</strong> (<code>body.ripple-open</code> skips the Ctrl requirement) — one at a time, or type an electrode number
+  (fallback). Removing a chip drops that channel. Adding a channel to an already-trained set <strong>trains only the new
+  channel</strong> (kept channels keep their baselines) — see <code>setChannels</code> below.</li>
+<li><strong>Row 2 — Parameters (global, before the per-channel split; all seconds):</strong></li>
+<li><code>Parameter-estimation (training) time</code> — line edit, validated. A <strong>Train / Retrain</strong>
+    button reads <strong>Train</strong> until every channel is trained then <strong>Retrain</strong> (disabled with no channels, mid-train,
+    or when not running); a <strong>progress bar</strong> + "time remaining" while training μ/σ.</li>
+<li><code>Min time above threshold to report</code> — line edit.</li>
+<li><code>Lockout after detection / stimulation</code> — spinbox, step <strong>0.01</strong>.</li>
+<li><code>Channels required (quorum)</code> + <code>Coincidence window</code>.</li>
+<li><strong>Rows 2–3 — per-channel columns (one per selected channel):</strong> <code>z-score</code> spinbox (step 0.01,
+  <strong>live-editable even while running</strong>), the threshold <strong>μ + zσ = value</strong> (Greek), a <strong>rolling envelope</strong> plot
+  (<strong>last 500 ms</strong>, trimmed by timestamp) with the threshold as a dashed line; the column <strong>highlights for the
+  lockout</strong> on a crossing. Status line: <strong>idle — press ▶ Start</strong> (added, not running) / <strong>training…</strong> / <strong>below
+  threshold</strong> / <strong>● RIPPLE</strong>.</li>
+<li><strong>Row 4 (no split):</strong> a <strong>cowsay</strong> "ripple detected" readout, a <strong>red stimulation LED</strong> lit on a confirmed
+  fire, an <strong><code>enable stimulation</code></strong> master checkbox, a <strong>stim-server Ethernet IP selector</strong>, a <strong>clickable
+  arm/disarm toggle</strong> (the small stim LED, see below), a <strong>⚡ Test Fire</strong> button, the <strong>trigger</strong> selector
+  (Pi / OneBox DAC0 / both) with its <strong>amp V</strong> box, and the four editable <strong>stim pulse</strong> fields + preview.</li>
+</ul>
+<h3 id="the-numbers-in-the-dock-are-not-the-defaults-and-that-distinction-is-this-pages-whole-subject">The numbers in the dock are NOT the defaults — and that distinction is this page's whole subject<a class="headerlink" href="#the-numbers-in-the-dock-are-not-the-defaults-and-that-distinction-is-this-pages-whole-subject" title="Permanent link">#</a></h3>
+<p>The values the panel shows before a <code>rippleState</code> arrives are <strong>JS placeholders</strong> in
+<code>webinterface/RippleModule.js</code> (<code>DEFAULTS</code>, plus two literals in the constructor). The values the detector
+actually starts with are the <strong>backend seeds</strong> in <code>RippleDetector</code>'s member initializer list. They differ,
+and the backend wins the moment the socket connects:</p>
+<table>
+<thead>
+<tr>
+<th>control</th>
+<th>JS placeholder</th>
+<th><strong>backend seed</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Parameter-estimation (training) time</td>
+<td>1200.000 s</td>
+<td><strong>10.0 s</strong> (<code>mBaselineDurationSeconds</code>)</td>
+</tr>
+<tr>
+<td>per-channel z-score</td>
+<td>3.00</td>
+<td><strong>5.0</strong> (<code>mZScoreThreshold</code>)</td>
+</tr>
+<tr>
+<td>Coincidence window</td>
+<td>0.010 s</td>
+<td><strong>0.05 s</strong> (<code>mCoincidenceWindowSeconds</code>)</td>
+</tr>
+<tr>
+<td>Channels required (quorum)</td>
+<td>2</td>
+<td><strong>1</strong> (<code>mQuorumCount</code>)</td>
+</tr>
+<tr>
+<td>Min time above threshold</td>
+<td>0.000 s</td>
+<td>0.0 s — these two agree</td>
+</tr>
+<tr>
+<td>Lockout after detection / stimulation</td>
+<td>0.200 s</td>
+<td>0.2 s — these two agree</td>
+</tr>
+</tbody>
+</table>
+<p>An earlier version of this page listed the first three as <em>the</em> defaults. That is <strong>exactly the stale-default
+trap the RULE below exists to prevent</strong>, reproduced in the document that states the rule: a number that is
+real in one layer, wrong in the other, and indistinguishable on screen. If you need to know what the detector
+is running, read <code>rippleState</code>, not the panel and not this table.</p>
+<h2 id="2-frontend-backend-ws-json-sendcommandcommandripple-0x1000">2. Frontend → backend (WS JSON, <code>sendCommand({command:"ripple", …}, 0x1000)</code>)<a class="headerlink" href="#2-frontend-backend-ws-json-sendcommandcommandripple-0x1000" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>action</th>
+<th>payload</th>
+<th>backend effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start</code></td>
+<td><code>{}</code></td>
+<td>run the module: first-ever start trains from now + detects; a start after a pause <strong>resumes</strong> (baselines kept). Sets <code>mEnabled=true</code>, <code>mTrainingOrigin</code> if unset</td>
+</tr>
+<tr>
+<td><code>pause</code></td>
+<td><code>{}</code></td>
+<td>stop detection + stimulation (envelopes still stream; baselines kept). Sets <code>mEnabled=false</code></td>
+</tr>
+<tr>
+<td><code>enable</code></td>
+<td><code>{enabled:bool}</code></td>
+<td>legacy bool toggle (maps to start/pause)</td>
+</tr>
+<tr>
+<td><code>setChannels</code></td>
+<td><code>{electrodes:[int]}</code></td>
+<td>set detection electrodes (resolved via <code>ChannelMapService</code>). <strong>Merge / train-only-new:</strong> electrodes that persist keep their trained baseline + filter/lockout state; new electrodes get fresh untrained detectors; dropped electrodes are discarded</td>
+</tr>
+<tr>
+<td><code>setParam</code></td>
+<td><code>{name, value:float}</code></td>
+<td><code>estimation_seconds</code> / <code>min_duration_seconds</code> / <code>lockout_seconds</code> / <code>coincidence_window_seconds</code> / <code>quorum_count</code></td>
+</tr>
+<tr>
+<td><code>setZ</code></td>
+<td><code>{electrode:int, z:float}</code></td>
+<td>per-channel z-score threshold</td>
+</tr>
+<tr>
+<td><code>retrain</code></td>
+<td><code>{}</code></td>
+<td>clear baselines and re-estimate μ/σ</td>
+</tr>
+<tr>
+<td><code>setStimServer</code></td>
+<td><code>{ip:string, port?:int}</code></td>
+<td>set the <code>StimulatorClient</code> target. <code>ip</code> may itself carry <code>host:port</code> — and if it does, <strong><code>port</code> is ignored</strong>; the separate field is read only when <code>ip</code> has no colon. Default 8888, and garbage after the colon falls back to it rather than failing</td>
+</tr>
+<tr>
+<td><code>setStimParams</code></td>
+<td><code>{phase_us,gap_us,freq_hz,total_ms,amplitude_v}</code></td>
+<td>GUI-editable biphasic pulse-train params, applied to every fire (<code>StimulatorClient::setStimParams</code>, clamped to hardware ranges). <code>amplitude_v</code> is the <strong>OneBox DAC</strong> amplitude and means nothing on the Pi path (the AM 2300 is a constant-current stimulator), so the dock hides that box unless a DAC trigger is selected. <strong>Inputs fire on <code>change</code>, not <code>input</code>.</strong></td>
+</tr>
+<tr>
+<td><code>setDacTrigger</code></td>
+<td><code>{enabled:bool}</code></td>
+<td>fire the <strong>OneBox WavePlayer DAC</strong> as well as the stim server, from the same crossing. Re-resolves the OneBox source immediately; warns and no-ops on a profile that has none. The dock's <strong>trigger</strong> selector sends <code>enabled: value !== "pi"</code></td>
+</tr>
+<tr>
+<td><code>testFire</code></td>
+<td><code>{}</code></td>
+<td>manual single pulse: <code>connect()</code> (arm) + <code>fire()</code>, no detection needed (⚡ Test Fire button)</td>
+</tr>
+<tr>
+<td><code>armStim</code> / <code>disarmStim</code></td>
+<td><code>{}</code></td>
+<td><strong>arm / disarm the stim server</strong> (the clickable stim LED toggle, "connect/disconnect the Pi"). <strong>NOT routed through <code>slApplyCommand</code></strong> — the <code>WebSocketServer</code> calls <code>RippleDetector::setStimArmed(bool)</code> <strong>directly on the main thread</strong>, which uses <code>StimulatorClient::armFromAnyThread()</code> / <code>disarmFromAnyThread()</code> (throwaway socket, status set under a lock) and broadcasts <code>rippleStimStatus</code> immediately. So it <strong>works even when NOT streaming</strong> (unlike the worker-thread commands).</td>
+</tr>
+</tbody>
+</table>
+<h2 id="3-backend-frontend-ws-json-events-broadcastjson">3. Backend → frontend (WS JSON events, <code>broadcastJson</code>)<a class="headerlink" href="#3-backend-frontend-ws-json-events-broadcastjson" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th><code>event</code></th>
+<th>fields</th>
+<th>frontend render</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rippleState</code></td>
+<td><code>{enabled, input, channels:[{electrode, channel, z, trained, mu?, sigma?, threshold?}], estimation_seconds, min_duration_seconds, lockout_seconds, quorum_count, coincidence_window_seconds, stim_server, stim_status, stim_enabled, stim_phase_us, stim_gap_us, stim_freq_hz, stim_total_ms}</code></td>
+<td>full panel sync (on connect / after a command)</td>
+</tr>
+<tr>
+<td><code>rippleTraining</code></td>
+<td><code>{active:bool, percent:0..100, remaining_seconds}</code></td>
+<td>progress bar + label</td>
+</tr>
+<tr>
+<td><code>rippleBaseline</code></td>
+<td><code>{electrode, mu, sigma, threshold}</code></td>
+<td>the μ + zσ = … per column</td>
+</tr>
+<tr>
+<td><code>rippleEnvelope</code></td>
+<td><code>{ts, values:{electrode:envValue}}</code> (throttled, ~30–60 Hz)</td>
+<td>append to each column's rolling plot</td>
+</tr>
+<tr>
+<td><code>rippleDetected</code></td>
+<td><code>{ts, electrode(s), quorum:"k/N"}</code></td>
+<td>cowsay + LED + highlight the column(s) for the lockout</td>
+</tr>
+</tbody>
+</table>
+<p>Two fields are worth calling out because a reader looking only at the panel would not guess they exist:</p>
+<ul>
+<li><strong><code>input</code></strong> — the registry name of the band the detector is actually bound to (<code>data.npx.lfp</code> on a 1.0,
+  the derived <code>data.lfp</code> on a 2.0). <code>BandModule</code> keys off it to know whether switching the LFP band off
+  would starve detection; see <a href="DerivedBands.html"><code>DerivedBands.md</code></a>.</li>
+<li><strong><code>stim_enabled</code></strong> — the master gate (<code>RippleDetector::setStimEnabled</code>). It is sent explicitly rather
+  than inferred from an empty <code>stim_server</code>, so a panel or a CLI can tell <em>detection-only</em> from
+  <em>stim-capable</em>. While the gate is off, <code>stim_status</code> reports <code>"disabled"</code> rather than the client's real
+  armed/disarmed state, because a plausible-looking "disarmed" for a client that physically cannot
+  transmit is worse than no answer.</li>
+</ul>
+<h3 id="rule-ripplestate-must-carry-everything-the-dock-displays-2026-07-20">RULE: <code>rippleState</code> must carry EVERYTHING the dock displays (2026-07-20)<a class="headerlink" href="#rule-ripplestate-must-carry-everything-the-dock-displays-2026-07-20" title="Permanent link">#</a></h3>
+<p><code>rippleState</code> is the <strong>only</strong> mechanism that keeps a browser panel in sync with a detector that was driven
+from somewhere else — the control CLI, <code>ripple_tools/rig.py</code>, or a second browser tab. Any value the
+panel renders but the snapshot omits will silently show a <strong>stale default</strong> while the backend runs something
+different.</p>
+<p>This bit us during the NP1.0 regression: the whole 3-test run was driven over WS by <code>rig.py</code>, and the dock
+kept showing <code>freq 100 Hz</code> and <code>z 3.00</code> while the detector was really firing at <strong>1 Hz</strong> with <strong>z 2.50</strong>.
+The channel chips updated (they were in the snapshot); the numbers did not (they were not). See
+captured by CDP screenshot at the time (screenshots are transient — see the screenshot policy in <code>README.md</code>).</p>
+<p>The fix made <code>rippleStateJson()</code> a member function of <code>RippleDetector</code> (it needs <code>mDetectionParams</code> and the
+<code>StimulatorClient</code>) reporting per-channel <code>z</code> / <code>trained</code> / <code>mu</code> / <code>sigma</code> / <code>threshold</code> plus the four stim
+pulse-train fields, and <code>RippleModule.onState()</code> applies them with the <strong>backend as the authority</strong>.
+Untrained channels send no <code>mu</code>/<code>sigma</code>/<code>threshold</code> at all so the panel renders <code>--</code> rather than a stale
+number or a misleading <code>0</code>.</p>
+<p><strong>When you add a control to the dock, add its value to <code>rippleStateJson()</code> in the same commit.</strong> Verify with
+<code>ripple_tools/verify_sidecar_and_guisync.py</code>, which sets values over WS only and then reads the rendered
+DOM back through CDP — never by clicking the control it is supposed to be testing.
+<code>tests/gui/ripple_params.py</code> is the gate version of the same idea: it asserts the backend's echo on a
+<strong>separate</strong> WebSocket connection, so frontend state alone cannot make it pass.</p>
+<h4 id="open-defect-two-controls-violate-this-rule-today-2026-08-31">OPEN DEFECT — two controls violate this rule today (2026-08-31)<a class="headerlink" href="#open-defect-two-controls-violate-this-rule-today-2026-08-31" title="Permanent link">#</a></h4>
+<p>The dock renders two stim controls whose values <code>rippleStateJson()</code> does <strong>not</strong> carry:</p>
+<table>
+<thead>
+<tr>
+<th>control</th>
+<th>frontend state</th>
+<th>in <code>rippleState</code>?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>trigger</strong> selector — Pi / OneBox DAC0 (IO0) / both (<code>#rd-stim-target</code>)</td>
+<td><code>state.stimTarget</code>, seeded <code>'pi'</code></td>
+<td><strong>no</strong> — <code>mDacTrigger</code> is never serialized</td>
+</tr>
+<tr>
+<td><strong>amp V</strong> — the DAC amplitude (<code>#rd-stim-amp</code>)</td>
+<td><code>state.dacAmplitudeV</code>, seeded <code>2.0</code></td>
+<td><strong>no</strong> — <code>mDacAmplitudeV</code> is never serialized</td>
+</tr>
+</tbody>
+</table>
+<p>Both are <em>settable</em> (<code>setDacTrigger</code>, and <code>amplitude_v</code> on <code>setStimParams</code>) and both are <em>applied</em>. Neither
+is <em>reported</em>, so the state is three-way inconsistent: a detector driven from <code>rig.py</code> with
+<code>dac_trigger</code> on shows a dock reading <strong>"Pi → AM 2300"</strong>, and a second browser tab shows the same. That is
+the identical failure mode as the 2026-07-20 regression above — a control that renders a stale default while
+the backend runs something else — and it is on the one path where the stale value means <em>"you are not
+looking at the trigger that actually fired"</em>.</p>
+<p>Recorded here rather than quietly fixed because it needs a backend change (<code>.cpp</code>) and this is a docs pass.
+The fix is two lines in <code>rippleStateJson()</code> plus two <code>onState()</code> branches; do it in the same commit as
+anything else that touches the trigger selector.</p>
+<h2 id="4-how-it-was-wired-historical-shipped-2026-07-08-do-not-implement">4. How it was wired (historical — SHIPPED 2026-07-08; do not implement)<a class="headerlink" href="#4-how-it-was-wired-historical-shipped-2026-07-08-do-not-implement" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>⚠️ This section is a record, not a plan.</strong> It used to be a five-step TODO written in the present tense
+("today only prints the cowsay to stdout"), which stayed on the page for the better part of two months
+after the work shipped. A contributor could reasonably have followed it — and step 1 asked for <strong>four</strong>
+signals where the code deliberately has <strong>one</strong>. Everything below is already done.</p>
+</blockquote>
+<p>The relay is <strong>one</strong> signal, <code>RippleDetector::sigRippleEvent(QString json)</code>, carrying the whole event as
+JSON. Four typed signals would have meant four connections, four slots and four broadcast paths to keep in
+step for a payload the frontend re-parses anyway; the event's <code>"event"</code> field is what distinguishes
+<code>rippleDetected</code> from <code>rippleBaseline</code> from <code>rippleTraining</code> from <code>rippleEnvelope</code>, exactly as the §3 table
+says. If you are adding a new dock event, <strong>add a JSON shape, not a signal.</strong></p>
+<p>The rest, for orientation: the detector emits from <code>doRippleDetectionLoop</code> (detection at the <code>fire()</code> point,
+baseline where the threshold is computed, training progress from <code>mCurrRawDataInd</code>, envelope throttled to
+every Nth decimated sample); <code>WebSocketServer</code> relays it cross-thread with a queued connection, like the
+recorder-error relay; <code>command:"ripple"</code> frames are marshalled onto the detector's thread with
+<code>QMetaObject::invokeMethod</code> and applied between loop iterations — except <code>armStim</code> / <code>disarmStim</code> /
+<code>setStimEnabled</code>, which run on the main thread on purpose (see §2 and the arm/disarm section below).
+Ctrl+drag from the probe map and the live view is <code>RippleModule.beginElectrodeDrag</code>, a custom drag rather
+than HTML5 DnD because HTML5 DnD does not work over a canvas.</p>
+<h2 id="5-notes">5. Notes<a class="headerlink" href="#5-notes" title="Permanent link">#</a></h2>
+<ul>
+<li>The stim server "communicates via Ethernet" — the existing <code>StimulatorClient</code> (UDP to an IP:port) maps to the
+  IP selector; enumerate local NICs backend-side for the dropdown later. Stim module reintegration is separate.</li>
+<li>The detector is single-thread by design (see <code>RippleDetectorThreading.md</code>); the GUI does not change that.</li>
+</ul>
+<h2 id="stim-pulse-preview-2026-07-14">Stim pulse preview (2026-07-14)<a class="headerlink" href="#stim-pulse-preview-2026-07-14" title="Permanent link">#</a></h2>
+<p>Below the editable <strong>Stim pulse</strong> params (phase µs / gap µs / freq Hz / train ms) the ripple dock draws
+a live schematic on <code>#rd-pulse-canvas</code> (<code>RippleModule._drawPulse()</code>), redrawn on every edit:
+- <strong>top zone</strong> — one biphasic pulse, zoomed so the two <code>phase</code> lobes and the inter-phase <code>gap</code> are
+  always visible and labeled;
+- <strong>bottom zone</strong> — the pulse train at real <code>1/freq</code> spacing over the <code>train</code> window, with a <code>1/freq</code>
+  period marker and a <code>&lt;freq&gt;Hz · train &lt;ms&gt; → &lt;N&gt; pulses</code> summary.</p>
+<p>So editing any value updates both the pulse <strong>shape</strong> (phase/gap widths) and the <strong>spacing/count</strong>
+(freq/train) immediately. Pure frontend — no rebuild and no copy step. <code>src/main.cpp:58-62</code> serves <code>webinterface/</code> off disk per
+request (the exe sits in <code>&lt;repo&gt;/bin</code>, so <code>../webinterface</code> is the source directory), so editing
+<code>webinterface/RippleModule.js</code> and hard-reloading the browser is the whole loop. See
+<a href="RendererContract.html"><code>RendererContract.md</code></a> T-27 for the one caveat: the handler does not strip a
+query string, so a <code>…js?flag=…</code> URL 404s.</p>
+<p><img alt="Live stim pulse preview in the ripple dock: one biphasic pulse (phase + gap labeled) on top, the pulse train at real 1/freq spacing below" src="images/stim_pulse_preview_2026-08-21.png" /></p>
+<h2 id="clickable-armdisarm-stim-toggle-2026-07-16">Clickable arm/disarm stim toggle (2026-07-16)<a class="headerlink" href="#clickable-armdisarm-stim-toggle-2026-07-16" title="Permanent link">#</a></h2>
+<p>The small <strong>stim-server LED</strong> in the Detection &amp; stimulation card is a <strong>clickable toggle</strong>
+(<code>#rd-stim-toggle</code>, a pill wrapping the LED + status text + a ⏻ power icon) that arms/disarms the Pi —
+an intuitive "connect / disconnect from the Pi" control, so you don't have to tear the source down to stop
+stimulation.</p>
+<ul>
+<li><strong>NOT armed by default — arming is an explicit user action.</strong> This is the single most expensive
+  misconception in this document's history: an earlier version claimed the detector auto-armed, and a
+  1000-detection OneBox run reached <strong>944 detections with ZERO stim fires</strong> because the operator
+  believed it. <code>RippleDetector.cpp:188</code> says so in as many words — <em>"NOT armed here either way:
+  arming stays an explicit user action (the GUI stim LED)"</em> — and <code>WebSocketServer.cpp:249</code> records
+  why the auto-arm was removed: selecting any source, even one whose connect then failed, put a
+  datagram on the wire.</li>
+</ul>
+<p><strong>The gate and the arm are two different things and BOTH are required.</strong>
+  <code>setStimEnabled</code> only permits datagrams to leave the host; the stimulator must ALSO be armed before
+  a detection can trigger it. Scripted runs must call <code>Rig.arm_stim()</code> — <code>record_ripples.py</code> does, and
+  prints the resulting stim status at the top of the run so the arming is visible. The backend logs
+  the failure mode plainly when it happens:
+  <code>[RippleDetector] stimulation ENABLED -&gt; "192.168.1.100:8888" (not armed; arm from the GUI stim LED)</code></p>
+<ul>
+<li><em>(historical, no longer true)</em> <code>WebSocketServer::onSourceSelection</code>
+  then broadcasts the armed status so the pill shows <strong>green "armed"</strong> immediately on select (even before
+  Play).</li>
+<li><strong>Click while armed</strong> → <code>disarmStim</code> → the Pi disarms and the pill goes gray. Detection keeps running, but
+  a disarmed server ignores <code>fire()</code>, so <strong>no pulse goes out</strong> until you re-arm.</li>
+<li><strong>Click while disarmed</strong> → <code>armStim</code> → the Pi re-arms and the pill goes green.</li>
+<li>The click is <strong>optimistic</strong> — the frontend flips the LED/label on every click (so rapid arm/disarm
+  alternate correctly), and the backend broadcasts the real status right back to confirm.</li>
+<li>Cowsay is short: <strong>"connected to stim server"</strong> / <strong>"disconnected from stim server"</strong>.</li>
+</ul>
+<p><strong>Works WITHOUT streaming.</strong> <code>armStim</code>/<code>disarmStim</code> are NOT queued to the detector's worker thread (whose
+event loop only runs on Play). The <code>WebSocketServer</code> calls <code>RippleDetector::setStimArmed(bool)</code> <strong>directly
+on the main thread</strong>, which uses <code>StimulatorClient::armFromAnyThread()</code> / <code>disarmFromAnyThread()</code> — a
+throwaway UDP socket, safe from any thread, no event loop needed — and sets the status under a <code>QMutex</code>
+(<code>mStatusMutex</code>) so <code>getStatus()</code> (and the <code>rippleState</code> broadcast) reflect the change without waiting for
+an ACK. (The status mutex also makes the play-time ACK path race-free.)</p>
+<p>Files (all <strong>need a rebuild</strong> except the JS): <code>StimulatorClient.{hpp,cpp}</code> (<code>armFromAnyThread</code>, status
+mutex/<code>setStatusSafe</code>), <code>RippleDetector.{hpp,cpp}</code> (<code>setStimArmed</code>), <code>WebSocketServer.cpp</code> (route
+arm/disarm to <code>setStimArmed</code> on the main thread), <code>RippleModule.js</code>
+(<code>.rd-stim-toggle</code> CSS, button markup, <code>_isStimArmed()</code>, <code>_syncStimLed()</code>, optimistic click binding).
+<strong>Verified on the live Pi 3B+ without streaming:</strong> 6/6 clicks alternated reliably — journal <code>Device ARMED</code>
+/ <code>Device DISARMED</code> per click, pill green/gray, short cowsay (verified by CDP screenshot).</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/RippleGui.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-layout-top-bottom-per-the-spec">1. Layout (top → bottom, per the spec)</a><ul>
+<li><a href="#the-numbers-in-the-dock-are-not-the-defaults-and-that-distinction-is-this-pages-whole-subject">The numbers in the dock are NOT the defaults — and that distinction is this page's whole subject</a></li>
+</ul>
+</li>
+<li><a href="#2-frontend-backend-ws-json-sendcommandcommandripple-0x1000">2. Frontend → backend (WS JSON, sendCommand({command:"ripple", …}, 0x1000))</a></li>
+<li><a href="#3-backend-frontend-ws-json-events-broadcastjson">3. Backend → frontend (WS JSON events, broadcastJson)</a><ul>
+<li><a href="#rule-ripplestate-must-carry-everything-the-dock-displays-2026-07-20">RULE: rippleState must carry EVERYTHING the dock displays (2026-07-20)</a><ul>
+<li><a href="#open-defect-two-controls-violate-this-rule-today-2026-08-31">OPEN DEFECT — two controls violate this rule today (2026-08-31)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-how-it-was-wired-historical-shipped-2026-07-08-do-not-implement">4. How it was wired (historical — SHIPPED 2026-07-08; do not implement)</a></li>
+<li><a href="#5-notes">5. Notes</a></li>
+<li><a href="#stim-pulse-preview-2026-07-14">Stim pulse preview (2026-07-14)</a></li>
+<li><a href="#clickable-armdisarm-stim-toggle-2026-07-16">Clickable arm/disarm stim toggle (2026-07-16)</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Source selection — the rig names itself - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Start here / Source selection — the rig names itself</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a class="active" href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="source-selection-the-rig-names-itself">Source selection — the rig names itself<a class="headerlink" href="#source-selection-the-rig-names-itself" title="Permanent link">#</a></h1>
+<p><strong>The operator picks a basestation. The probe is discovered, not declared.</strong></p>
+<p>Before 2026-08-26 the Source dropdown listed twelve hardware profiles, because every probe/basestation
+pairing had been materialised as its own YAML: <code>Npx1OneBox</code>, <code>Npx2OneBox</code>, <code>Npx2OneBoxNoAdc</code>,
+<code>Npx1Pxi</code>, <code>Npx2Pxi</code>, <code>Npx1PxiNiDaq</code>, and so on. Picking the wrong one did not produce an error — it
+produced a rig that looked like it was working.</p>
+<p>Between 2026-08-26 and 2026-08-27 it listed three (<code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code>). Since
+commit 4670d2c those three are <code>gui_hidden: true</code> and the menu lists:</p>
+<pre><code>None
+Neuropixels              (source.npx.auto — basestation AND probe read from the rig)
+PXIe with NI-DAQ         (only when a PXIe module is detected)
+Simulated Data…
+</code></pre>
+<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI, and are surfaced
+in the menu only when the scan is ambiguous — see §2, where <code>source.npx.auto</code> REFUSES to pick with
+both a OneBox and a PXIe attached and the GUI raises a <code>basestation-choice</code> dialog instead.</p>
+<p>This document is how that works and what you have to know before editing a profile.</p>
+<hr />
+<h2 id="1-why-a-profile-could-ever-be-wrong-for-the-probe">1. Why a profile could ever be "wrong for the probe"<a class="headerlink" href="#1-why-a-profile-could-ever-be-wrong-for-the-probe" title="Permanent link">#</a></h2>
+<p>A Neuropixels 1.0 streams two hardware bands, <code>data.npx.ap</code> (30 kHz) and <code>data.npx.lfp</code> (2.5 kHz).
+A 2.0 streams one, <code>data.npx.raw</code>, and its LFP band does not exist until SpikesPeak derives it. So
+which bands exist is a property of the <strong>probe</strong>, and a profile that named them was a profile pinned
+to one probe.</p>
+<p>The failure mode was the bad part. Every band name in a profile is resolved with
+<code>getDataRegistry().getDataByName()</code>, and <strong>that getter creates what you ask it to look up</strong>
+(<a href="AgentTraps.html">AgentTraps</a>). Selecting the 1.0 profile with a 2.0 probe connected therefore did
+not fail: it manufactured empty <code>data.npx.ap</code> and <code>data.npx.lfp</code> buffers, bound the live view to
+them, and drew 384 permanently flat traces. The recorder did the same and wrote a real <code>.bin</code> and a
+real sidecar containing nothing. A probe-mismatch warning was added to cover this
+(<code>NeuropixelsSource::initDataSource</code>), which helped, but the underlying arrangement still asked the
+operator to answer a question the hardware could answer itself.</p>
+<hr />
+<h2 id="2-what-resolves-the-probe-and-when">2. What resolves the probe, and when<a class="headerlink" href="#2-what-resolves-the-probe-and-when" title="Permanent link">#</a></h2>
+<p><code>np_getProbeHardwareID</code> returns the probe's part number when the basestation opens, and
+<code>discoverProbeHardware()</code> maps it to a <code>ProbeType</code>. The ordering that makes everything below work is
+in <code>MainController::handleConnectRequest</code>:</p>
+<pre><code>setupSources(profile)      &lt;-- opens the basestation, detects the probe, allocates ITS bands
+setupProcessors(profile)   &lt;-- everything probe-dependent is decided here, after the answer exists
+</code></pre>
+<p><code>setupSources</code> runs to completion first. So by the time any processor is configured, the data
+registry already holds <strong>exactly</strong> the bands this probe streams and nothing else. Reading the
+registry is therefore the same answer as asking the probe, without a second vendor call and without
+a second place for the two to disagree.</p>
+<p><strong>The invariant this rests on, stated so it can be checked:</strong> every source registers its bands inside
+<code>initDataSource()</code>, which <code>setupSources</code> calls. Verified across every one of them — <code>NeuropixelsSource</code>,
+<code>OneBoxSource</code>, <code>NIDAQSource</code> (via <code>scanForDataSource</code>, called from <code>initDataSource</code>),
+<code>NiDaqSimSource</code>, <code>SimulatedDataSource</code>, <code>SimulatedData2Source</code>, <code>SimOneBoxAdcSource</code> and
+<code>SynthRippleSource</code>. A source that deferred band creation to <code>startAcq()</code> instead would silently
+break every row of the table below: the display would bind nothing and the recorder would skip
+everything, with no error at either end. If you add a source, register its bands in
+<code>initDataSource()</code>.</p>
+<p>Every probe-dependent decision keys off that, using <code>hasData()</code> — the <strong>non-creating</strong> query. Using
+the creating getter for these tests would return "yes" for every band on every probe and defeat the
+entire mechanism; that exact bug once made the 2.0 branch of the ripple auto-provision unreachable
+dead code.</p>
+<table>
+<thead>
+<tr>
+<th>what</th>
+<th>decided by</th>
+<th>where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>which buffers exist</td>
+<td>branches on the <strong>detected</strong> <code>mProbeType</code></td>
+<td><code>NeuropixelsSource::initDataSource</code></td>
+</tr>
+<tr>
+<td>live-view streams</td>
+<td>binds every band <code>hasData()</code> reports</td>
+<td><code>ProcessorManager::setupProcessors</code></td>
+</tr>
+<tr>
+<td>derived <code>lfp</code> / <code>spike</code></td>
+<td>auto-provisioned on 2.0 only, <strong>disabled</strong></td>
+<td><code>ProcessorManager</code> — <a href="DerivedBands.html">DerivedBands.md</a></td>
+</tr>
+<tr>
+<td>ripple detector input</td>
+<td>native <code>data.npx.lfp</code> ÷1 on a 1.0, derived <code>data.lfp</code> ÷12 on a 2.0</td>
+<td><code>ProcessorManager</code></td>
+</tr>
+<tr>
+<td>spike audio</td>
+<td>auto-provisioned on any probe, <strong>silent</strong></td>
+<td><code>ProcessorManager</code></td>
+</tr>
+<tr>
+<td>recorder bands</td>
+<td>entries whose band is absent are <strong>skipped</strong></td>
+<td><code>RecordProcessor::configure</code></td>
+</tr>
+</tbody>
+</table>
+<p>Three of those six already worked this way. The refactor added the display and recorder rows and
+collapsed the profiles that the other three had made redundant.</p>
+<p><strong>Auto-provisioned is not running.</strong> Every band and processor above arrives available and off, per
+the rule in <a href="../CLAUDE.html"><code>CLAUDE.md</code></a>: a disabled band advances its read index and does nothing
+else. The GUI's band buttons and the Ripple dock's Start turn them on.</p>
+<hr />
+<h2 id="3-what-a-hardware-profile-still-declares">3. What a hardware profile still declares<a class="headerlink" href="#3-what-a-hardware-profile-still-declares" title="Permanent link">#</a></h2>
+<p>Only what is genuinely an operator's decision.</p>
+<pre><code class="language-yaml">name: &quot;OneBox&quot;
+sources:
+  - name: &quot;source.npx.onebox&quot;
+    outputs:                          # `name:` only -- an output has no other live key
+      - name: &quot;data.npx.ap&quot;           # 1.0 only  |  listing BOTH generations is what
+      - name: &quot;data.npx.lfp&quot;          # 1.0 only  |  marks this profile probe-agnostic
+      - name: &quot;data.npx.raw&quot;          # 2.0 only
+      - name: &quot;data.npx.adc&quot;          # OneBox 12-ch analog input; presence enables the stream
+processors:
+  - name: &quot;proc.npx.display&quot;          # no inputs: -- bound from what the probe streams
+  - name: &quot;proc.npx.recorder&quot;
+    recordings:                       # absent bands are skipped, so one list serves both probes
+      - data_name: &quot;data.npx.ap&quot;
+        ...
+</code></pre>
+<p>Three things are worth spelling out:</p>
+<p><strong><code>outputs:</code> is a permission list, not a demand.</strong> The source reads it to decide whether to enable
+the OneBox ADC, and to work out whether the profile expects a particular probe. It does <strong>not</strong>
+create the bands — the probe branch does. Listing a band the probe does not stream costs nothing.</p>
+<p><strong>An output entry has exactly one live key, <code>name:</code>.</strong> The <code>data:</code> key that used to sit beside it was
+read by nothing and was deleted from every shipped config on 2026-08-30 (#70). It is live on a
+<em>processor's</em> <code>inputs:</code> list — where it is the stream id — which is presumably why somebody copied it
+onto sources; the two blocks look identical and are not. Unknown keys are ignored, so an old config
+that still carries it keeps working. See <a href="ConfigReference.html"><code>ConfigReference.md</code></a> §<code>outputs:</code>.</p>
+<p><strong>Declaring both generations disables the probe-mismatch warning, deliberately.</strong> A profile naming
+only one generation still warns when the other is connected, and should: it was written for that
+probe. A profile naming both is stating that it serves either, and the warning would be noise.</p>
+<p><strong>No <code>inputs:</code> on the display is the normal case.</strong> You may still write one and it still wins —
+<code>scale_factor</code> and <code>num_channels</code> overrides only exist there — but anything you list is a band you
+have now pinned by hand.</p>
+<p><strong><code>channels:</code> is what these files are for.</strong> Omitted means <em>all</em> channels, which is the right default
+for a general profile: it cannot know which three matter on your rig, and a recording that silently
+kept 3 of 384 is not recoverable afterwards. Narrow it per band when you know.</p>
+<hr />
+<h2 id="3a-the-basestation-names-itself-too">3a. The basestation names itself too<a class="headerlink" href="#3a-the-basestation-names-itself-too" title="Permanent link">#</a></h2>
+<p><code>source.npx.auto</code> resolves to the OneBox or the PXIe source from a scan that opens nothing. To the
+IMEC API the two are the same kind of device: <code>np_scanBS()</code> discovers both and <code>np_getDeviceList()</code>
+reports each one's <code>platformid</code> (<code>NPPlatform_PXI</code> / <code>NPPlatform_USB</code>). <code>np_openBS()</code> is where the
+exclusive claim starts, and the scan never gets there.</p>
+<p>Both source classes were already doing exactly those calls, separately -- the PXIe path to find a
+slot while skipping OneBoxes, the OneBox path to find a serial while skipping PXIe modules. They are
+now one helper, <code>SpikesPeak::Npx::basestations()</code> in <code>BasestationScan.hpp</code>, because a third copy is
+where the three start to disagree. It caches: <code>np_scanBS()</code> is a vendor call on the main thread, and
+basestations are not hot-plugged mid-session. <code>rescanBasestations()</code> forces a fresh look.</p>
+<p><strong>Ambiguity is asked about, never resolved by a rule.</strong> If a OneBox <em>and</em> a PXIe module are both
+attached, <code>SourceManager</code> refuses the connect and the GUI offers the two explicit profiles instead.
+Only one basestation is supported at a time, and guessing which one the operator meant is the same
+silent-wrong-source failure the whole mechanism exists to remove. That case is real, not theoretical:
+the machine this was built on reports <code>1 PXIe module and 1 OneBox</code>.</p>
+<p>The GUI asks the backend what is attached with the <code>probeHardware</code> command before offering anything,
+so it can hide <code>PXIe with NI-DAQ</code> on a rig with no PXIe module and prompt when the answer is
+ambiguous. The reply is cached backend-side, so opening the menu is not a vendor call.</p>
+<h2 id="3b-more-than-one-probe-is-a-question-not-a-default">3b. More than one probe is a question, not a default<a class="headerlink" href="#3b-more-than-one-probe-is-a-question-not-a-default" title="Permanent link">#</a></h2>
+<p><code>detectProbePort()</code> returns the FIRST port carrying a headstage. On a rig with several that is an
+arbitrary one, and silently streaming an arbitrary probe is the same class of failure as silently
+streaming the wrong band -- everything looks healthy and the data came from somewhere else.</p>
+<p>So <code>listProbePorts()</code> counts them, and if there is more than one the connect stops and the GUI asks
+which port to use. The choice is held in a <strong>static</strong> on <code>NeuropixelsSource</code>, because the question is
+raised by a connect that fails: it has to outlive that failure so the retry can honour it. The dialog
+also says plainly that multi-probe acquisition is in the backlog and not a priority, so nobody has to
+wonder whether the restriction is a bug.</p>
+<p><code>listProbePorts()</code> is deliberately separate from <code>detectProbePort()</code> rather than a mode on it. The
+latter carries the OneBox's power-up retry loop (up to 8 attempts over ~4 s), and rewriting two
+hardware paths whose retry behaviour cannot be exercised without the hardware in front of you is not
+a change worth making for tidiness. The enumeration runs afterwards, when the headstage is known
+awake, so one pass is enough.</p>
+<h2 id="4-the-old-profiles-are-hidden-not-deleted">4. The old profiles are hidden, not deleted<a class="headerlink" href="#4-the-old-profiles-are-hidden-not-deleted" title="Permanent link">#</a></h2>
+<p>The twelve superseded profiles carry <code>gui_hidden: true</code>. They are out of the operator's dropdown and
+still selectable <strong>by exact name</strong> from the control CLI:</p>
+<pre><code class="language-bash">python python/spikespeak_cli.py
+</code></pre>
+<p>then <code>select "NPX 2.0 Multishank (OneBox)"</code>.</p>
+<p>That split is deliberate. Their names are how every measurement script, runbook and issue comment
+reproduces published work — the closed-loop latency figures among them — and a config's identity is
+its internal <code>name:</code> field. Deleting them would break reproduction of results we have already
+reported. The GUI gets short; the archive stays runnable.</p>
+<p>The same flag also carries the operational variants that are not everyday choices: the ASAP
+(<code>low_latency:</code>) profiles, the no-ADC control that <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">issue #63</a>
+needs, and the digital-input profile from #67.</p>
+<hr />
+<h2 id="5-the-source-control-is-a-menu-not-a-select">5. The Source control is a menu, not a <code>&lt;select&gt;</code><a class="headerlink" href="#5-the-source-control-is-a-menu-not-a-select" title="Permanent link">#</a></h2>
+<p>The visible control is <code>#src-btn</code>, a toolbar button that opens <code>#src-menu</code> — an anchored popup in the
+app's own palette. <code>AudioModule</code> made this call first, for its device picker, and wrote down why:</p>
+<blockquote>
+<p>A native <code>&lt;select&gt;</code>'s popup is OS-drawn — the starred rows rendered green on WHITE the instant it
+opened, which is what the dock's own dark palette exists to avoid.</p>
+</blockquote>
+<p>Source was the last native <code>&lt;select&gt;</code> in the toolbar and had exactly that problem.</p>
+<p><strong><code>#selectSource</code> still exists and is still the single state holder.</strong> It is hidden, not deleted. The
+menu writes its <code>.value</code> and dispatches the same <code>change</code> event a native select fired, so everything
+downstream is untouched: <code>reflectSource()</code>'s careful no-re-send logic, <code>rebuildSourceOptions()</code>, the
+control CLI, <code>python/tools/gui_scenarios.py</code>, and the GUI tests that connect by setting <code>.value</code> and
+dispatching <code>change</code>. One state holder, one code path — a parallel copy is a thing that can disagree.</p>
+<p><code>syncSourceButton()</code> mirrors the select onto the button (label <strong>and</strong> disabled state) and is called
+from every path that changes either, including the ones a <em>remote</em> change arrives on: a CLI-driven
+session and a second browser both land in <code>reflectSource()</code>.</p>
+<h3 id="the-menus-three-levels">The menu's three levels<a class="headerlink" href="#the-menus-three-levels" title="Permanent link">#</a></h3>
+<pre><code>Source ▾
+├─ None
+├─ Neuropixels          basestation AND probe read from the rig (source.npx.auto)
+├─ PXIe with NI-DAQ     only offered when the scan found a PXIe module
+└─ Simulated Data  ›    → basestation → probe → scenario
+</code></pre>
+<p><strong>This is not the tree from §1's middle era.</strong> <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> were the menu for
+about a day and are now <code>gui_hidden: true</code>; they surface here <strong>only when the scan is ambiguous</strong> (a
+OneBox and a PXIe module both attached), as the explicit override for a question the backend refuses
+to guess at. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
+(<code>config/NeuropixelsNiDaq.yaml</code>) and <strong><code>PXIe + NI-DAQ</code></strong> is the hidden superseded one
+(<code>config/PxieNiDaq.yaml</code>). They are different profiles with different <code>name:</code> fields, and <code>name:</code> is
+the identity.</p>
+<p><strong>Hidden is not unselectable.</strong> Every hidden profile is still in the <code>configs</code> array of the
+<code>configList</code> reply — only the separate <code>guiHidden</code> array marks it — so <code>select "NPX 2.0 Multishank
+(OneBox)"</code> from the control CLI works exactly as it always did. Hiding a profile from the operator
+must never break a script that reproduces a published measurement; see §4.</p>
+<p>The simulated branch <strong>drills down in place</strong>. It was briefly a separate centred modal; a dropdown
+that hands you to a modal halfway through a decision is two surfaces for one choice.</p>
+<p>Both axes come from the config, never from a table in the frontend:</p>
+<pre><code class="language-yaml">sim_variant:     &quot;Neuropixels 2.0 Multishank (OneBox + ADC)&quot;   # the leaf label
+sim_basestation: &quot;OneBox&quot;        # optional -- OneBox | PXIe
+sim_probe:       &quot;2.0&quot;           # optional -- 1.0 | 2.0
+</code></pre>
+<p><strong>An omitted axis means "independent of it", and the variant is offered under every value of that
+axis.</strong> The plain sine-wave sources are the real case: <code>source.npx.simdata</code> opens no basestation at
+all, so filing it under OneBox or PXIe would invent a distinction the data does not have — but hiding
+it unless the operator guessed a basestation would be worse. This is the rule most likely to rot,
+because the obvious implementation (exact match) silently drops those variants while the menu still
+looks perfectly reasonable. <code>tests/gui/sim_picker.py</code> asserts it in both directions.</p>
+<p>A JS-side map of the same information would be a second place to remember, and the one that quietly
+omits the next scenario somebody adds. Adding a simulated scenario is still a one-file change.</p>
+<p><code>showSimPicker(onPick)</code> is kept as an entry point — it now opens the menu at its simulated step
+rather than a modal — because the GUI tests and <code>gui_scenarios.py</code> both call it.</p>
+<h3 id="its-look-is-borrowed-on-purpose">Its look is borrowed, on purpose<a class="headerlink" href="#its-look-is-borrowed-on-purpose" title="Permanent link">#</a></h3>
+<p><code>SOURCE_MENU_CSS</code> in <code>main.js</code> contains no new colour. Every value comes from <code>#band-menu</code>
+(<code>BandModule.js</code>) and <code>#aud-dock</code> / <code>#aud-devmenu</code> (<code>AudioModule.js</code>) — the two surfaces an operator
+meets most often, and which already agree with each other deliberately. The mapping is listed above
+the CSS block so a change to one can be carried across.</p>
+<p>Two things that looked cosmetic and were not:</p>
+<ul>
+<li>The picker sat at <code>z-index: 1000</code>, <strong>below</strong> <code>#aud-dock</code> and <code>#band-menu</code> at <code>2147480000</code>. An open
+  dock covered it. It is now <code>2147480002</code> — above the docks and menus, still below <code>#cfm-veil</code>
+  (<code>2147482000</code>) and <code>#hwfault-veil</code> (<code>2147483000</code>) so a confirmation or a hardware fault opens
+  over it.</li>
+<li>The stylesheet was injected lazily on first menu open, and it carries the rule that hides
+  <code>#selectSource</code> — so the native <code>&lt;select&gt;</code> sat visible in the toolbar beside its own replacement
+  until somebody happened to open the menu once. It is injected at startup. <code>sim_picker.py</code> asserts
+  the select is actually out of sight, which is what caught it.</li>
+</ul>
+<hr />
+<h2 id="6-adding-things">6. Adding things<a class="headerlink" href="#6-adding-things" title="Permanent link">#</a></h2>
+<p><strong>A scenario to the simulated picker</strong> — write the config, give it <code>sim_variant:</code> plus whichever of
+<code>sim_basestation:</code> / <code>sim_probe:</code> genuinely apply. Nothing else.</p>
+<p><strong>A band to a hardware profile</strong> — add it to <code>outputs:</code> and, if it should be recorded, to
+<code>recordings:</code>. If the probe does not stream it, both are ignored. If you want it in the live view
+with a non-default width or scale, that is when you write an <code>inputs:</code> entry.</p>
+<p><strong>A new probe generation</strong> — the part-number match in <code>discoverProbeHardware()</code> and the electrical
+table in <code>Npx2Scale.hpp</code> are the two places that decide what a part number means. Note the match is
+by <strong>prefix</strong>, which is why <code>NP2003</code> and <code>NP2004</code> currently fall through to <code>eUnknown</code>.</p>
+<hr />
+<h2 id="7-related">7. Related<a class="headerlink" href="#7-related" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="ConfigReference.html"><code>ConfigReference.md</code></a> — every config key</li>
+<li><a href="DerivedBands.html"><code>DerivedBands.md</code></a> — why the 2.0 bands are provisioned-and-off</li>
+<li><a href="AgentTraps.html"><code>AgentTraps.md</code></a> — the creating getter, and the rest</li>
+<li><a href="NextTask_SourceArchitecture.html"><code>NextTask_SourceArchitecture.md</code></a> — the 2026-07-24 planning brief.
+  This work is its <strong>Phase 1 / Option A</strong>, reached by a different route: the brief proposed a config
+  layering (<code>include:</code>) loader to collapse the cross-product, and none was needed, because the axis
+  doing most of the multiplying — the probe — is discoverable. Phases 2 and 3 (a parameterized NPX
+  sim, a file-playback source, the descriptor model) are untouched and still open.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/SourceSelection.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-why-a-profile-could-ever-be-wrong-for-the-probe">1. Why a profile could ever be "wrong for the probe"</a></li>
+<li><a href="#2-what-resolves-the-probe-and-when">2. What resolves the probe, and when</a></li>
+<li><a href="#3-what-a-hardware-profile-still-declares">3. What a hardware profile still declares</a></li>
+<li><a href="#3a-the-basestation-names-itself-too">3a. The basestation names itself too</a></li>
+<li><a href="#3b-more-than-one-probe-is-a-question-not-a-default">3b. More than one probe is a question, not a default</a></li>
+<li><a href="#4-the-old-profiles-are-hidden-not-deleted">4. The old profiles are hidden, not deleted</a></li>
+<li><a href="#5-the-source-control-is-a-menu-not-a-select">5. The Source control is a menu, not a &lt;select&gt;</a><ul>
+<li><a href="#the-menus-three-levels">The menu's three levels</a></li>
+<li><a href="#its-look-is-borrowed-on-purpose">Its look is borrowed, on purpose</a></li>
+</ul>
+</li>
+<li><a href="#6-adding-things">6. Adding things</a></li>
+<li><a href="#7-related">7. Related</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

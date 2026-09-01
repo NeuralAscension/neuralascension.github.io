@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SpikesPeak — Architecture Overview - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Architecture / SpikesPeak — Architecture Overview</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
+<a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
+<a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a class="active" href="architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-architecture-overview">SpikesPeak — Architecture Overview<a class="headerlink" href="#spikespeak-architecture-overview" title="Permanent link">#</a></h1>
+<p>The pipeline diagrams here are <strong>generated from the code</strong>, not drawn. <code>scripts/make_architecture.py</code>
+parses the processor/source registry in <code>src/core/Utils.cpp</code> and every <code>config/*.yaml</code>, and
+<code>scripts/build_docs.py</code> re-runs it on each build (~0.15 s). Add a source, a processor or a config and
+the pictures follow on the next <code>python scripts/build_docs.py</code> — they cannot drift from the wiring
+they depict.</p>
+<p>That is the point. The predecessor was a hand-maintained PlantUML description which drifted as
+modules were added and, because nothing rendered it during the build, <strong>shipped invisible</strong> — the
+book referenced an SVG that was never produced. The class diagram below is still PlantUML, because it
+describes C++ <em>types</em> rather than runtime wiring and nothing generates it.</p>
+<blockquote>
+<p>The generated SVGs are <strong>not committed</strong>: they are derived, and this repo does not record what can
+be recomputed. <code>developer_docs/images/architecture*.svg</code> is git-ignored; the generator is tracked.
+<code>python scripts/make_architecture.py --check</code> reports drift without writing anything.</p>
+</blockquote>
+<h3 id="the-whole-system-generated">The whole system, generated<a class="headerlink" href="#the-whole-system-generated" title="Permanent link">#</a></h3>
+<p>Every profile the backend can load, in one graph — dense on purpose. It is the map for <em>what exists</em>;
+for a single experiment use the per-profile diagrams further down.</p>
+<p><img alt="Full SpikesPeak architecture: every config, source, band, interpreter, processor and sink" src="../developer_docs/images/architecture.svg" /></p>
+<p>Each diagram is a left-to-right pipeline: <strong>Config</strong> (the YAML profile, labeled with its internal
+<code>name:</code> — the string the GUI and CLI actually select) → <strong>DataSource</strong> → <strong>Data</strong> (the named bands it
+publishes) → <strong>DataInterpreter</strong> → <strong>Processor</strong> → <strong>Sink</strong> (the files a recording writes). A config's
+identity is that <code>name:</code> field, never the filename; see [<code>../developer_docs/ConfigReference.md</code>].</p>
+<h3 id="class-structure">Class structure<a class="headerlink" href="#class-structure" title="Permanent link">#</a></h3>
+<blockquote>
+<p><strong>The hand-drawn class diagram was removed on 2026-09-01.</strong> It was a PlantUML render
+(<code>plantuml_export.svg</code> / <code>.txt</code>) last produced on 2026-07-22, and by its own caveat it was "not
+regenerated by the build, so treat it as a snapshot". It had duly drifted. There is no PlantUML or
+Java in this repo to re-render with, and the available Python packages are HTTP clients that upload
+the source to plantuml.com — a new dependency and an external transfer, so neither was ever used.
+What remains is a picture nobody can regenerate, describing a system that has moved.</p>
+<p>The pipeline diagrams above <strong>are</strong> generated and cannot drift. For the type structure, the
+layered description below is the maintained form: prose, checked against the headers when it
+changes, rather than an image nothing can rebuild.</p>
+</blockquote>
+<p>For <em>design rationale</em> (why an external browser, the Option-A command decision, the file-I/O rule) see
+[<code>../developer_docs/SpikesPeak_Architecture_Review.md</code>]; for the live waveform view see
+[<code>../developer_docs/LiveDataView.md</code>].</p>
+<hr />
+<h2 id="what-spikespeak-is">What SpikesPeak is<a class="headerlink" href="#what-spikespeak-is" title="Permanent link">#</a></h2>
+<p>A Qt/C++20 real-time neural acquisition app with a <strong>browser</strong> front-end. The backend is a windowless
+<code>QApplication</code> that (a) serves the UI over <strong>HTTP :8234</strong> and opens your system browser, and (b) carries
+all live traffic over <strong>one WebSocket :1234</strong>. Data follows a <strong>single-producer / multi-consumer
+ring-buffer</strong> model with <strong>a thread per source and a thread per sink</strong>.</p>
+<pre><code>Hardware/Sim ─►[Source]─► CircularBuffer ─►[Sink(s): Display / Record / LFP / Ripple / Audio]─► browser / disk
+   (worker thread)        (1 producer,         (each in its own thread)
+                           N consumers)
+        browser ◄── WebSocket :1234  (binary waveform stream + JSON commands + QWebChannel RPC)
+        (served HTTP :8234)
+</code></pre>
+<hr />
+<h2 id="layered-structure">Layered structure<a class="headerlink" href="#layered-structure" title="Permanent link">#</a></h2>
+<p><strong>Layer 0 — Interfaces:</strong> <code>IDataSource</code> (init/close/startAcq/stopAcq), <code>IDataSourceWorker</code>
+(start/stop acquiring, runs in a worker thread), <code>IProcessor</code> (configure/start/stop), <code>IData</code> (the
+buffer), <code>IDataInterpreter</code> (serialize raw samples → wire/disk format).</p>
+<p><strong>Layer 1 — Control &amp; Input:</strong> <code>MainController</code> (state machine + command handling),
+<code>WebSocketServer</code> (transport + multiplexing + lifecycle), <code>WebSocketTransport</code> (QWebChannel ↔ socket
+bridge, one per client), <code>QWebChannel</code> (RPC), <code>CommandDispatch</code> (binary-command pub/sub),
+<code>KeyboardListener</code> (console input).</p>
+<p><strong>Layer 2 — Management &amp; Services:</strong> <code>SourceManager</code> + <code>ProcessorManager</code> (instantiate / configure /
+thread / lifecycle), <code>ConfigManager</code> (YAML via rapidyaml), the four <strong>Registries</strong> (Source / Processor
+/ Data / DataInterpreter) backed by a templated <strong><code>ObjectFactory</code></strong> (name → constructor lambda).</p>
+<p><strong>Layer 3 — Data &amp; Processing:</strong> <code>CircularBuffer&lt;T,Aux&gt;</code>, the filters (<code>Filter</code>, <code>Avx2Filter</code>), the
+<strong>Npx</strong> module (probe source + workers + IMRO model + interpreter + display/record), and the <strong>generic</strong>
+processors (LFP, RippleDetector, Audio).</p>
+<hr />
+<h2 id="registered-types-the-plug-in-catalog-srccoreutilscpp-registerbuiltintypes">Registered types (the plug-in catalog — <code>src/core/Utils.cpp registerBuiltInTypes()</code>)<a class="headerlink" href="#registered-types-the-plug-in-catalog-srccoreutilscpp-registerbuiltintypes" title="Permanent link">#</a></h2>
+<p>Everything pluggable is registered by <strong>name</strong> here and referenced by name everywhere else; a YAML
+profile in <code>config/</code> wires names together. A source's <code>Q_INVOKABLE</code> panel is exposed per profile.</p>
+<table>
+<thead>
+<tr>
+<th>Kind</th>
+<th>Registry name</th>
+<th>C++ class</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>source</td>
+<td><code>source.npx.simdata</code></td>
+<td><code>Npx::SimulatedDataSource</code></td>
+<td>always available</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.npx.synthripples</code></td>
+<td><code>Npx::SynthRippleSource</code></td>
+<td>always available</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.npx.pxi</code></td>
+<td><code>Npx::NeuropixelsSource</code></td>
+<td><strong>NPX_HW_ENABLED</strong>; slot/port/dock = 3/4/1 (hard-coded)</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.npx.onebox</code></td>
+<td><code>Npx::NeuropixelsSource</code></td>
+<td><strong>NPX_HW_ENABLED</strong>; virtual slot 16, port/dock auto-detected</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.npx.sim2</code> / <code>source.npx.simadc</code></td>
+<td><code>Npx::SimulatedDataSource</code></td>
+<td>simulated NP2.0 / simulated OneBox ADC</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.nidaq</code></td>
+<td><code>NiDaq::NIDAQSource</code></td>
+<td>NIDAQ_HW_ENABLED</td>
+</tr>
+<tr>
+<td>source</td>
+<td><code>source.nidaq.sim</code></td>
+<td><code>NiDaq::NIDAQSource</code></td>
+<td>simulated NI-DAQ</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.npx.raw</code></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td>NP2 raw</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.npx.adc</code> / <code>data.npx.adc.di</code></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td>OneBox 12-ch ADC analog + the comparator logic band</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.spike</code></td>
+<td><code>CircularBuffer&lt;float,float&gt;</code></td>
+<td>derived spike band (<code>proc.spike</code>)</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.nidaq.di</code></td>
+<td><code>NiDaq::NiDaqData</code></td>
+<td>NI-DAQ digital in</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.npx.ap</code> / <code>data.npx.lfp</code></td>
+<td><code>CircularBuffer&lt;int16, PacketInfo&gt;</code></td>
+<td><strong>NP1 AP (30 kHz) + LFP (2.5 kHz)</strong></td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.lfp</code></td>
+<td><code>CircularBuffer&lt;float,float&gt;</code></td>
+<td>derived LFP</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.audio</code></td>
+<td><code>Npx::NpxRawData</code></td>
+<td>audio path</td>
+</tr>
+<tr>
+<td>data</td>
+<td><code>data.nidaq.raw</code></td>
+<td><code>NiDaq::NiDaqData</code></td>
+<td>NIDAQ_HW_ENABLED</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.npx.display</code></td>
+<td><code>Npx::DisplayProcessor</code></td>
+<td>min/max decimation for the browser</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.npx.recorder</code></td>
+<td><code>Recording::RecordProcessor</code></td>
+<td>also <code>proc.nidaq.recorder</code> (same class)</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.lfp</code></td>
+<td><code>LFPProcessor</code></td>
+<td>AVX2 filter/downsample</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.rippledetector</code></td>
+<td><code>RippleDetector</code></td>
+<td>SWR detection</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.audio</code></td>
+<td><code>AudioProcessor</code></td>
+<td></td>
+</tr>
+<tr>
+<td>interp</td>
+<td><code>interp.npx.raw</code> / <code>.ap</code> / <code>.lfp</code></td>
+<td><code>Npx::NpxDataInterpreter</code></td>
+<td>int16 framing</td>
+</tr>
+<tr>
+<td>interp</td>
+<td><code>interp.npx.adc</code> / <code>interp.npx.adc.di</code></td>
+<td><code>Npx::NpxDataInterpreter</code></td>
+<td>OneBox ADC framing</td>
+</tr>
+<tr>
+<td>interp</td>
+<td><code>interp.nidaq.raw</code> / <code>interp.nidaq.di</code></td>
+<td><code>NiDaq::NiDaqDataInterpreter</code></td>
+<td>NIDAQ_HW_ENABLED</td>
+</tr>
+<tr>
+<td>proc</td>
+<td><code>proc.spike</code> / <code>proc.nidaq.display</code></td>
+<td><code>BandFilterProcessor</code> / <code>NiDaq::DisplayProcessor</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><code>source.npx.auto</code> is deliberately <strong>not</strong> in this table: it is not a registered module.
+<code>SourceManager</code> resolves it to <code>source.npx.onebox</code> or <code>source.npx.pxi</code> from a scan that opens nothing,
+and refuses (offering the operator a choice) when both are attached.</p>
+<hr />
+<h2 id="the-data-plane-one-producer-many-consumers">The data plane (one producer, many consumers)<a class="headerlink" href="#the-data-plane-one-producer-many-consumers" title="Permanent link">#</a></h2>
+<p><code>CircularBuffer&lt;tData, tAux&gt;</code> (<code>src/core/CircularBuffer.hpp</code>): the source is the single <strong>producer</strong>
+(<code>addProducer</code> → write at <code>getDataStart()</code> → <code>commitWrite(id, n)</code> which bumps the sample count and
+releases one semaphore per waiting consumer). Each sink is an independent <strong>consumer</strong> (<code>addWaitingConsumer</code>
+→ block on <code>waitForAvailable(id, ms, &amp;n)</code> → read via <code>constDataAt</code> / <code>constAuxDataAt</code> → advance its own
+read marker). So Display, Record, and LFP each read the same stream at their own pace. A sink that
+derives a new stream (e.g. LFP) is itself a producer into a downstream buffer.</p>
+<p>Example NP1 chain: <code>source.npx.pxi → data.npx.ap/lfp → {proc.npx.display → browser, proc.npx.recorder → disk}</code>.</p>
+<hr />
+<h2 id="threading-lifecycle-connect-play-pause-disconnect">Threading &amp; lifecycle (Connect → Play → Pause → Disconnect)<a class="headerlink" href="#threading-lifecycle-connect-play-pause-disconnect" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Connect</strong> (<code>MainController::handleConnectRequest</code>, main thread): build <code>SourceManager</code> +
+  <code>ProcessorManager</code>; instantiate the profile's sources (<code>initDataSource</code>) and processors (<code>configure</code>);
+  <code>ProcessorManager</code> gives each processor its own <code>QThread</code> (<code>moveToThread</code>) and wires start/stop signals.
+  <code>WebSocketServer</code> registers the source's <code>Q_INVOKABLE</code> object on the QWebChannel.</li>
+<li><strong>Play</strong> (<code>handlePlayRequest</code>): <strong>processors start first</strong> — each thread starts, the processor adds
+  its consumer and blocks on the buffer, then emits <code>sigIpStarted</code>. When <strong>all</strong> are ready
+  (<code>sigPmProcessorsStarted</code>), <code>SourceManager</code> calls <code>startAcq()</code> on the source, which spins up its
+  <strong>worker thread</strong> and begins producing. (A sink that never emits <code>sigIpStarted</code> would stall the start.)</li>
+<li><strong>Steady state:</strong> source worker loops → <code>commitWrite</code> → wakes consumers → Display serializes a min/max
+  batch → <code>sigIpDataReady</code> → <code>WebSocketServer::broadcastData</code> → browser.</li>
+<li><strong>Pause:</strong> stop the source worker, then signal processors to stop (<code>sigPmStopProcessing</code> →
+  <code>slIpStopProcessor</code> → thread quit).</li>
+<li><strong>Disconnect:</strong> close sources, clear all registries (deletes buffers), tear down the managers.</li>
+</ul>
+<hr />
+<h2 id="transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp">Transport: one WebSocket, triple-multiplexed (<code>main.cpp</code>, <code>WebSocketServer.cpp</code>)<a class="headerlink" href="#transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>HTTP :8234</strong> — a <code>QTcpServer</code> serves <code>webinterface/</code> and the app opens the browser.</li>
+<li><strong>WebSocket :1234</strong> carries three logical channels:
+  1. <strong>Binary waveform stream</strong> — <code>[streamId][nPts][ts,(min,max)×nCh]…</code> frames pushed to the browser.
+  2. <strong>JSON app commands (id <code>0x1000</code>)</strong> — <code>setPlaying</code> / <code>selectSource</code> / <code>Disconnect</code> →
+     <code>MainController</code>; also <code>deviceReady</code> events back to the browser.
+  3. <strong>QWebChannel RPC (id <code>0x1001</code>)</strong> — per-module <code>Q_INVOKABLE</code>s via <code>WebSocketTransport</code>: the IMRO
+     panel <strong>and recording</strong> (<code>RecordProcessor::setRecording</code>). The legacy <code>0x1001</code> binary-command path
+     through <code>CommandDispatch</code> was removed; <code>CommandDispatch</code> now has a single remaining subscriber,
+     <code>AudioProcessor</code> (id <code>0x218</code>). See <a href="../developer_docs/ModuleCommunication.html"><code>../developer_docs/ModuleCommunication.md</code></a>.</li>
+<li><strong>Lifecycle:</strong> <code>WebSocketServer</code> starts a 2 s grace timer when the <strong>last</strong> client disconnects and
+  quits the app on timeout (a refresh cancels it); <code>main.cpp</code> sets <code>quitOnLastWindowClosed(false)</code>.</li>
+</ul>
+<hr />
+<h2 id="frontend-webinterface">Frontend (<code>webinterface/</code>)<a class="headerlink" href="#frontend-webinterface" title="Permanent link">#</a></h2>
+<p><code>main.js</code> <strong>AppController</strong> (toolbar, columns, status, play/record) · <code>NetworkClient</code> (WebSocket parse,
+bake, append) · <code>DataStore</code> (per-stream channel objects: display state only, no samples) ·
+<code>ChartColumn</code> (one live-view column: filters, slider, depth-sorted draw, and its <code>GlColumnRenderer</code>) ·
+<code>GlRenderer</code> (WebGL2 — one vertex buffer and one draw call per column; it holds the only copy of the
+samples) · <code>ProbeMap</code> (the probe / electrode map, canvas 2D) · <code>ImroManager</code> (probe-map editor + the
+live-view ordering/bands over QWebChannel) · <code>Config</code> (constants). See
+<code>developer_docs/LiveDataView.md</code>.</p>
+<hr />
+<h2 id="where-neuropixels-10-lives-in-all-this">Where Neuropixels 1.0 lives in all this<a class="headerlink" href="#where-neuropixels-10-lives-in-all-this" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Source:</strong> <code>NeuropixelsSource</code> (<code>source.npx.pxi</code>) detects the probe, loads/edits/applies the IMRO map
+  (6 <code>Q_INVOKABLE</code>s over QWebChannel), and on Play spawns <strong><code>Npx1Probe</code></strong> — a worker that reads
+  multiplexed superframes and <strong>demultiplexes</strong> them into the separate <strong>AP (30 kHz)</strong> and <strong>LFP
+  (2.5 kHz)</strong> ring buffers (12 AP + 1 LFP sample per superframe).</li>
+<li><strong>Sinks:</strong> <code>DisplayProcessor</code> decimates both bands to the browser; <code>RecordProcessor</code> writes them to
+  disk. Full NP1.0 inventory: [<code>../SpikesPeak_Status.md</code>].</li>
+</ul>
+<hr />
+<h2 id="per-profile-pipelines">Per-profile pipelines<a class="headerlink" href="#per-profile-pipelines" title="Permanent link">#</a></h2>
+<p>One diagram per <code>config/*.yaml</code>, generated with the rest. These are the useful ones day to day: they
+answer "what does <em>this</em> profile actually wire up" without reading the YAML.</p>
+<details>
+<summary><b>Neuropixels — the profiles you actually select</b></summary>
+<p><code>Neuropixels</code> uses <code>source.npx.auto</code>: the basestation and the probe are both read from the rig, and a
+machine with both a OneBox and a PXIe attached raises a choice rather than guessing — then you pick
+<code>OneBox</code> or <code>Pxie</code> by name.</p>
+<p><img alt="Neuropixels (auto)" src="../developer_docs/images/architecture_Neuropixels.svg" />
+<img alt="PXIe with NI-DAQ" src="../developer_docs/images/architecture_NeuropixelsNiDaq.svg" />
+<img alt="OneBox (explicit)" src="../developer_docs/images/architecture_OneBox.svg" />
+<img alt="PXIe (explicit)" src="../developer_docs/images/architecture_Pxie.svg" />
+<img alt="PXIe + NI-DAQ (explicit)" src="../developer_docs/images/architecture_PxieNiDaq.svg" /></p>
+</details>
+<p>The <code>Npx1Pxi</code> / <code>Npx2OneBox</code> / … family below are the <strong>legacy explicit</strong> profiles, kept for
+reproducing old measurements and hidden from the dropdown. <code>Npx2OneBoxDigitalIn</code>
+(<code>architecture_Npx2OneBoxDigitalIn.svg</code>) is the one carrying the <code>data.npx.adc.di</code> comparator band
+that the OneBox dock's threshold panel configures.</p>
+<details>
+<summary><b>Neuropixels 1.0 — hardware</b></summary>
+<p><code>Asap</code> variants set the low-latency source flag ([<code>../developer_docs/LatencyProfiling.md</code>]) and are
+otherwise identical to their siblings. They <strong>are</strong> selectable in the GUI, so picking one by accident
+is possible.</p>
+<p><strong>PXIe</strong></p>
+<p><img alt="Npx1Pxi" src="../developer_docs/images/architecture_Npx1Pxi.svg" />
+<img alt="Npx1PxiNiDaq" src="../developer_docs/images/architecture_Npx1PxiNiDaq.svg" />
+<img alt="Npx1PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx1PxiNiDaqAsap.svg" /></p>
+<p><strong>OneBox</strong></p>
+<p><img alt="Npx1OneBox" src="../developer_docs/images/architecture_Npx1OneBox.svg" />
+<img alt="Npx1OneBoxAsap" src="../developer_docs/images/architecture_Npx1OneBoxAsap.svg" /></p>
+</details>
+<details>
+<summary><b>Neuropixels 2.0 — hardware</b></summary>
+<p><strong>PXIe</strong></p>
+<p><img alt="Npx2Pxi" src="../developer_docs/images/architecture_Npx2Pxi.svg" />
+<img alt="NpxPxiNiDaq" src="../developer_docs/images/architecture_NpxPxiNiDaq.svg" />
+<img alt="Npx2PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx2PxiNiDaqAsap.svg" /></p>
+<p><strong>OneBox</strong> — <code>Npx2OneBox</code> is what the current rig runs.</p>
+<p><code>Npx2OneBoxNoAdc</code> is a <strong>measurement control, not an operational profile</strong>: it differs from
+<code>Npx2OneBox</code> in exactly one variable — whether the 12-channel ADC band exists — which is what makes
+it usable as the control arm of a recording-throughput measurement. A session recorded with it has no
+stimulus channel at all, because the closed-loop stimulus is captured through that ADC.</p>
+<p><img alt="Npx2OneBox" src="../developer_docs/images/architecture_Npx2OneBox.svg" />
+<img alt="Npx2OneBoxAsap" src="../developer_docs/images/architecture_Npx2OneBoxAsap.svg" />
+<img alt="Npx2OneBoxNoAdc" src="../developer_docs/images/architecture_Npx2OneBoxNoAdc.svg" /></p>
+</details>
+<details>
+<summary><b>NI-DAQ only</b></summary>
+<p>No probe: the PXI-6133 analog/digital inputs alone. Useful for exercising the DAQ half of a rig
+independently of a probe.</p>
+<p><img alt="NiDaqOnly" src="../developer_docs/images/architecture_NiDaqOnly.svg" /></p>
+</details>
+<details>
+<summary><b>Play-file (synthetic ripple) profiles</b></summary>
+<p>Replay a recorded or synthesised HDF5 file through the <em>same</em> pipeline as hardware — which is why a
+detector tuned on a play file behaves the same on a probe. See
+[<code>../developer_docs/SyntheticSources.md</code>].</p>
+<p><img alt="Npx1SynthRipples" src="../developer_docs/images/architecture_Npx1SynthRipples.svg" />
+<img alt="NpxSynthRipples" src="../developer_docs/images/architecture_NpxSynthRipples.svg" /></p>
+</details>
+<details>
+<summary><b>Simulated — NPX 1.0</b></summary>
+<p>No hardware at all, but the same display processor, ring buffers, WebSocket and GUI as a real probe.
+That is what makes "run it in sim first" a diagnostic rather than a gesture: if sim streams and
+hardware does not, it is the rig and not the code ([<code>../developer_docs/Testing.md</code>] §4).</p>
+<p><img alt="SimNpx1" src="../developer_docs/images/architecture_SimNpx1.svg" />
+<img alt="SimNpx1OneBox" src="../developer_docs/images/architecture_SimNpx1OneBox.svg" />
+<img alt="SimNpx1NiDaq" src="../developer_docs/images/architecture_SimNpx1NiDaq.svg" />
+<img alt="SimNpx1Ripples" src="../developer_docs/images/architecture_SimNpx1Ripples.svg" />
+<img alt="SimNpx1NiDaqRipples" src="../developer_docs/images/architecture_SimNpx1NiDaqRipples.svg" />
+<img alt="SimNpx1RippleModule" src="../developer_docs/images/architecture_SimNpx1RippleModule.svg" /></p>
+<p>The latency A/B pair, identical but for the low-latency flag — which is the entire point of them:</p>
+<p><img alt="SimNpx1LatencyBaseline" src="../developer_docs/images/architecture_SimNpx1LatencyBaseline.svg" />
+<img alt="SimNpx1LatencyAsap" src="../developer_docs/images/architecture_SimNpx1LatencyAsap.svg" /></p>
+</details>
+<details>
+<summary><b>Simulated — NPX 2.0</b></summary>
+<p><img alt="SimNpx2" src="../developer_docs/images/architecture_SimNpx2.svg" />
+<img alt="SimNpx2OneBox" src="../developer_docs/images/architecture_SimNpx2OneBox.svg" />
+<img alt="SimNpx2NiDaq" src="../developer_docs/images/architecture_SimNpx2NiDaq.svg" />
+<img alt="SimNpx2Ripples" src="../developer_docs/images/architecture_SimNpx2Ripples.svg" />
+<img alt="SimNpx2NiDaqRipples" src="../developer_docs/images/architecture_SimNpx2NiDaqRipples.svg" />
+<img alt="SimNpx2RippleModule" src="../developer_docs/images/architecture_SimNpx2RippleModule.svg" />
+<img alt="SimNpx2RealNiDaqRipples" src="../developer_docs/images/architecture_SimNpx2RealNiDaqRipples.svg" /></p>
+</details>
+<blockquote>
+<p>A new <code>config/*.yaml</code> produces a new SVG automatically, but will not appear on this page until it is
+listed above. The build prints each file it generates, so the omission is visible rather than
+silent.</p>
+</blockquote></article>
+    <footer class="pagefoot">Generated from <code>images/architecture_overview.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-whole-system-generated">The whole system, generated</a></li>
+<li><a href="#class-structure">Class structure</a></li>
+<li><a href="#what-spikespeak-is">What SpikesPeak is</a></li>
+<li><a href="#layered-structure">Layered structure</a></li>
+<li><a href="#registered-types-the-plug-in-catalog-srccoreutilscpp-registerbuiltintypes">Registered types (the plug-in catalog — src/core/Utils.cpp registerBuiltInTypes())</a></li>
+<li><a href="#the-data-plane-one-producer-many-consumers">The data plane (one producer, many consumers)</a></li>
+<li><a href="#threading-lifecycle-connect-play-pause-disconnect">Threading &amp; lifecycle (Connect → Play → Pause → Disconnect)</a></li>
+<li><a href="#transport-one-websocket-triple-multiplexed-maincpp-websocketservercpp">Transport: one WebSocket, triple-multiplexed (main.cpp, WebSocketServer.cpp)</a></li>
+<li><a href="#frontend-webinterface">Frontend (webinterface/)</a></li>
+<li><a href="#where-neuropixels-10-lives-in-all-this">Where Neuropixels 1.0 lives in all this</a></li>
+<li><a href="#per-profile-pipelines">Per-profile pipelines</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

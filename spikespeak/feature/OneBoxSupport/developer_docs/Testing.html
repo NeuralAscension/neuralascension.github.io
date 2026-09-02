@@ -478,11 +478,17 @@ the GPU- and driver-dependent thing, and the harness now refuses to run a column
 <code>live_view</code>, <code>heatmap_view</code>, <code>heatmap_spatial</code>, <code>probe_map</code>, <code>detached_view</code> and <code>window_registry</code>
 all pass on Mesa/NVIDIA 535 with real WebGL. <strong>Headless is still unproven</strong> — this box had a real X
 session and a real GPU, not SwiftShader.</p>
-<p><strong>The Python suite needs <code>python scripts/build_docs.py</code> run once first on a clean clone.</strong> The
-architecture SVGs it checks are generated and <code>.gitignore</code>d (<code>developer_docs/images/architecture*.svg</code>),
-so a fresh clone has none and <code>test_architecture_diagrams</code> fails with <em>"Architecture SVGs are out of
-date"</em>. That is the gate reporting a missing build step, not a broken tree; regenerate and it is
-151/151.</p>
+<p><strong>That run also found a clean-clone trap, and it has since been fixed rather than documented.</strong> The
+architecture SVGs are generated and <code>.gitignore</code>d (<code>developer_docs/images/architecture*.svg</code>), so a
+fresh clone has none — and the test asserted <code>make_architecture.py --check</code> against the working
+tree, which then reported <em>"Architecture SVGs are out of date"</em> and turned a <strong>build step nobody had
+run yet</strong> into a red gate. Meanwhile the one check that <em>would</em> have worked on a clean clone —
+comparing the COMMITTED <code>images/architecture.svg</code> against what the generator produces — skipped
+itself for want of the very file that was missing.</p>
+<p><code>test_architecture_current.py</code> now generates into a <strong>temp directory</strong> and compares against the
+committed copy, so the picture-matches-the-code invariant is asserted <strong>with no build step at all</strong>;
+the gitignored working copies are checked separately and only when they exist. MISSING is a build
+step and skips with the command to run; STALE is a defect and stays red. A fresh clone is green.</p>
 <p>A Linux box with no acquisition hardware exercises <strong>everything except the vendor call layer</strong>: the
 same ring buffers, interpreters, display processor, recorder and ripple detector that real hardware
 drives. <code>NPX_HW_ENABLED</code> and <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only, so the PXIe, OneBox and real
@@ -566,10 +572,12 @@ blanket <code>pkill -f brave</code> closes the operator's real windows. Beware t
 also matches <strong>the shell running it</strong>, which kills your own command instead — match on
 <code>user-data-dir=/tmp/spikespeak_guitest</code> and signal the pids.</p>
 <h2 id="1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30">1b. The Python suite — the offline half, and it was ungated until 2026-08-30<a class="headerlink" href="#1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python -m unittest discover python/tests        # 126 tests, ~2 s
+<pre><code class="language-bash">python -m unittest discover python/tests        # 182 tests, ~16 s
 </code></pre>
-<p><strong>It needs numpy.</strong> Five of the six files import it at module scope, so without numpy <code>discover</code>
-reports import errors rather than a green run — which is not the same thing as a pass and does not
+<p><strong>It needs numpy.</strong> Six of the seventeen files import it at module scope — the ones that touch real
+signal data (<code>band_response</code>, <code>openephys_export</code>, <code>reader_all_channels</code>, <code>reader_scale</code>,
+<code>spikeglx_convert</code>, <code>sync_pairing</code>) — so without numpy <code>discover</code> reports import errors rather than
+a green run — which is not the same thing as a pass and does not
 look like one. Nothing else is required: stdlib <code>unittest</code>, no pytest, no browser, no backend, no
 ports. On Ubuntu ≥ 23.04 a bare <code>pip install numpy</code> is refused (PEP 668); use
 <code>sudo apt install python3-numpy</code>, or a venv.</p>
@@ -603,23 +611,73 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 <td>the loader's counts→microvolts scale</td>
 </tr>
 <tr>
+<td><code>test_reader_all_channels.py</code></td>
+<td><code>channels: []</code> means ALL channels, and the reader must honour it rather than refuse</td>
+</tr>
+<tr>
 <td><code>test_config_channels.py</code></td>
-<td>the config channel spec</td>
+<td>the config channel spec — every selectable hardware profile records all probe channels</td>
 </tr>
 <tr>
 <td><code>test_band_response.py</code></td>
-<td>the NP1.0 band split, pinned to the <strong>same numbers as the C++ side</strong> (<code>test_simbandresponse</code>). Added 2026-08-31 after the live simulator and the play-file generator were found to disagree about it by a factor of fifteen, each internally consistent — a per-language test could not have caught it. See <a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
+<td>the NP1.0 band split, pinned to the <strong>same numbers as the C++ side</strong> (<code>test_simbandresponse</code>). Added 2026-08-31 after the live simulator and the play-file generator were found to disagree by a factor of fifteen, each internally consistent — a per-language test could not have caught it. See <a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
 </tr>
 <tr>
 <td><strong><code>test_sync_pairing.py</code></strong></td>
 <td><strong>the sync pulse pairing every published closed-loop latency passes through</strong></td>
 </tr>
+<tr>
+<td><code>test_arch_parity.py</code></td>
+<td><strong>every platform's <code>src/arch/**</code> header declares the same functions, and matches its own <code>.cpp</code>.</strong> Added 2026-09-02: a Linux-only header drifted from the Windows one and from its own implementation, and MSVC never compiles it — so the Linux gate was the only thing that could fail. This catches it from Windows in 3 ms</td>
+</tr>
+<tr>
+<td><code>test_av_eye.py</code></td>
+<td><strong>the EYE is a PER-STREAM publish interval, never a statistic pooled across streams.</strong> Added 2026-09-02: pooling reported 0.6 ms on a three-band profile, which is not a display cadence</td>
+</tr>
+<tr>
+<td><code>test_rig_teardown.py</code></td>
+<td><strong><code>ripple_tools/rig.py</code>'s lifecycle: a handle written by a background thread is not closed until that thread is joined.</strong> Added 2026-09-02</td>
+</tr>
+<tr>
+<td><code>test_display_requirements.py</code></td>
+<td><strong>a test that cannot exercise its subject says so.</strong> Added 2026-09-02, after <code>layout_matrix</code> passed on a box with no portrait display while never running its vertical axis</td>
+</tr>
+<tr>
+<td><code>test_gui_runner_timeout.py</code></td>
+<td>a hung GUI test is reported as a failed test, never allowed to crash the run</td>
+</tr>
+<tr>
+<td><code>test_gatelock.py</code></td>
+<td>the shared gate lock — excludes a rival run without excluding its own child</td>
+</tr>
+<tr>
+<td><code>test_architecture_current.py</code></td>
+<td>the generated architecture diagrams match the code they depict</td>
+</tr>
+<tr>
+<td><code>test_doc_citations.py</code></td>
+<td>every <code>file.ext:LINE</code> a document cites resolves to a real file and line</td>
+</tr>
+<tr>
+<td><code>test_screenshot_dates.py</code></td>
+<td>a hand-maintained screenshot carries its capture date, and that date stays true</td>
+</tr>
+<tr>
+<td><code>test_column_grid.py</code></td>
+<td>every column-band control is placed in the live view's CSS grid</td>
+</tr>
 </tbody>
 </table>
-<p>Six files, <strong>126 tests</strong> as of 2026-08-31. This section said 121 and listed five files until
-<code>test_band_response.py</code> was added on 2026-08-31; the five missing tests were exactly the file the
-table had forgotten. An inventory understates a suite by precisely the thing it omits, which is why
-the omission and the wrong total always arrive together.</p>
+<p>Seventeen files, <strong>182 tests</strong> as of 2026-09-02.</p>
+<p><strong>This table has now been wrong twice, the same way.</strong> It said five files and 121 tests until
+<code>test_band_response.py</code> was added on 2026-08-31 — and the five missing tests were exactly the file
+it had forgotten. Then on 2026-09-01 the Linux run updated the page's <em>headline</em> totals to
+27/478/26 and 151 Python tests but left this section reading <em>"Six files, 126 tests"</em>, so the page
+disagreed with itself by 25 tests and seven files while its own closing sentence said why that
+happens. Corrected 2026-09-02 by listing every file and deriving the total from a run.</p>
+<p><strong>An inventory understates a suite by precisely the thing it omits, which is why the omission and
+the wrong total always arrive together.</strong> Update the table in the same commit as the file, or
+neither is true.</p>
 <p>That last one was added on 2026-08-30 and is the reason the gap was worth closing. <code>sync.py</code>'s own
 docstrings record <strong>three separate silent off-by-ones</strong>, one of which <em>"silently added 1.000 s to a
 closed-loop latency"</em> — and the function had no test at all.</p>

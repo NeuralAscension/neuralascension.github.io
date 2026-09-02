@@ -150,14 +150,21 @@ modules were added and, because nothing rendered it during the build, <strong>sh
 book referenced an SVG that was never produced. The class diagram below is still PlantUML, because it
 describes C++ <em>types</em> rather than runtime wiring and nothing generates it.</p>
 <blockquote>
-<p>The generated SVGs are <strong>not committed</strong>: they are derived, and this repo does not record what can
-be recomputed. <code>developer_docs/images/architecture*.svg</code> is git-ignored; the generator is tracked.
-<code>python scripts/make_architecture.py --check</code> reports drift without writing anything.</p>
+<p><strong>The diagrams on this page ARE committed, and that is deliberate.</strong> The rule is not to record what
+can be recomputed, so the book's own copies (<code>developer_docs/images/architecture*.svg</code>) stay
+git-ignored and are rebuilt on every <code>python scripts/build_docs.py</code>. But GitHub renders this page
+from the REPOSITORY, and until 2026-09-02 it embedded 35 SVGs of which exactly zero were in it — so
+the text was current and the page was still useless, showing 35 broken images. Anything GitHub must
+render from the repository has to be <em>in</em> the repository; that is why <code>images/architecture.svg</code> has
+always been committed, and these are now siblings of it, refreshed by the same build step.</p>
+<p><code>python scripts/make_architecture.py --check</code> reports drift without writing anything, and
+<code>python/tests/test_committed_docs_render.py</code> fails the gate if a committed document ever again
+embeds a file that is not committed.</p>
 </blockquote>
 <h3 id="the-whole-system-generated">The whole system, generated<a class="headerlink" href="#the-whole-system-generated" title="Permanent link">#</a></h3>
 <p>Every profile the backend can load, in one graph — dense on purpose. It is the map for <em>what exists</em>;
 for a single experiment use the per-profile diagrams further down.</p>
-<p><img alt="Full SpikesPeak architecture: every config, source, band, interpreter, processor and sink" src="../developer_docs/images/architecture.svg" /></p>
+<p><img alt="Full SpikesPeak architecture: every config, source, band, interpreter, processor and sink" src="architecture.svg" /></p>
 <p>Each diagram is a left-to-right pipeline: <strong>Config</strong> (the YAML profile, labeled with its internal
 <code>name:</code> — the string the GUI and CLI actually select) → <strong>DataSource</strong> → <strong>Data</strong> (the named bands it
 publishes) → <strong>DataInterpreter</strong> → <strong>Processor</strong> → <strong>Sink</strong> (the files a recording writes). A config's
@@ -436,11 +443,11 @@ answer "what does <em>this</em> profile actually wire up" without reading the YA
 <p><code>Neuropixels</code> uses <code>source.npx.auto</code>: the basestation and the probe are both read from the rig, and a
 machine with both a OneBox and a PXIe attached raises a choice rather than guessing — then you pick
 <code>OneBox</code> or <code>Pxie</code> by name.</p>
-<p><img alt="Neuropixels (auto)" src="../developer_docs/images/architecture_Neuropixels.svg" />
-<img alt="PXIe with NI-DAQ" src="../developer_docs/images/architecture_NeuropixelsNiDaq.svg" />
-<img alt="OneBox (explicit)" src="../developer_docs/images/architecture_OneBox.svg" />
-<img alt="PXIe (explicit)" src="../developer_docs/images/architecture_Pxie.svg" />
-<img alt="PXIe + NI-DAQ (explicit)" src="../developer_docs/images/architecture_PxieNiDaq.svg" /></p>
+<p><img alt="Neuropixels (auto)" src="architecture_Neuropixels.svg" />
+<img alt="PXIe with NI-DAQ" src="architecture_NeuropixelsNiDaq.svg" />
+<img alt="OneBox (explicit)" src="architecture_OneBox.svg" />
+<img alt="PXIe (explicit)" src="architecture_Pxie.svg" />
+<img alt="PXIe + NI-DAQ (explicit)" src="architecture_PxieNiDaq.svg" /></p>
 </details>
 <p>The <code>Npx1Pxi</code> / <code>Npx2OneBox</code> / … family below are the <strong>legacy explicit</strong> profiles, kept for
 reproducing old measurements and hidden from the dropdown. <code>Npx2OneBoxDigitalIn</code>
@@ -452,66 +459,66 @@ that the OneBox dock's threshold panel configures.</p>
 otherwise identical to their siblings. They <strong>are</strong> selectable in the GUI, so picking one by accident
 is possible.</p>
 <p><strong>PXIe</strong></p>
-<p><img alt="Npx1Pxi" src="../developer_docs/images/architecture_Npx1Pxi.svg" />
-<img alt="Npx1PxiNiDaq" src="../developer_docs/images/architecture_Npx1PxiNiDaq.svg" />
-<img alt="Npx1PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx1PxiNiDaqAsap.svg" /></p>
+<p><img alt="Npx1Pxi" src="architecture_Npx1Pxi.svg" />
+<img alt="Npx1PxiNiDaq" src="architecture_Npx1PxiNiDaq.svg" />
+<img alt="Npx1PxiNiDaqAsap" src="architecture_Npx1PxiNiDaqAsap.svg" /></p>
 <p><strong>OneBox</strong></p>
-<p><img alt="Npx1OneBox" src="../developer_docs/images/architecture_Npx1OneBox.svg" />
-<img alt="Npx1OneBoxAsap" src="../developer_docs/images/architecture_Npx1OneBoxAsap.svg" /></p>
+<p><img alt="Npx1OneBox" src="architecture_Npx1OneBox.svg" />
+<img alt="Npx1OneBoxAsap" src="architecture_Npx1OneBoxAsap.svg" /></p>
 </details>
 <details>
 <summary><b>Neuropixels 2.0 — hardware</b></summary>
 <p><strong>PXIe</strong></p>
-<p><img alt="Npx2Pxi" src="../developer_docs/images/architecture_Npx2Pxi.svg" />
-<img alt="NpxPxiNiDaq" src="../developer_docs/images/architecture_NpxPxiNiDaq.svg" />
-<img alt="Npx2PxiNiDaqAsap" src="../developer_docs/images/architecture_Npx2PxiNiDaqAsap.svg" /></p>
+<p><img alt="Npx2Pxi" src="architecture_Npx2Pxi.svg" />
+<img alt="NpxPxiNiDaq" src="architecture_NpxPxiNiDaq.svg" />
+<img alt="Npx2PxiNiDaqAsap" src="architecture_Npx2PxiNiDaqAsap.svg" /></p>
 <p><strong>OneBox</strong> — <code>Npx2OneBox</code> is what the current rig runs.</p>
 <p><code>Npx2OneBoxNoAdc</code> is a <strong>measurement control, not an operational profile</strong>: it differs from
 <code>Npx2OneBox</code> in exactly one variable — whether the 12-channel ADC band exists — which is what makes
 it usable as the control arm of a recording-throughput measurement. A session recorded with it has no
 stimulus channel at all, because the closed-loop stimulus is captured through that ADC.</p>
-<p><img alt="Npx2OneBox" src="../developer_docs/images/architecture_Npx2OneBox.svg" />
-<img alt="Npx2OneBoxAsap" src="../developer_docs/images/architecture_Npx2OneBoxAsap.svg" />
-<img alt="Npx2OneBoxNoAdc" src="../developer_docs/images/architecture_Npx2OneBoxNoAdc.svg" /></p>
+<p><img alt="Npx2OneBox" src="architecture_Npx2OneBox.svg" />
+<img alt="Npx2OneBoxAsap" src="architecture_Npx2OneBoxAsap.svg" />
+<img alt="Npx2OneBoxNoAdc" src="architecture_Npx2OneBoxNoAdc.svg" /></p>
 </details>
 <details>
 <summary><b>NI-DAQ only</b></summary>
 <p>No probe: the PXI-6133 analog/digital inputs alone. Useful for exercising the DAQ half of a rig
 independently of a probe.</p>
-<p><img alt="NiDaqOnly" src="../developer_docs/images/architecture_NiDaqOnly.svg" /></p>
+<p><img alt="NiDaqOnly" src="architecture_NiDaqOnly.svg" /></p>
 </details>
 <details>
 <summary><b>Play-file (synthetic ripple) profiles</b></summary>
 <p>Replay a recorded or synthesised HDF5 file through the <em>same</em> pipeline as hardware — which is why a
 detector tuned on a play file behaves the same on a probe. See
 [<code>../developer_docs/SyntheticSources.md</code>].</p>
-<p><img alt="Npx1SynthRipples" src="../developer_docs/images/architecture_Npx1SynthRipples.svg" />
-<img alt="NpxSynthRipples" src="../developer_docs/images/architecture_NpxSynthRipples.svg" /></p>
+<p><img alt="Npx1SynthRipples" src="architecture_Npx1SynthRipples.svg" />
+<img alt="NpxSynthRipples" src="architecture_NpxSynthRipples.svg" /></p>
 </details>
 <details>
 <summary><b>Simulated — NPX 1.0</b></summary>
 <p>No hardware at all, but the same display processor, ring buffers, WebSocket and GUI as a real probe.
 That is what makes "run it in sim first" a diagnostic rather than a gesture: if sim streams and
 hardware does not, it is the rig and not the code ([<code>../developer_docs/Testing.md</code>] §4).</p>
-<p><img alt="SimNpx1" src="../developer_docs/images/architecture_SimNpx1.svg" />
-<img alt="SimNpx1OneBox" src="../developer_docs/images/architecture_SimNpx1OneBox.svg" />
-<img alt="SimNpx1NiDaq" src="../developer_docs/images/architecture_SimNpx1NiDaq.svg" />
-<img alt="SimNpx1Ripples" src="../developer_docs/images/architecture_SimNpx1Ripples.svg" />
-<img alt="SimNpx1NiDaqRipples" src="../developer_docs/images/architecture_SimNpx1NiDaqRipples.svg" />
-<img alt="SimNpx1RippleModule" src="../developer_docs/images/architecture_SimNpx1RippleModule.svg" /></p>
+<p><img alt="SimNpx1" src="architecture_SimNpx1.svg" />
+<img alt="SimNpx1OneBox" src="architecture_SimNpx1OneBox.svg" />
+<img alt="SimNpx1NiDaq" src="architecture_SimNpx1NiDaq.svg" />
+<img alt="SimNpx1Ripples" src="architecture_SimNpx1Ripples.svg" />
+<img alt="SimNpx1NiDaqRipples" src="architecture_SimNpx1NiDaqRipples.svg" />
+<img alt="SimNpx1RippleModule" src="architecture_SimNpx1RippleModule.svg" /></p>
 <p>The latency A/B pair, identical but for the low-latency flag — which is the entire point of them:</p>
-<p><img alt="SimNpx1LatencyBaseline" src="../developer_docs/images/architecture_SimNpx1LatencyBaseline.svg" />
-<img alt="SimNpx1LatencyAsap" src="../developer_docs/images/architecture_SimNpx1LatencyAsap.svg" /></p>
+<p><img alt="SimNpx1LatencyBaseline" src="architecture_SimNpx1LatencyBaseline.svg" />
+<img alt="SimNpx1LatencyAsap" src="architecture_SimNpx1LatencyAsap.svg" /></p>
 </details>
 <details>
 <summary><b>Simulated — NPX 2.0</b></summary>
-<p><img alt="SimNpx2" src="../developer_docs/images/architecture_SimNpx2.svg" />
-<img alt="SimNpx2OneBox" src="../developer_docs/images/architecture_SimNpx2OneBox.svg" />
-<img alt="SimNpx2NiDaq" src="../developer_docs/images/architecture_SimNpx2NiDaq.svg" />
-<img alt="SimNpx2Ripples" src="../developer_docs/images/architecture_SimNpx2Ripples.svg" />
-<img alt="SimNpx2NiDaqRipples" src="../developer_docs/images/architecture_SimNpx2NiDaqRipples.svg" />
-<img alt="SimNpx2RippleModule" src="../developer_docs/images/architecture_SimNpx2RippleModule.svg" />
-<img alt="SimNpx2RealNiDaqRipples" src="../developer_docs/images/architecture_SimNpx2RealNiDaqRipples.svg" /></p>
+<p><img alt="SimNpx2" src="architecture_SimNpx2.svg" />
+<img alt="SimNpx2OneBox" src="architecture_SimNpx2OneBox.svg" />
+<img alt="SimNpx2NiDaq" src="architecture_SimNpx2NiDaq.svg" />
+<img alt="SimNpx2Ripples" src="architecture_SimNpx2Ripples.svg" />
+<img alt="SimNpx2NiDaqRipples" src="architecture_SimNpx2NiDaqRipples.svg" />
+<img alt="SimNpx2RippleModule" src="architecture_SimNpx2RippleModule.svg" />
+<img alt="SimNpx2RealNiDaqRipples" src="architecture_SimNpx2RealNiDaqRipples.svg" /></p>
 </details>
 <blockquote>
 <p>A new <code>config/*.yaml</code> produces a new SVG automatically, but will not appear on this page until it is

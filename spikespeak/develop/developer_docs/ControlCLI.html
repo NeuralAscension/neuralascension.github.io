@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -299,6 +297,23 @@ Shutdown initiated
 </table>
 <p>Run modes: interactive REPL (<code>python python/spikespeak_cli.py</code>), one-shot (<code>python python/spikespeak_cli.py list</code>),
 scripted (<code>--script "a; b; c"</code>), or commands on stdin. <code>--host</code> / <code>--port</code> target a remote backend.</p>
+<blockquote>
+<p><strong>ASAP is a runtime command now, and the CLI has no verb for it (#80).</strong> <code>low_latency</code> used to be
+readable only from a profile at connect, which is why the repo grew several files whose entire
+content was the same profile with one boolean flipped. It is now a per-module control:
+<code>{command:"lowLatency", module:"proc.rippledetector", value:true}</code> on the same text path, routed
+through <code>MainController</code> so the request <strong>propagates upstream</strong> — asking a detector for ASAP is
+worthless unless the band filter and the source feeding it come too. The reply is a
+<code>lowLatencyState</code> event carrying <strong>confirmed</strong> state for every module that offers the control, with
+<code>active</code> (what is running) separate from <code>pending</code> (asked for, in force on the next Play), because
+the source reads the flag once in <code>startAcq</code>. <code>getSystemState</code> reports the same list under
+<code>lowLatency</code>. Each entry also carries <code>upstream</code> — exactly what the request would switch on, so the
+cost is visible before it is paid — and which modules appear at all is declared in C++ by
+<code>exposesLowLatency()</code>, not by the frontend. <code>spikespeak_cli.py</code> has no <code>lowlatency</code> verb yet, so a
+script either drives the GUI control (<code>webinterface/LowLatencyModule.js</code>) or sends the JSON itself —
+and a profile that wants it on from the first Play can still say <code>low_latency: true</code>
+(<code>NpInterface.cpp:1176</code>).</p>
+</blockquote>
 <h2 id="how-the-gui-mirrors-a-cli-session">How the GUI mirrors a CLI session<a class="headerlink" href="#how-the-gui-mirrors-a-cli-session" title="Permanent link">#</a></h2>
 <p>Each state-changing command broadcasts a <strong>state event</strong> to <em>all</em> clients; the browser reflects it in
 its toolbar <strong>without re-sending</strong> the command (<code>main.js</code> <code>reflect*</code> + <code>NetworkClient</code> handlers):</p>

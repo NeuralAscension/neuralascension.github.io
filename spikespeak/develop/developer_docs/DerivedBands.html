@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -411,6 +409,18 @@ is almost entirely the filter's own group delay -- the floor you cannot buy your
 <p>To reproduce: add <code>low_latency: true</code> to the source block of any 2.0 profile, enable both bands, and
 read the <code>bandLatency</code> events. The figures above came from <code>SimNpx2.yaml</code> with and without that one
 line, nothing else changed.</p>
+<p><strong>Since #80 you no longer have to edit a YAML file to get there.</strong> ASAP is a per-module runtime
+control -- <code>{"command":"lowLatency","module":"...","value":true}</code>, and the Low Latency
+control in the GUI (<code>webinterface/LowLatencyModule.js</code>) -- and asking for it on one module
+propagates the request <strong>upstream</strong> to whatever feeds it. That is why <code>BandFilterProcessor</code>
+reports its edges (<code>inputDataNames()</code> / <code>outputDataNames()</code>) even though it deliberately does
+<strong>not</strong> implement <code>ILowLatencyCapable</code>: it has no knob to turn and needs none -- it already wakes
+on the first sample and takes whatever is there -- but on an NP2.0 closed loop it is the hop
+between the ripple detector and <code>data.npx.raw</code>, and a walk that could not see past it would never
+reach the source, which is where the only real knob is. The table above is the measurement of why
+that hop matters: nothing in the filtering changed, and the backlog still fell by 26x.</p>
+<p>It stays opt-in for the reason the numbers here imply and <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>
+measures: ASAP costs about <strong>98 % of one core against 13.4 %</strong>. A control does not make it cheap.</p>
 <h3 id="end-to-end">End to end<a class="headerlink" href="#end-to-end" title="Permanent link">#</a></h3>
 <table>
 <thead>

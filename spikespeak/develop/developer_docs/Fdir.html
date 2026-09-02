@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -193,7 +191,7 @@ everything stopped again. <code>WebSocketServer::setPlaying</code> no longer tou
       -&gt;  sigMcAcquisitionStateChanged(true)   -&gt; broadcast statePlaying=1           (announced)
 </code></pre>
 <p>If you add a control that can be refused, or that can fail <em>after</em> being accepted, follow this
-shape. Returning <code>true</code> from the request handler is not a licence to announce the outcome.</p>
+shape. Returning <code>true</code> from the request handler is not a license to announce the outcome.</p>
 <hr />
 <h2 id="2-fault-reporting-one-path-no-opt-in">2. Fault reporting: one path, no opt-in<a class="headerlink" href="#2-fault-reporting-one-path-no-opt-in" title="Permanent link">#</a></h2>
 <p><code>IProcessor::sigIpErrorOccurred(QString)</code> has existed since the beginning. Until #11 <strong>nothing
@@ -267,7 +265,7 @@ Never reported ready: proc.npx.display, proc.rippledetector
 <p><strong>A declared failure is final for that cycle</strong> (<code>mStartupFailed</code>). Without that latch the watchdog
 and a slow processor race and <em>both</em> win — the watchdog reports the startup failed, the stragglers
 finish, and the manager announces the very same request <strong>started</strong> a moment later. One play request
-produced both outcomes and the GUI showed each in turn. This was observed, not theorised; it is why
+produced both outcomes and the GUI showed each in turn. This was observed, not theorized; it is why
 the latch exists. Late arrivals are logged and ignored, and the next <code>startProcessors()</code> clears it.</p>
 <hr />
 <h2 id="5-getting-a-reason-out-of-an-object-that-is-being-destroyed">5. Getting a reason out of an object that is being destroyed<a class="headerlink" href="#5-getting-a-reason-out-of-an-object-that-is-being-destroyed" title="Permanent link">#</a></h2>
@@ -283,10 +281,13 @@ destroyed moments later. <code>WebSocketServer</code> takes a <code>mark()</code
 <code>since(mark)</code> if it fails.</p>
 <p>Two properties of that sink that look wrong and are not:</p>
 <ul>
-<li><strong>It does not filter on <code>QtMsgType</code>.</strong> This codebase puts severity in the <em>text</em> — hardware
-  failures are plain <code>qDebug() &lt;&lt; "[MAIN] ERROR: ..."</code> lines, and the neuropixels module alone has
-  178 <code>qDebug</code> against 31 <code>qWarning</code>. A level filter would capture none of the messages it exists
-  for.</li>
+<li><strong>It does not filter on <code>QtMsgType</code>.</strong> This codebase has historically put severity in the <em>text</em> —
+  hardware failures written as plain <code>qDebug() &lt;&lt; "[MAIN] ERROR: ..."</code> lines — so a level filter
+  would have captured none of the messages this sink exists for. That is <strong>improving but not
+  finished</strong>: the neuropixels module was 178 <code>qDebug</code> against 31 <code>qWarning</code> when this was written,
+  and is 138 / 97 / 20 <code>qCritical</code> as of <strong>2026-09-01</strong>. The sink stays level-blind until the
+  convention is actually universal, because the cost of missing the one line that explains a failed
+  connect is far higher than the cost of recording a few extra.</li>
 <li><strong>Ordering is chronological, not newest-first.</strong> Failures cascade forwards: the first line is the
   cause and the rest are consequence. Newest-first led with <code>ERROR closing probe. Code: 44</code> — the
   teardown, not the fault.</li>
@@ -340,7 +341,7 @@ never again by anything. Recording is owned by <code>WebSocketServer</code> and 
 read <code>eNotRecording</code> for the whole life of the program <strong>including while a recording was running</strong>.</p>
 <p>It has been removed. A state variable that is always wrong is worse than no state variable: it
 invites exactly the "am I in a valid state?" check this issue asks for, and then answers it
-incorrectly. <code>acqState</code> gained an in-class initialiser for the same reason — an enum whose default
+incorrectly. <code>acqState</code> gained an in-class initializer for the same reason — an enum whose default
 is whatever happened to be on the stack is the cheapest possible route to an unexpected state.</p>
 <p>If <code>MainController</code> should know about recording (so <code>isReadyToQuit()</code> refuses to quit mid-record —
 arguably it should), wire it to the recorder. Do not re-declare the field.</p>
@@ -389,7 +390,7 @@ consecutive polls with no movement, naming it on the GUI status line and in the 
   at the top of the loop would count the parked iteration and hide the stall.</li>
 </ul>
 <p>Stall detection runs <strong>only while acquiring</strong> -- the monitor stops on pause. An idle processor is
-not a broken one, and colouring it as one trains people to ignore the indicator.</p>
+not a broken one, and coloring it as one trains people to ignore the indicator.</p>
 <p><strong>Where the heartbeat goes matters, and it is easy to get wrong.</strong> All six calls must be in the
 per-cycle function, not in <code>slIpStartProcessor</code>/<code>slIpStopProcessor</code>. A misplaced one reads as a
 permanent stall the moment acquisition starts (which is how the first version of this was caught:
@@ -403,11 +404,11 @@ failed still told every client it was recording. The GUI now shows a pending rec
 transitions only on confirmation, closing the gap this document used to list.</p>
 <p>Watch the event shape: the GUI reads <code>{value: &lt;bool&gt;, name: &lt;string&gt;}</code>, <strong>not</strong> <code>broadcastStatusEvent</code>'s
 <code>{message: "1"}</code>. A status-shaped event is read as <code>false</code> and a started recording looks stopped.</p>
-<h3 id="84-the-indicator-is-labelled-not-a-bare-dot">8.4 The indicator is labelled, not a bare dot<a class="headerlink" href="#84-the-indicator-is-labelled-not-a-bare-dot" title="Permanent link">#</a></h3>
-<p>The System chip sits in the toolbar's FIRST row, beside the clock (SystemMonitor appends it to <code>.tb-transport</code>, falling back to the status line only if that is absent). It carries a chip -- a coloured dot, the word <strong>System</strong>, and the current count
+<h3 id="84-the-indicator-is-labeled-not-a-bare-dot">8.4 The indicator is labeled, not a bare dot<a class="headerlink" href="#84-the-indicator-is-labeled-not-a-bare-dot" title="Permanent link">#</a></h3>
+<p>The System chip sits in the toolbar's FIRST row, beside the clock (SystemMonitor appends it to <code>.tb-transport</code>, falling back to the status line only if that is absent). It carries a chip -- a colored dot, the word <strong>System</strong>, and the current count
 ("6 cycling", "1 stalled", "idle") -- styled with the toolbar's own band tokens so it sits level with
 the status text and the REC indicator. Clicking it opens the detail panel.</p>
-<p>It was a bare dot first, and that was wrong: an unlabelled coloured dot only means something to
+<p>It was a bare dot first, and that was wrong: an unlabeled colored dot only means something to
 somebody who already knows it is there, which is no use to the person who most needs it. The count
 sits on the chip for the same reason -- the common questions ("is it running? are all the parts
 turning?") are answered without opening anything. A stall turns the whole chip red and names itself
@@ -451,14 +452,25 @@ with the exact figure on the cell tooltip, because at a 1 ms cadence these reach
 hour and would otherwise set the column width.</p>
 <p><code>resetStreamErrors()</code> nearby is not a counter-example: the worker resets its <em>own</em> counter on its own
 thread, so there is no cross-thread write.</p>
-<h3 id="87-the-frontend-must-actually-be-deployed">8.7 The frontend must actually be deployed<a class="headerlink" href="#87-the-frontend-must-actually-be-deployed" title="Permanent link">#</a></h3>
-<p>Unrelated to the state model, but it invalidated a test and will invalidate yours. The webinterface
-copy used to be a <code>POST_BUILD</code> step on the <code>SpikesPeak</code> target, so it only ran when the executable
-<strong>relinked</strong>. Editing only <code>.js</code>/<code>.css</code> left the deployed copy stale while the build reported
-success, and the browser served the old frontend -- so a test of new frontend code silently
-exercised the old code and passed. It is now an always-out-of-date <code>copy_webinterface</code> target.</p>
-<p>The served root is <code>&lt;exe&gt;/../webinterface</code>, never the source tree. When a frontend change appears not
-to take: <code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&gt;</code>.</p>
+<h3 id="87-the-frontend-is-served-from-the-working-tree">8.7 The frontend is served from the working tree<a class="headerlink" href="#87-the-frontend-is-served-from-the-working-tree" title="Permanent link">#</a></h3>
+<p>Unrelated to the state model, but it invalidated a test and will invalidate yours -- and <strong>the fix
+has since inverted, so read this whole entry rather than the first half.</strong></p>
+<p>The webinterface copy used to be a <code>POST_BUILD</code> step on the <code>SpikesPeak</code> target, so it only ran when
+the executable <strong>relinked</strong>. Editing only <code>.js</code>/<code>.css</code> left the deployed copy stale while the build
+reported success, and the browser served the old frontend -- so a test of new frontend code silently
+exercised the old code and passed. That was first fixed with an always-out-of-date
+<code>copy_webinterface</code> target.</p>
+<p><strong>Since 2026-08-26 there is no copy at all.</strong> The exe lives in <code>bin/</code> and resolves its web root as
+<code>&lt;exe&gt;/../webinterface</code>, which <em>is</em> the repo's own <code>webinterface/</code> -- so the served root and the
+source tree are the same directory and nothing can go stale behind you. A frontend edit needs no
+build, only a hard reload (Ctrl+Shift+R; Chrome caches JS).</p>
+<p>The sharp edge moved with it: <strong>the working tree is the deployment</strong>, so editing <code>webinterface/</code>
+while a backend or a GUI suite is running changes the code under test mid-run, and a page that
+fetches during a truncate-then-rewrite gets a half-written module and never boots. Prototype in the
+scratchpad and apply only when nothing is running -- <a href="AgentTraps.html"><code>AgentTraps.md</code></a> §11.</p>
+<p>When a frontend change appears not to take:
+<code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&gt;</code> (or whatever <code>--http-port</code> this
+backend was given -- the ports are options now, and each parallel GUI worker has its own pair).</p>
 <h2 id="9-known-gaps">9. Known gaps<a class="headerlink" href="#9-known-gaps" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>Sources have a fault channel, and it is a good one</strong> -- <code>IDataSourceWorker::sigDswError</code>, with
@@ -472,8 +484,13 @@ to take: <code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&
   processor reads from stalled?" -- the graph is bound by buffer name and is not walked. With one
   probe per profile the answer is the same; with two independent sources it could mark a genuinely
   faulty processor as merely blocked.</li>
-<li><strong>The HTTP server does not strip query strings</strong>, so <code>index.html?x=1</code> 404s.</li>
-</ul></article>
+</ul>
+<p><strong>Closed 2026-08-30: the HTTP server now strips query strings and fragments.</strong> This list used to end
+"<code>index.html?x=1</code> 404s", and it did: the request line carries the whole request-target, so
+<code>/?view=detached&amp;cols=2</code> never equalled <code>/</code> and was opened as a file literally <em>named</em>
+<code>?view=detached&amp;cols=2</code>. Every URL with a query string 404'd, which is why the first detached view
+window came up blank -- right URL, no document. <code>startSimpleHttpServer</code> in <code>src/main.cpp</code> truncates
+at the first <code>?</code> and <code>#</code> before resolving a path. See <a href="DetachedViews.html"><code>DetachedViews.md</code></a>.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/Fdir.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -489,10 +506,10 @@ to take: <code>curl -s http://localhost:8234/main.js | grep &lt;your new symbol&
 <li><a href="#81-one-snapshot-answerable-at-any-time">8.1 One snapshot, answerable at any time</a></li>
 <li><a href="#82-liveness-started-is-not-working">8.2 Liveness: "started" is not "working"</a></li>
 <li><a href="#83-recording-is-confirmed-too">8.3 Recording is confirmed too</a></li>
-<li><a href="#84-the-indicator-is-labelled-not-a-bare-dot">8.4 The indicator is labelled, not a bare dot</a></li>
+<li><a href="#84-the-indicator-is-labeled-not-a-bare-dot">8.4 The indicator is labeled, not a bare dot</a></li>
 <li><a href="#85-sources-are-monitored-too-and-a-dead-source-silences-its-victims">8.5 Sources are monitored too, and a dead source silences its victims</a></li>
 <li><a href="#86-cycle-counts-monotonic-underneath-per-run-on-screen">8.6 Cycle counts: monotonic underneath, per-run on screen</a></li>
-<li><a href="#87-the-frontend-must-actually-be-deployed">8.7 The frontend must actually be deployed</a></li>
+<li><a href="#87-the-frontend-is-served-from-the-working-tree">8.7 The frontend is served from the working tree</a></li>
 </ul>
 </li>
 <li><a href="#9-known-gaps">9. Known gaps</a></li>

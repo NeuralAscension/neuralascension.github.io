@@ -100,8 +100,9 @@
 <a class="active" href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -153,6 +151,16 @@ build/verify the 2026-07-06 work and is the recommended way to check any GUI cha
 Chromium with an isolated profile on a free debug port, waits for both, and tears everything down. It
 is what every GUI test uses. Sections 1–2 below describe the raw layer underneath it — read those
 only when you need something the harness does not do.</p>
+<blockquote>
+<p><strong>The suite is no longer one backend.</strong> Since 2026-09-01 <code>run_gui_tests.py</code> runs four tests at a
+time, and each worker gets its own free WS/HTTP port pair through <code>SPIKESPEAK_WS_PORT</code> /
+<code>SPIKESPEAK_HTTP_PORT</code>, so each <code>Gui()</code> brings up <strong>its own</strong> backend and its own isolated Chrome
+and quits both. The defaults are unchanged (1234/8234), so running one test file by hand, or
+anything in sections 1–3 below, still talks to a single ordinary backend on the ordinary ports —
+which is exactly why "one backend + one browser at a time" is still the rule for <strong>you</strong>, driving
+by hand, and no longer a description of the suite. <code>--jobs 1</code> restores the shared-backend
+behavior. See <a href="Testing.html"><code>Testing.md</code></a> §3.</p>
+</blockquote>
 <p>This is the whole recipe for "screenshot the app doing X":</p>
 <pre><code class="language-python">import base64, os, sys, time
 REPO = r&quot;C:\Users\BIOEl\Documents\Code\SpikesPeak&quot;
@@ -178,6 +186,13 @@ with Gui(source=&quot;NPX 2.0 Multishank (OneBox)&quot;, window=(1920, 1080)) as
 <code>monitor="portrait"</code>. Useful methods: <code>live_view(play, settle)</code>, <code>columns(n)</code>, <code>width(px)</code>,
 <code>ripple_dock(open)</code>, <code>probe(js)</code> (returns parsed JSON), <code>settle_until_stable(js)</code>, <code>errors()</code>,
 <code>check_clean(ck)</code>, <code>shoot(name)</code>.</p>
+<p><strong>If part of your test cannot run, say so with <code>Checks.skip(what, why)</code> — never let it pass.</strong> It
+prints <code>[untested] …</code>, <code>run_gui_tests.py</code> surfaces it in the run's notices block, and the test
+reports <code>PASSED (n UNTESTED)</code> instead of a clean pass. This exists because <code>layout_matrix</code> ran its
+vertical axis in a landscape window and went green, and the correction had to be made in prose on a
+GitHub comment. Use <code>require_display("portrait"|"landscape")</code> for the display case: it returns the
+display <strong>and a reason</strong>, so "this platform cannot enumerate displays" and "there is no such screen"
+stay distinguishable.</p>
 <h3 id="use-the-helpers-in-ad-hoc-probes-too-not-just-in-the-suite">Use the helpers in ad-hoc probes too, not just in the suite<a class="headerlink" href="#use-the-helpers-in-ad-hoc-probes-too-not-just-in-the-suite" title="Permanent link">#</a></h3>
 <p>Every GUI test uses them. A one-off script written to answer a question tends not to, and then
 reports nonsense that reads as an application bug. Both of these cost time on 2026-08-25:</p>

@@ -100,8 +100,9 @@
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -411,6 +409,20 @@ From the CLI there is no dedicated command; use <code>ripple raw</code>:</p>
 </code></pre>
 <p>Then <code>ripple arm</code>. Both work before you press <code>play</code>. Switching it back off disarms the stimulator
 first, so it can never be left armed.</p>
+<h4 id="asap-delivery-has-no-cli-verb-either">⚡ ASAP delivery has no CLI verb either<a class="headerlink" href="#asap-delivery-has-no-cli-verb-either" title="Permanent link">#</a></h4>
+<p>The GUI's <strong>⚡ ASAP</strong> tab (low-latency delivery, per module — <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §8)
+is a <strong>top-level</strong> command, so <code>ripple raw</code> cannot reach it: <code>ripple raw</code> rewrites whatever you give
+it into a <code>ripple</code> command. Two ways round it:</p>
+<ul>
+<li><strong>Set it in the profile</strong> — <code>low_latency: true</code> on the source node of <code>config/&lt;Profile&gt;.yaml</code>.
+  That is the reproducible choice for a scripted run, and it is what the shipped ripple simulations
+  and the <code>… (ASAP)</code> hardware profiles do.</li>
+<li><strong>Send the raw frame yourself</strong> over the WebSocket, before <code>play</code>, if you are already scripting
+  against the socket rather than this CLI:
+  <code>{"command":"lowLatency","module":"proc.rippledetector","value":true}</code>. The reply reports what is
+  <strong>in force</strong> separately from what is merely <strong>pending</strong> — the source reads the flag once, when
+  acquisition starts, so a request made mid-stream takes effect on the next <code>play</code>.</li>
+</ul>
 <p><strong>A full ripple run (simulated — fires detections in ~10 s):</strong></p>
 <pre><code class="language-bash">python python/spikespeak_cli.py --script \
   &quot;select 'Simulated NPX 1.0 + Ripple Detection (no channels)'; waitready 30; play; sleep 2; \
@@ -457,6 +469,7 @@ before <code>play</code>. The full walkthrough of what these numbers mean (and t
 <li><a href="#2-the-python-control-cli-spikespeak_clipy">② The Python control CLI (spikespeak_cli.py)</a><ul>
 <li><a href="#driving-the-ripple-detection-module-from-the-cli">Driving the Ripple Detection module from the CLI</a><ul>
 <li><a href="#before-any-of-the-stimulation-commands-will-do-anything">⚠️ Before any of the stimulation commands will do anything</a></li>
+<li><a href="#asap-delivery-has-no-cli-verb-either">⚡ ASAP delivery has no CLI verb either</a></li>
 </ul>
 </li>
 </ul>

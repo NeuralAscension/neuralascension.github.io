@@ -100,8 +100,9 @@
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -281,8 +279,9 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 </ol>
 <hr />
 <h3 id="3a-the-variants-that-are-no-longer-in-the-dropdown">3a. The variants that are no longer in the dropdown<a class="headerlink" href="#3a-the-variants-that-are-no-longer-in-the-dropdown" title="Permanent link">#</a></h3>
-<p>Three OneBox profiles remain available from the command line only, because they are measurement tools
-rather than everyday choices. Select them with the control CLI (<code>select "&lt;exact name&gt;"</code>):</p>
+<p>The OneBox profiles that used to fill the dropdown are still there, from the command line only,
+because they are measurement tools rather than everyday choices. Select them with the control CLI
+(<code>select "&lt;exact name&gt;"</code>):</p>
 <table>
 <thead>
 <tr>
@@ -291,6 +290,10 @@ rather than everyday choices. Select them with the control CLI (<code>select "&l
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>NPX 2.0 Multishank (OneBox)</code> · <code>NPX 1.0 (OneBox)</code></td>
+<td>The old per-probe profiles, superseded by <code>Neuropixels</code>. Kept so an old measurement can be reproduced verbatim — note that both record only <strong>3 probe channels</strong> by default (§10).</td>
+</tr>
 <tr>
 <td><code>NPX 2.0 Multishank (OneBox, no ADC)</code></td>
 <td>Probe only. The control profile for throughput measurements; the ADC band does not appear.</td>
@@ -301,7 +304,7 @@ rather than everyday choices. Select them with the control CLI (<code>select "&l
 </tr>
 <tr>
 <td><code>NPX 2.0 Multishank (OneBox, ASAP)</code> · <code>NPX 1.0 (OneBox, ASAP)</code></td>
-<td><strong>Latency-benchmark variants — do not use for an experiment.</strong> Identical to the normal profile except the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. They exist so an ASAP-vs-default comparison differs by that one setting. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
+<td><strong>Latency-benchmark variants, and now the <em>old</em> way to get ASAP.</strong> Identical to the normal profile except the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. Since 2026-09-01 you switch that on from the <strong>⚡ ASAP</strong> tab instead (§8), on whatever profile you were already using; these are kept so a published A/B can be reproduced with exactly the file it was run on. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -771,6 +774,12 @@ quorum, training, and live z-tuning. Only the OneBox-specific parts are here.</p
   | <strong>Pi → AM 2300</strong> | The validated UDP → Raspberry Pi → AM Systems 2300 path. The Pi drives a constant-current stimulator; amplitude is set on the instrument, not in the GUI. |
   | <strong>OneBox DAC0 (IO0)</strong> | The box's own WavePlayer, out of breakout BNC IO0. No network hop. Amplitude in volts, here. |
   | <strong>both (for an A/B)</strong> | Fires both from the same threshold crossing — a paired comparison, not two runs matched afterwards. |</li>
+<li><strong>ASAP delivery is a toolbar control now, not a profile.</strong> The <code>Neuropixels</code> and <code>OneBox</code> profiles
+  stream at the default 1 ms acquisition poll. To take roughly half a millisecond out of the loop,
+  open <strong>⚡ ASAP</strong> in the second toolbar row and turn it on for <code>proc.rippledetector</code> — which turns it
+  on for the source feeding it as well. It costs about a whole CPU core, so it is off unless asked
+  for, and the toggle is <strong>disabled while streaming</strong> because the source reads it once at Play:
+  <strong>pause, set it, play.</strong> Full treatment: <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §8.</li>
 <li><strong>Latency, measured on this rig:</strong> the closed loop runs at <strong>0.55 ms</strong> on NP2.0 over the OneBox with
   ASAP delivery (<strong>0.92 ms</strong> on NP1.0) — see
   <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</li>
@@ -867,7 +876,7 @@ bounds every teardown call for exactly this reason, so a wedged box no longer ha
 </tr>
 <tr>
 <td><strong>Only 3 channels in the recording</strong></td>
-<td>That is the default of the <em>superseded</em> <code>NPX 2.0 Multishank (OneBox)</code> profile only. On <code>Neuropixels</code> / <code>OneBox</code> it means the GUI record-channel selection was narrowed: <strong>Probe Map → Select Recording Channels → Record all → Set recording channels</strong> before you record (§6).</td>
+<td>That is the shipped default of the <em>superseded</em> CLI-only profiles — <code>NPX 2.0 Multishank (OneBox)</code> and <code>NPX 1.0 (OneBox)</code>, which record 3 probe channels each. On <code>Neuropixels</code> / <code>OneBox</code>, which record <strong>all</strong> channels, it means the GUI record-channel selection was narrowed: <strong>Probe Map → Select Recording Channels → Record all → Set recording channels</strong> before you record (§6).</td>
 </tr>
 <tr>
 <td><strong><code>OneBox ADC (SDR)</code> is not in the band dropdown</strong></td>

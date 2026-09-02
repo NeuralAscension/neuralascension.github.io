@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -298,6 +296,10 @@ registered suites (<code>test_simbandresponse</code>, <code>test_cpufeatures</co
 <code>test_configuration</code>) were missing from it, and two more rows were undercounted. A suite that is not
 in the table is a suite nobody knows exists, and the coverage arguments made on this page are made
 from the table.</p>
+<p>It happened again the next day, in the harder-to-spot direction: <code>test_lowlatencygraph</code> landed with</p>
+<h1 id="80-on-2026-09-01-and-the-total-row-below-stayed-correct-27-suites-478-cases-both-read">80 on <strong>2026-09-01</strong>, and the Total row below stayed <em>correct</em> — 27 suites, 478 cases, both read<a class="headerlink" href="#80-on-2026-09-01-and-the-total-row-below-stayed-correct-27-suites-478-cases-both-read" title="Permanent link">#</a></h1>
+<p>off a run — above a table listing 26. A right total over a short table is worse than a wrong one,
+because nothing about it looks off.</p>
 <p>Counts are Qt Test's own <code>Totals: N passed</code> from <code>build/tests/&lt;suite&gt;.log</code>, which is why a
 data-driven suite reports more cases than it has slots, and why every suite counts two more than its
 test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run and pass).</p>
@@ -441,6 +443,11 @@ test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run a
 <td>How much of a ripple the simulator lets through to the AP band — the physics kept free of Qt and vendor headers so it is testable at all</td>
 </tr>
 <tr>
+<td><code>test_lowlatencygraph</code></td>
+<td style="text-align: right;">8</td>
+<td>An ASAP request walks <strong>upstream through a node with no knob of its own</strong> (#80), and a release gives back exactly what the request took — the ownership half being the bug already paid for once, when one ripple run left <code>proc.lfp</code> filtering 384 channels for the rest of the session</td>
+</tr>
+<tr>
 <td><strong>Total</strong></td>
 <td style="text-align: right;"><strong>478</strong></td>
 <td>27 suites, 8.8 s of CTest time per pass (counts re-checked <strong>2026-09-01</strong> against <code>build/tests/*.log</code>, on Linux/GCC 13.3)</td>
@@ -464,7 +471,7 @@ both <code>SpikesPeak.exe</code> and the tests link. That one change unlocks uni
 source in the codebase, and it is the single highest-leverage next step for this suite.</p>
 <p>A machine-readable result is written to <code>&lt;build&gt;/test_status.json</code> on every run. <code>scalar_failed</code> is
 the second pass's count, and <code>ok</code> is false when <strong>either</strong> pass failed:</p>
-<pre><code class="language-json">{ &quot;generated&quot;: &quot;2026-08-31T17:33:56&quot;, &quot;total&quot;: 26, &quot;passed&quot;: 26, &quot;failed&quot;: 0,
+<pre><code class="language-json">{ &quot;generated&quot;: &quot;2026-09-01T22:54:25&quot;, &quot;total&quot;: 27, &quot;passed&quot;: 27, &quot;failed&quot;: 0,
   &quot;scalar_failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
 </code></pre>
 <h2 id="1a-running-both-suites-on-linux">1a. Running both suites on Linux<a class="headerlink" href="#1a-running-both-suites-on-linux" title="Permanent link">#</a></h2>
@@ -540,7 +547,7 @@ do not, you are not building the Linux branch and everything after it is meaning
 <ul>
 <li><strong>The source picker has only <code>Sim*</code> profiles.</strong> Selecting a hardware profile does <em>not</em> hang
   half-connected: <code>WebSocketServer</code> broadcasts an explicit <em>"Real Neuropixels hardware (PXI/OneBox) is
-  not available in this build"</em> toast. This is a behaviour only a sim-only build can exercise —
+  not available in this build"</em> toast. This is a behavior only a sim-only build can exercise —
   Linux is the only place it is checked, so notice if it stops working.</li>
 <li><strong><code>source.nidaq.sim</code> still works.</strong> The lib-free half of the NI-DAQ module compiles on every
   platform by design, so every <code>Sim*NiDaq</code> config is available.</li>
@@ -548,18 +555,26 @@ do not, you are not building the Linux branch and everything after it is meaning
   <code>.log</code> files is Windows-specific; on Linux <code>build/tests/test_coretypes</code> prints normally. The log
   files are still written and are still what <code>run_tests.py</code> prints on a failure.</li>
 </ul>
-<h3 id="layout_matrixs-portrait-half-is-not-tested-on-linux"><code>layout_matrix</code>'s portrait half is NOT tested on Linux<a class="headerlink" href="#layout_matrixs-portrait-half-is-not-tested-on-linux" title="Permanent link">#</a></h3>
-<p><code>monitors()</code> shells out to PowerShell, is wrapped in <code>except Exception: return []</code>, and therefore
-returns empty on Linux without raising. <code>pick_monitor()</code> then returns <code>None</code>, the harness prints
-<em>"no <which> monitor attached; using the default window"</em>, and <strong>both the landscape and the portrait
-passes run in the same 1960×1080 window</strong> — confirmed on 2026-08-26, where every one of the 16 cells
-in <code>gui_layout_matrix.json</code> reported <code>viewport 1920x996</code>. The cells pass, because the assertions are
-written in the fold rule's own live operands and hold at any size. They are still measuring a layout
-no operator uses.</p>
-<p><strong>Do not report the portrait half as passing.</strong> Closing this needs an <code>xrandr --listmonitors</code> parser
-behind the same <code>monitors()</code> contract (stdlib <code>subprocess</code>, no new dependency) <em>and</em> a portrait panel
-on the box — the 2026-08-26 machine had two landscape monitors, so the parser alone would not have
-helped it.</p>
+<h3 id="layout_matrixs-portrait-half-reports-itself-untested-without-a-portrait-display"><code>layout_matrix</code>'s portrait half REPORTS ITSELF UNTESTED without a portrait display<a class="headerlink" href="#layout_matrixs-portrait-half-reports-itself-untested-without-a-portrait-display" title="Permanent link">#</a></h3>
+<p><strong>What it used to do.</strong> <code>monitors()</code> shelled out to PowerShell inside <code>except Exception: return []</code>,
+so on Linux it returned empty <em>without raising</em>. <code>pick_monitor()</code> then returned <code>None</code>, the harness
+fell back to the default window, and <strong>both the landscape and the portrait passes ran in the same
+window</strong> — on 2026-08-26 and again on 2026-09-01 every one of the 16 cells in
+<code>gui_layout_matrix.json</code> reported <code>viewport 1920x996</code>. All sixteen <strong>passed</strong>, because the
+assertions are written in the fold rule's own live operands and hold at any size; they were
+measuring a layout no operator uses, and both Linux reports had to say so in prose afterwards.
+Prose is not a test result.</p>
+<p><strong>What it does now.</strong> <code>displays()</code> enumerates with PowerShell on Windows and <code>xrandr --query</code> on
+POSIX (stdlib <code>subprocess</code>, no new dependency), and it returns a <em>reason</em> alongside the list, so
+"this platform cannot look" and "this box has no portrait panel" are no longer the same answer.
+<code>require_display("portrait")</code> hands <code>layout_matrix</code> that reason, and the axis is recorded with
+<code>Checks.skip()</code> — printed as <code>[untested] the vertical axis (8 of the 16 cells): …</code>, surfaced in
+<code>run_gui_tests.py</code>'s own notices block, and reported as <strong>PASSED (1 UNTESTED)</strong> rather than as a
+clean pass. The rule it pins is in <code>python/tests/test_display_requirements.py</code>: a test that cannot
+exercise its subject says so.</p>
+<p><strong>A portrait panel is still what actually closes it.</strong> The enumerator only means the gap is now
+visible in the run output instead of in a GitHub comment — the 2026-08-26 machine had two landscape
+monitors, and no parser was ever going to help it.</p>
 <h3 id="tear-down-and-mind-the-operators-browser">Tear down, and mind the operator's browser<a class="headerlink" href="#tear-down-and-mind-the-operators-browser" title="Permanent link">#</a></h3>
 <p>The suite writes into git-tracked <code>developer_docs/images/gui/</code>, so a Linux run overwrites
 Windows-rendered documentation screenshots. After every run:</p>
@@ -582,8 +597,11 @@ look like one. Nothing else is required: stdlib <code>unittest</code>, no pytest
 ports. On Ubuntu ≥ 23.04 a bare <code>pip install numpy</code> is refused (PEP 668); use
 <code>sudo apt install python3-numpy</code>, or a venv.</p>
 <p><code>scripts/run_all_tests.py</code> now runs it, <strong>between</strong> the C++ suite and the GUI suite. It needs no
-browser, no backend and no ports, and it finishes in under two seconds — so finding out the offline
-tooling is broken before an eleven-minute browser run is simply the cheap ordering.</p>
+browser, no backend and no ports, and it finishes in ~16 s — so finding out the offline tooling is
+broken before a ten-minute browser run is simply the cheap ordering. (It was under two seconds when
+it entered the gate. About 12 of the 16 are now <code>test_gui_runner_timeout.py</code> alone, which has to let
+a deadline actually expire — the only way to prove a deadline fires. Everything else is still
+fractions of a second.)</p>
 <h3 id="it-existed-it-passed-and-nothing-ran-it">It existed, it passed, and nothing ran it<a class="headerlink" href="#it-existed-it-passed-and-nothing-ran-it" title="Permanent link">#</a></h3>
 <p>Four files, 113 tests, green — and not referenced by <code>run_tests.py</code>, <code>run_all_tests.py</code>, CMake or
 CTest. They ran when somebody remembered.</p>
@@ -612,7 +630,7 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 </tr>
 <tr>
 <td><code>test_reader_all_channels.py</code></td>
-<td><code>channels: []</code> means ALL channels, and the reader must honour it rather than refuse</td>
+<td><code>channels: []</code> means ALL channels, and the reader must honor it rather than refuse</td>
 </tr>
 <tr>
 <td><code>test_config_channels.py</code></td>
@@ -628,19 +646,19 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 </tr>
 <tr>
 <td><code>test_arch_parity.py</code></td>
-<td><strong>every platform's <code>src/arch/**</code> header declares the same functions, and matches its own <code>.cpp</code>.</strong> Added 2026-09-02: a Linux-only header drifted from the Windows one and from its own implementation, and MSVC never compiles it — so the Linux gate was the only thing that could fail. This catches it from Windows in 3 ms</td>
+<td><strong>every platform's <code>src/arch/**</code> header declares the same functions, and matches its own <code>.cpp</code>.</strong> Added 2026-09-01: a Linux-only header drifted from the Windows one and from its own implementation, and MSVC never compiles it — so the Linux gate was the only thing that could fail. This catches it from Windows in 3 ms</td>
 </tr>
 <tr>
 <td><code>test_av_eye.py</code></td>
-<td><strong>the EYE is a PER-STREAM publish interval, never a statistic pooled across streams.</strong> Added 2026-09-02: pooling reported 0.6 ms on a three-band profile, which is not a display cadence</td>
+<td><strong>the EYE is a PER-STREAM publish interval, never a statistic pooled across streams.</strong> Added 2026-09-01: pooling reported 0.6 ms on a three-band profile, which is not a display cadence</td>
 </tr>
 <tr>
 <td><code>test_rig_teardown.py</code></td>
-<td><strong><code>ripple_tools/rig.py</code>'s lifecycle: a handle written by a background thread is not closed until that thread is joined.</strong> Added 2026-09-02</td>
+<td><strong><code>ripple_tools/rig.py</code>'s lifecycle: a handle written by a background thread is not closed until that thread is joined.</strong> Added 2026-09-01</td>
 </tr>
 <tr>
 <td><code>test_display_requirements.py</code></td>
-<td><strong>a test that cannot exercise its subject says so.</strong> Added 2026-09-02, after <code>layout_matrix</code> passed on a box with no portrait display while never running its vertical axis</td>
+<td><strong>a test that cannot exercise its subject says so.</strong> Added 2026-09-01, after <code>layout_matrix</code> passed on a box with no portrait display while never running its vertical axis</td>
 </tr>
 <tr>
 <td><code>test_gui_runner_timeout.py</code></td>
@@ -668,13 +686,13 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 </tr>
 </tbody>
 </table>
-<p>Seventeen files, <strong>182 tests</strong> as of 2026-09-02.</p>
+<p>Seventeen files, <strong>182 tests</strong> as of 2026-09-01.</p>
 <p><strong>This table has now been wrong twice, the same way.</strong> It said five files and 121 tests until
 <code>test_band_response.py</code> was added on 2026-08-31 — and the five missing tests were exactly the file
 it had forgotten. Then on 2026-09-01 the Linux run updated the page's <em>headline</em> totals to
 27/478/26 and 151 Python tests but left this section reading <em>"Six files, 126 tests"</em>, so the page
 disagreed with itself by 25 tests and seven files while its own closing sentence said why that
-happens. Corrected 2026-09-02 by listing every file and deriving the total from a run.</p>
+happens. Corrected 2026-09-01 by listing every file and deriving the total from a run.</p>
 <p><strong>An inventory understates a suite by precisely the thing it omits, which is why the omission and
 the wrong total always arrive together.</strong> Update the table in the same commit as the file, or
 neither is true.</p>
@@ -780,7 +798,7 @@ stand in for either. That is the wrong tax on an edit-compile loop. Run them whe
 <p><strong>They run FOUR AT A TIME since 2026-09-01, and the suite went from ~35 minutes to ~10.</strong> Each job
 gets its own backend on its own port pair and its own isolated Chrome on a private debug port, so
 nothing is shared and nothing has to be reset between tests. <code>--jobs 1</code> restores the serial
-behaviour, where one backend is started and shared — and it is still the only mode that streams a
+behavior, where one backend is started and shared — and it is still the only mode that streams a
 test's output live.</p>
 <p>Measured on a 16-core box: <strong>jobs=1 → 2112 s; jobs=4 → 604 s (3.5×); jobs=6 → 1266 s</strong>, i.e. <em>worse</em>
 than 4. Each job is a backend simulating 384 channels at 30 kHz plus a Chromium running WebGL, so
@@ -834,7 +852,7 @@ with <code>--fatal</code> they fail the run.</p>
 <tr>
 <td></td>
 <td><code>--keep-backend</code></td>
-<td>leave the shared backend up afterwards (debugging; not for a rig). Also suppresses the surviving-backend check, since the survivor is what you asked for</td>
+<td>leave the backend this runner started up afterwards — which only exists under <code>--jobs 1</code>, since a parallel worker owns and tears down its own (debugging; not for a rig). Also suppresses the surviving-backend check, since the survivor is what you asked for</td>
 </tr>
 <tr>
 <td></td>
@@ -859,7 +877,7 @@ with <code>--fatal</code> they fail the run.</p>
 <tr>
 <td></td>
 <td><code>--only-cpp</code> / <code>--only-gui</code></td>
-<td>run one of the three suites — <strong>both of these also skip the Python suite</strong>, which is two seconds and needs nothing. <code>--only-cpp</code> is not "the C++ and Python halves"</td>
+<td>run one of the three suites — <strong>both of these also skip the Python suite</strong>, which is ~16 s and needs nothing. <code>--only-cpp</code> is not "the C++ and Python halves"</td>
 </tr>
 <tr>
 <td></td>
@@ -869,8 +887,8 @@ with <code>--fatal</code> they fail the run.</p>
 </tbody>
 </table>
 <p><code>run_all_tests.py</code> runs <strong>all three</strong> suites — C++, then Python, then GUI — behind a live progress
-page with an ETA per test. Python goes second on purpose: two seconds, no browser, no backend, so a
-broken converter is found before the ten-minute browser run rather than after it.</p>
+page with an ETA per test. Python goes second on purpose: ~16 s, no browser, no backend, so a broken
+converter is found before the ten-minute browser run rather than after it.</p>
 <p><strong>Why they are not unit tests in the jsdom sense.</strong> <code>fitToolbar()</code> decides whether to fold by
 <em>measuring real layout</em> — it compares row 1's natural width against the wrapper's available width.
 A DOM shim has no layout engine: every width would measure 0 and every assertion would pass
@@ -916,7 +934,7 @@ failure (every invariant holds), but it means a whole CSS tier is carrying no we
 removed, or the thresholds separated so it does.</p>
 <h3 id="live_view-traces-labels-strips-pinning"><code>live_view</code> — traces, labels, strips, pinning<a class="headerlink" href="#live_view-traces-labels-strips-pinning" title="Permanent link">#</a></h3>
 <p>Covers: traces render at 1/2/3 columns (a sized canvas, and a non-zero row count reported by the
-column's own WebGL renderer — <code>column.gl.rows</code>, which a renderer that drew nothing cannot fake); the ADC column is labelled with the <strong>SDR</strong> connector name and its traces are <code>IOn</code>; no
+column's own WebGL renderer — <code>column.gl.rows</code>, which a renderer that drew nothing cannot fake); the ADC column is labeled with the <strong>SDR</strong> connector name and its traces are <code>IOn</code>; no
 column is left saying <em>"Waiting for data…"</em> after play; a control strip collapses when the window is
 narrowed to 1080px at three columns — width is what makes a column too small, not column count —
 while the <strong>depth readout stays visible</strong>; a pin holds the strip open <strong>and survives a column
@@ -1119,10 +1137,10 @@ line and would have caught all three defects. Do not. It goes red on every legit
 gets re-baselined by whoever is in a hurry, and after two re-baselines it asserts nothing. Only
 <em>relational</em> invariants belong here: X before Y, X present, X never present, teardown terminates.</p>
 <h3 id="where-this-stops-honestly">Where this stops, honestly<a class="headerlink" href="#where-this-stops-honestly" title="Permanent link">#</a></h3>
-<p><code>test_oneboxwaveplayer</code> covers the WavePlayer's own sequence behaviourally, and the trigger-routing
-helper behaviourally. But <strong>"nobody calls the helper" — the defect that actually shipped — is covered
+<p><code>test_oneboxwaveplayer</code> covers the WavePlayer's own sequence behaviorally, and the trigger-routing
+helper behaviorally. But <strong>"nobody calls the helper" — the defect that actually shipped — is covered
 only by a source-text guard</strong>, because linking <code>OneBoxSource.cpp</code> into a test means also linking
-<code>NpInterface.cpp</code> and defining 38 vendor symbols. The guard is labelled as one in the test file.</p>
+<code>NpInterface.cpp</code> and defining 38 vendor symbols. The guard is labeled as one in the test file.</p>
 <p>That larger tier is worth doing and is <strong>not blocked on the <code>SpikesPeakCore</code> extraction</strong>, contrary
 to the note at the bottom of <code>tests/CMakeLists.txt</code>: that note is about <code>src/core/Utils.cpp</code>, the
 composition root. <code>OneBoxSource.cpp</code>'s only <code>Utils::</code> reference is <code>toStdString</code>, which is inline in
@@ -1133,7 +1151,7 @@ the header. The link closure is <code>NpInterface.cpp</code> plus a few small fi
 <ul>
 <li><strong>Anything that guards a past defect.</strong> <code>test_boundedcall</code> is the model: it reduces the wedge to
   "a callee that never returns must not block the caller" and fails loudly if that regresses.</li>
-<li><strong>The data path.</strong> <code>CircularBuffer</code> wraparound and multi-consumer behaviour — a bug here silently
+<li><strong>The data path.</strong> <code>CircularBuffer</code> wraparound and multi-consumer behavior — a bug here silently
   corrupts recordings.</li>
 <li><strong>Pure arithmetic with a published ground truth.</strong> The NP2.0 channel↔electrode mapping is checked
   against imec's manual; an error there would survive into analysis.</li>
@@ -1165,7 +1183,7 @@ setter set something.</p>
 <li><a href="#the-two-commands">The two commands</a></li>
 <li><a href="#what-linux-needs-that-windows-does-not">What Linux needs that Windows does not</a></li>
 <li><a href="#three-things-that-are-different-on-linux-and-are-not-bugs">Three things that are different on Linux and are not bugs</a></li>
-<li><a href="#layout_matrixs-portrait-half-is-not-tested-on-linux">layout_matrix's portrait half is NOT tested on Linux</a></li>
+<li><a href="#layout_matrixs-portrait-half-reports-itself-untested-without-a-portrait-display">layout_matrix's portrait half REPORTS ITSELF UNTESTED without a portrait display</a></li>
 <li><a href="#tear-down-and-mind-the-operators-browser">Tear down, and mind the operator's browser</a></li>
 </ul>
 </li>

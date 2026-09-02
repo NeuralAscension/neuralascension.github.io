@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -322,11 +320,13 @@ flipped to <code>true</code> — check <code>DEBUGGING_RIPPLE_DETECTION_FILTERS<
 <code>src/modules/swr/RippleDetector.cpp</code> and <code>kDebugFilters</code> at the top of <code>src/core/BandFilterProcessor.cpp</code>.
 Those two files are the only places either switch is defined.</p>
 <blockquote>
-<p><strong>Known stale references in the source.</strong> Two comments in <code>src/modules/swr/RippleDetector.cpp</code> still
-point at the deleted <code>lfp/LFPProcessor.cpp</code> — the mirror-switch note near the top (which also still
-uses the old name <code>DEBUGGING_LFP_FILTERS</code>) and the <code>noteCycle()</code> comment in the detection loop. Both
-mean <code>src/core/BandFilterProcessor.cpp</code>. Written down here so the next person does not spend ten
-minutes looking for a file that was deleted.</p>
+<p><strong>Known stale references in the source.</strong> <code>src/modules/swr/RippleDetector.cpp:38</code> still says the
+mirror switch is <em>"<code>DEBUGGING_LFP_FILTERS</code> in <code>lfp/LFPProcessor.cpp</code>"</em>. Both halves are wrong: the
+switch is <code>kDebugFilters</code> and the file is <code>src/core/BandFilterProcessor.cpp</code>. The detection loop's
+<code>noteCycle()</code> comment (line 1173) points at <em>"LFPProcessor"</em>, which does still exist — but only as
+<code>src/modules/lfp/LFPProcessor.hpp</code>, a header naming coefficients; the rationale it means is the
+<code>noteCycle()</code> comment in <code>BandFilterProcessor.cpp</code>'s own loop. Written down here so the next person
+does not spend ten minutes looking for a <code>.cpp</code> that was deleted.</p>
 </blockquote>
 <h2 id="related">Related<a class="headerlink" href="#related" title="Permanent link">#</a></h2>
 <ul>

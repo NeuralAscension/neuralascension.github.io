@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -296,7 +294,10 @@ because the merged version looks tidier and someone will try to merge it back.</
   accident: the backend auto-quits ~2 s after its last WebSocket client leaves, so each test usually
   got a fresh one. When a test connected inside that window it reused a backend that still had a
   source, the select was dropped, and the test ran against the <em>previous</em> test's source — surfacing
-  as a dozen unrelated failures about labels and units.</li>
+  as a dozen unrelated failures about labels and units. Since the suite went parallel on 2026-09-01
+  each worker gets its <strong>own</strong> ports and therefore its own backend, so the <em>reuse</em> half of this only
+  bites at <code>--jobs 1</code> or when you run a test file by hand against a backend you left up — but the
+  rule is unchanged, because the refusal is a property of the backend, not of the runner.</li>
 <li><strong>Configuring the ripple detector does not start it.</strong> Adding electrodes populates the dock and is
   enough for the sidecar to be written, so it <em>looks</em> like the detector is live — but the baseline
   estimation window does not begin until <code>#rd-run</code> is pressed. A test that set <code>z = 0</code> and waited 90 s
@@ -416,7 +417,7 @@ than an adaptive fraction of whatever noise the channel has.</p>
 ~1.715 V and wander; anything that calls that an edge will find thousands.</p>
 <p><strong><code>rig.record(out_dir, name)</code> writes into <code>out_dir/name/</code>,</strong> not <code>out_dir</code>. Globbing the parent finds
 nothing and fails as an <code>IndexError</code> far from the cause. And a second run into the same <code>name</code> adds a
-second timestamped sidecar beside the first -- <strong>sort by mtime</strong>, or you will silently analyse the old
+second timestamped sidecar beside the first -- <strong>sort by mtime</strong>, or you will silently analyze the old
 recording. Both happened; the second reported a 5 s smoke test's n=104 as though it were the
 1000-detection run. Full layout in <code>ClosedLoopDriving.md</code> section 3a.</p>
 <p><strong>Existence is not visibility.</strong> The GUI docks (<code>#obx-dock</code>, the ripple dock) are built into the DOM at
@@ -437,7 +438,7 @@ same error as all of the above: checking the thing that is easy to check instead
 actually mean.</p>
 <hr />
 <p><strong>WebSocket command names are case-sensitive, and getting one wrong used to be silent.</strong> The chain
-matches on exact spelling: <code>Disconnect</code> takes a capital <strong>D</strong>, and its twelve neighbours are
+matches on exact spelling: <code>Disconnect</code> takes a capital <strong>D</strong>, and its twelve neighbors are
 lowerCamel. On 2026-08-25 a script sending <code>{"command":"disconnect"}</code> failed to release the source
 for a whole four-cell hardware run; the backend then correctly refused each profile switch and logged
 exactly why, but the script never looked, and the files looked perfect afterwards.</p>
@@ -510,7 +511,7 @@ flip is a size change the chart-area <code>ResizeObserver</code> picks up and re
 frame took the page down during development.</p>
 <h2 id="5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted">5f. <code>requestAnimationFrame</code> does not fire when nothing is being painted<a class="headerlink" href="#5f-requestanimationframe-does-not-fire-when-nothing-is-being-painted" title="Permanent link">#</a></h2>
 <p><strong>A layout decision deferred through rAF is a layout decision that may never happen.</strong> rAF runs only
-while the page is actually rendering. A minimised window, an occluded one, a background tab, or a
+while the page is actually rendering. A minimized window, an occluded one, a background tab, or a
 browser driven over CDP with nothing on screen all suspend it indefinitely — the callback is not
 late, it is never called.</p>
 <p>This cost a full GUI-suite red on 2026-08-26. <code>live_view</code> asserted that three columns in a 1080px
@@ -537,15 +538,22 @@ wait for one. Deferring a <em>decision</em> is not.</p>
 <code>CommandDispatcher::executeCallbacks</code> did a range-<code>for</code> over <code>mSubscriptions[commandId]</code> and, for any
 subscriber whose <code>QPointer</code> had gone null, called <code>removeSubscriber(...)</code> — which erases from <em>that
 same vector</em>, and, once it empties, <code>mSubscriptions.remove(commandId)</code>, destroying the container the
-loop is still walking. It reads as diligent lifetime hygiene. It is undefined behaviour, and it
+loop is still walking. It reads as diligent lifetime hygiene. It is undefined behavior, and it
 segfaulted the backend for real (four core dumps, always in
 <code>BandFilterProcessor::slBpHandleCommand</code>).</p>
 <p>What made it expensive to find is <em>when</em> it fires. It needs a <strong>stale</strong> subscriber, so it needs a
-<strong>second source session in one backend process</strong>. Every GUI test but one starts clean and never sees
-it; <code>band_dependency</code> is the only one that runs after another session, so it was the only red test —
-and it <strong>passed when run alone</strong>, which is the most misleading signal available. If a test passes in
-isolation and fails in the suite, the state that matters lives in something <em>shared</em>, not in the test.
+<strong>second source session in one backend process</strong>. Every other GUI test starts clean and never sees
+it, so <code>band_dependency</code> was the only red test — and it <strong>passed when run alone</strong>, which is the most
+misleading signal available. If a test passes in isolation and fails in the suite, the state that
+matters lives in something <em>shared</em>, not in the test.
 Reap dead entries in one pass first, then iterate a copy.</p>
+<p><strong>And note WHY that test still covers this now the suite is parallel.</strong> Since 2026-09-01 no test
+inherits another test's backend — every worker gets its own. What reproduces the condition is that
+<code>band_dependency.py</code> opens <strong>two <code>Gui</code> sessions in one backend process</strong> itself
+(<code>tests/gui/band_dependency.py:157</code> and <code>:270</code>), which it did all along; the serial ordering was
+never the mechanism, only the thing that made it look like one. So every gate run exercises it, on
+both platforms — and a test that needs a second session must open one rather than hope the runner
+hands it a dirty backend.</p>
 <p><strong>On Linux the browser you launched is not the process you are holding.</strong> <code>/usr/bin/brave-browser</code>
 (and <code>google-chrome</code>, and <code>chromium</code>) are <code>#!/bin/bash</code> <strong>wrapper scripts</strong> that spawn the real binary
 as a child. <code>subprocess.Popen</code> therefore holds the <em>wrapper's</em> pid, and <code>terminate()</code> reaps only the
@@ -662,7 +670,7 @@ therefore silent where a real one plainly shows ripples.</p>
 <code>sosfiltfilt(butter(4, 300))</code>. Zero-phase filtering applies the response <strong>twice</strong>, so a 4th-order
 design rolls off like an 8th-order one and the ripple came out at <strong>0.0375</strong>. Two simulators, both
 claiming "as on real hardware", disagreeing by 15×.</p>
-<p><strong>The general form:</strong> a band edge is a slope, not a wall, and neighbouring-band content survives it
+<p><strong>The general form:</strong> a band edge is a slope, not a wall, and neighboring-band content survives it
 by a computable amount. Whenever a comment justifies dropping a signal because a filter "removes" or
 "attenuates" it, compute the gain. And <strong><code>filtfilt</code> is an analysis tool, not a hardware model</strong> — it
 doubles the effective order and is acausal, neither of which a probe can do.</p>
@@ -692,7 +700,7 @@ reading the header as signal.</p>
 <p>Proving a new test can fail means injecting a regression, watching it go red, and reverting. The
 step that is easy to skip is the <strong>rebuild after the revert</strong> — the source is clean, <code>git status</code>
 agrees, and <code>bin/SpikesPeak.exe</code> still contains the regression.</p>
-<p>This burned a full record-and-analyse cycle: the measurement said the AP band carried no ripple, and
+<p>This burned a full record-and-analyze cycle: the measurement said the AP band carried no ripple, and
 it was measuring a binary built from the brick-wall injection. The analysis was right; the binary was
 stale. <strong>After reverting an injected regression, rebuild before measuring anything.</strong></p>
 <hr />
@@ -708,6 +716,12 @@ CDP dying mid-<code>Runtime.evaluate</code> (<code>ConnectionAbortedError 10053<
 the browser away. It reads exactly like "my frontend change broke page load".</p>
 <p>Worse, if the second thing you do is <code>build.bat</code>, you have also swapped <code>bin/SpikesPeak.exe</code> under a
 live run.</p>
+<p><strong>A shared lock now refuses the second runner rather than letting it collide</strong> — <code>scripts/_gatelock.py</code>,
+taken by <code>run_all_tests.py</code> <em>and</em> <code>run_gui_tests.py</code>, with ownership inherited through the
+environment so the gate does not deadlock against the GUI suite it runs as a child. A stale lock from
+a killed run is detected by pid and never blocks; <code>--force</code> overrides deliberately. That removes the
+collision, <strong>not the misreading it came from</strong>: the process table still goes empty mid-run, and the
+lock only helps the runners that take it — a hand-rolled script driving the backend does not.</p>
 <p><strong>Ask the task, not the process table.</strong> A backgrounded gate reports completion; wait for that.
 <code>4 of 4 unrelated GUI tests failing</code> is far more often a second runner than a real regression --
 check for a concurrent run BEFORE reading the failures. And note the corollary: <code>run_all_tests.py</code>

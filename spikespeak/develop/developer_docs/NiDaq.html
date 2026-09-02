@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -147,12 +145,14 @@ configs relate to the probe, and the failure modes you will actually hit (a stuc
 probe hang). Written after the 2026-07 closed-loop bring-up, where the Pi stimulator's pulse is
 captured on NI-DAQ <strong>ai4</strong>.</p>
 <blockquote>
-<p><strong>Currency, 2026-08-31.</strong> The engineering below — DIFF-only, the <code>-200077</code> and <code>-50103</code> failures,
-<code>teardownManagers</code>, the DI stream — is <strong>current and correct</strong>; it is the oldest page in this
-cluster and it has held up. What changed underneath it is the <strong>profiles</strong>: the 2026-08-26 source
-refactor replaced the per-probe hardware profiles with basestation-resolved ones, so the Configs
-table below has been rewritten and the streaming-label table completed. Everything else is as it
-was written.</p>
+<p><strong>Currency, 2026-09-01.</strong> The failure modes below — the <code>-200077</code> and <code>-50103</code> errors,
+<code>teardownManagers</code>, the DI stream — are <strong>current and correct</strong>; this is the oldest page in the
+cluster and they have held up. Two things around them have moved. The <strong>profiles</strong>: the 2026-08-26
+source refactor replaced the per-probe hardware profiles with basestation-resolved ones, so the
+Configs table has been rewritten and the streaming-label table completed. And the <strong>settings</strong>:
+the AI voltage range and the terminal mode used to be chosen for you and are now a config key and
+a GUI panel each, so <em>"DIFFERENTIAL only, and nothing can change it"</em> is no longer the whole
+story — see <em>Settings you can change</em>. Everything else is as it was written.</p>
 <p><strong>A OneBox rig has no NI-DAQ, and needs none.</strong> The box carries its own <strong>12-channel ADC</strong>, on the
 same device and the same 100 kHz clock as the probe — so a stimulus monitor or a sync line captured
 there needs no cross-device sync fit at all. If you are on a OneBox, this page is not your page:
@@ -173,11 +173,11 @@ read <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a> §6, <em>The O
 </tr>
 <tr>
 <td>Terminal config</td>
-<td><strong>DIFFERENTIAL only</strong> — RSE fails with <strong>-200077</strong>. <code>AnalogInputChannel</code> picks <code>supportedModes[0]</code> (= DIFF on the 6133), so the app already does the right thing.</td>
+<td><strong>DIFFERENTIAL on this card</strong> — RSE fails with <strong>-200077</strong>. <code>AnalogInputChannel</code>'s constructor prefers <strong>RSE</strong> when the device advertises it and only then falls through to <code>supportedModes[0]</code>; this card comes up in DIFF every time, which is the evidence that the 6133 does not advertise RSE at all. Since 2026-08 the mode is also <strong>selectable</strong> — see <em>Settings you can change</em> below — so "the app already does the right thing" is no longer the end of it.</td>
 </tr>
 <tr>
 <td>Range</td>
-<td>±10 V</td>
+<td><strong>±10 V by default, and no longer fixed.</strong> The device enumerates its supported windows at connect and the code takes the <strong>widest</strong> unless told otherwise; a narrower window buys effective resolution. <code>ai_voltage_range:</code> (in VOLTS, not a DAQmx index) and the NI-DAQ panel both change it.</td>
 </tr>
 <tr>
 <td>Registry source</td>
@@ -271,8 +271,10 @@ ask for the DAQ.</p>
 <p><em>(That reasoning lived only in <code>NeuropixelsNiDaq.yaml</code>'s header comment until 2026-08-31. It is a
 design decision, not a config detail, so it belongs here too.)</em></p>
 <h2 id="the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe">The probe codependence (why the NI-DAQ can look "dead" without a probe)<a class="headerlink" href="#the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe" title="Permanent link">#</a></h2>
-<p>The GUI's <strong>real</strong>-NI-DAQ profiles historically bundle a <strong>real</strong> probe (<code>source.npx.pxi</code>). Two
-things couple them:</p>
+<p>The NI-DAQ profiles that carry a probe at all carry a <strong>real</strong> one — <code>source.npx.pxi</code> in the legacy
+files, <code>source.npx.auto</code> in <code>NeuropixelsNiDaq.yaml</code>, which resolves to one of the real sources. (Not
+every profile with <code>source.nidaq</code> does: <code>NiDaqOnly.yaml</code> has no probe source and two others pair the
+real card with a <em>sim</em> probe — that is the escape hatch below.) Two things couple them:</p>
 <ol>
 <li><strong>Config bundling.</strong> A profile lists both <code>source.npx.pxi</code> and <code>source.nidaq</code>. <code>deviceReady</code>
    (<code>MainController::handleConnectRequest</code>) is <code>setupSources() &amp;&amp; setupProcessors()</code> — <strong>every</strong>
@@ -325,10 +327,50 @@ automatically, so a retry just works.</p>
 cycles leave the board externally reservable (no leak); with the board deliberately held busy, the
 connect returns <code>deviceReady False</code> <strong>immediately</strong> (no hang) and, once released, the <strong>next</strong> connect
 <strong>recovers</strong> to <code>deviceReady True</code>.</p>
+<h2 id="settings-you-can-change-2026-08">Settings you can change (2026-08)<a class="headerlink" href="#settings-you-can-change-2026-08" title="Permanent link">#</a></h2>
+<p>Two things the hardware reports and the code used to choose for you — the <strong>AI voltage range</strong> and the
+<strong>terminal mode</strong> — are now settable, from a profile and from the GUI. There is one panel (<code>webinterface/NiDaqModule.js</code>), and it appears only when a registered source actually exposes
+<code>niDaqInfo</code>, so a OneBox-only or probe-only rig never sees it.</p>
+<table>
+<thead>
+<tr>
+<th>setting</th>
+<th>config key</th>
+<th>GUI</th>
+<th>when it lands</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AI voltage range</td>
+<td><code>ai_voltage_range:</code> on <code>source.nidaq</code>, in <strong>volts</strong> (the ± limit) — not an index, because indices are device-specific and would silently mean a different window on other hardware. A value the device does not offer is <strong>refused with the offered list logged</strong>, and the device default kept.</td>
+<td>range dropdown, with the per-range bit depth shown so the resolution trade is visible</td>
+<td><strong>next connect</strong></td>
+</tr>
+<tr>
+<td>Terminal mode</td>
+<td><code>ai_terminal_mode:</code> — accepted exactly: <code>RSE</code>, <code>NRSE</code>, <code>Differential</code>, <code>Pseudo-differential</code>. Applied only to channels that support it, and a partial application is reported rather than passed off as complete.</td>
+<td>terminal-mode dropdown</td>
+<td><strong>next connect</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Next connect, not next Play.</strong> DAQmx fixes range and terminal configuration when the virtual channel is
+CREATED, and that happens in <code>NIDAQDevice::initialize()</code>. A first version of the panel claimed "next start
+of acquisition"; watching the backend's logged range across a play cycle showed it does not move, because
+starting does not rebuild the task.</p>
+<p><strong>The choice is remembered per device across a disconnect</strong>, and that is what makes the control work at all:
+disconnecting destroys the <code>NIDAQDevice</code>, and the disconnect is exactly what applies the change. The order
+on each <code>initialize()</code> is <em>this object's own selection → one remembered for this device → the widest window</em>.
+So config sets where a fresh run starts and the panel changes it from there — the same split as the OneBox
+ADC's <code>adc_voltage_range:</code>, deliberately, rather than a second mechanism that remembers things differently.</p>
+<p>Wrong wiring here does not fail loudly. It changes what the ground reference is, so it shows up as a shifted
+or noisy trace rather than an error — which is why the DIFFERENTIAL rule below is still a rule.</p>
 <h2 id="gotchas">Gotchas<a class="headerlink" href="#gotchas" title="Permanent link">#</a></h2>
 <ul>
-<li><strong>DIFFERENTIAL only.</strong> Do not switch the 6133 to RSE (-200077). The channel picks DIFF from
-  <code>supportedModes[0]</code>; leave it.</li>
+<li><strong>DIFFERENTIAL only, on this card.</strong> Do not switch the 6133 to RSE (-200077). This used to be advice
+  about a thing nobody could do; there is now a control that does it (<em>Settings you can change</em>), so it
+  is a real warning rather than a note about a default.</li>
 <li><strong>Force-kill leaks the reservation.</strong> Prefer a graceful disconnect/quit. If you must force-kill a
   <strong>sim</strong> backend, expect to reset the device (or just rely on the release-on-failed-connect above).</li>
 <li><strong><code>ai4</code> is the stim capture line</strong> in the closed-loop demo (Pi GPIO17 → AM 2300 gate). See
@@ -446,6 +488,7 @@ always flushed to disk before any teardown, so recordings are never lost.</p></a
 <li><a href="#the-probe-codependence-why-the-ni-daq-can-look-dead-without-a-probe">The probe codependence (why the NI-DAQ can look "dead" without a probe)</a></li>
 <li><a href="#the-intermittent-setupsources-failure-its-a-stuck-reservation-not-a-bad-config">The "intermittent setupSources failure" — it's a stuck reservation, not a bad config</a></li>
 <li><a href="#robustness-fixes-2026-07-14">Robustness fixes (2026-07-14)</a></li>
+<li><a href="#settings-you-can-change-2026-08">Settings you can change (2026-08)</a></li>
 <li><a href="#gotchas">Gotchas</a></li>
 <li><a href="#streaming-options-nidaq-aio-and-nidaq-dio">Streaming options: "NIDAQ AI/O" and "NIDAQ DI/O"</a><ul>
 <li><a href="#digital-io-stream-what-is-already-there">Digital I/O stream — what is already there</a></li>

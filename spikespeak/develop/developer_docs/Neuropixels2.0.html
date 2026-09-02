@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -479,14 +477,19 @@ reading, or display frozen while the FIFO stayed healthy). Four independent bugs
    offset; the probe display path drew samples straight at <code>yOffset+sample</code> (0-centered assumption, true only
    for the hardware-high-passed AP band), so the trace drifted below its row within minutes → blank view.
    <code>NetworkClient.js</code> now AC-couples <code>streamId === 'raw'</code> (slow min/max-midpoint baseline, same tracker as the
-   NI-DAQ path, clamped to the row band). Frontend-only. NP1 <code>ap</code>/<code>lfp</code> untouched.
+   NI-DAQ path). Frontend-only. NP1 <code>ap</code>/<code>lfp</code> untouched. <em>(This line said "clamped to the row band" until
+   2026-09-01; the code says the opposite and explains why — the baseline is seeded to the first sample so
+   there is no initial transient to clip, and a real driven signal such as a saline ripple must be drawn at
+   true amplitude rather than clipped flat. Raise the µV scale if it is taller than a row.)</em>
 - Files: <code>NpInterface.cpp</code> (#1 startAcq gate + FIFO log; #2 <code>Npx2MSProbe</code> ctor seed),
-  <code>DisplayProcessor.cpp</code> (#3 timebin re-baseline), <code>webinterface/NetworkClient.js</code> (#4). Rebuild with
-  <code>build.bat --no-pause</code> (<code>./build.sh</code> on Linux/macOS); the frontend is deployed by the build, so it
-  is a rebuild + reload rather than a copy. <em>(The old instruction here named a
-  <code>build-Desktop_…-Release</code> tree and <code>rebuild.bat</code>; <code>rebuild.bat</code> still finds such a tree if you have
-  one, but its own comment says nothing creates them any more.)</em> Verified by CDP screenshot at the
-  time (screenshots are transient — see the screenshot policy in <code>README.md</code>).</p></article>
+  <code>DisplayProcessor.cpp</code> (#3 timebin re-baseline), <code>webinterface/NetworkClient.js</code> (#4). The three C++
+  fixes need <code>build.bat --no-pause</code> (<code>./build.sh</code> on Linux/macOS); <strong>#4 needs no build at all</strong> — since
+  2026-08-26 the exe resolves its web root as <code>&lt;exe&gt;/../webinterface</code>, which is the repo's own copy, so
+  editing <code>NetworkClient.js</code> is an edit plus a hard reload (Ctrl+Shift+R). <em>(This line said the frontend
+  was "deployed by the build" until 2026-09-01, which was true when the fix landed and has not been
+  since. An older version named a <code>build-Desktop_…-Release</code> tree and <code>rebuild.bat</code>; <code>rebuild.bat</code> still
+  finds such a tree if you have one, but its own comment says nothing creates them any more.)</em> Verified
+  by CDP screenshot at the time (screenshots are transient — see the screenshot policy in <code>README.md</code>).</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/Neuropixels2.0.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">

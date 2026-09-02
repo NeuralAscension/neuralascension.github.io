@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -344,8 +342,11 @@ recorder's own thread):
 - <strong>Stop</strong>: closes + frees every recording's file (guarded against a never-opened file).</p>
 <p><strong>Channel restriction.</strong> Each recording's <code>channels:</code> list (read-out indices) restricts what is written —
 <strong>only</strong> those channels are recorded (the interpreter filter). The NP1 configs split AP + LFP into
-separate files and give each its own <code>channels:</code>; the sample configs ship <code>channels: [0..7]</code> as an
-edit-me placeholder. <strong>Remove</strong> <code>channels:</code> to record all <code>N</code>.</p>
+separate files and give each its own <code>channels:</code>; the per-probe profiles ship a three-channel
+edit-me placeholder (<code>[1, 2, 3]</code> on NP1.0, <code>[1, 192, 196]</code> on NP2.0), and the NI-DAQ recorders ship
+<code>[0..7]</code>, which is that card's whole set. <strong>Omit</strong> <code>channels:</code> to record all <code>N</code> — which is what every
+<em>hardware</em> profile the operator can pick does on its probe bands (§2; the simulated and play-file
+profiles the picker also offers keep their three-channel lists, to keep the suites fast).</p>
 <p><strong>File format</strong> — written by <code>NpxDataInterpreter::serializeAvailableData</code> (Npx.cpp), repeating
 per sample, <strong>native little-endian</strong> (x86; no byteswap):</p>
 <pre><code>┌─ per timebin ─────────────────────────────────────────────┐
@@ -476,12 +477,13 @@ read once per record press</strong> -- nothing per sample, nothing on the 30 kHz
 no value the hardware was not already asked for at connect. A source withdraws on <code>closeDataSource()</code>,
 because a snapshot left standing after a disconnect would stamp the <em>next</em> recording with a probe that
 is gone -- which is worse than no metadata, since it looks like evidence.</p>
-<p>Covered by <code>tests/test_recordingmetadata.cpp</code> (25 cases), including the count -&gt; microvolt round trip,
+<p>Covered by <code>tests/test_recordingmetadata.cpp</code>, including the count -&gt; microvolt round trip,
 the part-number-resolved NP2.0 scale, a mixed-gain map refusing to offer a scalar, the OneBox ADC
 getting no probe geometry, and the explicit-null-with-a-reason paths.</p>
 <blockquote>
-<p><strong>Still assumed elsewhere.</strong> <code>DisplayProcessor.cpp:182-189</code> still hardcodes 500/250 for the <em>live</em>
-NP1 microvolt scale, and <code>python/spikespeak_postprocess/reader.py</code> still carries <code>_UV_PER_BIT</code>.
+<p><strong>Still assumed elsewhere.</strong> <code>src/modules/neuropixels/DisplayProcessor.cpp:248-257</code> still hardcodes
+500/250 for the <em>live</em> NP1 microvolt scale, and <code>python/spikespeak_postprocess/reader.py</code> still
+carries <code>_UV_PER_BIT</code>.
 Neither affects what is written to disk any more, but both are wrong for a non-default map and
 should read the published gains / the sidecar instead.</p>
 </blockquote>
@@ -495,12 +497,17 @@ should read the published gains / the sidecar instead.</p>
       - data_name: &quot;data.npx.ap&quot;
         data_interpreter_name: &quot;interp.npx.ap&quot;
         output_filename: &quot;ap&quot;
-        channels: [0, 1, 2, 3, 4, 5, 6, 7]   # ONLY these read-out channels; edit to your selection
+        channels: [1, 2, 3]       # ONLY these read-out channels; edit to your selection
+        sample_rate_hz: 30000     # stamped into the .bin.json sidecar for postprocessing
       - data_name: &quot;data.npx.lfp&quot;
         data_interpreter_name: &quot;interp.npx.lfp&quot;
         output_filename: &quot;lfp&quot;
-        channels: [0, 1, 2, 3, 4, 5, 6, 7]
+        channels: [1, 2, 3]
+        sample_rate_hz: 2500
 </code></pre>
+<p><code>NPX 1.0</code> is <code>gui_hidden</code> and three-channel on purpose (§2) — it is a bench profile. A real session
+names <code>Neuropixels</code>, which omits <code>channels:</code> on every probe band and so records all 384. (Its <code>adc</code>
+block does carry a list, <code>[0..11]</code> — but that is the OneBox ADC's whole set, so it restricts nothing.)</p>
 <p>So one Record toggle (after the name/dir prompt, name <code>mouse42</code>) creates <strong><code>mouse42_ap_&lt;ts&gt;.bin</code></strong> and
 <strong><code>mouse42_lfp_&lt;ts&gt;.bin</code></strong> in the chosen directory (+ <strong><code>mouse42_nidaq_&lt;ts&gt;.bin</code></strong> when the profile also
 has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>proc.nidaq.recorder</code> both map to the <strong>same</strong>
@@ -510,17 +517,18 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 <ol>
 <li>Play → Record (enter a name + directory in the prompt) ~5 s → Stop. Confirm <code>&lt;name&gt;_ap_&lt;ts&gt;.bin</code> +
    <code>&lt;name&gt;_lfp_&lt;ts&gt;.bin</code> (+ <code>&lt;name&gt;_nidaq_&lt;ts&gt;.bin</code> if NI-DAQ) appear in the directory you chose.</li>
-<li><strong><code>N</code> = the number of channels in the recording's <code>channels:</code> list</strong> (the sample config records 8 →
-   per-record stride = <code>4 + 2 + 2·N</code> = 22 bytes for N=8; with no <code>channels:</code> it's all 384 → 774 bytes).
-   A whole file should be an exact multiple of that stride.</li>
+<li><strong><code>N</code> = the number of channels in the recording's <code>channels:</code> list</strong> (<code>NPX 1.0</code> records 3 →
+   per-record stride = <code>4 + 2 + 2·N</code> = 12 bytes for N=3; with no <code>channels:</code>, which is what every
+   operator-facing <em>hardware</em> profile does, it's all 384 → 774 bytes). A whole file should be an exact
+   multiple of that stride — or just read <code>frame.bytes</code> out of the sidecar, which states it.</li>
 <li>Read the first records in Python and verify monotonic timestamps and plausible int16 ranges, e.g.:
    <code>python
    import numpy as np
-   N = 8   # = len(channels) for this recording (8 in the sample config; 384 if unrestricted)
+   N = 3   # = len(channels) for this recording (3 in the bench configs; 384 if unrestricted)
    rec = np.dtype([('ts','&lt;u4'),('sync','&lt;u2'),('ch','&lt;i2',N)])
    d = np.fromfile('&lt;name&gt;_ap_&lt;ts&gt;.bin', dtype=rec)
-   print(d['ts'][:5], d['ch'][:3, :8])   # timestamps should step ~ uniformly; data ~ ADC counts</code>
-   Or just run the bundled verifier: <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels 8 --rate 30000</code>
+   print(d['ts'][:5], d['ch'][:3])   # timestamps should step ~ uniformly; data ~ ADC counts</code>
+   Or just run the bundled verifier: <code>python verify_npx_recording.py &lt;name&gt;_ap_&lt;ts&gt;.bin --channels 3 --rate 30000</code>
    (and <code>--rate 2500</code> for the LFP file). Pass <code>--channels</code> matching the <code>channels:</code> count. It checks the
    stride, monotonic timestamps, sample-rate plausibility, and int16 ranges. (NI-DAQ files use a different
    <code>[double ts][double × N]</code> layout — the NPX verifier doesn't apply.)</li>
@@ -557,6 +565,12 @@ has <code>proc.nidaq.recorder</code>). <code>proc.npx.recorder</code> and <code>
 <td>recording sidecar (all bands)</td>
 <td>The sidecar's <code>num_channels</code> describes the <strong>payload</strong>, not the frame. An NPX frame is <code>[uint32 ts][uint16 sync][int16 x N]</code> = <code>N + 3</code> int16; NI-DAQ is <code>[float64 ts][float64 x N]</code>. A reader that took <code>num_channels</code> as the stride mis-de-interleaved the whole file, and because <code>gcd</code> of the wrong and right strides is rarely 1 the columns came out <em>sample-wise distinct but statistically identical</em> — which is what made the OneBox ADC look like failing hardware in <a href="https://github.com/NeuralAscension/SpikesPeak/issues/53">#53</a>. The layout was documented in a comment above <code>writeMetadataSidecar()</code> and nowhere a reader could see it.</td>
 <td><strong>FIXED</strong> — the sidecar now carries a <code>frame</code> block (<code>bytes</code>, <code>header_bytes</code>, <code>header[]</code>, <code>payload_dtype</code>, <code>payload_channels</code>, <code>layout</code>). Verified: a 15 s NP2.0 recording reports <code>frame.bytes: 12</code>, and <code>filesize / 12 / 30000 = 15.00 s</code> exactly. <strong>Recordings made before this still need the stride computed by hand</strong> as <code>num_channels + 3</code> int16 (NPX).</td>
+</tr>
+<tr>
+<td><strong>HIGH (analysis)</strong></td>
+<td><code>python/spikespeak_io.py</code> (the single reader)</td>
+<td>An all-channel recording would not open. <code>channels: []</code> with <code>num_channels: 0</code> is the writer's <strong>documented sentinel</strong> for <em>"the whole block was written; infer N from the frame"</em> (<code>src/core/RecordingMetadata.cpp</code>), and it is the COMMON case — omitting <code>channels:</code> means record-everything, which every operator-facing profile does. The reader read it as zero channels and refused with <em>"frame is 774 B but 6 + 2</em>0 = 6 B"*, while both converters read the same file happily. Two readers in one repo disagreeing about a documented sentinel is exactly what that module was created to prevent. Found on the rig during #52's configuration 4, 2026-09-01.</td>
+<td><strong>FIXED</strong> — the sentinel is honored (<code>frame.bytes</code> gives N directly); the hard refusal is kept for a NON-empty channel list that contradicts the frame. <code>python/tests/test_reader_all_channels.py</code> pins both directions.</td>
 </tr>
 <tr>
 <td>MEDIUM</td>

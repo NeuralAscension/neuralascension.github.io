@@ -100,8 +100,9 @@
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -170,9 +168,14 @@ these shots — that is why the STIM LED is dark; see the callout in §5.</p>
 <ol>
 <li>In the toolbar's <strong>second row</strong> — beside <code>Probe Map | Live Data</code>, and the <code>▣ OneBox</code> / <code>▤ NI-DAQ</code> device tabs when those sources are connected — click <strong>SWR Detector</strong>. The dock slides in on the right and the main view <strong>shrinks
    to fit</strong> (no overlap, even columns). Drag the dock's <strong>left grip</strong> to resize it.</li>
-<li>Pick a <strong>source</strong> that produces an LFP band the detector can read (via the <strong>Source</strong> dropdown →
-   <strong>Simulated Data…</strong>, or a real-probe profile). The best sources for learning the module:</li>
 </ol>
+<p><strong>Or put it on its own monitor.</strong> The <strong>⧉</strong> button in the dock's header opens the dock as a
+   separate window and gives the live view the whole screen back. The same button in that window
+   reads <strong>⧉ Dock</strong> and hands it back. Closing the detached window does the same thing, so there is
+   no way to end up with no dock at all — and if your browser blocks the popup, the in-page dock
+   stays exactly where it was and the status line says why.
+2. Pick a <strong>source</strong> that produces an LFP band the detector can read (via the <strong>Source</strong> dropdown →
+   <strong>Simulated Data…</strong>, or a real-probe profile). The best sources for learning the module:</p>
 <table>
 <thead>
 <tr>
@@ -547,22 +550,57 @@ comes from an unusually high <em>default</em> arm (1.351 ms), not an unusually f
 <code>CLOSED_LOOP_LATENCY.md</code> reads that as more likely an artifact of the PXIe sync fit than a real effect.</p>
 <p><strong>It is not free.</strong> ASAP polls continuously — it is a deliberate busy-wait — and costs about <strong>one
 core, roughly 7× the baseline acquisition CPU</strong>. That is why it is off unless something asks for it.</p>
-<h3 id="you-probably-already-have-it">You probably already have it<a class="headerlink" href="#you-probably-already-have-it" title="Permanent link">#</a></h3>
-<p><strong>Every shipped ripple profile turns ASAP on.</strong> If you selected one of these, you are already running
-it, and there is nothing to do:</p>
-<p><code>Simulated NPX 1.0 Ripples</code> · <code>Simulated NPX 2.0 Ripples</code> · the two <code>… + Ripple Detection (no
-channels)</code> profiles · the <code>… + NI-DAQ + Ripples</code> profiles · and on real hardware the <code>(ASAP)</code>
-profiles — <code>NPX 1.0 (OneBox, ASAP)</code>, <code>NPX 2.0 Multishank (OneBox, ASAP)</code>, <code>NPX 1.0 with NI-DAQ
-(ASAP)</code>, <code>NPX 2.0 Multishank with NI-DAQ (ASAP)</code>.</p>
+<h3 id="turning-it-on-the-asap-tab">Turning it on: the ⚡ ASAP tab<a class="headerlink" href="#turning-it-on-the-asap-tab" title="Permanent link">#</a></h3>
+<p><strong>Since 2026-09-01 it is a control, not a choice of profile.</strong> Click <strong>⚡ ASAP</strong> in the second toolbar
+row — the same row that carries <strong>SWR Detector</strong>. The panel lists every module in the connected
+profile whose developer said an operator should be offered this, with one button each.</p>
+<ul>
+<li><strong><code>proc.rippledetector</code> is the one you want.</strong> Turning it on there turns it on for <strong>everything
+  upstream feeding it</strong>, which is where the latency actually is: the panel names those under
+  <em>also affects</em>, so you can see the cost before you pay it. The probe source gets its own button
+  too, because "how stale is the sample I am reacting to" is a fair question to ask of the source
+  directly. It is listed under the name of the source that was actually built —
+  <code>source.npx.onebox</code> or <code>source.npx.pxi</code> on hardware (<code>Neuropixels</code> resolves <code>source.npx.auto</code> to
+  one of those at connect, so <code>auto</code> never appears here), <code>source.npx.simdata</code> /
+  <code>source.npx.sim2</code> in simulation.</li>
+<li>Modules that merely <em>inherit</em> the setting are not listed. <code>proc.lfp</code> is in the path because the
+  detector needs it, not because anyone should be tuning it, so it does not get a button.</li>
+<li><strong>The toggle is disabled while streaming.</strong> The source reads the setting once, when acquisition
+  starts, so it cannot change under a running probe — that would put a discontinuity in the middle of
+  your data. <strong>Pause, set it, Play.</strong> If you ask while streaming anyway, the panel says
+  <em>"requested — takes effect on the next Play"</em> rather than pretending it is live.</li>
+<li>The panel reports what is <strong>running</strong> (<code>● ASAP is running</code>), never what was asked for. Those are
+  different states and it shows both.</li>
+</ul>
+<p>Before this, the only way to run a closed loop at low latency was to select a <em>different profile</em> —
+which is why the repo grew a family of files whose entire content is the same thing with one boolean
+flipped, and why the latency matrix had holes in it that no amount of clicking could fill.</p>
+<h3 id="the-profiles-that-already-have-it-on">The profiles that already have it on<a class="headerlink" href="#the-profiles-that-already-have-it-on" title="Permanent link">#</a></h3>
+<p>A profile can still set the flag itself, and the shipped ripple simulations do — so if you picked one
+of these there is nothing to turn on:</p>
+<p><strong>Neuropixels 1.0 — Ripple Detection (GUI)</strong> · <strong>Neuropixels 2.0 Multishank — Ripple Detection
+(GUI)</strong> · <strong>Neuropixels 1.0 + Real NI-DAQ + Ripples</strong> · <strong>Neuropixels 2.0 Multishank + NI-DAQ +
+Ripples</strong> · <strong>NPX 2.0 Multishank + Real NI-DAQ + Ripples</strong>.</p>
+<p><strong>The real-hardware profiles do not.</strong> <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> stream at the default
+1 ms poll, because most sessions are not closed-loop and should not pay a core for latency they do
+not use. On the rig, ASAP is something you switch on for the run that needs it. (The older
+<code>… (ASAP)</code> hardware profiles — <code>NPX 1.0 (OneBox, ASAP)</code> and its three siblings — still exist and are
+still selectable <strong>by name from the control CLI</strong>, kept so a published measurement can be reproduced
+exactly. They are no longer in the GUI menu, and the ⚡ ASAP tab is what replaced them.)</p>
 <h3 id="confirming-it-is-on">Confirming it is on<a class="headerlink" href="#confirming-it-is-on" title="Permanent link">#</a></h3>
-<p>There is no GUI switch — it is a property of the <strong>source</strong>, fixed when you connect, because changing
-delivery cadence mid-acquisition would put a discontinuity in the middle of your data. Check the
-backend log line printed at connect:</p>
+<p>Two places, and they agree:</p>
+<ul>
+<li>the <strong>⚡ ASAP</strong> panel, which reads <code>● ASAP is running</code> for a module that has it in force;</li>
+<li>the backend log line printed when acquisition starts:</li>
+</ul>
 <pre><code>[Npx2MSProbe] acquisition poll interval 0 ms (low_latency = true)
 </code></pre>
-<p><code>0 ms</code> is ASAP. <code>1 ms</code> is the default. The same line appears for every source type, naming itself.</p>
-<h3 id="turning-it-on-for-a-profile-that-does-not-have-it">Turning it on for a profile that does not have it<a class="headerlink" href="#turning-it-on-for-a-profile-that-does-not-have-it" title="Permanent link">#</a></h3>
-<p>Add one key to the <strong>source</strong> node of the profile (<code>config/&lt;Profile&gt;.yaml</code>) and reconnect:</p>
+<p><code>0 ms</code> is ASAP. <code>1 ms</code> is the default. Both real probes print it and name themselves
+(<code>[Npx1Probe]</code> / <code>[Npx2MSProbe]</code>). A simulated source says the same thing in its own words —
+<code>ASAP requested … in force now</code>, or <code>… takes effect on the next Play</code>.</p>
+<h3 id="setting-it-in-a-profile-instead">Setting it in a profile instead<a class="headerlink" href="#setting-it-in-a-profile-instead" title="Permanent link">#</a></h3>
+<p>Still supported, and the right choice for a scripted run that must be reproducible without clicking.
+Add one key to the <strong>source</strong> node of the profile (<code>config/&lt;Profile&gt;.yaml</code>) and reconnect:</p>
 <pre><code class="language-yaml">sources:
   - name: &quot;source.npx.pxi&quot;
     low_latency: true      # ASAP delivery -- smallest blocks, ~7x acquisition CPU
@@ -573,9 +611,9 @@ available — a recording-only session should not pay a core for latency it does
 <ul>
 <li><strong>Recording without a closed loop.</strong> ASAP buys latency, and a file does not care about latency.</li>
 <li><strong>Long unattended sessions</strong>, where a spare core is worth more than half a millisecond.</li>
-<li><strong>Any module other than the ripple detector.</strong> By project convention the ripple detector is the
-  only one that opts in by default; the live display, recorder, LFP derivation and audio all run at
-  the normal 1 ms poll and none of them assumes otherwise.</li>
+<li><strong>Anything other than the closed loop.</strong> The live display, recorder, LFP derivation and audio all
+  run at the normal 1 ms poll and none of them assumes otherwise — which is why the ⚡ ASAP panel does
+  not offer them a button at all. A control that only ever costs you a core is not a control.</li>
 </ul>
 <p>Full method, the per-stage breakdown and the A/B that produced these numbers:
 <a href="../developer_docs/LatencyProfiling.html"><code>developer_docs/LatencyProfiling.md</code></a>.</p>
@@ -627,9 +665,10 @@ available — a recording-only session should not pay a core for latency it does
 </li>
 <li><a href="#7-a-complete-worked-example-np1-sim">7. A complete worked example (NP1 sim)</a></li>
 <li><a href="#8-asap-delivery-trading-cpu-for-a-shorter-loop">8. ASAP delivery — trading CPU for a shorter loop</a><ul>
-<li><a href="#you-probably-already-have-it">You probably already have it</a></li>
+<li><a href="#turning-it-on-the-asap-tab">Turning it on: the ⚡ ASAP tab</a></li>
+<li><a href="#the-profiles-that-already-have-it-on">The profiles that already have it on</a></li>
 <li><a href="#confirming-it-is-on">Confirming it is on</a></li>
-<li><a href="#turning-it-on-for-a-profile-that-does-not-have-it">Turning it on for a profile that does not have it</a></li>
+<li><a href="#setting-it-in-a-profile-instead">Setting it in a profile instead</a></li>
 <li><a href="#when-not-to-use-it">When NOT to use it</a></li>
 </ul>
 </li>

@@ -100,8 +100,9 @@
 <a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="../developer_docs/Contributing.html">Contributing</a>
 <a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -287,6 +285,10 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <td><strong>Elapsed stream time</strong> — a readout, not a control. (Not to be confused with the <strong>Time</strong> dropdown below, which sets the width of the trace window. Two things named Time, one of which you can click.)</td>
 </tr>
 <tr>
+<td><strong>● System</strong> <em>(chip)</em></td>
+<td>Whether the rig is actually <strong>turning</strong>, in one glance: <strong>green</strong> = every source and processor cycling, <strong>amber</strong> = streaming but something has not been seen to turn yet, <strong>red (pulsing)</strong> = something <strong>stalled</strong>, <strong>gray</strong> = nothing acquiring, which is not a fault. Beside the dot is a live count — <code>4 cycling</code>, <code>2 ready</code> (the amber case), <code>1 stalled</code>, <code>source stalled</code>, <code>idle</code>. <strong>Click it</strong> for the per-processor detail. A stall names itself on the chip rather than only in the tooltip, because a fault you have to hover to find is a fault you will not find.</td>
+</tr>
+<tr>
 <td><strong>▾ view</strong> <em>(chip)</em></td>
 <td>Only appears when the window is too narrow to hold the view controls. <strong>Hover to peek</strong>; click, or press <strong>Ctrl+Shift+V</strong>, to pin them open. If the view controls seem to have vanished, this is where they went.</td>
 </tr>
@@ -299,7 +301,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <td>How many side-by-side chart columns to show (1–4; default 2). Reads <strong>Rows</strong> in vertical layout.</td>
 </tr>
 <tr>
-<td><strong>⧉</strong></td>
+<td><strong>⛶</strong></td>
 <td>Open <strong>another view window</strong> — more columns or rows of the same live data, on a second monitor. No toolbar in it: no play, no record, no probe map, because the rig has one operator. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3b.</td>
 </tr>
 <tr>
@@ -316,7 +318,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>Source</strong></td>
-<td>Pick the input: <strong>Neuropixels</strong> (basestation and probe both auto-detected), <strong>PXIe with NI-DAQ</strong> (shown when a PXIe module is present), or <strong>Simulated Data ›</strong>, which drills down system → probe → scenario. Selecting one <strong>connects</strong> it. If both a OneBox and a PXIe module are attached the menu asks which to use instead of guessing.</td>
+<td>Pick the input: <strong>Neuropixels</strong> (basestation and probe both auto-detected), <strong>PXIe with NI-DAQ</strong> (shown when a PXIe module is present), <strong>Intan (MicroZed) — not implemented yet</strong> (listed on purpose; it refuses to connect and says so), or <strong>Simulated Data ›</strong>, which drills down system → probe → scenario. Selecting one <strong>connects</strong> it. If both a OneBox and a PXIe module are attached the menu asks which to use instead of guessing, offering <strong>OneBox</strong> / <strong>PXIe</strong> / <strong>PXIe with NI-DAQ</strong>.</td>
 </tr>
 <tr>
 <td><strong>Disconnect</strong></td>
@@ -338,7 +340,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <td>The latest action, color-coded: <strong>green</strong> = success, <strong>amber (pulsing)</strong> = working, <strong>red</strong> = error, gray = info. Hover for the full message + time. A <strong>● REC → name</strong> badge joins it while recording.</td>
 </tr>
 <tr>
-<td><strong>Bands ▾</strong></td>
+<td><strong>Bands ▼</strong></td>
 <td>Menu of the <strong>derived bands</strong> — LFP and Spike, computed from a 2.0 probe's single wideband stream. Each row has its own on/off switch; the button carries a count of how many are <strong>running</strong> and turns green when that is not zero. They ship <strong>off</strong>: nothing filters 384 channels until you ask for it.</td>
 </tr>
 <tr>
@@ -350,12 +352,20 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <td>Opens the ripple <strong>dock</strong> on the right: detection channels, thresholds, quorum, live envelopes and the stimulation controls. The main view shrinks to fit rather than being covered. See <a href="RippleDetection.html"><code>RippleDetection.md</code></a>.</td>
 </tr>
 <tr>
+<td><strong>⚡ ASAP</strong></td>
+<td>Low-latency delivery, <strong>per module</strong>. Appears when the connected profile contains a module that offers the control (the ripple detector and the probe/simulated sources do; the recorder and the derived-band filters deliberately do not). Turning it on for a module turns it on for everything upstream feeding it. It is <strong>off unless asked for</strong> — it is a busy-wait costing about a whole core — and the toggle is <strong>disabled while streaming</strong>, because the source reads the setting once, at Play. See <a href="RippleDetection.html"><code>RippleDetection.md</code></a> §8.</td>
+</tr>
+<tr>
 <td><strong>▣ OneBox</strong></td>
 <td>Appears when a <strong>OneBox</strong> is connected — the box's own device panel (its 12-channel ADC and I/O).</td>
 </tr>
 <tr>
 <td><strong>▤ NI-DAQ</strong></td>
 <td>Appears when an <strong>NI-DAQ</strong> card is connected — that device's panel.</td>
+</tr>
+<tr>
+<td><strong>⇄ Convert</strong></td>
+<td>Export a finished recording to <strong>SpikeGLX</strong> or <strong>Open Ephys</strong>. Appears <strong>only while no source is connected</strong> — conversion is a batch job competing for the disks the recorder uses, so there is no case where running it mid-acquisition is right. See <a href="Exporting-Recordings.html"><code>Exporting-Recordings.md</code></a>.</td>
 </tr>
 <tr>
 <td><strong>Probe Map / Live Data</strong> <em>(tabs, right)</em></td>
@@ -401,8 +411,8 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </thead>
 <tbody>
 <tr>
-<td><code>Connecting to NPX 1.0…</code> (amber pulse)</td>
-<td>Opening the source.</td>
+<td><code>Connecting to Neuropixels…</code> (amber pulse)</td>
+<td>Opening the source. The line is built from the <strong>profile name</strong>, so it names whatever you picked — <code>Connecting to Simulated Data…</code>, <code>Connecting to OneBox…</code>.</td>
 </tr>
 <tr>
 <td><code>Found Neuropixels 1.0 probe</code> / <code>Connected — device ready</code> (green)</td>
@@ -454,7 +464,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>Ripple detection + closed-loop stim</strong></td>
-<td>✅ <strong>Hardware-validated on both probes over both transports</strong> (PXIe and OneBox), synthetic ripple in saline → detection → stimulus, <strong>n ≈ 1000 per cell, 0 unmatched</strong> across the full quorum × delivery matrix. Sub-millisecond with ASAP delivery. Numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Operating the dock: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>. Pi stim-server setup: <a href="../raspberrypi_pulsegenerator/README.html">../raspberrypi_pulsegenerator/README.md</a>. The next milestone is in vivo under anesthesia.</td>
+<td>✅ <strong>Hardware-validated on both probes over both transports</strong> (PXIe and OneBox), synthetic ripple in saline → detection → stimulus, <strong>n ≈ 1000 per cell, 0 unmatched</strong> across the full quorum × delivery matrix. Sub-millisecond with ASAP delivery. Numbers: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Operating the dock: <a href="RippleDetection.html"><code>RippleDetection.md</code></a>. Pi stim-server setup: <a href="../raspberrypi_pulsegenerator/README.html">../raspberrypi_pulsegenerator/README.md</a>. Those numbers are from the <strong>saline bench</strong>. The in-vivo milestone was scheduled for <strong>2026-08-28</strong>, and <a href="../SpikesPeak_Status.html"><code>SpikesPeak_Status.md</code></a> §65 records the hardware fixes made that morning, before it. <strong>No results from that session are recorded in this repository</strong>, so everything above remains a saline number.</td>
 </tr>
 <tr>
 <td><strong>Simulated sources</strong></td>

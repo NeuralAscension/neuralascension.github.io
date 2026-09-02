@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -146,7 +144,7 @@
 the behavior the tests recorded, and — kept deliberately prominent — the aspects that are <strong>not</strong>
 covered yet, so nobody mistakes a green run for complete coverage.</p>
 <p>Run them:</p>
-<pre><code class="language-bash">python scripts/run_gui_tests.py               # 22 tests, ~33 min
+<pre><code class="language-bash">python scripts/run_gui_tests.py               # ~10 min: four at a time, each with its own backend
 python scripts/run_gui_tests.py --only ripple # while you iterate
 </code></pre>
 <p>Mechanics, conventions, the runner's flags and how to add a test live in <a href="Testing.html"><code>Testing.md</code></a>
@@ -272,25 +270,53 @@ python scripts/run_gui_tests.py --only ripple # while you iterate
 <td><strong>The front end knows how many windows are open, and the backend is never told.</strong> Presence rides a same-origin <code>BroadcastChannel</code>, because detached windows are opened <code>noopener</code> — which is the point, it buys each its own renderer process and its own WebGL2 budget — so <code>opener</code> and <code>postMessage</code> are severed by design. Without this test a channel that never opened would report exactly <code>1</code> in every window, which is the correct answer on a single-window rig and therefore invisible until somebody opens a second</td>
 <td>1 source</td>
 </tr>
+<tr>
+<td><code>low_latency</code></td>
+<td><strong>ASAP is a per-module control, and the state shown is the one the backend confirmed</strong> (#80). Four invariants: the control appears only for modules whose C++ declares <code>exposesLowLatency()</code> — the ripple detector does, <code>proc.lfp</code> does not, and the frontend is not the one deciding; a request PROPAGATES two hops upstream to the source <em>through</em> <code>proc.lfp</code>, which has no knob of its own (a consumer running ASAP behind a producer that is not gains nothing); a request made while streaming is shown as <em>takes effect on the next Play</em> rather than as live, because the source reads the flag once, in <code>startAcq</code> (every NPX source keeps <code>mLowLatencyInForce</code> beside the requested value for exactly this reason — <code>SimulatedData2Source</code> on the sim chain this test drives, <code>NeuropixelsSource</code> on a rig); and the control locks while acquiring</td>
+<td>1 source (the NP2.0 ripple chain)</td>
+</tr>
+<tr>
+<td><code>owned_values</code></td>
+<td><strong>No dock field displays a backend-owned value the backend has not confirmed</strong> — the rule, not the four fields that exposed it. Asserted in both directions: with a source held every such field carries <code>RippleDetector.cpp</code>'s own initializer, and with no source held no field may still show one's configuration. The opposite failure nearly shipped in the fix — the detector was missing from the module re-announce hook, so after the dock stopped inventing numbers every field stayed blank forever</td>
+<td>2 directions</td>
+</tr>
+<tr>
+<td><code>signal_claims</code></td>
+<td><strong>No column may make a claim about the SIGNAL that its own rendered envelope disproves.</strong> A trained channel excluded from a reported detection used to read <em>"below threshold"</em> while the <code>.rd-env</code> sparkline directly above it visibly crossed that same threshold. Label text is checked against a whitelist of STATE claims; anything comparing against the threshold is a signal claim, and nothing in the dock derives one, so the permitted count is zero. Caught by looking at a committed screenshot, not by a failing assertion</td>
+<td>1 source</td>
+</tr>
+<tr>
+<td><code>convert_panel</code></td>
+<td><strong>The Convert tab exists only with no source held, and a reported conversion produced files.</strong> Both directions of the first — a one-directional check passes on a tab that never appears at all — and "converted" means the process exited 0 <em>and</em> the output directory has something in it, never that a command was sent. The backend refuses the command too, and that refusal is asserted here: a hidden control is not a guarantee while a CLI client or a stale page can still send it</td>
+<td>1 source</td>
+</tr>
 </tbody>
 </table>
-<p>All twenty-two run against a <strong>real backend</strong> on a simulated source. No hardware.</p>
-<p><strong>Eighteen drive a real browser</strong> over CDP. The other four — <code>command_surface</code>,
-<code>intan_not_implemented</code>, <code>state_consistency</code> and <code>teardown_while_recording</code> — drive the backend over
-a WebSocket with <strong>no browser at all</strong>, because every assertion they make is about what the backend
-<em>says</em>, and that costs seconds instead of the minute a browser costs. Read that as a property of the
-assertion, not a shortcut: a browser added to those tests would not check anything more.</p>
-<p>The eighteen all drive the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>, which is
-now the only one, so there is no renderer to select. During the transition off SciChart the whole
+<p>Every one of them runs against a <strong>real backend</strong> on a simulated source. No hardware.</p>
+<p><strong>Most drive a real browser</strong> over CDP. Four — <code>command_surface</code>, <code>intan_not_implemented</code>,
+<code>state_consistency</code> and <code>teardown_while_recording</code> — drive the backend over a WebSocket with <strong>no
+browser at all</strong>, because every assertion they make is about what the backend <em>says</em>, and that costs
+seconds instead of the minute a browser costs. Read that as a property of the assertion, not a
+shortcut: a browser added to those tests would not check anything more.</p>
+<p>The browser-driving ones all use the same renderer — the WebGL2 one in <code>webinterface/GlRenderer.js</code>,
+which is now the only one, so there is no renderer to select. During the transition off SciChart the whole
 suite was run under <strong>both</strong> renderers and was green under both; that is the evidence that removing
 SciChart changed nothing the tests can see. See <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>.</p>
 <blockquote>
 <p><strong>This table is hand-maintained; <code>run_gui_tests.py</code> globs the directory.</strong> A new file in
 <code>tests/gui/</code> is registered, run and reported with no edit here, so the inventory drifts silently
-and only downward. On <strong>2026-08-31</strong> the last five rows above were missing and this paragraph still
-read <em>"All thirteen"</em> — against a table of seventeen. Add the row when you add the test
+and only downward. On <strong>2026-08-31</strong> five of the rows above (<code>heatmap_spatial</code>,
+<code>intan_not_implemented</code>, <code>ripple_detach</code>, <code>state_consistency</code>, <code>window_registry</code>) were missing and
+this paragraph still read <em>"All thirteen"</em> — against a table of seventeen. It happened again on
+<strong>2026-09-01</strong>, when one day's work added <code>low_latency</code>, <code>owned_values</code>, <code>signal_claims</code> and
+<code>convert_panel</code> and this page went on saying <em>"All twenty-two"</em>. Add the row when you add the test
 (<a href="Testing.html"><code>Testing.md</code></a> §3); the "what is NOT covered" argument in §5 is only as good as the
 list it is subtracted from.</p>
+<p><strong>The totals are out of the prose on purpose now.</strong> Both times the wrong count and the missing row
+arrived together, because the sentence carrying the count sits nowhere near the row that went
+missing. Counts live in <a href="Testing.html"><code>Testing.md</code></a> and nowhere else (<code>CLAUDE.md</code>); the one subset
+worth calling out here — the four that need no browser — is <strong>named</strong> rather than counted, so it
+cannot drift without somebody editing the actual names.</p>
 </blockquote>
 <p>The harness refuses to run at all unless a column has a live WebGL2 context (<code>tests/gui/_harness.py</code>,
 after play). That check is coverage in its own right: a renderer whose context failed to create draws
@@ -987,8 +1013,11 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
 <li><strong>Recording dialog details</strong> — the Browse… native picker and the REC badge's truncation behavior.
   The arm → record → stop state machine and the files on disk are covered by <code>record_flow</code>; the
   ripple sidecar on the GUI record path is covered by <code>ripple_sidecar</code>.</li>
-<li><strong>Backend → GUI direction.</strong> Everything in §4 is GUI → backend. The reverse (set via WebSocket,
-  assert the GUI reflects it) is not covered.</li>
+<li><strong>Backend → GUI direction — now partly covered, and the remaining half is the interesting one.</strong>
+  Everything in §4 is GUI → backend. <code>owned_values</code> covers the <em>announce</em> direction: the dock's
+  backend-owned fields carry the detector's values and are empty when no detector exists. What is
+  still uncovered is a value <strong>changed</strong> over the WebSocket by another client mid-session, with the
+  GUI asserted to follow it.</li>
 <li><strong>Error and fault surfaces</strong> — the hardware-error modal, the processor-fault relay, the source
   stall banner.</li>
 <li><strong>Real hardware.</strong> Every GUI test runs on a simulated source by design.</li>

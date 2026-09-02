@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -315,10 +313,14 @@ spot (right column, since electrode 191 is odd; absent from the <code>Left</code
 <hr />
 <h2 id="4-chartcolumn-per-column-filters-drawing">4. ChartColumn — per-column filters + drawing<a class="headerlink" href="#4-chartcolumn-per-column-filters-drawing" title="Permanent link">#</a></h2>
 <p>Each display column (<code>ChartColumn</code>) owns:
-- <strong>Two header dropdowns</strong> — <code>shankSelector</code> (one entry per shank; <strong>disabled for single-shank NP1</strong>)
-  and <code>colSelector</code> (<code>L+R</code> / <code>Left</code> / <code>Right</code>). <code>refreshFilterOptions()</code> populates them from
+- <strong>Two probe-filter dropdowns</strong> — <code>shankSelector</code> (one entry per shank; <strong>disabled for single-shank
+  NP1</strong>, and in heatmap mode it gains an <code>All shanks · depth</code> entry — see
+  <a href="HeatmapView.html"><code>HeatmapView.md</code></a> §1a) and <code>colSelector</code> (<code>L+R</code> / <code>Left</code> / <code>Right</code>).
+  <code>refreshFilterOptions()</code> populates them from
   <code>imroLiveView</code> and is called on map apply (<code>relayoutByDepth</code>) and column (re)build (<code>buildColumns</code>).
   Both are <strong>hidden</strong> for non-probe sources (audio/NIDAQ) — those fall back to channel order + labels.
+  (The rest of the band — the view switch, stream, scale, density, pin, and the heatmap-only controls
+  — is listed with the strip below.)
 - <strong><code>this.bottomSlot</code></strong> — the lowest (deepest) visible slot; the vertical slider scrolls it within the
   band. Slider rail is labeled <code>shallow</code> (top) / <code>deep</code> (bottom).
 - <strong><code>draw()</code></strong> — picks the column's <strong>mode</strong>: <code>L+R</code> ⇒ interleaved ordering (<code>seriesField =
@@ -334,13 +336,20 @@ spot (right column, since electrode 191 is odd; absent from the <code>Left</code
 upward.</strong> A previous build used an <em>inverted</em> y-axis range; this view uses an explicit <strong>normal</strong> range
 instead — if depth ever appears upside-down, flip the range/<code>slot</code> sign in <code>draw()</code>/<code>relayoutByDepth()</code>.</p>
 <h3 id="the-control-strip-one-row-if-it-fits-otherwise-collapse">The control strip: one row if it fits, otherwise collapse<a class="headerlink" href="#the-control-strip-one-row-if-it-fits-otherwise-collapse" title="Permanent link">#</a></h3>
-<p>The band above each chart — stream selector, Shank, <code>L+R</code>, the µV scale, the density count — has
-<strong>exactly one authored shape: one row.</strong> Five fixed slots, <code>108 + 80 + 64 + 84 + 80 = 416px</code>, plus
-four 4px gaps, 7px of padding a side and a 1px border = <strong>448px</strong>. It folds behind its <code>▾ controls</code>
-chip <strong>if and only if</strong> those 448px do not fit beside the depth readout:</p>
+<p>The band above each chart — the Traces/Heatmap view switch, the stream selector, Shank, <code>L+R</code>, the µV
+scale, the density count and the pin — has <strong>exactly one authored shape: one row.</strong> Seven fixed
+slots, <code>78 + 108 + 80 + 64 + 84 + 80 + 22 = 516px</code>, plus six 4px gaps, 7px of padding a side and a
+1px border = <strong>556px</strong> (<code>toolbar.css</code>, <code>--cc-cols</code> on <code>.column-controls</code>). The pin's 22px track is
+reserved even though the button itself only appears once the band is collapsed — a fixed grid track
+does not collapse when its item is <code>display:none</code>. <strong>A heatmap column's band is wider still — 780px</strong>,
+because it spends the µV scale track on four of its own (span, statistic, colormap, top of the color
+axis), so a heatmap column folds at a wider column than a trace one. Same mechanism, different
+number: see <a href="HeatmapView.html"><code>HeatmapView.md</code></a>.</p>
+<p>It folds behind its <code>▾ controls</code> chip <strong>if and only if</strong> those 556px do not fit beside the depth
+readout:</p>
 <pre><code class="language-js">// ChartColumn.fitStrips()
 avail    = columnHeader.clientWidth - depthReadout.offsetWidth - 24;   // depthReadout = .page-info
-collapse = band.scrollWidth &gt; avail;                                   // band.scrollWidth === 448
+collapse = band.scrollWidth &gt; avail;                                   // trace mode: scrollWidth === 556
 </code></pre>
 <p>Column count and orientation are <strong>not</strong> inputs to that decision. Header height is <strong>46px</strong> expanded,
 ~36px collapsed.</p>
@@ -364,7 +373,7 @@ static for two reasons, both of them faults that were already paid for:</p>
 <li><code>.column-container</code> is <code>flex: 1 1 0</code> and Chrome distributes the flex remainder in 1/64px
    LayoutUnits while <code>clientWidth</code> rounds to an integer, so two siblings at 601.98 and 602.02 report
    601 and 602 and can land on <strong>opposite sides of the threshold</strong>. One column collapsed and its
-   neighbour not is two header heights in one row, and traces starting at different Y — the exact
+   neighbor not is two header heights in one row, and traces starting at different Y — the exact
    thing the fixed-slot header exists to prevent.</li>
 <li>The measurement drops <code>strip-collapsed</code> to read the in-flow width. Once per <em>column</em> that is N
    class flips per frame, each one a size change the chart-area <code>ResizeObserver</code> picks up, which
@@ -374,13 +383,16 @@ static for two reasons, both of them faults that were already paid for:</p>
 <p>A hidden view is not a narrow one: selecting the <code>Probe Map</code> tab sets <code>#view-data</code> to <code>display:none</code>,
 the observer then fires at 0×0 and <code>avail</code> goes negative. <code>fitStrips()</code> bails on <code>avail &lt;= 0</code> and
 keeps the last decision, rather than expanding every strip while nobody is looking and painting a
-448px band into a 378px column on the way back.</p>
-<p><strong>The collapsed reveal overlay keeps the old narrow 3-row template, deliberately.</strong> It is
+one-row band into a 378px column on the way back.</p>
+<p><strong>The collapsed reveal overlay keeps the old narrow stacked template, deliberately.</strong> It is
 <code>position: absolute</code>, so its rows cost neither header height nor trace height — and <code>#view-data</code> is
-<code>overflow: hidden</code>, which <strong>clips an absolutely-positioned descendant</strong>. A 448px overlay in a column
-too narrow to hold one would have its right-hand controls destroyed on the last column: 275px worth
-at 1080px with the ripple dock open and four columns.</p>
-<p>Measured after the change (1920×1080 monitor, NPX 2.0 sim):</p>
+<code>overflow: hidden</code>, which <strong>clips an absolutely-positioned descendant</strong>. A one-row overlay in a column
+too narrow to hold one would have its right-hand controls destroyed on the last column: measured at
+275px worth at 1080px with the ripple dock open and four columns, when the band was 448px wide. It is
+556px now, so the loss is larger, not smaller. (The overlay is 3 rows in trace mode and 4 in heatmap
+mode, 2 and 3 under <code>.no-filters</code>.)</p>
+<p>Measured <strong>2026-08-25</strong>, 1920×1080 monitor, NPX 2.0 sim — <strong>when the band was 448px.</strong> The rule is
+unchanged; the threshold has moved, because the view switch and the pin added 108px to the band:</p>
 <table>
 <thead>
 <tr>
@@ -441,10 +453,14 @@ at 1080px with the ripple dock open and four columns.</p>
 </tr>
 </tbody>
 </table>
-<p>Vertical never collapses because a stacked row is 1530–1894px wide and 448px always fits — the old
-orientation exemption is now a <strong>consequence</strong> of the rule, not a special case. Sweeping window width
-at 2 columns: one row at 1920 / 1600 / 1400 / 1300 / 1280, collapsed at 1200 / 1150 / 1100 / 1080 (at
-1200 one row needs 448px and only 437px is available).</p>
+<p>At <strong>556px</strong> the <em>3 columns, dock shut</em> row flips: 628px of column less a ≥132px depth readout less
+24px leaves at most 472px, which is short. Everything wider than that is unaffected, and the vertical
+row still never collapses — a stacked row is 1530–1894px wide, so the orientation exemption remains a
+<strong>consequence</strong> of the rule rather than a special case. Re-measure the table rather than
+extrapolating it; the arithmetic above is the only cell that can be settled from the CSS alone.</p>
+<p>Sweeping window width at 2 columns <strong>against the 448px band</strong>: one row at 1920 / 1600 / 1400 / 1300 /
+1280, collapsed at 1200 / 1150 / 1100 / 1080 (at 1200 one row needed 448px and only 437px was
+available). Those crossovers move up with the band.</p>
 <p><code>tests/gui/layout_matrix.py</code> asserts the rule <strong>in its own operands</strong> — <code>collapsed</code> must equal
 <code>not (oneRowNeed &lt;= avail)</code>, both read from live layout — plus <strong>uniformity</strong>: every column in a row
 must report the same header height and the same collapse state. The old shared-container-query design
@@ -499,6 +515,10 @@ governs <em>client</em> disconnect.)</p>
 <tr>
 <td><code>webinterface/GlRenderer.js</code></td>
 <td><code>GlColumnRenderer</code>: the WebGL2 renderer — one vertex buffer and one draw call per column, and the only copy of the samples</td>
+</tr>
+<tr>
+<td><code>webinterface/GlHeatmap.js</code></td>
+<td>the column's other view: a time × channel heatmap sharing that same WebGL2 context. Built lazily on the first switch — <a href="HeatmapView.html"><code>HeatmapView.md</code></a></td>
 </tr>
 <tr>
 <td><code>webinterface/ChartColumn.js</code></td>

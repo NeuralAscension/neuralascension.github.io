@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -278,8 +276,10 @@ over a <strong>BroadcastChannel</strong>; the count shows as a badge on the deta
 <p><strong>The winner does not change the data path. Not by one byte.</strong> Presence is a UI feature, not a
 throughput optimization, and saying otherwise would be the easiest thing in this document to get
 wrong.</p>
-<p>The numbers, from the emit path rather than from memory. One display packet is a 20 B header plus
-20 bins of <code>1 + 2 × 384</code> floats — min <em>and</em> max per channel — = <strong>61,540 B</strong>, emitted every 20 ms:</p>
+<p>The numbers, from the emit path rather than from memory. One display packet is a <strong>12 B</strong> header for a
+three-letter stream id — <code>[u8 idLen][idLen bytes][u32 numChannels][u32 numBins]</code>,
+<code>DisplayProcessor.cpp:302-310</code>, so the header's size depends on the id — plus 20 bins of
+<code>1 + 2 × 384</code> floats (min <em>and</em> max per channel) = <strong>61,532 B</strong> for <code>raw</code>, emitted every 20 ms:</p>
 <table>
 <thead>
 <tr>

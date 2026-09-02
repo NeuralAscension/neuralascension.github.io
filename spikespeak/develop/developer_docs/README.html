@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -145,7 +143,9 @@
 <p>Onboarding + reference for the SpikesPeak acquisition stack (Qt/C++ backend, external-browser UI,
 closed-loop stimulation). <strong>Start here</strong>, then jump to the doc for your task below.</p>
 <blockquote>
-<p><strong>Current state, checked 2026-08-31.</strong> Working branch: <code>feature/OneBoxSupport</code>. <strong>Both basestations
+<p><strong>Current state, checked 2026-09-01.</strong> <code>feature/OneBoxSupport</code> was <strong>merged into <code>develop</code></strong> on
+2026-09-01 (fast-forward, <code>60889d7</code>); OneBox support is complete and there is no live feature
+branch (Status §84). <strong>Both basestations
 are production paths</strong> — PXIe <em>and</em> the <strong>OneBox</strong> (USB3/FTDI) stream NP1.0 and NP2.0, record, and
 close the loop. The closed-loop latency matrix is complete on the OneBox as well as PXIe: 11 cells ×
 1000 detections per probe, <strong>11,000 detections / 11,000 confirmed fires / 0 unmatched</strong>,
@@ -181,10 +181,19 @@ C++ suite does not stop the build, which makes red easy to walk past. Don't.
 hang at <em>"Press any key to continue"</em>.
 See <a href="Testing.html"><code>Testing.md</code></a> — which is the <strong>only</strong> place suite and case counts are maintained —
 and <a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a>.</p>
-<p><strong>On Linux, read <a href="Testing.html"><code>Testing.md</code> §1a</a> first.</strong> The suites are green there as of 2026-08-26
-but the box needs a Qt ≥ 6.7 that is <em>not</em> the distro's (Ubuntu 24.04 ships 6.4.2, and it fails at
-configure), <code>libasound2-dev</code> installed <em>before</em> the first configure, and a real display. No hardware
-row can be closed there.</p>
+<p><strong>The GUI suite runs FOUR tests at a time</strong> since 2026-09-01 (<code>--jobs auto</code> = <code>min(4, cpus-2)</code>, the
+measured knee; <code>--jobs 1</code> restores serial). Each job gets its <strong>own</strong> backend on its own port pair
+and its own isolated Chrome, so nothing is shared and nothing has to be reset between tests. A test
+that hangs is killed at <code>SPIKESPEAK_GUI_TEST_TIMEOUT</code> (default 900 s) and <strong>reported as a failed
+test</strong> rather than crashing the run. Both runners take one shared lock (<code>scripts/_gatelock.py</code>), so
+a suite started beside a running gate refuses instead of silently attaching to the gate's backend —
+and the runner names any backend that survived, and any <code>[untested]</code> notice a passing test printed.</p>
+<p><strong>On Linux, read <a href="Testing.html"><code>Testing.md</code> §1a</a> first.</strong> All three suites were re-verified there
+<strong>from a clean clone on 2026-09-01</strong> (Linux Mint 22.1 / GCC 13.3 / Qt 6.11.1, real X session, real
+GPU). The box needs a Qt ≥ 6.7 that is <em>not</em> the distro's (Ubuntu 24.04 ships 6.4.2, and it fails at
+configure), <code>libasound2-dev</code> installed <em>before</em> the first configure, and a real display —
+<strong>headless is unproven, and the operator has decided it does not matter</strong>: the GUI exists to be
+looked at. No hardware row can be closed there.</p>
 </blockquote>
 <ol>
 <li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one
@@ -221,7 +230,7 @@ numerically. Two examples that actually happened, both written up in
 <li>A sidecar was reported as globally broken after inspecting <strong>one</strong> file; two of the three were perfectly
   populated, and the real cause was a <strong>race</strong>, not a broken writer.</li>
 </ul>
-<p>Generalising from a single artifact, or theorising about hardware before plotting the signal, is the
+<p>Generalizing from a single artifact, or theorizing about hardware before plotting the signal, is the
 characteristic failure mode on this repo.</p>
 <h3 id="traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)<a class="headerlink" href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop" title="Permanent link">#</a></h3>
 <p>The concrete domain facts behind the tables below — each is documented in full where linked:</p>
@@ -232,11 +241,17 @@ characteristic failure mode on this repo.</p>
 <li><strong>Latency stage splits use MEANS, not medians.</strong> The batching counter is quantised to one input sample
   (400 µs), so medians snap to 0/400/800 µs and are not additive; the <code>net+stim</code> term is a residual by
   subtraction. (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
-<li><strong>The ASAP <code>low_latency</code> flag</strong> (acquisition poll 1 ms → 0, per-source, opt-in) is the only latency
-  lever. On NP2 it also removes <em>upstream</em> raw-poll latency the detector-side counter can't see, so the
-  counter under-reports the win — the NI-DAQ total is authoritative. On both probes it takes the loop
-  sub-millisecond. (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
-<li><strong>Never validate a periodic signal by nearest-neighbour pairing.</strong> Three separate NI-DAQ↔NPX clock/sync
+<li><strong>ASAP delivery</strong> (acquisition poll 1 ms → 0, opt-in) is the only latency lever. On NP2 it also
+  removes <em>upstream</em> raw-poll latency the detector-side counter can't see, so the counter
+  under-reports the win — the NI-DAQ total is authoritative. On both probes it takes the loop
+  sub-millisecond. Since <strong>#80 it is a per-module GUI control</strong>, not only a <code>low_latency:</code> config
+  key: a module declares <code>exposesLowLatency()</code> in C++, the backend sends only those, and turning one
+  on turns it on for everything upstream of it. The source reads its flag once, in <code>startAcq</code>, so a
+  request made mid-acquisition is reported as <strong>pending</strong> and takes effect on the next Play — the
+  control is disabled while streaming rather than silently deferring.
+  (<code>webinterface/LowLatencyModule.js</code>, <code>src/core/LowLatency.hpp</code>;
+  <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
+<li><strong>Never validate a periodic signal by nearest-neighbor pairing.</strong> Three separate NI-DAQ↔NPX clock/sync
   bugs (a ~10 ppm scale ramp + two whole-period off-by-ones) all read as <em>perfect</em> on every scalar metric
   (ppm, residual, intervals); anchor on the <strong>aperiodic</strong> structure instead.
   (<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> is the sync canon.)</li>
@@ -246,10 +261,19 @@ characteristic failure mode on this repo.</p>
   <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
 </ul>
 <h2 id="what-is-here">What is here<a class="headerlink" href="#what-is-here" title="Permanent link">#</a></h2>
-<p>57 pages, in eleven groups, plus twelve retired briefs and snapshots in <code>archive/</code>. <strong>The generated book uses the same groups, in the same order</strong>, as
+<p>59 pages, in eleven groups, plus eleven retired briefs and snapshots in <code>archive/</code> (twelve files,
+counting the archive's own index). <strong>The generated book uses the same groups, in the same order</strong>, as
 the collapsible sections of its left nav (<code>scripts/build_docs.py</code> → <code>GROUPS</code>). If you add a doc, or move
 one between groups, do it in <strong>both</strong> places — the map a human reads and the map the book renders are no
 use to anyone once they disagree. The build prints a warning naming any page that is in neither.</p>
+<blockquote>
+<p><strong>A page has to be in BOTH, and the build says so when it is not.</strong>
+<a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a> had its row below but no entry in <code>GROUPS</code>, so
+the book rendered it under "Unsorted" at the bottom of the nav — exactly where the convention says
+docs go to be missed. Noticed and fixed on 2026-09-01. <code>scripts/build_docs.py</code> prints a <code>WARNING:
+not in GROUPS</code> line naming any page in this position, so the next one is caught by running the
+build rather than by someone noticing a lonely nav entry.</p>
+</blockquote>
 <p><a href="#start-here">Start here</a> ·
 <a href="#architecture-and-contracts">Architecture and contracts</a> ·
 <a href="#extending-the-stack">Extending the stack</a> ·
@@ -286,7 +310,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="SourceSelection.html"><code>SourceSelection.md</code></a></td>
-<td><strong>Why the Source dropdown has three entries instead of twelve, and how the probe names itself.</strong> The connect order that makes it work (<code>setupSources</code> finishes before <code>setupProcessors</code>, so the registry already holds the detected probe's bands), the six probe-dependent decisions and where each is made, what a hardware profile still declares, and the two config keys the simulated picker cascades on.</td>
+<td><strong>Why the Source dropdown lists <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> instead of twelve profiles, and how the probe names itself.</strong> <code>Neuropixels</code> is <code>source.npx.auto</code> — basestation <em>and</em> probe read from the rig, resolved before any source object is built; <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> are now <code>gui_hidden: true</code> escapes, selectable <strong>by name</strong> from the control CLI; only the first two are ever put back in the menu, and only when the scan finds a OneBox <em>and</em> a PXIe (<code>main.js renderSourceRoot()</code>, the <code>ambiguous</code> branch). The connect order that makes it work (<code>setupSources</code> finishes before <code>setupProcessors</code>, so the registry already holds the detected probe's bands), the six probe-dependent decisions and where each is made, what a hardware profile still declares, and the two config keys the simulated picker cascades on.</td>
 </tr>
 <tr>
 <td><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></td>
@@ -371,7 +395,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="IntanOpenQuestions.html"><code>IntanOpenQuestions.md</code></a></td>
-<td><strong>The questions that block connecting to a real Intan board — and who can answer each one.</strong> Deliberately three audiences kept apart: what the operator must decide, what only the Kemere lab can answer (written to be asked in ONE round rather than discovered one at a time), and what we can settle ourselves. The expensive one is §1.1, the LFP path: generalising <code>BandFilterProcessor</code> to a runtime channel width touches the AVX2 fan-out and both strides in code that runs at 30 kHz. Nothing here blocks today's code — the parser and control framing are written and tested against synthesised packets — and the source refuses to connect on purpose.</td>
+<td><strong>The questions that block connecting to a real Intan board — and who can answer each one.</strong> Deliberately three audiences kept apart: what the operator must decide, what only the Kemere lab can answer (written to be asked in ONE round rather than discovered one at a time), and what we can settle ourselves. The expensive one is §1.1, the LFP path: generalizing <code>BandFilterProcessor</code> to a runtime channel width touches the AVX2 fan-out and both strides in code that runs at 30 kHz. Nothing here blocks today's code — the parser and control framing are written and tested against synthesized packets — and the source refuses to connect on purpose.</td>
 </tr>
 <tr>
 <td><a href="HardwareFaultGuard.html"><code>HardwareFaultGuard.md</code></a></td>
@@ -449,7 +473,7 @@ use to anyone once they disagree. The build prints a warning naming any page tha
 </tr>
 <tr>
 <td><a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a></td>
-<td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and the opt-in <strong><code>low_latency</code> (ASAP delivery)</strong> source flag — now on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>). Numbers live in the Hardware Results page.</td>
+<td><strong>Closed-loop latency method + the ASAP flag.</strong> The definition (threshold crossing → ai4 pulse), the live per-stage <code>rippleLatency</code> breakdown, where the milliseconds go (incl. the NP2 upstream-latency finding), and <strong>ASAP delivery</strong> — on <strong>both</strong> probes (<code>Npx1Probe</code>/<code>Npx2MSProbe::setLowLatency</code>), and since #80 settable <strong>per module from the GUI</strong> as well as from a profile's <code>low_latency:</code> key. Numbers live in the Hardware Results page.</td>
 </tr>
 <tr>
 <td><a href="Profiling.html"><code>Profiling.md</code></a></td>
@@ -543,7 +567,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tbody>
 <tr>
 <td><a href="Testing.html"><code>Testing.md</code></a></td>
-<td><strong>The test suites and the green/red lights</strong> — C++ (Qt Test + CTest, runs on every build; <code>Testing.md</code> carries the current suite/case counts, which are maintained there and nowhere else) <strong>and GUI</strong> (<code>python scripts/run_gui_tests.py</code>, real-browser layout/render invariants), how to add a test, and the top-down method for telling a SOFTWARE fault from a HARDWARE one — sim-vs-rig, counting frames at the socket, and what the liveness counters actually count.</td>
+<td><strong>The test suites and the green/red lights</strong> — C++ (Qt Test + CTest, runs on every build), <strong>Python</strong> (<code>python/tests</code>, seconds, in the gate since 2026-08-30) and <strong>GUI</strong> (<code>python scripts/run_gui_tests.py</code>, real-browser layout/render invariants, four at a time). <code>Testing.md</code> carries the current suite/case counts, which are maintained there and nowhere else. Also §1a, running the lot on Linux, how to add a test, and the top-down method for telling a SOFTWARE fault from a HARDWARE one — sim-vs-rig, counting frames at the socket, and what the liveness counters actually count.</td>
 </tr>
 <tr>
 <td><a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
@@ -551,7 +575,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a></td>
-<td><strong>What the GUI tests actually cover</strong> — the 16-cell layout matrix (columns × ripple dock × orientation) with screenshots, every stream option's expected units/labels/depth, the GUI→backend parameter round trip, and an explicit list of what is NOT covered yet.</td>
+<td><strong>What the GUI tests actually cover</strong> — the 16-cell layout matrix (columns × ripple dock × orientation) with screenshots, every stream option's expected units/labels/depth, the GUI→backend parameter round trip, and an explicit list of what is NOT covered yet. The matrix's <strong>vertical axis now reports <code>[untested]</code></strong> when no portrait display is attached, instead of running a landscape window twice and passing; PASSED-with-untested is a different result from PASSED and reaches the runner's own output.</td>
 </tr>
 <tr>
 <td><a href="GuiTesting.html"><code>GuiTesting.md</code></a></td>
@@ -780,10 +804,22 @@ time, so the first configure needs internet</strong>. After that, incremental bu
   copy, so nothing can go stale behind you. Edit the file and <strong>hard-reload the browser</strong>
   (Ctrl+Shift+R, or CDP <code>Page.reload</code> with <code>ignoreCache</code>) — Chrome caches JS. The same is now true of
   <code>config/*.yaml</code>. Previously each was copied into the build tree and the app read the copy, so an
-  un-rebuilt edit silently served the old version; that trap is gone.</li>
+  un-rebuilt edit silently served the old version; that trap is gone. <strong>The working tree IS the
+  deployment</strong>, which is the sharp edge: never edit <code>webinterface/</code> while a backend or a GUI suite is
+  running — a page that fetches mid-write gets a half-written module and never boots, and the test it
+  breaks is not the one you edited. See <a href="AgentTraps.html"><code>AgentTraps.md</code></a> §11.</li>
 <li><strong>Backend logs go to <code>output.log</code>.</strong> The exe is a windowless GUI-subsystem process, so qDebug/qWarning
   never reach a pipe. They are flushed per-line to <strong><code>output.log</code></strong> in the backend working directory —
-  read its tail to see the last line before a crash.</li>
+  read its tail to see the last line before a crash. It <strong>rotates</strong> on every start
+  (<code>output.log</code> → <code>output.1.log</code> → … → <code>output.5.log</code>, five generations kept), so the previous run's
+  log is still there — which is the point: it used to be truncated, and on 2026-08-20 that erased the
+  evidence of the fault being chased. <code>SPIKESPEAK_LOG_FILE</code> moves it, which is how parallel GUI
+  workers avoid interleaving into one file.</li>
+<li><strong>The ports are options, not constants.</strong> <code>--ws-port</code> / <code>--http-port</code> (defaults 1234 / 8234; the
+  GUI harness passes them from <code>SPIKESPEAK_WS_PORT</code> / <code>SPIKESPEAK_HTTP_PORT</code> so every parallel worker
+  gets its own pair). The HTTP server rewrites the <code>ws://localhost:1234</code> literal in <code>Config.js</code> as it
+  serves it, so a page always dials the backend that served it — there is no query parameter to
+  propagate and no frontend edit to make.</li>
 <li><strong>The server auto-quits when the LAST WebSocket client leaves</strong> (~2 s later, by design — closing the
   browser exits the server). A CLI-only script that connects then disconnects makes the server exit
   between steps; it LOOKS like a crash but is not. For multi-step/multi-cycle headless work, keep a
@@ -1080,7 +1116,7 @@ for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its 
 </tr>
 <tr>
 <td>Basestation</td>
-<td>IMEC <strong>PXIe</strong> (PCIe/MXI) <strong>or the OneBox</strong> (USB3/FTDI over an FT601). The OneBox also brings a <strong>12-channel ADC</strong> — a live stream in real volts, labelled <code>OneBox ADC (SDR)</code> with channels <code>IO0..IO11</code> matching the NPOB_SDR_02 breakout BNCs — and a <strong>DAC</strong> output usable as a stimulus trigger (<strong>DAC0 reaches BNC IO0</strong>, not the SMA; see <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a>).</td>
+<td>IMEC <strong>PXIe</strong> (PCIe/MXI) <strong>or the OneBox</strong> (USB3/FTDI over an FT601). The OneBox also brings a <strong>12-channel ADC</strong> — a live stream in real volts, labeled <code>OneBox ADC (SDR)</code> with channels <code>IO0..IO11</code> matching the NPOB_SDR_02 breakout BNCs — and a <strong>DAC</strong> output usable as a stimulus trigger (<strong>DAC0 reaches BNC IO0</strong>, not the SMA; see <a href="OneBoxWiring.html"><code>OneBoxWiring.md</code></a>).</td>
 </tr>
 <tr>
 <td>DAQ</td>

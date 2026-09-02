@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -189,9 +187,13 @@ contradicting each other. Neither number is wrong; quoting one against the other
   (<code>src/core/Filter.hpp</code>, Direct-Form IIR/FIR, one sample at a time) <strong>per detection channel</strong>. Per decimated
   sample it runs, for each selected channel: ripple-band FIR (26-tap) → <code>abs</code> → envelope FIR (10-tap) →
   threshold/quorum logic.</li>
-<li><strong>AVX is used only by <code>proc.lfp</code></strong> (<code>Avx2Filter</code>, 8 channels per op) to derive <code>data.lfp</code> from <code>data.npx.raw</code>
-  on the <strong>NP2</strong> path. That's a <em>separate processor on its own thread</em>; it is not in the NP1 path and is not the
-  detector's per-channel filtering.</li>
+<li><strong>AVX is used only by the derived-band processors</strong> (<code>Avx2Filter</code>, 8 channels per op) — <code>proc.lfp</code>, which
+  derives <code>data.lfp</code> from <code>data.npx.raw</code> on the <strong>NP2</strong> path, and, since the spike band arrived,
+  <code>proc.spike</code>; both are the same <code>BandFilterProcessor</code> base. Those are <em>separate processors on their own
+  threads</em>, and neither of them <strong>is</strong> the detector's per-channel filtering: <code>proc.lfp</code> is not in the NP1
+  path at all (a 1.0 streams a hardware LFP band, so nothing derives one), and the detector itself still
+  runs scalar <code>Filter</code>s wherever it runs — <code>RippleDetector.hpp</code> includes <code>Avx2Filter.hpp</code> and uses nothing
+  from it.</li>
 <li><strong>Threading model:</strong> <code>ProcessorManager</code> moves <strong>each <code>IProcessor</code> onto its own worker thread</strong>
   (<code>proc.rippledetector</code>, <code>proc.lfp</code>, <code>proc.npx.display</code>, … each dedicated). <strong>Within</strong> the detector's single
   thread, the N per-electrode detectors run <strong>sequentially in one loop</strong>, and the quorum/stimulation decision is
@@ -438,8 +440,10 @@ lower-latency and simpler, with ~37× headroom on one core.</strong></p>
 <ul>
 <li>The ~28 ns is a <strong>micro-benchmark</strong> of the filter chain in isolation on this box; it excludes buffer/cache
   effects of the live pipeline and OS scheduling. The <strong>conclusion has ~37× margin</strong>, so those effects don't
-  change it — but the honest way to nail the <em>end-to-end</em> closed-loop latency is to instrument ripple-onset →
-  <code>fire()</code> on the target rig (I can add high-resolution timestamps around the detection path on request).</li>
+  change it — but the honest way to nail the <em>end-to-end</em> closed-loop latency is to instrument the detection
+  path on the target rig. <strong>That was done afterwards and it agrees:</strong> per-stage <code>rippleLatency</code> timestamps
+  now bracket the live path, and detection + dispatch measures <strong>8–15 µs</strong> on real hardware against a
+  sub-millisecond loop — see <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>.</li>
 <li>Thread wake costs (~1–10 µs) are cited typical values, not measured on this box; they are also ≪ the DSP floor,
   so they don't change the recommendation either.</li>
 </ul></article>

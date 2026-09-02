@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a class="active" href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -145,10 +143,22 @@
 <p>How work is actually done in this repo. Short on purpose; the reasoning behind most of these lives in
 the page each one links to.</p>
 <h2 id="branches-and-commits">Branches and commits<a class="headerlink" href="#branches-and-commits" title="Permanent link">#</a></h2>
-<p>Work happens on a <strong><code>feature/&lt;Thing&gt;</code></strong> branch off <code>main</code> — <code>feature/OneBoxSupport</code>,
-<code>feature/NIDAQSupport</code>, <code>feature/ProbeHeatmapAndDetachedViews</code>. One branch per subsystem or effort,
-not one per commit. <code>develop</code> and <code>main</code> exist; nothing is pushed straight to either while a feature
-branch is live.</p>
+<p>Work happens on a <strong><code>feature/&lt;Thing&gt;</code></strong> branch — <code>feature/OneBoxSupport</code>, <code>feature/NIDAQSupport</code>,
+<code>feature/ProbeHeatmapAndDetachedViews</code>, <code>feature/AsapPerModule</code>. One branch per subsystem or effort,
+not one per commit. <code>main</code> is GitHub's default branch and <code>develop</code> is the integration branch;
+nothing is pushed straight to either while a feature branch is live.</p>
+<p><strong>How merges have actually gone, as opposed to how you would guess.</strong> Read the merged PRs
+(<code>gh pr list --state merged --json number,baseRefName,headRefName</code>): #57, #58, #69 and #81 all
+targeted <strong>another feature branch</strong> — <code>feature/OneBoxSupport</code> (and <code>feature/SpikeAudio</code>) served as
+the long-lived integration line while OneBox work was open — and <code>develop</code> then took that line by
+<strong>fast-forward</strong>, not by PR. <code>main</code> has one commit on it, the initial one, and has never received a
+merge. So "PR into <code>develop</code>" is the shape to aim for, not a description of the log; if you are
+about to open a PR, ask the operator which base they want rather than inferring it.</p>
+<p><strong>As of 2026-09-01 no branch carries unmerged work.</strong> <code>feature/OneBoxSupport</code> was fast-forwarded
+into <code>develop</code> on 2026-09-01 (<code>60889d7</code>) — the ref still exists locally and on <code>origin</code>, but it
+points at the same commit as <code>develop</code> — and <code>gh pr list</code> shows nothing open, so the next piece of
+work starts a new branch rather than joining one. That also unblocks the repo-wide reformat, which
+has been waiting on exactly this — see <a href="CodeStyle.html"><code>CodeStyle.md</code></a> §3.</p>
 <p><strong>Commit messages are one imperative sentence saying what the commit makes true</strong>, not what files it
 touched. No trailing period. An optional lowercase area prefix (<code>gui:</code>, <code>sim:</code>, <code>Intan:</code>) when the
 subject would otherwise be ambiguous, and the issue number in parentheses when there is one:</p>
@@ -174,6 +184,11 @@ answers on the same day.</p>
 red suite for everyone who pulls, so run it before you push, not just before you hand back. If you
 added a test, <strong>prove it can fail</strong> — inject the regression, watch it go red, revert <em>and rebuild</em>
 (a stale <code>bin/SpikesPeak.exe</code> still carries the regression after the source is clean).</p>
+<p><strong>Run one gate at a time.</strong> Both runners take a shared lock (<code>scripts/_gatelock.py</code>), so a second
+one refuses rather than attaching to the first's backend — but the lock only covers the runners.
+Do not drive the backend by hand, edit <code>webinterface/</code>, or run <code>build.bat</code> while a gate is up: the
+frontend is served straight from the working tree and the exe is swapped underneath a live run.
+Exit code 0 from <code>run_all_tests.py</code> means nothing unless you passed <code>--fatal</code>.</p>
 <h2 id="house-rules">House rules<a class="headerlink" href="#house-rules" title="Permanent link">#</a></h2>
 <ul>
 <li><strong>American English</strong> everywhere — color, behavior, analyze, optimize, artifact, gray — including

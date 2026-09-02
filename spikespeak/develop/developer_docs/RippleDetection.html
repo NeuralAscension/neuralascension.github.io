@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -147,8 +145,10 @@ envelope crosses a z-score threshold. It is validated on <strong>both</strong> N
 (2026-07-07, <code>SpikesPeak_Status.md §20</code>) and now <strong>end-to-end on real hardware in saline</strong> driving the full
 closed loop (synthetic ripple → detection → Pi/AM 2300 → NI-DAQ ai4 on PXIe, or the OneBox's own ADC on a
 OneBox), sub-millisecond with ASAP delivery, on both transports. Results:
-<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Saline bench validation
-is <strong>done</strong>; the next milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Saline bench
+validation is <strong>done</strong>, and the in-vivo milestone this page used to point at came round on <strong>2026-08-28</strong>
+(<code>SpikesPeak_Status.md</code> §65 — which records the morning's pre-session findings, not the session's own
+results). For where things stand, read the Status log, not this paragraph.</p>
 <h2 id="the-three-ripple-docs-read-the-right-one">The three ripple docs (read the right one)<a class="headerlink" href="#the-three-ripple-docs-read-the-right-one" title="Permanent link">#</a></h2>
 <p>To keep content in one place, the ripple documentation is split by audience — <strong>this doc does not repeat
 the other two</strong>:</p>
@@ -441,14 +441,25 @@ that line rather than off this page</strong> — a 1 s gate prints <code>1 s ( 2
 <td><code>tests/gui/ripple_detach.py</code></td>
 <td>the detached ripple dock builds <strong>zero</strong> ChartColumns (it draws on canvas 2D and must not spend WebGL contexts a live view needs)</td>
 </tr>
+<tr>
+<td><code>tests/gui/owned_values.py</code></td>
+<td>every backend-owned parameter field carries the <strong>detector's</strong> value with a source held, and is <strong>empty</strong> with none — no dock-invented number reaches the screen</td>
+</tr>
+<tr>
+<td><code>tests/gui/signal_claims.py</code></td>
+<td>no per-channel label makes a claim about the <strong>signal</strong> that the column's own envelope plot can disprove (this is why the label is "no detection", not "below threshold")</td>
+</tr>
 </tbody>
 </table>
 <p>If you change the dock, the state contract or the sidecar, those are what you are putting at risk.</p>
-<h2 id="hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia">Hardware — validated in saline (2026-07-21), ready for in vivo (under anesthesia)<a class="headerlink" href="#hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia" title="Permanent link">#</a></h2>
+<h2 id="hardware-validated-in-saline-2026-07-21-in-vivo-from-2026-08-28">Hardware — validated in saline (2026-07-21); in vivo from 2026-08-28<a class="headerlink" href="#hardware-validated-in-saline-2026-07-21-in-vivo-from-2026-08-28" title="Permanent link">#</a></h2>
 <p>Play a synthetic ripple signal into <strong>saline</strong> with the probe in the bath.</p>
-<p><strong>You do not pick a detector profile any more.</strong> Since the source-selection refactor an operator chooses
-<strong>OneBox</strong>, <strong>PXIe</strong> or <strong>PXIe + NI-DAQ</strong> and the probe identifies itself, so the detector has to work out
-its own input. <code>ProcessorManager::setupProcessors</code> <strong>auto-provisions <code>proc.rippledetector</code></strong> for any NPX
+<p><strong>You do not pick a detector profile any more.</strong> Since the source-selection refactor the operator-facing
+<strong>Neuropixels</strong> entries are just two — <strong>Neuropixels</strong> (<code>source.npx.auto</code> — any basestation, any probe,
+both read from the rig) and <strong>PXIe with NI-DAQ</strong>. <strong>OneBox</strong>, <strong>PXIe</strong> and <strong>PXIe + NI-DAQ</strong> still exist
+as <code>gui_hidden: true</code> explicit escapes, selectable by name, for the case where a OneBox and a PXIe module
+are attached at once and the scan refuses to guess. Either way the probe identifies itself, so the
+detector has to work out its own input. <code>ProcessorManager::setupProcessors</code> <strong>auto-provisions <code>proc.rippledetector</code></strong> for any NPX
 source that has an LFP band when the profile did not declare one, and binds it to whichever band the probe
 actually has:</p>
 <table>
@@ -505,7 +516,8 @@ DAC, above). An ESP32-S3-ETH firmware twin of the Pi exists, but the Pi is the p
 <p><strong>The full closed loop is validated on both probes</strong> across the quorum × delivery matrix (1000 detections
 per cell), sub-millisecond with ASAP delivery, over <strong>both</strong> transports. Results, figures and the per-probe
 detail: <strong><a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a></strong>
-(tabbed NP1.0 / NP2.0). Saline is done; the next milestone is <strong>in-vivo recording under anesthesia</strong>, run by the user.</p>
+(tabbed NP1.0 / NP2.0). Those numbers are all from saline; the in-vivo work started 2026-08-28 and lives in
+the Status log (§65 onward), not here.</p>
 <h2 id="validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)<a class="headerlink" href="#validate-from-a-saved-recording-post-hoc-no-live-capture" title="Permanent link">#</a></h2>
 <p><code>ripple_tools/analyze_recording.py &lt;recdir&gt;</code> reconstructs the <strong>EXACT</strong> online detector from a recorded
 band and, if the NI-DAQ captured the Pi-GPIO stim pulses, quantifies the closed loop (signal-chain,
@@ -592,7 +604,7 @@ switches that ship <strong>false</strong>. See <a href="FilterDebugging.html"><c
 <li><a href="#what-guards-this-area">What guards this area</a></li>
 </ul>
 </li>
-<li><a href="#hardware-validated-in-saline-2026-07-21-ready-for-in-vivo-under-anesthesia">Hardware — validated in saline (2026-07-21), ready for in vivo (under anesthesia)</a></li>
+<li><a href="#hardware-validated-in-saline-2026-07-21-in-vivo-from-2026-08-28">Hardware — validated in saline (2026-07-21); in vivo from 2026-08-28</a></li>
 <li><a href="#validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)</a></li>
 <li><a href="#the-ripple-sidecar-namename_ripplejson-and-the-race-that-used-to-break-it">The ripple sidecar (&lt;name&gt;/&lt;name&gt;_ripple.json) — and the race that used to break it</a></li>
 <li><a href="#the-event-log-namename_eventsjsonl-what-actually-happened">The event log (&lt;name&gt;/&lt;name&gt;_events.jsonl) — what actually happened</a></li>

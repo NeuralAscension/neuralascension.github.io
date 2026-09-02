@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -305,6 +303,16 @@ probe, muted — <a href="AudioVideoLatency.html"><code>AudioVideoLatency.md</co
 </tbody>
 </table>
 <p><strong>DirectSound is the fastest path here and it is already what gets selected.</strong></p>
+<blockquote>
+<p><strong>A row from another operating system, 2026-09-01.</strong> PortAudio on <strong>ALSA</strong> (Linux Mint 22.1,
+PipeWire presenting a PulseAudio server) measured <strong>14.20 ms</strong> against a promise of <strong>8.71 ms</strong> —
+the promise <em>below</em> the measurement, as MME's is, and the opposite way round from DirectSound's
+120 ms advertisement above. The advertised figure is a per-host-API constant and is wrong in both
+directions; only the measured column ranks anything.
+<code>hostApiRank()</code> gives ALSA the middling rank 5 and nothing on that box argued for changing it:
+<code>available: true</code>, 20 output devices offered, <strong>0 starved callbacks and 0 device underflows</strong>.
+Details in <a href="AudioVideoLatency.html"><code>AudioVideoLatency.md</code></a> §5c.</p>
+</blockquote>
 <p>The log line <code>Started output stream with latency 120.000 ms</code> is not a measurement and not a promise
 the device broke — <strong>it is a hardcoded PortAudio constant</strong>:</p>
 <pre><code class="language-c">/* ext/portaudio/src/hostapi/dsound/pa_win_ds.c:159 */
@@ -312,7 +320,7 @@ the device broke — <strong>it is a hardcoded PortAudio constant</strong>:</p>
 </code></pre>
 <p>Applied to <em>every</em> DirectSound device on Windows 2000+, which is why every DirectSound row in
 <code>AudioVideoLatency.md</code> §2 reads <strong>exactly</strong> 120.00 ms. The figure carries no information about the
-device at all, so do not "optimise" it and do not quote it.</p>
+device at all, so do not "optimize" it and do not quote it.</p>
 <blockquote>
 <p><strong>And do not over-read the other column either.</strong> The "measured" figure is
 <code>outputBufferDacTime - currentTime</code> from inside the callback — better, because it comes from the
@@ -407,7 +415,7 @@ not an unconditional filter: it would high-pass an already high-passed signal an
 6 kHz on top. Audibly duller, for nothing. The filter state is still stepped on the unfiltered path,
 so switching sources does not start from a stale history.</p>
 <p>Until 2026-08-24 the processor read <code>data.npx.raw</code> unconditionally, so <strong>1.0 rigs had no spike audio
-at all</strong> — not because 1.0 cannot do it, but because nobody had generalised the input. A 1.0 probe is
+at all</strong> — not because 1.0 cannot do it, but because nobody had generalized the input. A 1.0 probe is
 arguably the <em>better</em> case: its AP band comes off the probe already banded, so the monitor costs one
 memory read per sample and no filtering whatsoever.</p>
 <p>A profile can override both:</p>
@@ -453,7 +461,7 @@ id <code>0x218</code>, arms its start report and ticks every 200 ms so the liven
 processor that never turns, and it answers state queries with</p>
 <pre><code class="language-json">{&quot;event&quot;:&quot;audioState&quot;,&quot;available&quot;:false,&quot;unavailable_reason&quot;:&quot;...&quot;,&quot;...&quot;:&quot;...&quot;}
 </code></pre>
-<p>The panel greys itself out and <strong>says why</strong>. "Audio unavailable" with no reason is the kind of
+<p>The panel grays itself out and <strong>says why</strong>. "Audio unavailable" with no reason is the kind of
 message that gets reported as a bug against the wrong component.</p>
 <p>Both halves matter and both were bugs: reporting ready, because <code>MainController</code> does not start the
 sources until every processor has, so a silent processor hangs the start outright; and ticking,
@@ -474,7 +482,7 @@ nothing.</p>
 routes to whatever the current default is, and moves the instant the user changes it. So in
 follow-the-default mode <code>AudioWorker::findDefaultFollower()</code> opens the <strong>follower</strong> and falls back to
 the plain default only when there is none.</p>
-<p>That buys real-time adaptation for free — no polling, no re-initialisation, no gap in the audio:</p>
+<p>That buys real-time adaptation for free — no polling, no re-initialization, no gap in the audio:</p>
 <table>
 <thead>
 <tr>
@@ -502,7 +510,7 @@ the plain default only when there is none.</p>
 </tbody>
 </table>
 <p><strong>It is matched by NAME, because PortAudio has no flag for it.</strong> That is a heuristic and it is
-allowed to miss: when it does, the behaviour is exactly what it was before, and the operator can
+allowed to miss: when it does, the behavior is exactly what it was before, and the operator can
 still pin any device explicitly.</p>
 <h3 id="picking-one-explicitly">Picking one explicitly<a class="headerlink" href="#picking-one-explicitly" title="Permanent link">#</a></h3>
 <p>The panel lists every output device with its host API, plus <em>"System default (follows your OS
@@ -517,7 +525,7 @@ the monitor simply goes silent for the rest of the session. The watchdog notices
 reopens on whatever the machine offers now. The same path picks up speakers plugged in <strong>after</strong> the
 session started.</p>
 <p>Re-enumerating means <code>Pa_Terminate()</code> + <code>Pa_Initialize()</code>: PortAudio snapshots the device list at
-initialisation and there is no portable notification that it changed. That is only legal with no
+initialization and there is no portable notification that it changed. That is only legal with no
 stream open, which is why every caller closes first.</p>
 <hr />
 <h2 id="8-known-gaps">8. Known gaps<a class="headerlink" href="#8-known-gaps" title="Permanent link">#</a></h2>
@@ -528,7 +536,8 @@ stream open, which is why every caller closes first.</p>
 <li><strong>Nobody has heard it move.</strong> <code>tests/gui/audio_panel.py</code> proves the backend opens the <em>follower</em>
   endpoint and that the picker round-trips through the backend — which is what makes following
   possible — but that sound is audible, and that changing the Windows output device really moves it,
-  needs a person with speakers.</li>
+  needs a person with speakers. The 2026-09-01 Linux run widens the evidence without closing this:
+  the ALSA path opened, ran clean and reported no underflows, all of it counters rather than ears.</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/SpikeAudio.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>

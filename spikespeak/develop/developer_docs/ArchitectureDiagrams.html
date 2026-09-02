@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Unsorted / Architecture diagrams — generated, not drawn</span>
+  <span class="crumb">Developer Docs / Working on this repo / Architecture diagrams — generated, not drawn</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a class="active" href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup" open><summary>Unsorted<span class="navcount">1</span></summary>
-<a class="active" href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -191,7 +189,7 @@ that was never produced.</p>
 <pre><code>CONFIG  →  DATASOURCE  →  DATA  →  DATAINTERPRETER  →  PROCESSOR  →  SINK
 </code></pre>
 <p>Read it downward: a profile selects a source, the source publishes named bands, an interpreter
-serialises a band, a processor consumes it, and a sink is a file a recording writes.</p>
+serializes a band, a processor consumes it, and a sink is a file a recording writes.</p>
 <p><strong>Node types are colored, not labeled by shape.</strong> The legend at the top carries the mapping. A
 config box shows its <strong>filename</strong> on the first line and its internal <code>name:</code> on the second, because
 a config's identity is that <code>name:</code> field and never the filename — the GUI and CLI select the name.</p>
@@ -271,6 +269,16 @@ dashed</strong>, with their own legend entry — <em>"auto-provisioned in C++ (n
 the difference. If the provisioning rules change in C++ and this table does not, the picture will
 be confidently wrong; that is the cost of the table and the reason it is small and cited.</p>
 </blockquote>
+<p><strong>And one node the parser cannot draw at all: <code>source.npx.auto</code>.</strong> Nodes come from the <code>register*</code>
+calls in <code>src/core/Utils.cpp</code>, and <code>source.npx.auto</code> is not registered — it is an alias resolved at
+connect time in <code>SourceManager::setupSources</code>, which reads the basestation scan and then builds
+<code>source.npx.onebox</code> or <code>source.npx.pxi</code>. So it has no node, its config edge is dropped, and the two
+<strong>operator-facing hardware profiles are drawn without their probe source</strong>: <code>Neuropixels</code> comes out
+with no DataSource band whatsoever (its data bands appear from nowhere), and <code>NeuropixelsNiDaq</code> shows
+only <code>source.nidaq</code>. Checked 2026-09-01 against a fresh generator run. Nothing downstream is wrong —
+the missing box is the <em>choice</em>, which by design is not made until the rig answers. Read those two
+pictures with <a href="SourceSelection.html"><code>SourceSelection.md</code></a> beside them, and do not conclude from the
+picture that a <code>Neuropixels</code> profile has no source.</p>
 <p><strong>Upward edges are real.</strong> A derived-band processor <em>produces</em> data, so <code>proc.lfp → data.lfp</code> points
 from the Processor band back up to the Data band. Those are routed out to the side rather than
 dropped — an earlier version silently discarded every backward edge and so hid the exact wiring this
@@ -281,17 +289,19 @@ section exists to show.</p>
 function of the <em>biggest</em> stage, so with every config in one picture it came out <strong>1580 × 2460</strong> — a
 tall ribbon four times higher than wide, unreadable on any page. Stages as bands grow the diagram in
 the direction pages actually scroll.</p>
-<p><strong>Boxes are measured from their text.</strong> Fixed 200 px boxes with centred labels overflowed badly:
+<p><strong>Boxes are measured from their text.</strong> Fixed 200 px boxes with centered labels overflowed badly:
 config names run to 54 characters, about 270 px at 10 px type, spilling out of both sides and over
-the neighbours. Widths are now computed per node and clamped, and anything still too long is
+the neighbors. Widths are now computed per node and clamped, and anything still too long is
 truncated with an ellipsis. The width estimate is <code>0.55 em</code> per character — the standard
 approximation for mixed-case Latin, deliberately erring wide, because a real font metric would be a
 dependency.</p>
 <p><strong>There is a <code>viewBox</code>.</strong> Without one an SVG renders at its intrinsic pixel size and overflows any
 narrower container; with one it scales to whatever it is given.</p>
-<p><strong>Config boxes are clustered by the source they feed, and their edges are bundled.</strong> 37 profiles
+<p><strong>Config boxes are clustered by the source they feed, and their edges are bundled.</strong> 36 profiles
 each drawing an independent curve into 9 sources crossed everywhere and carried no information you
-could trace. Configs are now ordered by their first source name — sources are placed alphabetically,
+could trace. (36 and 9 are what the overall picture draws today, checked 2026-09-01; the "37" that
+used to stand here was the count of <em>SVG files</em>, which is one per config plus the overall one.)
+Configs are now ordered by their first source name — sources are placed alphabetically,
 so this puts a profile roughly above its target — and their edges converge on a single collector
 point just above each source. They are also drawn fainter than the rest: at that count they are
 context, not the subject.</p>
@@ -303,6 +313,9 @@ point of generating.</p>
 <p><strong>Adding a new C++-provisioned processor DOES need a line</strong> in <code>AUTO_PROVISIONED</code>, or it will be
 drawn as an orphan. There is no way around that short of parsing C++ control flow, which would be a
 worse trade.</p>
+<p><strong>A source name that is an ALIAS rather than a registered module gets no box at all</strong> — the profiles
+naming it come out with a missing stage, not a dangling edge. <code>source.npx.auto</code> is the live example;
+see 2. If you add another, expect the same and say so wherever the picture is read.</p>
 <p><strong>After changing the generator, regenerate and look at the picture.</strong> The tests check that the SVGs
 match the code and that the committed copy matches the generated one; neither can tell you the
 layout is legible. To render one without a browser window:</p>

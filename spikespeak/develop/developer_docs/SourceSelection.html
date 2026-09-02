@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -144,19 +142,22 @@
   <main class="content"><article class="markdown-body"><h1 id="source-selection-the-rig-names-itself">Source selection — the rig names itself<a class="headerlink" href="#source-selection-the-rig-names-itself" title="Permanent link">#</a></h1>
 <p><strong>The operator picks a basestation. The probe is discovered, not declared.</strong></p>
 <p>Before 2026-08-26 the Source dropdown listed twelve hardware profiles, because every probe/basestation
-pairing had been materialised as its own YAML: <code>Npx1OneBox</code>, <code>Npx2OneBox</code>, <code>Npx2OneBoxNoAdc</code>,
+pairing had been materialized as its own YAML: <code>Npx1OneBox</code>, <code>Npx2OneBox</code>, <code>Npx2OneBoxNoAdc</code>,
 <code>Npx1Pxi</code>, <code>Npx2Pxi</code>, <code>Npx1PxiNiDaq</code>, and so on. Picking the wrong one did not produce an error — it
 produced a rig that looked like it was working.</p>
 <p>Between 2026-08-26 and 2026-08-27 it listed three (<code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code>). Since
 commit 4670d2c those three are <code>gui_hidden: true</code> and the menu lists:</p>
-<pre><code>None
-Neuropixels              (source.npx.auto — basestation AND probe read from the rig)
+<pre><code>Neuropixels              (source.npx.auto — basestation AND probe read from the rig)
 PXIe with NI-DAQ         (only when a PXIe module is detected)
 Simulated Data…
+None
 </code></pre>
-<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI, and are surfaced
-in the menu only when the scan is ambiguous — see §2, where <code>source.npx.auto</code> REFUSES to pick with
-both a OneBox and a PXIe attached and the GUI raises a <code>basestation-choice</code> dialog instead.</p>
+<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI. Of those three,
+<strong>only <code>OneBox</code> and <code>PXIe</code> are ever surfaced in the menu</strong>, and only when the scan is ambiguous — see
+§2, where <code>source.npx.auto</code> REFUSES to pick with both a OneBox and a PXIe attached and the GUI raises
+a <code>basestation-choice</code> dialog instead. (<code>main.js</code>'s ambiguous branch also offers <strong><code>PXIe with
+NI-DAQ</code></strong>, but that is the everyday visible profile, not the hidden <code>PXIe + NI-DAQ</code>. Watch those two
+names — see §7.)</p>
 <p>This document is how that works and what you have to know before editing a profile.</p>
 <hr />
 <h2 id="1-why-a-profile-could-ever-be-wrong-for-the-probe">1. Why a profile could ever be "wrong for the probe"<a class="headerlink" href="#1-why-a-profile-could-ever-be-wrong-for-the-probe" title="Permanent link">#</a></h2>
@@ -303,12 +304,12 @@ arbitrary one, and silently streaming an arbitrary probe is the same class of fa
 streaming the wrong band -- everything looks healthy and the data came from somewhere else.</p>
 <p>So <code>listProbePorts()</code> counts them, and if there is more than one the connect stops and the GUI asks
 which port to use. The choice is held in a <strong>static</strong> on <code>NeuropixelsSource</code>, because the question is
-raised by a connect that fails: it has to outlive that failure so the retry can honour it. The dialog
+raised by a connect that fails: it has to outlive that failure so the retry can honor it. The dialog
 also says plainly that multi-probe acquisition is in the backlog and not a priority, so nobody has to
 wonder whether the restriction is a bug.</p>
 <p><code>listProbePorts()</code> is deliberately separate from <code>detectProbePort()</code> rather than a mode on it. The
 latter carries the OneBox's power-up retry loop (up to 8 attempts over ~4 s), and rewriting two
-hardware paths whose retry behaviour cannot be exercised without the hardware in front of you is not
+hardware paths whose retry behavior cannot be exercised without the hardware in front of you is not
 a change worth making for tidiness. The enumeration runs afterwards, when the headstage is known
 awake, so one pass is enough.</p>
 <h2 id="4-the-old-profiles-are-hidden-not-deleted">4. The old profiles are hidden, not deleted<a class="headerlink" href="#4-the-old-profiles-are-hidden-not-deleted" title="Permanent link">#</a></h2>
@@ -324,6 +325,16 @@ reported. The GUI gets short; the archive stays runnable.</p>
 <p>The same flag also carries the operational variants that are not everyday choices: the ASAP
 (<code>low_latency:</code>) profiles, the no-ADC control that <a href="https://github.com/NeuralAscension/SpikesPeak/issues/63">issue #63</a>
 needs, and the digital-input profile from #67.</p>
+<p><strong>The ASAP profiles are no longer how you get ASAP.</strong> Since #80, low latency is a per-module
+runtime control in the GUI (<code>webinterface/LowLatencyModule.js</code>), and turning it on for a module
+propagates it upstream to whatever feeds that module — so a profile whose entire difference is
+<code>low_latency: true</code> on the source no longer needs to exist. The five that do exist —
+<code>config/Npx1OneBoxAsap.yaml</code>, <code>Npx1PxiNiDaqAsap.yaml</code>, <code>Npx2OneBoxAsap.yaml</code>,
+<code>Npx2PxiNiDaqAsap.yaml</code>, <code>SimNpx1LatencyAsap.yaml</code>, the exact set <code>src/core/LowLatency.hpp</code> names in
+its rationale — stay hidden and selectable by their <code>name:</code> fields ("NPX 1.0 (OneBox, ASAP)" and so
+on) for the same reason as the rest of §4: published latency numbers name them. See
+<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a> and <a href="ConfigReference.html"><code>ConfigReference.md</code></a> for the
+config key and its runtime twin.</p>
 <hr />
 <h2 id="5-the-source-control-is-a-menu-not-a-select">5. The Source control is a menu, not a <code>&lt;select&gt;</code><a class="headerlink" href="#5-the-source-control-is-a-menu-not-a-select" title="Permanent link">#</a></h2>
 <p>The visible control is <code>#src-btn</code>, a toolbar button that opens <code>#src-menu</code> — an anchored popup in the
@@ -343,15 +354,20 @@ from every path that changes either, including the ones a <em>remote</em> change
 session and a second browser both land in <code>reflectSource()</code>.</p>
 <h3 id="the-menus-three-levels">The menu's three levels<a class="headerlink" href="#the-menus-three-levels" title="Permanent link">#</a></h3>
 <pre><code>Source ▾
-├─ None
-├─ Neuropixels          basestation AND probe read from the rig (source.npx.auto)
-├─ PXIe with NI-DAQ     only offered when the scan found a PXIe module
-└─ Simulated Data  ›    → basestation → probe → scenario
+├─ Hardware               (a group heading, not a row you can pick)
+│  ├─ Neuropixels         basestation AND probe read from the rig (source.npx.auto)
+│  └─ PXIe with NI-DAQ    only offered when the scan found a PXIe module
+├─ Simulated Data  ›     → basestation → probe → scenario
+└─ None                   disconnect / select nothing
 </code></pre>
+<p><strong><code>None</code> is last, not first.</strong> <code>renderSourceRoot()</code> emits the Hardware group, then a separator and
+Simulated Data, then a separator and None. Drawn the other way round this reads as a menu whose top
+row is "do nothing", which is not what an operator sees.</p>
 <p><strong>This is not the tree from §1's middle era.</strong> <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> were the menu for
-about a day and are now <code>gui_hidden: true</code>; they surface here <strong>only when the scan is ambiguous</strong> (a
-OneBox and a PXIe module both attached), as the explicit override for a question the backend refuses
-to guess at. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
+about a day and are now <code>gui_hidden: true</code>. Two of them — <strong><code>OneBox</code> and <code>PXIe</code></strong> — surface here
+<strong>only when the scan is ambiguous</strong> (a OneBox and a PXIe module both attached), as the explicit
+override for a question the backend refuses to guess at. <code>PXIe + NI-DAQ</code> is never surfaced: the
+third row that branch offers is <code>PXIe with NI-DAQ</code>, the visible everyday profile. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
 (<code>config/NeuropixelsNiDaq.yaml</code>) and <strong><code>PXIe + NI-DAQ</code></strong> is the hidden superseded one
 (<code>config/PxieNiDaq.yaml</code>). They are different profiles with different <code>name:</code> fields, and <code>name:</code> is
 the identity.</p>
@@ -359,7 +375,7 @@ the identity.</p>
 <code>configList</code> reply — only the separate <code>guiHidden</code> array marks it — so <code>select "NPX 2.0 Multishank
 (OneBox)"</code> from the control CLI works exactly as it always did. Hiding a profile from the operator
 must never break a script that reproduces a published measurement; see §4.</p>
-<p>The simulated branch <strong>drills down in place</strong>. It was briefly a separate centred modal; a dropdown
+<p>The simulated branch <strong>drills down in place</strong>. It was briefly a separate centered modal; a dropdown
 that hands you to a modal halfway through a decision is two surfaces for one choice.</p>
 <p>Both axes come from the config, never from a table in the frontend:</p>
 <pre><code class="language-yaml">sim_variant:     &quot;Neuropixels 2.0 Multishank (OneBox + ADC)&quot;   # the leaf label
@@ -377,7 +393,7 @@ omits the next scenario somebody adds. Adding a simulated scenario is still a on
 <p><code>showSimPicker(onPick)</code> is kept as an entry point — it now opens the menu at its simulated step
 rather than a modal — because the GUI tests and <code>gui_scenarios.py</code> both call it.</p>
 <h3 id="its-look-is-borrowed-on-purpose">Its look is borrowed, on purpose<a class="headerlink" href="#its-look-is-borrowed-on-purpose" title="Permanent link">#</a></h3>
-<p><code>SOURCE_MENU_CSS</code> in <code>main.js</code> contains no new colour. Every value comes from <code>#band-menu</code>
+<p><code>SOURCE_MENU_CSS</code> in <code>main.js</code> contains no new color. Every value comes from <code>#band-menu</code>
 (<code>BandModule.js</code>) and <code>#aud-dock</code> / <code>#aud-devmenu</code> (<code>AudioModule.js</code>) — the two surfaces an operator
 meets most often, and which already agree with each other deliberately. The mapping is listed above
 the CSS block so a change to one can be carried across.</p>

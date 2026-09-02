@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -145,7 +143,7 @@
 <!-- Where this file and the code disagree, the CODE is right and this file is the bug.            -->
 
 <h1 id="the-live-view-renderer-contract">THE LIVE-VIEW RENDERER CONTRACT<a class="headerlink" href="#the-live-view-renderer-contract" title="Permanent link">#</a></h1>
-<p><strong>Status:</strong> normative specification of what ships. Two renderers are under it:</p>
+<p><strong>Status:</strong> normative specification of what ships. Three renderers are under it:</p>
 <table>
 <thead>
 <tr>
@@ -163,6 +161,12 @@
 <td>the live-view traces, one canvas per column</td>
 </tr>
 <tr>
+<td>Heatmap</td>
+<td><code>webinterface/GlHeatmap.js</code> — <code>GlHeatmap</code></td>
+<td>WebGL2, <strong>inside the trace column's context</strong></td>
+<td>the column's other view mode: time × channel, color by statistic</td>
+</tr>
+<tr>
 <td>Probe map</td>
 <td><code>webinterface/ProbeMap.js</code> — <code>ProbeMap</code></td>
 <td>canvas 2D</td>
@@ -170,13 +174,20 @@
 </tr>
 </tbody>
 </table>
+<p>The heatmap is not a fourth canvas and must not become one: Chrome grants roughly 16 WebGL2 contexts
+per renderer process and force-loses the oldest <strong>silently</strong>, so a canvas per heatmap would black out
+another column for no visible reason. It is handed the column's existing <code>gl</code> and owns one program and
+two textures inside it. Its own contract — the ring in the texture, MAX aggregation, the colormap and
+legend, the display-unit factor — is <a href="HeatmapView.html"><code>HeatmapView.md</code></a>; this file specifies only how
+it hangs off the trace renderer (§1.5).</p>
 <p>There is no charting library. <code>webinterface/lib/</code> holds <code>qwebchannel.js</code> and nothing else.</p>
 <p>This document's job is to let someone change the renderer <strong>without changing what the operator
 sees</strong>. Where it says MUST, it is stating something an operator can see or a test can read;
 divergence is a bug — in the change, or in this file.</p>
-<p><strong>Files under specification:</strong> <code>webinterface/ChartColumn.js</code>, <code>GlRenderer.js</code>, <code>ProbeMap.js</code>,
-<code>DataStore.js</code>, <code>NetworkClient.js</code>, <code>main.js</code>, <code>Config.js</code>, <code>style.css</code>, <code>toolbar.css</code>,
-<code>ImroManager.js</code>, as of branch <code>feature/OneBoxSupport</code> @ 2026-08-28.</p>
+<p><strong>Files under specification:</strong> <code>webinterface/ChartColumn.js</code>, <code>GlRenderer.js</code>, <code>GlHeatmap.js</code>,
+<code>ProbeMap.js</code>, <code>DataStore.js</code>, <code>NetworkClient.js</code>, <code>main.js</code>, <code>Config.js</code>, <code>style.css</code>,
+<code>toolbar.css</code>, <code>ImroManager.js</code>, as of <code>develop</code> @ 2026-09-01 (<code>feature/OneBoxSupport</code> is merged
+into it; the branch name this file used to carry is no longer where the work lives).</p>
 <p><strong>Why the renderer is shaped like this</strong> — the measured comparison against the library it replaced,
 the mechanism, and the buffer-layout decision — is
 <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>. This file does not repeat it. Read it before
@@ -199,9 +210,12 @@ proposing a different architecture: it will tell you which of your assumptions w
 <li><code>onColTracesCb: (colIndex:int, rawSelectValue:string) =&gt; void</code> — the <strong>raw string</strong> from the
   density <code>&lt;select&gt;</code>; <code>''</code> means Auto.</li>
 </ul>
-<p>Initial state MUST be: <code>selectedShank = 0</code>, <code>selectedColKey = 'B'</code>, <code>currentStreamId = null</code>,
-<code>userPickedStream = false</code>, <code>selectedChannelIndices = new Set()</code>, <code>onScreenSeries = []</code>,
-<code>onScreenLabels = []</code>, <code>gl = null</code>, <code>glChanToRow = null</code>, <code>glRows = 0</code>.</p>
+<p>Initial state MUST be: <code>selectedShank = 0</code>, <code>mergeShanks = false</code>, <code>selectedColKey = 'B'</code>,
+<code>currentStreamId = null</code>, <code>userPickedStream = false</code>, <code>selectedChannelIndices = new Set()</code>,
+<code>onScreenSeries = []</code>, <code>onScreenLabels = []</code>, <code>gl = null</code>, <code>glChanToRow = null</code>, <code>glRows = 0</code> —
+and, for the heatmap, <strong>available and off</strong>: <code>viewMode = 'traces'</code>, <code>heatmapStat = 'pkpk'</code>,
+<code>heatmapColormap = 'viridis'</code>, <code>heatmapMax = {...ChartColumn.HEATMAP_DEFAULT_MAX}</code>. No GPU object for
+the heatmap exists until the operator switches a column over (§1.5).</p>
 <pre><code class="language-js">await col.initialize()              // main.js:622 — async, MUST be awaited
 </code></pre>
 <p>Constructs the <code>GlColumnRenderer</code> on <code>this.chartAreaDiv</code>, installs the context-lost hook, allocates
@@ -284,7 +298,8 @@ ResizeObserver, empty <code>onScreenSeries</code>, and remove <code>this.contain
 </code></pre>
 <p>MUST measure <strong>column 0 only</strong> and apply the answer to <strong>every</strong> <code>.column-container</code>:
 1. temporarily remove <code>strip-collapsed</code> from column 0;
-2. <code>need = band.scrollWidth</code> (448px by construction), <code>avail = header.clientWidth - pageInfo.offsetWidth - 24</code>;
+2. <code>need = band.scrollWidth</code> (<strong>556px</strong> by construction in trace mode, wider in heatmap mode — §3.3),
+   <code>avail = header.clientWidth - pageInfo.offsetWidth - 24</code>;
 3. restore the class;
 4. <strong>if <code>avail &lt;= 0</code>, return without changing anything</strong> (a hidden <code>#view-data</code> reports 0×0);
 5. <code>collapse = need &gt; avail</code>; toggle <code>strip-collapsed</code> on all columns, clearing <code>strip-focus</code> when expanding.</p>
@@ -330,7 +345,7 @@ ResizeObserver, empty <code>onScreenSeries</code>, and remove <code>this.contain
 </tr>
 <tr>
 <td><code>gl</code></td>
-<td>read (<code>main.js:284, 626, 762</code>, <code>NetworkClient.js:203-217</code>, <code>tests/gui/live_view.py</code>, <code>tests/gui/_harness.py:481</code>)</td>
+<td>read (<code>main.js:284, 626, 762</code>, <code>NetworkClient.js:203-217</code>, <code>tests/gui/live_view.py</code>, <code>tests/gui/_harness.py:824</code>)</td>
 <td>the renderer, or <code>null</code> after a lost context</td>
 </tr>
 <tr>
@@ -353,8 +368,9 @@ ResizeObserver, empty <code>onScreenSeries</code>, and remove <code>this.contain
 <p>There is no <code>wasmContext</code> and no <code>xAxis</code>. Nothing in the app may take a renderer handle as an
 argument or write an axis property — see §1.5.</p>
 <h3 id="15-the-renderer-surface">1.5 The renderer surface<a class="headerlink" href="#15-the-renderer-surface" title="Permanent link">#</a></h3>
-<p><code>GlColumnRenderer</code> is the only renderer object, and this is the whole of its public surface. A
-replacement MUST present the same one; every call site is listed so you can see there is nothing else.</p>
+<p><code>GlColumnRenderer</code> is the column's only renderer object and owns its only GL context; this is the
+whole of its public surface. A replacement MUST present the same one; every call site is listed so
+you can see there is nothing else.</p>
 <pre><code class="language-js">new GlColumnRenderer(hostEl)                       // ChartColumn.js:309 — appends a canvas filling hostEl
 gl.onContextLost = () =&gt; {…}                       // ChartColumn.js:326 — assignable hook, not an event
 gl.setLayout(rows, capacity, palette)              // ChartColumn.js:719 — (re)allocate; DROPS held samples
@@ -369,8 +385,26 @@ gl.pointCount()                                    // main.js:284 — points hel
 gl.destroy()                                       // ChartColumn.js:859
 gl.rows                                            // read by tests/gui/live_view.py
 glAvailable()                                      // exported; true when the browser can run it at all
+
+// the second view mode — see HeatmapView.md for what it draws
+gl.setViewMode(&quot;traces&quot; | &quot;heatmap&quot;)               // ChartColumn.js:1291 — lazily constructs the heatmap
+gl.heatmap()                                       // the GlHeatmap, or null if never switched
+gl.pixelHeight()                                   // viewport height in device px, for channels-per-pixel
 </code></pre>
-<p>Normative properties of that surface:</p>
+<p>The heatmap is configured <strong>directly</strong>, not through a wrapper — <code>h = gl.heatmap()</code> then
+<code>h.setLayout(channels, bins)</code>, <code>h.setColormap(name)</code>, <code>h.setRange(lo, hi)</code>, <code>h.pushColumn(values)</code>,
+<code>h.draw(pxHeight)</code>, <code>h.destroy()</code>. Normative properties of <em>that</em>:</p>
+<ul>
+<li><strong>Switching modes MUST NOT discard the trace buffers.</strong> <code>setViewMode</code> early-returns when the mode
+  already matches (which it does at construction — so the initial state of a control belongs where the
+  control is created, not in the handler that changes it) and otherwise only flips which program
+  paints. Flipping back is instant and the traces are still where they were.</li>
+<li><strong>The heatmap object is built on the first switch and never before.</strong> Features arrive available and
+  off, applied to a shader program and two textures.</li>
+<li><strong>It MUST NOT create a context.</strong> See the note at the top of this file: the budget is ~16 per
+  renderer process and overflow is silent.</li>
+</ul>
+<p>Normative properties of the trace surface:</p>
 <ul>
 <li><strong><code>appendRow</code>, <code>setXRange</code> and <code>setYRange</code> MUST NOT paint.</strong> They record and request; painting is
   coalesced (§2.5). A renderer that paints synchronously in any of them fails this contract.</li>
@@ -390,9 +424,14 @@ glAvailable()                                      // exported; true when the br
 <li><strong><code>window.__glColumns</code></strong> (<code>main.js:626</code>) — the columns with a live renderer. It is <strong>not</strong> test
   scaffolding: <code>NetworkClient.js:195-218</code> walks it as the per-frame delivery list, precisely so the
   hot path is an array walk instead of reaching for <code>window.app</code>. It must keep both meanings.</li>
-<li><strong>GUI harness, <code>tests/gui/_harness.py:481</code>:</strong> <code>(window.__glColumns || []).length</code> must be non-zero
+<li><strong>GUI harness, <code>tests/gui/_harness.py:824</code>:</strong> <code>(window.__glColumns || []).length</code> must be non-zero
   after <code>live_view()</code>. The harness <strong>refuses to run</strong> otherwise, because an empty canvas would let
-  the whole suite pass vacuously.</li>
+  the whole suite pass vacuously. That refusal is what <strong>cleared this renderer on a second GPU stack</strong>:
+  the whole GUI suite ran green from a clean clone on Linux Mint 22.1 / RTX 2080 / NVIDIA 535 on
+  2026-09-01 (<a href="Testing.html"><code>Testing.md</code></a> §1a), the first time a hand-written WebGL2 renderer — exactly the
+  driver-dependent thing to have A/B'd on one machine — had been exercised anywhere but the Windows
+  box. Functional clearance only: nothing was re-measured there, and <strong>headless is still unproven</strong>
+  (that box had a real X session and a real GPU, not SwiftShader).</li>
 <li><strong>GUI suite, <code>tests/gui/live_view.py</code> <code>SERIES_PROBE</code>:</strong> <code>app.columns[i].gl.rows</code> must be an
   <strong>integer &gt; 0</strong> for at least one column, and must not throw.</li>
 <li><strong>GUI suite, <code>live_view.py</code> / <code>stream_options.py</code>:</strong> at least one <code>&lt;canvas&gt;</code> per column with
@@ -553,7 +592,7 @@ in. <code>GlColumnRenderer.requestPaint()</code> therefore asks rAF <strong>and<
 paints on the vsync clock and nothing double-draws. Removing either scheduler is a regression — see
 T-6, and <code>AgentTraps.md</code> §5f.</p>
 <h3 id="26-draw-the-complete-render-decision-normative-pseudocode">2.6 <code>draw()</code> — the complete render decision (normative pseudocode)<a class="headerlink" href="#26-draw-the-complete-render-decision-normative-pseudocode" title="Permanent link">#</a></h3>
-<p>Reproduces <code>ChartColumn.js:625-846</code>. (Whole-file anchor sweep needed in the same pass — every citation in §§1-3 drifted when the free-form-selection and tab-behaviour commits landed: ChartColumn.js :859→:895, :309→:314, :593→:594, :380-397→:381-398, :401→:402; main.js :588→:589, :616→:617, :622→:623, :626→:627, :420→:423, :677-700→:678-703, :753-765→:754-766. Every claim's substance is still correct; only the line numbers moved.) Deviations here are visible to the operator and to the GUI suite.</p>
+<p>Reproduces <code>ChartColumn.js:625-846</code>. (Whole-file anchor sweep needed in the same pass — every citation in §§1-3 drifted when the free-form-selection and tab-behavior commits landed: ChartColumn.js :859→:895, :309→:314, :593→:594, :380-397→:381-398, :401→:402; main.js :588→:589, :616→:617, :622→:623, :626→:627, :420→:423, :677-700→:678-703, :753-765→:754-766. Every claim's substance is still correct; only the line numbers moved.) Deviations here are visible to the operator and to the GUI suite.</p>
 <pre><code>channels = currentStreamId ? dataStore.streams[currentStreamId] : null
 lv       = window.imroLiveView
 useDepth = lv.hasOrdering() &amp;&amp; channels &amp;&amp; channels.length === 384
@@ -669,20 +708,31 @@ operator cannot tell it happened.</p>
 ├─ div.column-header                       grid &quot;controls depth&quot;, height 46px DEFINITE, padding 6px,
 │  │                                       columns max-content minmax(0,1fr), gap 4px/6px
 │  ├─ button.cc-reveal &gt; span.cc-chev + span.cc-reveal-lbl      (display:none unless .strip-collapsed)
-│  ├─ div.column-controls                  5 tracks: stream shank side scale dens
+│  ├─ div.column-controls                  TRACE mode, 7 tracks: view stream shank side scale dens pin
+│  │  │                                    HEATMAP mode, 10:    view stream shank side hmwin hmstat
+│  │  │                                                         hmmap hmmax dens pin
+│  │  │                                    children below are listed in GRID order; DOM order is
+│  │  │                                    view stream shank side scale dens hmstat hmmap hmmax
+│  │  │                                    hmwin, then pin (ChartColumn.js, `selectorGroup.append`)
+│  │  ├─ select.stream-selector.cc-view     values traces | heatmap, text &quot;Traces&quot; | &quot;Heatmap&quot;
 │  │  ├─ select.stream-selector.cc-stream
-│  │  ├─ select.stream-selector.cc-shank
+│  │  ├─ select.stream-selector.cc-shank    heatmap mode adds 'all' (&quot;All shanks · depth&quot;) when &gt;1 shank
 │  │  ├─ select.stream-selector.cc-side     values B | L | R, text &quot;L+R&quot; | &quot;Left&quot; | &quot;Right&quot;
-│  │  ├─ div.cc-scale  → input[type=number].stream-selector + span.cc-scale-unit
-│  │  ├─ select.stream-selector.cc-dens     '' (Ch:Auto), 20, 40, 60, 80, 120
-│  │  └─ button.cc-pin  '◉'                grid-column -2/-1, shown only when collapsed
+│  │  ├─ div.cc-scale  → input[type=number].stream-selector + span.cc-scale-unit   (trace mode)
+│  │  ├─ select.stream-selector.cc-hmwin    heatmap span: 1,2,4,8,15,30 s, 1 min   (heatmap mode)
+│  │  ├─ select.stream-selector.cc-hmstat   &quot;Pk-Pk&quot;; &quot;RMS (soon)&quot; / &quot;Spike rate (soon)&quot; DISABLED
+│  │  ├─ select.stream-selector.cc-hmmap    viridis (default), afmhot, inferno, magma, plasma
+│  │  ├─ input[type=number].stream-selector.cc-hmmax   top of the color axis, bottom is 0
+│  │  ├─ select.stream-selector.cc-dens     '' (Ch:Auto), 20, 40, 60, 80, 120, + 'all' in heatmap mode
+│  │  └─ button.cc-pin  '◉'                its own track; shown only when collapsed
 │  └─ span.page-info                       depth readout — NEVER hidden, even collapsed
 └─ div.chart-column-wrapper                flex row, flex-grow 1, position relative, min-height 0
    ├─ div.chart-container-wrapper          flex-grow 1, position relative, overflow hidden,
    │  │                                    CARRIES THE PLOT BACKGROUND (§3.1)  ← wheel handler binds here
    │  ├─ div#chart-container-&lt;colIndex&gt;    100% × 100%   ← the renderer mounts here
-   │  │   └─ canvas.gl-trace-canvas        position:absolute; inset:0; display:block
+   │  │   └─ canvas.gl-trace-canvas        position:absolute; inset:0; display:block — BOTH view modes
    │  └─ div.labels-overlay
+   ├─ div.hm-legend                        heatmap only: the color bar + its numbers, IN the flex row
    └─ div.channel-slider-container         INLINE width 30px (defeats style.css's 60px)
       ├─ div &quot;shallow&quot;                     #999, 9px, margin-bottom 3px
       ├─ button ▲ (&amp;#9650;)                no bg/border, #888, 14px, padding 2px
@@ -698,11 +748,15 @@ operator cannot tell it happened.</p>
 <ul>
 <li><code>.main-container</code>: flex, gap 5px, padding 5px, height 100%, min-height/min-width 0. <code>.vertical</code> ⇒ <code>flex-direction: column</code>.</li>
 <li>Page: body <code>#1c1c1c</code>, text <code>#fff</code>, sans-serif. Watermark <code>#logo-watermark</code>: fixed, centered, max 50vw/50vh, opacity 0.05, z-index 5, pointer-events none.</li>
-<li><code>.column-controls</code>: bg <code>--tb-band #2b2b2b</code>, border 1px <code>--tb-band-border #3f3f3f</code>, radius 7px, padding <code>4px 7px</code>, one row <code>--tb-h-sm 24px</code>, fixed tracks stream 108 / shank 80 / side 64 / scale 84 / dens 80, gap 4px ⇒ <strong>448px, one authored shape, both orientations</strong>.</li>
+<li><code>.column-controls</code>: bg <code>--tb-band #2b2b2b</code>, border 1px <code>--tb-band-border #3f3f3f</code>, radius 7px, padding <code>4px 7px</code>, one row <code>--tb-h-sm 24px</code>, gap 4px. <strong>One authored shape, both orientations</strong>, two track sets:</li>
+<li><strong>traces</strong> — view 78 / stream 108 / shank 80 / side 64 / scale 84 / dens 80 / pin 22 ⇒ <strong>556px</strong>;</li>
+<li><strong>heatmap</strong> (<code>.view-heatmap</code> on the container) — view 78 / stream 108 / shank 80 / side 64 / hmwin 64 / hmstat 84 / hmmap 84 / hmmax 64 / dens 80 / pin 22 ⇒ <strong>780px</strong>, so a heatmap column collapses behind the reveal chip at a wider column than a trace one. That is the existing fold mechanism doing its job, not a second one.</li>
+<li>The pin's track is reserved in both, though the button is <code>display:none</code> until the band collapses — a fixed grid track does not disappear with its item.</li>
+<li><strong>A control added to this band needs a cell in EVERY area map that can show it, and there are twelve.</strong> Six shapes — in-flow, collapsed overlay, and vertical, each × trace and heatmap — with a <code>.no-filters</code> form apiece. <code>#main-container.vertical .column-controls</code> outranks the base rule on specificity, so "I updated <code>.column-controls</code>" does not reach vertical. An unplaced grid item does not error: it silently adds an implicit row, and the strip stops being one line. This has bitten three times. <code>python/tests/test_column_grid.py</code> now asserts the rule rather than any one instance — see <a href="HeatmapView.html"><code>HeatmapView.md</code></a> §10.</li>
 <li><code>.stream-selector</code>: bg <code>#4F4F4F</code>, color <code>#FFFFFF</code>, border 1px <code>#6E6E6E</code> (<code>#5a5a5a</code> inside a band), radius 4px, 12px, height 24px, padding <code>0 6px</code>.</li>
 <li><code>.cc-scale-unit</code>: reserved <code>flex: 0 0 32px</code>, <code>#9aa0a8</code>, 11px. Unit text is <code>µV</code> (<strong>U+00B5 MICRO SIGN</strong>), <code>V/row</code>, or <code>×</code>.</li>
 <li><code>.page-info</code>: <code>justify-self:end</code>, 12px, <code>#c8ccd2</code>, <code>tabular-nums</code>, <code>min-width:132px</code>, <code>white-space:nowrap</code>.</li>
-<li>Collapsed: header becomes <code>"reveal depth"</code>; <code>.cc-reveal</code> chip 24px tall, padding <code>0 8px</code>, 11px, <code>#9aa0a8</code> on <code>#2b2b2b</code> with a 1px <code>#3f3f3f</code> border and radius 6px; the band becomes <code>position:absolute; top:calc(100% + 4px); left:0; z-index:30</code>, <code>box-shadow 0 6px 20px rgba(0,0,0,.45)</code>, opacity/visibility transition .12s, hidden unless <code>:hover</code> / <code>.strip-focus</code> / <code>.strip-pinned</code>, and uses the <strong>narrow 3-row template</strong> <code>"stream stream" / "shank side" / "scale dens"</code> (2 rows under <code>.no-filters</code>).</li>
+<li>Collapsed: header becomes <code>"reveal depth"</code>; <code>.cc-reveal</code> chip 24px tall, padding <code>0 8px</code>, 11px, <code>#9aa0a8</code> on <code>#2b2b2b</code> with a 1px <code>#3f3f3f</code> border and radius 6px; the band becomes <code>position:absolute; top:calc(100% + 4px); left:0; z-index:30</code>, <code>box-shadow 0 6px 20px rgba(0,0,0,.45)</code>, opacity/visibility transition .12s, hidden unless <code>:hover</code> / <code>.strip-focus</code> / <code>.strip-pinned</code>, and uses its <strong>own narrow stacked template</strong> — three tracks (<code>stream / hmmap / pin</code>) over <code>"view stream pin" / "shank side side" / "scale dens dens"</code> in trace mode, <strong>4 rows</strong> in heatmap mode (<code>"hmstat hmmap hmmap" / "hmwin hmmax dens"</code> replacing the last), and one row fewer in each under <code>.no-filters</code>.</li>
 <li><code>body.no-source</code> hides <code>.column-header</code> and <code>.column-controls</code> entirely.</li>
 <li><code>body { min-width: 1080px }</code>; with the ripple dock open the live view gets <code>margin-right: var(--rd-dock-w, 380px)</code>.</li>
 </ul>
@@ -798,8 +852,13 @@ changes nothing. <code>currentZoom()</code> reads channel 0.</p>
 <p>Horizontal (default): row flex, 20 traces/column (<code>TRACES_HORIZONTAL</code>). Vertical: <code>.vertical</code> on
 <code>#main-container</code> ⇒ column flex + <code>min-height:0</code> on children, 40 traces/row (<code>TRACES_VERTICAL</code>),
 toolbar label flips <code>Columns:</code> ⇄ <code>Rows:</code>. The control band shape is identical in both; the only
-genuine difference is <code>.no-filters</code>, which uses a 3-track map (stream/scale/dens) in vertical.
-Gap/padding stay 5px.</p>
+genuine difference is <code>.no-filters</code>, which in vertical drops the shank and side tracks outright
+(<code>view stream scale dens pin</code>) rather than spanning the stream name across them. Gap/padding stay 5px.</p>
+<p><strong>Vertical carries its own four area maps and they are easy to miss</strong> — <code>#main-container.vertical
+.column-controls</code> outranks the base rule on specificity, so a control added only to the base map
+auto-places into an implicit second row <em>in vertical only</em>, and the strip measures 66px instead of
+34. That has happened. A stacked row is 1530–1894px wide against a band of at most 780px, so vertical
+never folds and the wide heatmap map fits there with room to spare.</p>
 <hr />
 <h2 id="4-the-probe-map">4. THE PROBE MAP<a class="headerlink" href="#4-the-probe-map" title="Permanent link">#</a></h2>
 <p><code>webinterface/ProbeMap.js</code> draws the electrode / bank / shank map into <code>#probe-map-root</code> with canvas
@@ -813,7 +872,7 @@ Gap/padding stay 5px.</p>
 exactly that surface, which is why the ~700 lines of electrode/bank/shank logic in <code>ImroManager</code> did
 not change when the library was removed. That was the trade: a slightly dated API here bought a
 rewrite that could not silently change which electrode an operator selected. A change that
-"modernises" the API pays that risk back.</p>
+"modernizes" the API pays that risk back.</p>
 <table>
 <thead>
 <tr>
@@ -969,8 +1028,10 @@ move, the counter is wrong, not the renderer.</p>
 <li><strong>Visual acceptance:</strong> §3 walked item by item against screenshots of the current build — background
    gradient, label alignment at 20 and at 120 rows, palette sequence, depth direction, and the
    collapsed / pinned header states.</li>
-<li>Both suites green: <code>build.bat</code> → ALL N SUITES PASSED, and <code>python -u scripts/run_gui_tests.py</code> →
-   ALL N GUI TESTS PASSED. Never <code>--hold</code> when automating.</li>
+<li><strong>All three</strong> suites green — C++, Python and GUI: <code>build.bat --no-pause</code> → ALL N SUITES PASSED,
+   <code>python -m unittest discover python/tests</code> → OK, <code>python -u scripts/run_gui_tests.py</code> → ALL N GUI
+   TESTS PASSED. Or <code>python scripts/run_all_tests.py</code>, which runs the three in order. Never <code>--hold</code>
+   when automating. Counts live in <a href="Testing.html"><code>Testing.md</code></a> and nowhere else.</li>
 </ol>
 <p>CSV schema is frozen:
 <code>cols,traces,series,fps,frame_mean_ms,frame_p95_ms,frame_max_ms,heap_mb,main_thread_busy,bound_pts</code>.</p>
@@ -1014,13 +1075,15 @@ LayoutUnits while <code>clientWidth</code> rounds, so per-column measurement put
 the threshold and produces two header heights in one row; and per-column class flips fire the chart
 ResizeObserver recursively (it took the page down during development). It also removes/restores
 <code>strip-collapsed</code> within one frame, and returns early on <code>avail &lt;= 0</code>.</p>
-<p><strong>T-11 — Do not reintroduce <code>@container</code> shape tiers for the band</strong> (<code>toolbar.css:723-740</code>). Twelve
+<p><strong>T-11 — Do not reintroduce <code>@container</code> shape tiers for the band</strong> (<code>toolbar.css:731-745</code>, where the
+comment recording their deletion sits). Twelve
 tiers were deleted because the tier decided the shape and <code>updateStripMode()</code> then measured whatever
 shape the tier had chosen. The shape must not depend on the thing being measured.</p>
 <p><strong>T-12 — The collapsed band is <code>position:absolute</code> on purpose.</strong> In flow, revealing it resizes the
-chart and the ResizeObserver repaints on every hover. It also keeps the <strong>narrow 3-row template</strong>,
-because <code>#view-data</code> is <code>overflow:hidden</code> and a 448 px overlay in a narrow column loses ~275 px of
-controls.</p>
+chart and the ResizeObserver repaints on every hover. It also keeps its <strong>own narrow stacked
+template</strong>, because <code>#view-data</code> is <code>overflow:hidden</code> and a one-row overlay in a narrow column loses
+its right-hand controls — measured at ~275 px when the band was 448 px, and the band is 556 px in
+trace mode and 780 px in heatmap mode today.</p>
 <p><strong>T-13 — Per-slot label state must be cleared at the TOP of the loop (fixed 2026-08-27).</strong> The label
 elements are reused across draws — only their text is rewritten — so anything set in one branch
 survives into a later draw whose branch never sets it. <code>label.onmousedown</code> and <code>cursor:'grab'</code> were
@@ -1073,9 +1136,13 @@ with more controls grow and puts the charts on different baselines.</p>
 opaque color "so the canvas has a background" flattens the gradient — and those values are now
 recoverable only from §3.1, because the theme that produced them was deleted with the bundle.</p>
 <p><strong>T-27 — Editing <code>webinterface/*.js</code> needs no build.</strong> The copy targets were removed from
-<code>CMakeLists.txt</code> on 2026-08-26 and <code>src/main.cpp:57-62</code> serves the directory off disk per request. But
-that handler never strips a query string, and <code>?</code> is an illegal Windows filename character — so any
-<code>…js?flag=…</code> URL 404s until that line is fixed.</p>
+<code>CMakeLists.txt</code> on 2026-08-26 and <code>src/main.cpp</code> serves the directory off disk per request, so the
+working tree IS the deployment — never edit it while a backend or the GUI suite is running.</p>
+<p>This entry used to end <em>"any <code>…js?flag=…</code> URL 404s until that line is fixed"</em>. <strong>It was fixed on
+2026-08-30</strong> (<code>src/main.cpp:70-73</code>): the handler strips the query and the fragment before resolving
+a file. It mattered more than a footnote — the request line carries the whole request-target, so
+<code>/?view=detached&amp;cols=2</code> was opened as a file literally named <code>?view=detached&amp;cols=2</code>, which is why
+the detached-view window came up blank: right URL, no document.</p>
 <p><strong>T-28 — Rig and teardown rules apply</strong> (<code>CLAUDE.md</code>): always <code>--no-browser</code>; kill only the isolated
 debug-port Chrome profile you launched, never a blanket <code>Get-Process chrome | Stop-Process</code>; bring the
 backend down when not actively measuring, because a live backend holds <code>bin/SpikesPeak.exe</code> and the

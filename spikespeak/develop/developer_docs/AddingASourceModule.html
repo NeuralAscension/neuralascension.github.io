@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -189,7 +187,7 @@ lets Display/Record/Ripple treat your source identically to hardware:</p>
 <td><strong>B. Direct emit</strong> <em>(legacy, avoid)</em></td>
 <td>—</td>
 <td><em>(none)</em></td>
-<td><code>emit dataReady(bytes)</code> straight to the browser</td>
+<td><code>emit dataReady(bytes)</code> — and nothing has been connected to it since 2026-07-06 (§2.3)</td>
 </tr>
 </tbody>
 </table>
@@ -241,10 +239,12 @@ then <code>mBuf-&gt;commitWrite(mProducerId, nSamples)</code>. Honor wraparound 
 <p>The buffer is <strong>single-producer</strong> today (<code>addProducer</code> caps at 1). One source instance per
 buffer.</p>
 </blockquote>
-<h3 id="23-pattern-b-or-emit-directly">2.3 (Pattern B) Or emit directly<a class="headerlink" href="#23-pattern-b-or-emit-directly" title="Permanent link">#</a></h3>
-<p>Build a <code>QByteArray</code> in the DisplayProcessor wire format (review §2 / <code>NetworkClient.handleMessage</code>)
-and <code>emit dataReady(bytes)</code>. <code>WebSocketServer::setPlaying</code> connects your source's <code>dataReady</code> to
-<code>broadcastData</code> for the <code>Simulated Data</code>-style path.</p>
+<h3 id="23-pattern-b-emitting-directly-no-longer-reaches-anybody">2.3 (Pattern B) Emitting directly no longer reaches anybody<a class="headerlink" href="#23-pattern-b-emitting-directly-no-longer-reaches-anybody" title="Permanent link">#</a></h3>
+<p><code>IDataSource::dataReady(QByteArray)</code> still exists, and <strong>nothing connects it.</strong> <code>setPlaying</code> wires
+every <em>display processor</em>'s <code>sigIpDataReady</code> to <code>broadcastData</code>, and the source special case that
+used to carry <code>Simulated Data</code> went with the 2026-07-06 rewrite above. So a source that builds its
+own wire-format <code>QByteArray</code> and emits it is emitting into nothing — no error, no log, an empty
+view. Use Pattern A.</p>
 <h3 id="24-register-the-type-srccoreutilscpp-registerbuiltintypes">2.4 Register the type — <code>src/core/Utils.cpp</code> <code>registerBuiltInTypes()</code><a class="headerlink" href="#24-register-the-type-srccoreutilscpp-registerbuiltintypes" title="Permanent link">#</a></h3>
 <pre><code class="language-cpp">SP::registerDataSource&lt;SP::MyMod::MySource&gt;(&quot;source.mymod.thing&quot; /*, ctorArgs... */);
 // Pattern A also needs its buffer registered:
@@ -264,13 +264,27 @@ processors:                       # optional: which sinks run for this profile
     inputs: [ { data: &quot;raw&quot;, name: &quot;data.mymod.raw&quot; } ]
 </code></pre>
 <p><code>initDataSource</code> receives this source subtree as <code>cfg</code>; read whatever you need from it
-(<code>cfg.has_child("imro_path")</code> is the NPX example). Configs are copied next to the exe on build.</p>
-<h3 id="26-wire-the-ui-dropdown-webinterfaceindexhtml">2.6 Wire the UI dropdown — <code>webinterface/index.html</code><a class="headerlink" href="#26-wire-the-ui-dropdown-webinterfaceindexhtml" title="Permanent link">#</a></h3>
-<p>Add an <code>&lt;option&gt;</code> under <code>#selectSource</code> whose value <strong>exactly equals</strong> the profile <code>name:</code>.
-- If your source should show the <strong>probe-map / QWebChannel panel</strong>, make the option text contain
-  <code>"NPX"</code> (the JS gate <code>selectedSource.includes("NPX")</code>, <code>NetworkClient.js:132</code>, and
-  <code>updateViewForSource</code>, <code>main.js:107</code>) — or generalize that gate if you add a non-NPX module
-  type.</p>
+(<code>cfg.has_child("imro_path")</code> is the NPX example). <strong>Configs are no longer copied next to the exe</strong>
+(since 2026-08-26): the app resolves <code>config/</code> as <code>&lt;exe&gt;/../config</code>, which from <code>bin/</code> is the repo's
+own directory, so editing a profile needs no build — just relaunch. Add <code>gui_hidden: true</code> if the
+profile is a bench or a control rather than something an operator should pick; hidden profiles stay
+selectable by exact <code>name:</code> from the control CLI.</p>
+<h3 id="26-the-ui-dropdown-there-is-nothing-to-wire">2.6 The UI dropdown: there is nothing to wire<a class="headerlink" href="#26-the-ui-dropdown-there-is-nothing-to-wire" title="Permanent link">#</a></h3>
+<p><strong>Do not add an <code>&lt;option&gt;</code> to <code>#selectSource</code>.</strong> The <code>&lt;select&gt;</code> in <code>webinterface/index.html</code> is a
+<strong>hidden state element</strong> holding a two-entry pre-connect fallback — its own comment reads <em>"Do not add
+profiles here"</em> — and the visible control is the <code>#src-menu</code> popup. The real list is rebuilt from the
+backend's <code>configList</code> by <code>main.js rebuildSourceOptions()</code> as soon as it arrives, so <strong>a new
+<code>config/*.yaml</code> appears in the picker with no frontend edit at all</strong>. Editing that markup writes dead
+options into the file that warns against it.</p>
+<p>There is also <strong>no <code>"NPX"</code> name gate any more</strong>, and reviving one would be a regression. The
+QWebChannel is bound for <strong>any</strong> ready source and the probe/IMRO panel appears when an object whose
+registry key contains <code>npx</code> is actually registered (<code>NetworkClient.js</code>'s <code>deviceReady</code> handler) — so
+a probe source gets the panel and a non-probe source simply finds no such key. The old
+<code>selectedSource.includes("NPX")</code> test broke on exactly the profiles that matter: the hardware ones
+are named <code>Neuropixels</code>, <code>OneBox</code> and <code>PXIe</code>, none of which contains that literal, while every
+<em>simulated</em> profile does, so the probe branch was taken in simulation and skipped on the rig. Asking a
+display name a question about hardware is the same mistake as identifying a probe from its part-number
+string.</p>
 <h3 id="27-cmake-add-sources-to-the-target">2.7 CMake — add sources to the target<a class="headerlink" href="#27-cmake-add-sources-to-the-target" title="Permanent link">#</a></h3>
 <p>In <code>src/modules/&lt;yourmod&gt;/CMakeLists.txt</code>:</p>
 <pre><code class="language-cmake">target_sources(SpikesPeak PRIVATE MySource.hpp MySource.cpp)
@@ -315,18 +329,18 @@ public:
 <h2 id="checklist">Checklist<a class="headerlink" href="#checklist" title="Permanent link">#</a></h2>
 <ul>
 <li>[ ] <code>MySource : IDataSource</code> with <code>Q_OBJECT</code>, 4 lifecycle methods, copy deleted</li>
-<li>[ ] Pattern A: buffer fetched + <code>addProducer</code> + <code>commitWrite</code>; or Pattern B: <code>emit dataReady</code></li>
+<li>[ ] Pattern A: buffer fetched + <code>addProducer</code> + <code>commitWrite</code> (Pattern B is vestigial — §2.3)</li>
 <li>[ ] Worker on its own <code>QThread</code>; <code>stopAcq</code> does <code>quit()</code>+<code>wait()</code> before close</li>
 <li>[ ] <code>registerDataSource&lt;…&gt;("source.…")</code> (+ <code>registerData&lt;…&gt;</code> for Pattern A) in <code>Utils.cpp</code></li>
-<li>[ ] <code>config/&lt;Profile&gt;.yaml</code> with <code>name:</code> + <code>sources:</code> (+ <code>processors:</code>)</li>
-<li>[ ] <code>&lt;option&gt;</code> added to <code>#selectSource</code> (text contains "NPX" if it needs the probe panel)</li>
+<li>[ ] <code>config/&lt;Profile&gt;.yaml</code> with <code>name:</code> + <code>sources:</code> (+ <code>processors:</code>) — and <strong>no</strong> frontend edit:
+      the picker is rebuilt from <code>configList</code></li>
 <li>[ ] <code>target_sources</code> in the module <code>CMakeLists.txt</code></li>
 <li>[ ] (optional) <code>Q_INVOKABLE</code> web commands</li>
 <li>[ ] Builds clean (see <a href="README.html"><code>README.md</code></a> → Build)</li>
 </ul>
-<p><strong>Reference implementations:</strong> <code>SimulatedDataSource</code> (simplest, Pattern B) ·
-<code>NeuropixelsSource</code> (full hardware, Pattern A, worker thread, <code>Q_INVOKABLE</code>) ·
-<code>SynthRippleSource</code> (synthetic streaming).</p>
+<p><strong>Reference implementations:</strong> <code>SimulatedDataSource</code> (simplest — Pattern <strong>A</strong> since 2026-07-06;
+nothing uses Pattern B) · <code>NeuropixelsSource</code> (full hardware, Pattern A, worker thread,
+<code>Q_INVOKABLE</code>) · <code>SynthRippleSource</code> (synthetic streaming).</p>
 <h2 id="liveness-issue-16">Liveness (issue #16)<a class="headerlink" href="#liveness-issue-16" title="Permanent link">#</a></h2>
 <p>Your worker inherits <code>noteCycle()</code> from <code>IDataSourceWorker</code>. <strong>Call it once per completed acquisition
 cycle</strong>, in the loop body -- never in <code>slStartAcquiringData</code>/<code>slStopAcquiringData</code>, where it reads as a
@@ -347,7 +361,51 @@ reports the source <strong>stalled</strong> after 3 s of no movement, which is t
   must read as "nothing to check" rather than as a fault.</li>
 </ul>
 <p>Not overriding it at all is safe -- the source is simply unmonitored -- but then a silent stall on
-that source is invisible. Full contract: <code>Fdir.md</code> section 8.5.</p></article>
+that source is invisible. Full contract: <code>Fdir.md</code> section 8.5.</p>
+<h2 id="asap-low-latency-issue-80-if-your-source-has-a-latency-knob">ASAP / low latency (issue #80), if your source has a latency knob<a class="headerlink" href="#asap-low-latency-issue-80-if-your-source-has-a-latency-knob" title="Permanent link">#</a></h2>
+<p><code>src/core/LowLatency.hpp</code> defines two small interfaces a source may implement. Both are optional and
+a source that says nothing is simply walked past.</p>
+<table>
+<thead>
+<tr>
+<th>method</th>
+<th>answer it gives</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>supportsLowLatency()</code></td>
+<td>do you have a knob at all? <strong>The developer's declaration, not a config key.</strong></td>
+</tr>
+<tr>
+<td><code>exposesLowLatency()</code></td>
+<td>should an OPERATOR be offered a control for this module? Deliberately separate — <code>proc.lfp</code> honors a propagated request without being something anyone should tune</td>
+</tr>
+<tr>
+<td><code>isLowLatency()</code></td>
+<td>is it on <strong>right now</strong>. The GUI announces this and never the request</td>
+</tr>
+<tr>
+<td><code>lowLatencyPending()</code></td>
+<td>asked for, not yet in force — true between a mid-stream request and the next Play</td>
+</tr>
+<tr>
+<td><code>setLowLatency(on, why)</code></td>
+<td>apply it; <code>why</code> goes in the log, because somebody months later has to find out why a rig was burning a core</td>
+</tr>
+<tr>
+<td><code>inputDataNames()</code> / <code>outputDataNames()</code> (<code>IGraphNode</code>)</td>
+<td>your edges, so the graph can be <strong>walked</strong> upstream. Reporting nothing is safe, and makes you invisible to propagation</td>
+</tr>
+</tbody>
+</table>
+<p>On the probe sources the knob is exactly one thing — the acquisition timer interval, 0 instead of
+1 ms, so each commit carries the fewest samples it can. It is read <strong>once, in <code>startAcq</code></strong>, and the
+worker is recreated on every Play, which is why <code>lowLatencyPending()</code> exists at all. It costs roughly
+<strong>98 % of one core against 13.4 %</strong> (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>), so it is opt-in and
+must never become a default. Downstream processors already wake on the first sample
+(<code>waitForAvailable</code>'s second argument is a <strong>timeout in milliseconds</strong>, not a minimum count), so the
+source's commit cadence is what everything else inherits.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AddingASourceModule.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -357,16 +415,17 @@ that source is invisible. Full contract: <code>Fdir.md</code> section 8.5.</p></
 <li><a href="#2-step-by-step">2. Step-by-step</a><ul>
 <li><a href="#21-create-the-class">2.1 Create the class</a></li>
 <li><a href="#22-pattern-a-getsize-your-output-buffer-register-as-producer">2.2 (Pattern A) Get/size your output buffer + register as producer</a></li>
-<li><a href="#23-pattern-b-or-emit-directly">2.3 (Pattern B) Or emit directly</a></li>
+<li><a href="#23-pattern-b-emitting-directly-no-longer-reaches-anybody">2.3 (Pattern B) Emitting directly no longer reaches anybody</a></li>
 <li><a href="#24-register-the-type-srccoreutilscpp-registerbuiltintypes">2.4 Register the type — src/core/Utils.cpp registerBuiltInTypes()</a></li>
 <li><a href="#25-add-a-config-profile-configmythingyaml">2.5 Add a config profile — config/MyThing.yaml</a></li>
-<li><a href="#26-wire-the-ui-dropdown-webinterfaceindexhtml">2.6 Wire the UI dropdown — webinterface/index.html</a></li>
+<li><a href="#26-the-ui-dropdown-there-is-nothing-to-wire">2.6 The UI dropdown: there is nothing to wire</a></li>
 <li><a href="#27-cmake-add-sources-to-the-target">2.7 CMake — add sources to the target</a></li>
 </ul>
 </li>
 <li><a href="#8-per-source-web-commands-the-camera-example">8. Per-source web commands (the camera example)</a></li>
 <li><a href="#checklist">Checklist</a></li>
 <li><a href="#liveness-issue-16">Liveness (issue #16)</a></li>
+<li><a href="#asap-low-latency-issue-80-if-your-source-has-a-latency-knob">ASAP / low latency (issue #80), if your source has a latency knob</a></li>
 </ul>
 </div>
 </aside>

@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -745,17 +743,34 @@ as <em>measurements</em>; they are not repeated here as <em>advice</em>.</p>
   42 ± 5 fps at 0.964 of a core.</li>
 <li>The <strong>per-column channels dropdown</strong> (<code>Auto/20/40/60/80/120</code>, independent per column/row) is now a
   <em>what do you want to look at</em> control rather than a performance budget.</li>
-<li>Real multi-band loads (NP1 AP+LFP + NI-DAQ + ripple detection + recording) still add main-thread work
-  on top of the traces, and that has <strong>not</strong> been re-measured against the current renderer. The
-  headroom is much larger than it was; it is not infinite, and the ripple dock in particular still runs
-  its own unconditional rAF loop.</li>
+<li><strong>Part of the multi-band question is now answered.</strong> On 2026-09-01 the frontend was profiled against
+  the current renderer on <code>Simulated NPX 1.0 Ripples</code> — <strong>two bands</strong> (<code>data.npx.ap</code> + <code>data.npx.lfp</code>)
+  with the ripple detector running, four columns — and the page came out at <strong>~1.5 % of one core</strong>,
+  with the binary decode (<code>NetworkClient.handleMessage</code>) the only thing in it worth optimizing and the
+  draw calls not making the profile at all. Numbers and method:
+  <a href="Profiling.html"><code>Profiling.md</code></a> §1.</li>
+<li>What is still <strong>not</strong> measured on top of that: NI-DAQ alongside the probe, recording to disk, and
+  the ripple <strong>dock</strong> open — its rAF loop is started once at dock construction and never stops, and
+  <code>_drawEnv</code> assigns <code>canvas.width</code> per channel per frame, which reallocates the backing store every
+  time. That is why the benchmark protocol keeps the dock shut
+  (<a href="RendererContract.html"><code>RendererContract.md</code></a> §5.2).
+  The headroom is much larger than it was; it is not infinite.</li>
 </ul>
 <h2 id="display-polish-done-this-session-2026-07-12">Display polish done this session (2026-07-12)<a class="headerlink" href="#display-polish-done-this-session-2026-07-12" title="Permanent link">#</a></h2>
+<blockquote>
+<p><strong>The wrapping half of this was undone on 2026-08-25 and must not come back.</strong> The control band has
+had exactly <strong>one authored shape — one row</strong> ever since; when it does not fit it <strong>collapses behind
+a reveal chip</strong>, it does not wrap or stack. A two-row band is the one shape nobody wants, and it
+shipped for months precisely because a <code>@container</code> tier reshaped the band and the fit test then
+measured the reshaped band. See <a href="LiveDataView.html"><code>LiveDataView.md</code></a> §4 and
+<a href="RendererContract.html"><code>RendererContract.md</code></a> T-11. The rest of the bullet (the margins and the input
+widths) still describes the tree.</p>
+</blockquote>
 <ul>
 <li><strong>Horizontal header spacing:</strong> <code>.stream-selector</code> margin 10 px → 2 px (5+ controls × 20 px overflowed narrow
-  columns), Scale input 66 → 50 px, tighter Scale/µV label margins, and the per-column controls now
-  <strong>flex-wrap</strong> so the channels dropdown drops to a tidy second line instead of cramming. Fixes the "very
-  tight" scale / µV-range / channel-count cluster in 4-column horizontal mode.</li>
+  columns), Scale input 66 → 50 px, tighter Scale/µV label margins, and the per-column controls were made to
+  <strong>flex-wrap</strong> so the channels dropdown dropped to a second line instead of cramming. Fixed the "very
+  tight" scale / µV-range / channel-count cluster in 4-column horizontal mode — and was superseded, see above.</li>
 <li>Earlier: vertical/horizontal layout toggle, per-column channel counts, vertical control-centering.
 See <a href="../benchmarks/CHANNEL_DENSITY_REPORT.html"><code>benchmarks/CHANNEL_DENSITY_REPORT.md</code></a> for the raw sweep + plot,
 and the <code>spikespeak-vertical-display</code> memory for the code map.</li>

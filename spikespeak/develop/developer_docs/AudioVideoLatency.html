@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -369,7 +367,7 @@ control, not a convenience.</p>
 <p><strong>0. The default now follows this table.</strong> These measurements are no longer only advice: the
 ranking in <code>AudioWorker::hostApiRank()</code> is derived from this table, and the device picker lights a
 dot on the fastest route to each speaker. What follows is therefore the justification for a shipped
-behaviour, not a suggestion the operator has to act on.</p>
+behavior, not a suggestion the operator has to act on.</p>
 <p><strong>1. "Use WASAPI" is wrong on this machine.</strong> It is the usual advice and it fails here: WASAPI
 refuses to open every real output except a virtual NoMachine device. The advice that survives
 measurement is <strong>DirectSound → ASUS VE278</strong>: same physical speakers as the MME default, and
@@ -379,10 +377,10 @@ DirectSound <em>promises</em> 120 ms — the worst figure in the table — and m
 WDM-KS promises 10 ms and measures 19.9 ms. Ranking by the promised number picks almost exactly the
 wrong device, which is what the first version of the comparison script did before its own output was
 read properly. <strong>Trust <code>output_latency_measured_ms</code>; the promised figure is buffer geometry, not
-behaviour.</strong></p>
+behavior.</strong></p>
 <p><strong>3. The ring depth matters as much as the output latency, and moves independently.</strong> WDM-KS SPDIF
 has the <em>worst</em> measured output latency of the low-latency group (19.89 ms) and the <em>best</em> total
-(~23.4 ms), because its ring sits at 2.46 ms while DirectSound's sits at ~30 ms. Optimising output
+(~23.4 ms), because its ring sits at 2.46 ms while DirectSound's sits at ~30 ms. Optimizing output
 latency alone would have chosen wrongly. This is why the earlier figure in this document — "≥ 92.4
 ms" — was a lower bound: it omitted the ring, which had not yet been measured.</p>
 <h3 id="so-does-the-ordering-ever-flip">So does the ordering ever flip?<a class="headerlink" href="#so-does-the-ordering-ever-flip" title="Permanent link">#</a></h3>
@@ -449,7 +447,9 @@ which is where that cadence lives, and where both operands were already in regis
 <pre><code class="language-bash">python ripple_tools/measure_av_latency.py &quot;NPX 2.0 Multishank (OneBox)&quot;
 </code></pre>
 <p>The script brings the rig up, counts binary frames <strong>in the page</strong> over a real interval (rather than
-trusting a configured rate), polls <code>audioState</code>, and tears down gracefully.</p>
+trusting a configured rate), polls <code>audioState</code>, and tears down gracefully. It reports the publish
+interval <strong>per stream</strong> and quotes the slowest one as the EYE; on a multi-band profile it also names
+the streams, because a median pooled across them is meaningless (§5c).</p>
 <blockquote>
 <p><strong>Audio commands ride a BINARY frame on channel 0x218</strong>, not the text frame <code>rig.send()</code> uses. A
 text frame carrying the same JSON is dropped silently — no error, no log. Use
@@ -732,26 +732,42 @@ underflows</strong>. Audio output works on this box; it is not merely "not fatal
 <p><strong><code>source_lag_mean_ms</code> is 1.08 ms.</strong> Windows measured 1.00 ms on two transports and two probe
 generations; changing the operating system, the host API and the source moves it by 80 µs. That term
 is the application's, and it does not appear to be anything else's.</p>
-<p><strong>Promised is BELOW measured here, which inverts Windows.</strong> On Windows the promise over-stated the
-device on one row (91.43 promised vs 99.90 measured) and wildly over-stated it on the other (120.00
-vs 18.87). ALSA promises 8.71 ms and delivers 14.20 ms. §5b's warning stands and generalises: the
-promise is a compile-time constant per host API, not a device property, and it is wrong in <strong>both</strong>
-directions depending on which host API you ask.</p>
+<p><strong>Promised is BELOW measured here — the same direction as one Windows row and the opposite of the
+other.</strong> ALSA promises 8.71 ms and delivers 14.20 ms, so the promise <strong>under</strong>-states the latency by
+5.5 ms. MME did the same on the OneBox row (91.43 promised, 99.90 measured); DirectSound does the
+reverse on the PXIe row, promising 120.00 ms and measuring 18.87. §5b's warning stands and
+generalizes: the promise is a compile-time constant per host API, not a device property, and it is
+wrong in <strong>both</strong> directions depending on which host API you ask.</p>
 <blockquote>
-<p><strong>The <code>raw → eye</code> figure needs a caveat, and <code>measure_av_latency.py</code> currently gets it wrong on a
-multi-band config.</strong> The script's EYE median is computed over <em>every</em> binary frame, and this config
-publishes <strong>three</strong> — ap, lfp and adc — in one burst per display tick. Two of every three gaps are
-therefore intra-burst, and the reported median collapses to <strong>0.6 ms</strong>, which is not a display
-cadence and must not be quoted as one. Counting frame <em>sizes</em> separates them: 139.06 frames/s over
-3 distinct sizes = <strong>46.35 publish ticks/s = 21.6 ms</strong>, median inter-tick gap 18.9 ms — i.e. the
-same ~19 ms as both Windows rows. The Windows rows were taken on configs where the burst was one
-frame, so the bug did not show. <strong>Fix the script to group by tick before quoting its EYE number on
-any multi-band profile.</strong></p>
+<p><strong>The <code>raw → eye</code> figure needed a caveat on the day — and the tool has since been fixed.</strong> The
+script's EYE median was computed over <em>every</em> binary frame, and this config publishes <strong>three</strong> —
+ap, lfp and adc — in one burst per display tick. Two of every three gaps are therefore
+intra-burst, and the reported median collapsed to <strong>0.6 ms</strong>, which is not a display cadence and
+must not be quoted as one. The range in the table was recovered by hand from the tick rate: 139.06
+frames/s over 3 distinct frame sizes = <strong>46.35 publish ticks/s = 21.6 ms</strong>, median inter-tick gap
+18.9 ms — i.e. the same ~19 ms as both Windows rows. The Windows rows were taken on configs where
+the burst was one frame, so the bug did not show.</p>
+<p><strong>Fixed 2026-09-01.</strong> <code>eye_from_arrivals()</code> in <code>ripple_tools/measure_av_latency.py</code> now groups the
+raw arrivals by the <strong>stream id in the frame header</strong> and reports a publish interval <em>per stream</em>,
+quoting the <strong>slowest</strong> one — a column shows one stream, so that is what the eye waits on — and
+naming the streams in a warning whenever more than one publishes. Grouping by frame <em>size</em>, the
+hand workaround above, is <strong>not</strong> the fix and fails invisibly: <code>ap</code> and <code>lfp</code> can both be 384
+channels and produce byte-identical frames. The reducer takes raw arrivals rather than pre-grouped
+ones precisely so <code>python/tests/test_av_eye.py</code> can feed it a real interleaved burst and watch the
+old pooled implementation go red. <strong>This Linux row has not been re-measured with the fixed tool</strong>,
+so its eye stays a hand-derived range; a re-run would print one number.</p>
 </blockquote>
 <h3 id="also-found-here">Also found here<a class="headerlink" href="#also-found-here" title="Permanent link">#</a></h3>
-<p><code>ripple_tools/rig.py</code> raises <code>ValueError: I/O operation on closed file</code> from its reader thread at
-teardown — the capture file is closed while <code>_reader</code> is still writing to it. It fires <em>after</em> the
-measurement, so it does not affect the numbers above, but it makes a clean run end in a traceback.</p>
+<p><code>ripple_tools/rig.py</code> raised <code>ValueError: I/O operation on closed file</code> from its reader thread at
+teardown — the capture file was closed while <code>_reader</code> was still writing to it. It fired <em>after</em> the
+measurement, so the numbers above stand, but it made a clean run end in a traceback.</p>
+<p><strong>Fixed 2026-09-01.</strong> <code>close()</code> now stops the reader, shuts the socket down (which is what actually
+wakes a reader parked in <code>recv()</code>), <strong>joins</strong> it, and only then closes the file. The same defect sat
+on <code>set_capture()</code>, and there it was not cosmetic at all: that <code>ValueError</code> is neither
+<code>ConnectionError</code> nor <code>OSError</code>, so <code>_reader</code>'s handler misses it, <strong>the reader thread dies</strong>, and
+every later detection, latency row and stim ACK is lost while the rig streams on looking healthy.
+A dozen-odd tools under <code>ripple_tools/</code> import this class, so the blast radius was everything that
+drives the rig headlessly. <code>python/tests/test_rig_teardown.py</code> pins the order.</p>
 <hr />
 <h2 id="5a-still-not-measured">5a. Still not measured<a class="headerlink" href="#5a-still-not-measured" title="Permanent link">#</a></h2>
 <table>
@@ -786,7 +802,7 @@ measurement, so it does not affect the numbers above, but it makes a clean run e
 <td>NP2.0, PXIe</td>
 <td>—</td>
 <td>—</td>
-<td><strong>needs the 2.0 probe moved to PXIe</strong></td>
+<td><strong>not taken</strong> — and the probe was <em>already there</em> on 2026-09-01 (Status §74)</td>
 </tr>
 <tr>
 <td>NP1.0, OneBox</td>
@@ -796,11 +812,15 @@ measurement, so it does not affect the numbers above, but it makes a clean run e
 </tr>
 </tbody>
 </table>
-<p>The two remaining cells each need one physical probe move, and after the device-controlled comparison
-above there is very little left for either to show. Between them, the two measured rows have now
+<p>The NP1.0/OneBox cell needs a physical probe move. The NP2.0/PXIe one no longer does: issue #52's
+configuration 4 put the 2.0 multishank on the PXIe basestation with the OneBox powered off, and the
+row was simply not taken while the rig was up — it is one command
+(<code>python -u ripple_tools/measure_av_latency.py "PXIe"</code>). After the device-controlled comparison
+above there is very little left for either to show. Between them, the three measured rows have now
 varied <strong>the probe generation, the transport, the band path (native AP passed through vs derived on
-the audio path), and the audio device</strong> — and the two terms this system owns, <code>source_lag_mean_ms</code>
-and the frame interval, did not move: 1.00 ms and ~19 ms in every combination tried.</p>
+the audio path), the operating system and host API, and the audio device</strong> — and the two terms this
+system owns barely moved: <code>source_lag_mean_ms</code> is 1.00 ms on both Windows rows and 1.08 ms on Linux,
+and the frame interval is ~19 ms in every combination tried.</p>
 <p>The remaining cells vary nothing that has not already been varied. Run them when a probe is being
 swapped for another reason; a swap of their own would be buying a result that is already implied.</p>
 <p><strong>Hold the audio device fixed when you do,</strong> and pick it explicitly in the audio panel rather than

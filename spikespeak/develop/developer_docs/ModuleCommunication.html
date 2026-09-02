@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -185,9 +183,22 @@ rides one WebSocket on <code>:1234</code> (<code>NetworkClient.js</code> ⇄ <co
 </tr>
 </tbody>
 </table>
-<p>Channel (b) is the small set of <strong>global</strong> verbs that aren't owned by any one module. Channel (c) is
-where <strong>module</strong> commands live. (A legacy binary command id <code>0x1001</code> used to carry recording toggles
-through a <code>CommandDispatcher</code>; it has been <strong>removed</strong> in favour of (c) — see §4.)</p>
+<p>Channel (b) started as the small set of <strong>global</strong> verbs that aren't owned by any one module, and
+channel (c) is where <strong>module</strong> commands were meant to live. (A legacy binary command id <code>0x1001</code>
+used to carry recording toggles through a <code>CommandDispatcher</code>; it has been <strong>removed</strong> in favor of
+(c) — see §4.)</p>
+<blockquote>
+<p><strong>Be honest about where the line actually falls now.</strong> <code>WebSocketServer::onTextMessageReceived</code>
+matches <strong>sixteen</strong> verbs, and several of them are per-module in everything but their transport:
+<code>ripple</code> (the whole SWR dock), <code>lowLatency</code> (the ASAP control, #80), <code>listRecordings</code> /
+<code>convertRecording</code> (the Convert panel), plus <code>getSystemState</code>, <code>probeHardware</code>, <code>setProbePort</code>,
+<code>pickDirectory</code>, <code>restart</code> and <code>quit</code>. The reason in each case is the same and it is a real one:
+<strong>a Python client must be able to send it.</strong> <code>python/spikespeak_cli.py</code> speaks JSON over the
+socket and would otherwise have to implement the QWebChannel protocol (§8). Two more modules —
+audio and the band filters — reach C++ through <code>CommandDispatcher</code> ids instead (§7). So Option A
+is the standard for anything needing a <strong>return value from an object</strong>, not a rule that every
+module command rides QWebChannel; the exceptions are listed rather than pretended away.</p>
+</blockquote>
 <p>C++→JS <strong>events</strong> (e.g. <code>deviceReady</code>, <code>recordingStatus</code>) are plain JSON text messages the server
 pushes to every client (<code>WebSocketServer::setDeviceState</code> / <code>broadcastStatusEvent</code>); <code>NetworkClient</code>
 dispatches them by their <code>event</code> field.</p>
@@ -221,42 +232,57 @@ a <code>window.*</code> global by a <strong>registry-name substring</strong>:</p
 <thead>
 <tr>
 <th>Object (registry name)</th>
-<th>Substring match</th>
+<th>How it is picked</th>
 <th>Global</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>source.npx.pxi</code></td>
-<td><code>"npx"</code> <strong>and not</strong> <code>"recorder"</code></td>
+<td>every registered object</td>
+<td>—</td>
+<td><code>window.channelObjects</code> (the raw map)</td>
+</tr>
+<tr>
+<td><code>source.npx.pxi</code>, <code>source.npx.onebox</code>, <code>source.npx.simdata</code>, …</td>
+<td>keys containing <code>"npx"</code> <strong>and not</strong> <code>"recorder"</code>, then the first that <strong>has <code>getImroAsJson</code></strong></td>
 <td><code>window.activeNpxModule</code></td>
 </tr>
 <tr>
 <td><code>proc.npx.recorder</code>, <code>proc.nidaq.recorder</code>, …</td>
 <td><code>"recorder"</code> (<strong>all</strong> matches)</td>
-<td><code>window.activeRecorders</code> (array)</td>
+<td><code>window.activeRecorders</code> (array) + <code>window.recordersByName</code> (name → object)</td>
 </tr>
 </tbody>
 </table>
 <blockquote>
 <p>Both the source and the recorder names contain <code>"npx"</code>, so the source match explicitly excludes
-<code>"recorder"</code>. <strong>Recording is the multi-instance case:</strong> a profile can configure several recorders
+<code>"recorder"</code>. <strong>The final pick is by CAPABILITY, not by name order</strong>: a profile can register
+several <code>npx</code> sources — a probe <em>and</em> the OneBox ADC — and only the probe exposes the IMRO
+surface, so picking the first <code>npx</code> key silently bound the ADC and left an empty Probe Map. The
+test is <code>typeof obj.getImroAsJson === "function"</code>, with the first <code>npx</code> key as the fallback.</p>
+<p><strong>Recording is the multi-instance case:</strong> a profile can configure several recorders
 (one per data source — e.g. NPX <em>and</em> NI-DAQ), so the binding collects <strong>all</strong> <code>"recorder"</code> objects
-into an array, and the single Record button fans out to every one (§4). Keep registry names
-substring-distinguishable when you add modules.</p>
+into an array, and the single Record button fans out to every one (§4). <code>window.recordersByName</code>
+keeps the registry name alongside each, so a per-recorder channel selection can be routed to the
+right one. Keep registry names substring-distinguishable when you add modules.</p>
+<p><code>window.channelObjects</code> is set <strong>before</strong> the npx branch, deliberately: a profile with no probe —
+the NI-DAQ-only one — never enters that branch, so a per-device panel that keyed off something set
+inside it would never appear on exactly the rig it exists for. A panel finds its own object by
+capability, and this file does not have to know the panel exists.</p>
 </blockquote>
 <h3 id="23-invocation-js">2.3 Invocation (JS)<a class="headerlink" href="#23-invocation-js" title="Permanent link">#</a></h3>
 <pre><code class="language-js">// no return value needed -&gt; just call it (recording fans out to every bound recorder)
-window.activeRecorders.forEach(r =&gt; r.setRecording(true));
+window.activeRecorders.forEach(r =&gt; r.setRecording(true, dir, name, channels));
 
 // return value needed -&gt; pass a callback (QWebChannel delivers the result async)
 window.activeNpxModule.applyMapToHardware((ok) =&gt; { /* ok is the C++ bool */ });
 </code></pre>
 <h3 id="24-teardown-c-disconnect">2.4 Teardown (C++, <code>Disconnect</code>)<a class="headerlink" href="#24-teardown-c-disconnect" title="Permanent link">#</a></h3>
-<p><code>deregisterObject</code> for the source(s) and the recorder; the recorder pointer is tracked in
-<code>mRecorderProc</code> so it can be deregistered and its error signal disconnected.</p>
+<p><code>deregisterObject</code> for the source(s) and every recorder; the recorder pointers are tracked in
+<code>mRecorderProcs</code> (a <code>QList&lt;IProcessor*&gt;</code> — a profile can have more than one, §4) so each can be
+deregistered and its error signal disconnected.</p>
 <hr />
-<h2 id="3-module-a-neuropixels-source-sourcenpxpxi">3. Module A — Neuropixels source (<code>source.npx.pxi</code>)<a class="headerlink" href="#3-module-a-neuropixels-source-sourcenpxpxi" title="Permanent link">#</a></h2>
+<h2 id="3-module-a-neuropixels-source-sourcenpxpxi-sourcenpxonebox-and-the-sims">3. Module A — Neuropixels source (<code>source.npx.pxi</code>, <code>source.npx.onebox</code>, and the sims)<a class="headerlink" href="#3-module-a-neuropixels-source-sourcenpxpxi-sourcenpxonebox-and-the-sims" title="Permanent link">#</a></h2>
 <p>The reference implementation of Option A. Six <code>Q_INVOKABLE</code>s on <code>NeuropixelsSource</code> (<code>NpInterface.hpp</code>)
 drive the IMRO panel:</p>
 <table>
@@ -300,6 +326,25 @@ drive the IMRO panel:</p>
 </tr>
 </tbody>
 </table>
+<p>Two more sit beside them and drive the <strong>Tip referencing</strong> checkbox in the same panel:
+<code>setTipReferencing(bool)</code> and <code>isTipReferencing()</code> — each channel referenced to its own shank tip
+(NP2.0 multishank) or refId 1 (NP1.0), verified through the same pause → apply →
+<code>writeProbeConfiguration</code> read-back → resume path as Apply Map.</p>
+<p><strong>This is not only a real-hardware surface.</strong> <code>SimDataSource</code>, <code>SimData2Source</code> and
+<code>SynthRippleSource</code> each declare the five map methods — <code>getImroAsJson</code>, <code>getImroAsImroText</code>,
+<code>updateImroFromJson</code>, <code>applyMapToHardware</code>, <code>loadImroFromText</code> — which is why the probe-map editor
+can be developed and GUI-tested on a box with no probe. They do <strong>not</strong> declare <code>saveImroToFile</code>
+(a server-side write with no meaning without hardware), and they do <strong>not</strong> declare the two
+tip-referencing invokables either — so "the sim sources expose the same surface" is true of the map
+editor and not of the panel around it. That gap is live: <code>ImroManager.js</code> guards the read-back
+(<code>if (npxBackend.isTipReferencing)</code>) but calls <code>setTipReferencing</code> unguarded, and nothing hides
+<code>#reference-controls</code>, so the Tip-referencing checkbox is offered on a simulated source and throws
+when clicked. <strong>Test for the method</strong> — a probe-shaped source is not a probe. (Checked 2026-09-01.)
+<code>OneBoxSource</code> derives from <code>NeuropixelsSource</code>,
+inherits all of it, and adds its own panel's worth on top (ADC range, the WavePlayer/DAC load-arm-fire
+calls, per-channel grounding, comparator thresholds) — the same pattern, more methods, no central
+router touched. That is the point of Option A, and <code>OneBoxModule.js</code> finds its object by <strong>capability</strong>
+rather than by source name, so it appears on exactly the rigs it applies to.</p>
 <p>Bound to <code>window.activeNpxModule</code>; called from <code>ImroManager.js</code>. <code>NeuropixelsSource</code> lives on the <strong>main
 thread</strong> (only its acquisition worker is on a separate thread), so its invokables run directly and may
 return values synchronously (§5).</p>
@@ -309,14 +354,21 @@ the architecture review §7.5. Never open a modal dialog inside a <code>Q_INVOKA
 <h2 id="4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder">4. Module B — Recording sink (<code>proc.npx.recorder</code>, <code>proc.nidaq.recorder</code>, …)<a class="headerlink" href="#4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder" title="Permanent link">#</a></h2>
 <p>Migrated to Option A (was a <code>0x1001</code> binary command through <code>CommandDispatcher</code>). One invokable on
 <code>RecordProcessor</code> (<code>RecordProcessor.hpp</code>):</p>
-<pre><code class="language-cpp">Q_INVOKABLE void setRecording(bool enable);   // open (true) / close (false) the output files
+<pre><code class="language-cpp">Q_INVOKABLE void setRecording(bool enable, const QString&amp; outputDir, const QString&amp; namePrefix,
+                              const QVariantList&amp; channels = {});
 </code></pre>
+<p><code>outputDir</code> and <code>namePrefix</code> come from the record modal (files land as
+<code>&lt;namePrefix&gt;_&lt;band&gt;_&lt;timestamp&gt;.bin</code> in <code>outputDir</code>). <code>channels</code> is the GUI record-channel
+selection as <strong>read-out channel indices</strong> — the browser maps the selected electrodes to channels
+before sending — and when non-empty on start it <strong>overrides</strong> each recording's YAML <code>channels:</code> for
+that session only; empty means the configured default. (Electrode-vs-channel is a real trap on NP2.0:
+see <a href="AgentTraps.html"><code>AgentTraps.md</code></a> §1.)</p>
 <ul>
 <li><strong>Multiple recorders, one button.</strong> A profile can configure several <code>RecordProcessor</code> instances —
   e.g. <code>config/NpxPxiNiDaq.yaml</code> has <code>proc.npx.recorder</code> (records <code>data.npx.raw</code>) <strong>and</strong>
   <code>proc.nidaq.recorder</code> (records <code>data.nidaq.raw</code>). <code>WebSocketServer::onSourceSelection</code> registers
   <strong>every</strong> one; <code>NetworkClient</code> binds them all into <code>window.activeRecorders</code>; <code>AppController.toggleRecord()</code>
-  calls <code>setRecording(...)</code> on <strong>each</strong>. This restores the old <code>0x1001</code> behaviour, where the broadcast
+  calls <code>setRecording(...)</code> on <strong>each</strong>. This restores the old <code>0x1001</code> behavior, where the broadcast
   hit every recorder subscriber. (The old single-<code>activeRecorder</code> binding only drove the last recorder —
   a regression that's now fixed.)</li>
 <li><strong>Per-recorder, per-stream config — including channel selection — lives in the YAML.</strong> Each recorder's
@@ -324,7 +376,7 @@ the architecture review §7.5. Never open a modal dialog inside a <code>Q_INVOKA
   <code>channels: [...]</code>. That channel list becomes the <code>filter</code> passed to the interpreter's
   <code>serializeAvailableData</code>, so e.g. <code>channels: [0, 3]</code> records only NI-DAQ channels 0 and 3. Each module
   supplies its own interpreter (<code>interp.npx.raw</code> → <code>NpxDataInterpreter</code>, <code>interp.nidaq.raw</code> →
-  <code>NiDaqDataInterpreter</code>), so formats stay independent. (The long-term generalisation — one recorder, many
+  <code>NiDaqDataInterpreter</code>), so formats stay independent. (The long-term generalization — one recorder, many
   interpreters — is <code>SpikesPeak_Status.md</code> §11.1.)</li>
 <li><strong>Workflow unchanged for the user:</strong> the Record button is enabled only while playing, so it's still
   <em>Play first, then Record</em> (the recorder reads the live buffer).</li>
@@ -385,9 +437,23 @@ the invokable <code>void</code> + marshal + emit a status event.</p>
 <li><strong>Global app verbs</strong> (<code>setPlaying</code>, <code>selectSource</code>, <code>Disconnect</code>) still ride channel (b) JSON id
   <code>0x1000</code>. These are app-level, not module-level, so they may legitimately stay — but a future cleanup
   could route them through a dedicated controller object's invokables too.</li>
-<li><strong><code>AudioProcessor</code></strong> still subscribes to a <code>CommandDispatcher</code> id (<code>0x218</code>). The <code>CommandDispatcher</code>
-  infrastructure remains (it's generic); migrating Audio to a <code>setX()</code> invokable is the same recipe as
-  §6. The recording migration removed the <strong>only</strong> UI-facing <code>CommandDispatcher</code> user.</li>
+<li><strong>Three whole modules ride channel (b) as well</strong>, and did so by choice, not by neglect: the SWR
+  dock (<code>{command:"ripple", action:…}</code>, <code>RippleModule.js</code>), the ASAP control
+  (<code>{command:"lowLatency", module:"proc.x", value:bool}</code>, <code>LowLatencyModule.js</code>, #80) and the Convert
+  panel (<code>listRecordings</code> / <code>convertRecording</code>, <code>ConvertModule.js</code>). Each of them has to be drivable
+  from <code>python/spikespeak_cli.py</code>, which speaks JSON and not QWebChannel (§8), and none of them needs
+  a return value from an object — the backend answers with an event. If your module needs both a
+  headless client and an object return value, you need §2 <em>and</em> a channel-(b) verb, which is exactly
+  what recording has.</li>
+<li><strong>Two processors subscribe to <code>CommandDispatcher</code> ids</strong>: <code>AudioProcessor</code> on <code>0x218</code>
+  (<code>AudioModule.js</code>) and <code>BandFilterProcessor</code> on <code>kBandCommandId</code> = <code>0x219</code>, one shared id for every
+  band with the payload naming which (<code>BandModule.js</code>). The <code>CommandDispatcher</code> infrastructure
+  remains, and it is generic; migrating either to a <code>setX()</code> invokable is the same recipe as §6.
+  (An earlier version of this line said the recording migration removed the <em>only</em> UI-facing
+  <code>CommandDispatcher</code> user. It removed the only one <em>at the time</em>; two have been added since.)
+  Note the sharp edge that path already cost: <code>executeCallbacks</code> used to erase from the vector it was
+  iterating, which is undefined behavior and segfaulted the backend — <a href="AgentTraps.html"><code>AgentTraps.md</code></a>
+  §5g.</li>
 <li><strong><code>IDataSource::handleWebCommand</code></strong> (the legacy fire-and-forget JSON hook) still exists as a no-op
   default with a known routing gap (architecture review §7.4); prefer <code>Q_INVOKABLE</code>.</li>
 </ul>
@@ -416,7 +482,7 @@ watching browser reflect a CLI-driven session without re-sending commands. Full 
 <li><a href="#24-teardown-c-disconnect">2.4 Teardown (C++, Disconnect)</a></li>
 </ul>
 </li>
-<li><a href="#3-module-a-neuropixels-source-sourcenpxpxi">3. Module A — Neuropixels source (source.npx.pxi)</a></li>
+<li><a href="#3-module-a-neuropixels-source-sourcenpxpxi-sourcenpxonebox-and-the-sims">3. Module A — Neuropixels source (source.npx.pxi, source.npx.onebox, and the sims)</a></li>
 <li><a href="#4-module-b-recording-sink-procnpxrecorder-procnidaqrecorder">4. Module B — Recording sink (proc.npx.recorder, proc.nidaq.recorder, …)</a></li>
 <li><a href="#5-thread-safety-the-one-rule-that-bites">5. Thread-safety — the one rule that bites</a></li>
 <li><a href="#6-recipe-add-a-command-to-a-new-module">6. Recipe — add a command to a new module</a></li>

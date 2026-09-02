@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -143,7 +141,13 @@
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="configuration-reference-every-key-and-what-is-not-a-key">Configuration reference — every key, and what is NOT a key<a class="headerlink" href="#configuration-reference-every-key-and-what-is-not-a-key" title="Permanent link">#</a></h1>
 <blockquote>
-<p><strong>Verified against <code>4caa735</code> on 2026-08-31.</strong></p>
+<p><strong>Verified against <code>4caa735</code> on 2026-08-31; the boolean idioms, the <code>low_latency</code> rows, every
+<code>WebSocketServer.cpp</code> command anchor and the whole <code>proc.audio</code> block re-checked against <code>60889d7</code>
+on 2026-09-01.</strong> That pass found the tables saying <code>low_latency</code> used the default-ON idiom when its
+call sites use the default-OFF one, every command line number ~135 lines short after the #80 work
+landed, and — a review pass later, because the first sweep re-anchored only the rows it rewrote —
+the audio handlers, the two <code>applyNamedMap</code> implementations, both binary-id subscribe sites and
+<code>resolveDacTrigger</code> still pointing hundreds of lines away from the code they name.</p>
 <p><strong>Citation policy for this page.</strong> Everything here is line-anchored on purpose — a key's behavior is
 whatever its call site does, and a reader who cannot find the call site cannot check the claim. Line
 anchors also rot: the <code>WebSocketServer.cpp</code> command citations below drifted 50–150 lines before
@@ -249,12 +253,12 @@ of two ways:</p>
 <tr>
 <td><strong>default-on</strong></td>
 <td>anything except <code>false</code> / <code>0</code> / <code>no</code> / <code>off</code></td>
-<td><code>debug_files</code>, <code>auto_start</code>, <code>stimulation</code>, <code>low_latency</code></td>
+<td><code>debug_files</code>, <code>auto_start</code>, <code>stimulation</code></td>
 </tr>
 <tr>
 <td><strong>default-off</strong></td>
 <td>only <code>true</code> / <code>1</code> / <code>yes</code> / <code>on</code></td>
-<td><code>enabled</code> (bands), <code>dac_trigger</code></td>
+<td><code>low_latency</code>, <code>enabled</code> (bands), <code>dac_trigger</code></td>
 </tr>
 </tbody>
 </table>
@@ -285,13 +289,13 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>input</code></td>
 <td>string via Utils::toStdString(cfg["input"].val())</td>
 <td>"data.lfp" (the NP2 derived-LFP path)</td>
-<td>Registry name of the band the detector consumes. NP1 uses "data.npx.lfp" (native 2.5 kHz hardware LFP, read directly); NP2 uses "data.lfp" (float 30 kHz produced by proc.lfp). Also reported back to the GUI in rippleState as <code>input</code> (RippleDetector.cpp:458), which is how the GUI knows whether switching the LFP band off would kill detection. If the named data object does not exist, configure() returns false (RippleDetector.cpp:224-227).</td>
+<td>Registry name of the band the detector consumes. NP1 uses "data.npx.lfp" (native 2.5 kHz hardware LFP, read directly); NP2 uses "data.lfp" (float 30 kHz produced by proc.lfp). Also reported back to the GUI in rippleState as <code>input</code> (RippleDetector.cpp:538), which is how the GUI knows whether switching the LFP band off would kill detection. If the named data object does not exist, configure() returns false (RippleDetector.cpp:238-241).</td>
 </tr>
 <tr>
 <td><code>input_type</code></td>
 <td>string via Utils::toStdString(cfg["input_type"].val())</td>
 <td>"float"</td>
-<td>Selects which CircularBuffer template the input is cast to. EXACTLY the string "int16" binds CircularBuffer<int16, Neuropixels::PacketInfo> (NP1 direct path); ANY other value (including a typo) silently binds CircularBuffer<float,float>. A mismatch with the actual buffer type is an unchecked static_cast (RippleDetector.cpp:228-234).</td>
+<td>Selects which CircularBuffer template the input is cast to. EXACTLY the string "int16" binds CircularBuffer<int16, Neuropixels::PacketInfo> (NP1 direct path); ANY other value (including a typo) silently binds CircularBuffer<float,float>. A mismatch with the actual buffer type is an unchecked static_cast (RippleDetector.cpp:244-250).</td>
 </tr>
 <tr>
 <td><code>decimation_factor</code></td>
@@ -327,7 +331,7 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>stim_ip</code></td>
 <td>string via Utils::toStdString(cfg["stim_ip"].val())</td>
 <td>"192.168.1.100"</td>
-<td>UDP target host for the stimulation server (Raspberry Pi / ESP32). READ ONLY ON THE FIRST configure() -- the whole block is inside <code>if (mStimulatorClient == nullptr)</code> (RippleDetector.cpp:173), and the detector is a registry singleton, so re-configuring for a second profile keeps the first profile's target. Retarget at runtime with the setStimServer command instead. Not set by any shipped config.</td>
+<td>UDP target host for the stimulation server (Raspberry Pi / ESP32). READ ONLY ON THE FIRST configure() -- the whole block is inside <code>if (mStimulatorClient == nullptr)</code> (RippleDetector.cpp:175), and the detector is a registry singleton, so re-configuring for a second profile keeps the first profile's target. Retarget at runtime with the setStimServer command instead. Not set by any shipped config.</td>
 </tr>
 <tr>
 <td><code>stim_port</code></td>
@@ -338,13 +342,13 @@ processor you are adding it to and say which one you chose.</p>
 <tr>
 <td><code>dac_trigger</code></td>
 <td>bool-as-string, OPPOSITE polarity to the other bools: TRUE only if the text is exactly "true", "1", "yes" or "on"; anything else (including "TRUE") is false</td>
-<td>false (member init, RippleDetector.hpp:176)</td>
-<td>Second trigger path: on a detection, also fire the OneBox DAC wave player over USB in addition to the UDP stim server, so the two paths can be compared on the same threshold crossing. Resolved lazily/reflectively at start via resolveDacTrigger() (RippleDetector.cpp:622-636, called from slIpStartProcessor at :898), so it is safe with no OneBox present -- it just warns. Not set by any shipped config.</td>
+<td>false (member init, RippleDetector.hpp:233)</td>
+<td>Second trigger path: on a detection, also fire the OneBox DAC wave player over USB in addition to the UDP stim server, so the two paths can be compared on the same threshold crossing. Resolved lazily/reflectively at start via resolveDacTrigger() (RippleDetector.cpp:765-801, called from slIpStartProcessor at :1154), so it is safe with no OneBox present -- it just warns. Not set by any shipped config.</td>
 </tr>
 <tr>
 <td><code>dac_trigger_order</code></td>
 <td>string, compared for exact equality against the single literal <code>"stim_first"</code>. <code>mDacFirst = (v != "stim_first")</code> -- so ANY other text, including a typo, means DAC-first.</td>
-<td><code>"dac_first"</code> in effect (<code>mDacFirst = true</code>, RippleDetector.hpp:190) -- which is what every latency number recorded so far used</td>
+<td><code>"dac_first"</code> in effect (<code>mDacFirst = true</code>, RippleDetector.hpp:235) -- which is what every latency number recorded so far used</td>
 <td><strong>Which of the two triggers is issued first</strong> when <code>dac_trigger</code> is on and both fire from the same threshold crossing. They leave the same thread one after the other, so the second one is later by the cost of one vendor call. The key exists so that bias can be <em>measured</em> rather than asserted — and measuring it is the only reason we know the obvious arithmetic is wrong. On 2026-08-25 the default order gave detect→DAC 164 µs and detect→UDP 172 µs, which looks like an 8 µs bias; <code>dac_trigger_order: stim_first</code> gave detect→UDP <strong>6 µs</strong> and detect→DAC 202 µs. The two calls share a thread, so the second contains the first: the DAC call alone costs ~200 µs of the detector thread and the real ordering bias is <strong>115 µs</strong>, not 8. The source comment on this key still quotes the 8 µs figure; <a href="AgentTraps.html"><code>AgentTraps.md</code></a> §5c has the correction and the rule (<em>if two measurements share a thread, measure the swap; do not subtract</em>). Documented nowhere in the repo until 2026-08-31. Not set by any shipped config.</td>
 </tr>
 </tbody>
@@ -364,55 +368,55 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>z-score threshold (per electrode)</td>
-<td>action "setZ" -- {"command":"ripple","action":"setZ","electrode":int,"z":double}. Defaults if absent: electrode -1 (matches nothing), z 3.0. Sets that channel's zScoreThreshold and, if already trained, recomputes actualThreshold = mu + z*sigma and emits a rippleBaseline event. Handler: RippleDetector.cpp:717-730. No config key; the constructor default mZScoreThreshold = 5.0 (RippleDetector.cpp:72) is only the seed for freshly created channels (applied at :855).</td>
+<td>action "setZ" -- {"command":"ripple","action":"setZ","electrode":int,"z":double}. Defaults if absent: electrode -1 (matches nothing), z 3.0. Sets that channel's zScoreThreshold and, if already trained, recomputes actualThreshold = mu + z*sigma and emits a rippleBaseline event. Handler: RippleDetector.cpp:933-946. No config key; the constructor default mZScoreThreshold = 5.0 (RippleDetector.cpp:72) is only the seed for freshly created channels: <code>applyDetectionParams()</code> sets it on every channel (:344), and <code>mergeDetectionChannels()</code> sets it on the NEW ones only, since a kept channel carries its own z across a setChannels (:1112).</td>
 </tr>
 <tr>
 <td>estimation_seconds (baseline duration)</td>
-<td>action "setParam" -- {"command":"ripple","action":"setParam","name":"estimation_seconds","value":double}. Value must be &gt;= 0. Sets samplesForBaseline = round(2500 * value) on every channel. Handler: RippleDetector.cpp:709-711. No config key (constructor default 10.0 s, RippleDetector.cpp:71).</td>
+<td>action "setParam" -- {"command":"ripple","action":"setParam","name":"estimation_seconds","value":double}. Value must be &gt;= 0. Sets samplesForBaseline = round(2500 * value) on every channel. Handler: RippleDetector.cpp:925-927. No config key (constructor default 10.0 s, RippleDetector.cpp:71).</td>
 </tr>
 <tr>
 <td>min_duration_seconds</td>
-<td>action "setParam" with name "min_duration_seconds", value &gt;= 0. Seconds a channel must stay above threshold before it reports a crossing. Handler: RippleDetector.cpp:707. No config key (constructor default 0.0, RippleDetector.cpp:77).</td>
+<td>action "setParam" with name "min_duration_seconds", value &gt;= 0. Seconds a channel must stay above threshold before it reports a crossing. Handler: RippleDetector.cpp:923. No config key (constructor default 0.0, RippleDetector.cpp:77).</td>
 </tr>
 <tr>
 <td>lockout_seconds</td>
-<td>action "setParam" with name "lockout_seconds", value &gt;= 0. Per-channel refractory after a reported crossing; also written into every DetectionParams::lockoutPeriod. Handler: RippleDetector.cpp:706. No config key (constructor default 0.2 s, RippleDetector.cpp:73).</td>
+<td>action "setParam" with name "lockout_seconds", value &gt;= 0. Per-channel refractory after a reported crossing; also written into every DetectionParams::lockoutPeriod. Handler: RippleDetector.cpp:922. No config key (constructor default 0.2 s, RippleDetector.cpp:73).</td>
 </tr>
 <tr>
 <td>coincidence_window_seconds</td>
-<td>action "setParam" with name "coincidence_window_seconds", value &gt;= 0. Window inside which the quorum crossings must all fall. Handler: RippleDetector.cpp:708. No config key (constructor default 0.05 s, RippleDetector.cpp:76).</td>
+<td>action "setParam" with name "coincidence_window_seconds", value &gt;= 0. Window inside which the quorum crossings must all fall. Handler: RippleDetector.cpp:924. No config key (constructor default 0.05 s, RippleDetector.cpp:76).</td>
 </tr>
 <tr>
 <td>quorum_count</td>
-<td>action "setParam" with name "quorum_count", value rounded to int. The ONLY setParam name exempt from the value &gt;= 0 guard (RippleDetector.cpp:705). Clamped to [1, number of resolved detection channels]. Handler: RippleDetector.cpp:712-714. No config key (configure() hardcodes mQuorumCount = 1 at RippleDetector.cpp:206; constructor seed also 1 at :75).</td>
+<td>action "setParam" with name "quorum_count", value rounded to int. The ONLY setParam name exempt from the value &gt;= 0 guard (RippleDetector.cpp:921). Clamped to [1, number of resolved detection channels]. Handler: RippleDetector.cpp:928-930. No config key (configure() hardcodes mQuorumCount = 1 at RippleDetector.cpp:211; constructor seed also 1 at :75).</td>
 </tr>
 <tr>
 <td>running / detecting (module enable)</td>
-<td>action "start" (RippleDetector.cpp:681-692) or "pause" (:693-696), plus a legacy "enable" toggle {"action":"enable","enabled":bool} (:697-701, default true when the field is missing). "start" calls ensureInputBandEnabled() (turns proc.lfp on for NP2), sets mEnabled, and on a FIRST start sets the training origin and clears all baselines; a start after a pause just resumes with the existing baselines. "pause" stops detection, training and stim but leaves envelopes streaming and baselines intact. The only config influence is auto_start.</td>
+<td>action "start" (RippleDetector.cpp:894-905) or "pause" (:906-910), plus a legacy "enable" toggle {"action":"enable","enabled":bool} (:911-917, default true when the field is missing). "start" calls ensureInputBandEnabled() (turns proc.lfp on for NP2), sets mEnabled, and on a FIRST start sets the training origin and clears all baselines; a start after a pause just resumes with the existing baselines. "pause" stops detection, training and stim but leaves envelopes streaming and baselines intact. The only config influence is auto_start.</td>
 </tr>
 <tr>
 <td>retrain</td>
-<td>action "retrain" -- {"command":"ripple","action":"retrain"}, no payload. Resets the training origin to now, clears every channel's baseline (mean/sigma/threshold/samples), resets all ChannelDetectState, and clears the global stim lockout. Handler: RippleDetector.cpp:740-747.</td>
+<td>action "retrain" -- {"command":"ripple","action":"retrain"}, no payload. Resets the training origin to now, clears every channel's baseline (mean/sigma/threshold/samples), resets all ChannelDetectState, and clears the global stim lockout. Handler: RippleDetector.cpp:956-963.</td>
 </tr>
 <tr>
 <td>stimulation master gate (runtime twin of the <code>stimulation:</code> config key)</td>
-<td>action "setStimEnabled" -- {"command":"ripple","action":"setStimEnabled","value":bool}. NOT routed through slApplyCommand: WebSocketServer calls RippleDetector::setStimEnabled(bool) with Qt::DirectConnection on the MAIN thread (inside the <code>command == "ripple"</code> handler, WebSocketServer.cpp:1189 on 2026-08-31) so it works when not streaming. Turning it OFF disarms first, so it can never strand an armed stimulator. Implementation: RippleDetector.cpp:416-444.</td>
+<td>action "setStimEnabled" -- {"command":"ripple","action":"setStimEnabled","value":bool}. NOT routed through slApplyCommand: WebSocketServer calls RippleDetector::setStimEnabled(bool) with Qt::DirectConnection on the MAIN thread (inside the <code>command == "ripple"</code> handler, WebSocketServer.cpp:1395 on 2026-09-01) so it works when not streaming. Turning it OFF disarms first, so it can never strand an armed stimulator. Implementation: RippleDetector.cpp:416-444.</td>
 </tr>
 <tr>
 <td>arm / disarm the stimulator</td>
-<td>actions "armStim" / "disarmStim" -- {"command":"ripple","action":"armStim"} (no payload). Also NOT routed through slApplyCommand: WebSocketServer invokes RippleDetector::setStimArmed(bool) with Qt::DirectConnection on the main thread (same <code>command == "ripple"</code> handler). Ignored with a qWarning when the master gate is off. Broadcasts a rippleStimStatus event. Implementation: RippleDetector.cpp:392-413. No config key -- arming is always an explicit user action, never done by configure().</td>
+<td>actions "armStim" / "disarmStim" -- {"command":"ripple","action":"armStim"} (no payload). Also NOT routed through slApplyCommand: WebSocketServer invokes RippleDetector::setStimArmed(bool) with Qt::DirectConnection on the main thread (same <code>command == "ripple"</code> handler). Ignored with a qWarning when the master gate is off. Broadcasts a rippleStimStatus event. Implementation: RippleDetector.cpp:471-492. No config key -- arming is always an explicit user action, never done by configure().</td>
 </tr>
 <tr>
 <td>stim server target (ip / port)</td>
-<td>action "setStimServer" -- {"command":"ripple","action":"setStimServer","ip":"192.168.1.100:8888"} or {"ip":"192.168.1.100","port":8888}. If "ip" contains a colon it is split and the port parsed from it (garbage -&gt; keeps 8888); otherwise an optional "port" field is used, default 8888. Retargets the live StimulatorClient. Handler: RippleDetector.cpp:761-778. This is the runtime override for the first-configure-only stim_ip/stim_port keys.</td>
+<td>action "setStimServer" -- {"command":"ripple","action":"setStimServer","ip":"192.168.1.100:8888"} or {"ip":"192.168.1.100","port":8888}. If "ip" contains a colon it is split and the port parsed from it (garbage -&gt; keeps 8888); otherwise an optional "port" field is used, default 8888. Retargets the live StimulatorClient. Handler: RippleDetector.cpp:993-1011. This is the runtime override for the first-configure-only stim_ip/stim_port keys.</td>
 </tr>
 <tr>
 <td>stim pulse train: phase_us, gap_us, freq_hz, total_ms</td>
-<td>action "setStimParams" -- {"command":"ripple","action":"setStimParams","phase_us":int,"gap_us":int,"freq_hz":int,"total_ms":int}. Per-field defaults when a field is missing: 60 / 10 / 100 / 500. Clamped inside StimulatorClient::setStimParams to phase [10,100000] us, gap [0,100000] us, freq [1,10000] Hz, train [1,600000] ms (StimulatorClient.cpp:54-61). Handler: RippleDetector.cpp:748-759. No config keys for any of the four.</td>
+<td>action "setStimParams" -- {"command":"ripple","action":"setStimParams","phase_us":int,"gap_us":int,"freq_hz":int,"total_ms":int}. Per-field defaults when a field is missing: 60 / 10 / 100 / 500. Clamped inside StimulatorClient::setStimParams to phase [10,100000] us, gap [0,100000] us, freq [1,10000] Hz, train [1,600000] ms (StimulatorClient.cpp:54-61). Handler: RippleDetector.cpp:964-983. No config keys for any of the four.</td>
 </tr>
 <tr>
 <td>test fire (manual pulse, no detection)</td>
-<td>action "testFire" -- {"command":"ripple","action":"testFire"}, no payload. Arms then fires (connect() is idempotent). Ignored with a qWarning if the master gate is off. Handler: RippleDetector.cpp:780-792.</td>
+<td>action "testFire" -- {"command":"ripple","action":"testFire"}, no payload. Arms then fires (connect() is idempotent). Ignored with a qWarning if the master gate is off. Handler: RippleDetector.cpp:1012-1024.</td>
 </tr>
 <tr>
 <td>ripple sidecar write / clear (recording-driven, not a ripple command)</td>
@@ -456,7 +460,7 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>proc.audio -&gt; input_channels</code></td>
 <td>seq. REQUIRED: cfg["input_channels"] must be valid and is_seq(), and num_children() must be &lt;= 2 (numAudioChannels). Failure is FATAL -- validateConfig returns false, configure() returns false, and ProcessorManager::discardPartialSetup() abandons the whole processor graph.</td>
 <td>no default; absent = configuration error</td>
-<td>Stereo output description. Its length is validated and its element [0] seeds the live gain/threshold; nothing else about it reaches the audio path (mNextVals/mCurrVals are sized to the compile-time constant numAudioChannels=2 at AudioProcessor.cpp:593-594, not to this seq).</td>
+<td>Stereo output description. Its length is validated and its element [0] seeds the live gain/threshold; nothing else about it reaches the audio path (mNextVals/mCurrVals are sized to the compile-time constant numAudioChannels=2 at AudioProcessor.cpp:822-823, not to this seq).</td>
 </tr>
 <tr>
 <td><code>proc.audio -&gt; input_channels[].channel</code></td>
@@ -537,23 +541,23 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>proc.audio -- listening channel (which probe channel you hear)</td>
-<td>Binary command id 0x218. JSON: {"action":"setChannel","value":<int>}. Handler src/modules/audio/AudioProcessor.cpp:1140-1152. -1 is legitimate and means "stop listening" (distinct from muted); any value &gt;= the input band's channel count is REJECTED with a warning and no state change (and n is 0 when mRawData is null, so every non-negative channel is refused in the degraded case). Starts at -1 (silent) every session -- no YAML key can set it, by design. GUI: webinterface/AudioModule.js:208-209, and #aud-clear sends -1 at :190.</td>
+<td>Binary command id 0x218. JSON: {"action":"setChannel","value":<int>}. Handler src/modules/audio/AudioProcessor.cpp:1521-1533. -1 is legitimate and means "stop listening" (distinct from muted); any value &gt;= the input band's channel count is REJECTED with a warning and no state change (and n is 0 when mRawData is null, so every non-negative channel is refused in the degraded case). Starts at -1 (silent) every session -- no YAML key can set it, by design. GUI: webinterface/AudioModule.js:327-328, and #aud-clear sends -1 at :270.</td>
 </tr>
 <tr>
 <td>proc.audio -- digital-diode threshold (ADC counts)</td>
-<td>0x218, {"action":"setThreshold","value":<number>}. Read with toDouble(0.0), floored at 0 via std::max. AudioProcessor.cpp:1153-1156. Seeded once from input_channels[0].threshold, live from here on. GUI: AudioModule.js:183.</td>
+<td>0x218, {"action":"setThreshold","value":<number>}. Read with toDouble(0.0), floored at 0 via std::max. AudioProcessor.cpp:1534-1537. Seeded once from input_channels[0].threshold, live from here on. GUI: AudioModule.js:256.</td>
 </tr>
 <tr>
 <td>proc.audio -- volume / gain</td>
-<td>0x218, {"action":"setGain","value":&lt;0..1 number&gt;}. Read with toDouble(0.5) and clamped to [0,1]. AudioProcessor.cpp:1157-1160. GUI sends slider percent / 100 (AudioModule.js:188). Seeded once from input_channels[0].gain / 10.</td>
+<td>0x218, {"action":"setGain","value":&lt;0..1 number&gt;}. Read with toDouble(0.5) and clamped to [0,1]. AudioProcessor.cpp:1557-1560. GUI sends slider percent / 100 (AudioModule.js:261). Seeded once from input_channels[0].gain / 10.</td>
 </tr>
 <tr>
 <td>proc.audio -- mute</td>
-<td>0x218, {"action":"setEnabled","value":<bool>}. toBool(true), so a missing value means unmute. AudioProcessor.cpp:1161-1164. Not the same as channel -1: muted keeps the channel selected. GUI: AudioModule.js:191.</td>
+<td>0x218, {"action":"setEnabled","value":<bool>}. toBool(true), so a missing value means unmute. AudioProcessor.cpp:1561-1572. Not the same as channel -1: muted keeps the channel selected. GUI: AudioModule.js:271.</td>
 </tr>
 <tr>
 <td>proc.audio -- output device selection</td>
-<td>0x218, {"action":"setDevice","value":<PortAudio device index>}. A missing "value", or -1, means "follow the system default". AudioProcessor.cpp:1165-1177 forwards it to AudioWorker::slAwSelectDevice via QMetaObject::invokeMethod with Qt::QueuedConnection (the worker owns the PortAudio handle); with no worker (no audio device on this machine) it logs and ignores. This is the runtime equivalent of the audio_output.device_name/host_api_name config keys. GUI: AudioModule.js:197.</td>
+<td>0x218, {"action":"setDevice","value":<PortAudio device index>}. A missing "value", or -1, means "follow the system default". AudioProcessor.cpp:1573-1585 forwards it to AudioWorker::slAwSelectDevice via QMetaObject::invokeMethod with Qt::QueuedConnection (the worker owns the PortAudio handle); with no worker (no audio device on this machine) it logs and ignores. This is the runtime equivalent of the audio_output.device_name/host_api_name config keys. GUI: AudioModule.js:420.</td>
 </tr>
 <tr>
 <td>proc.audio -- state query</td>
@@ -630,15 +634,15 @@ processor you are adding it to and say which one you chose.</p>
 <tbody>
 <tr>
 <td>WHICH CONFIG PROFILE IS ACTIVE (the entire top-level selection). Nothing in any YAML file selects itself; the profile is chosen at runtime over the WebSocket.</td>
-<td>WIRE FORMAT for every command below: a BINARY WebSocket frame = 4-byte big-endian header [id&gt;&gt;8, id&amp;0xFF, totalLen&gt;&gt;8, totalLen&amp;0xFF] followed by the UTF-8 JSON body; totalLen counts the 4 header bytes. Built by webinterface/NetworkClient.js:436-447; parsed by SpikesPeak::extractCommand in src/core/Commands.cpp:12-30 (totalLength at :18, id at :23, body sliced at :25 -- every byte masked to unsigned char, a documented fix for headers &gt;= 0x80). Command id 0x1000 is the control-JSON channel: <code>WebSocketServer::onBinaryMessageReceived</code> (<code>src/core/WebSocketServer.cpp:1353</code>, re-anchored 2026-08-31) routes id 0x1000 to <code>onTextMessageReceived(command.data)</code> and every other id to <code>CommandDispatcher::executeCallbacks</code>. A plain TEXT frame carrying the same JSON also works -- <code>onTextMessageReceived</code> is connected directly to <code>QWebSocket::textMessageReceived</code> (<code>:913</code>). Find any of these with <code>grep -n 'command == "&lt;name&gt;"' src/core/WebSocketServer.cpp</code>; the handler names are stable and the line numbers are not.</td>
+<td>WIRE FORMAT for every command below: a BINARY WebSocket frame = 4-byte big-endian header [id&gt;&gt;8, id&amp;0xFF, totalLen&gt;&gt;8, totalLen&amp;0xFF] followed by the UTF-8 JSON body; totalLen counts the 4 header bytes. Built by webinterface/NetworkClient.js:568-579; parsed by SpikesPeak::extractCommand in src/core/Commands.cpp:12-29 (totalLength at :18, id at :24, body sliced at :26 -- every byte masked to unsigned char, a documented fix for headers &gt;= 0x80). Command id 0x1000 is the control-JSON channel: <code>WebSocketServer::onBinaryMessageReceived</code> (<code>src/core/WebSocketServer.cpp:1559</code>, re-anchored 2026-09-01) routes id 0x1000 to <code>onTextMessageReceived(command.data)</code> and every other id to <code>CommandDispatcher::executeCallbacks</code>. A plain TEXT frame carrying the same JSON also works -- <code>onTextMessageReceived</code> is connected directly to <code>QWebSocket::textMessageReceived</code> (<code>:1048</code>). Find any of these with <code>grep -n 'command == "&lt;name&gt;"' src/core/WebSocketServer.cpp</code>; the handler names are stable and the line numbers are not.</td>
 </tr>
 <tr>
 <td>listConfigs -- enumerate every loaded profile, plus the sim_variant and gui_hidden subsets</td>
-<td>0x1000 + {"command":"listConfigs"}. Handler: <code>command == "listConfigs"</code> (WebSocketServer.cpp:1081 on 2026-08-31). Reply broadcast: {"event":"configList", "configs":[<every internal name: field>], "simVariants":[{"name":...,"label":...,"basestation":...,"probe":...}], "guiHidden":[names]} -- an absent <code>sim_basestation</code> / <code>sim_probe</code> is OMITTED from the entry rather than sent as "", because absent means "independent of that axis" and the picker offers such a variant under every value. Sent automatically by the browser on socket open (webinterface/NetworkClient.js:32).</td>
+<td>0x1000 + {"command":"listConfigs"}. Handler: <code>command == "listConfigs"</code> (WebSocketServer.cpp:1216 on 2026-09-01). Reply broadcast: {"event":"configList", "configs":[<every internal name: field>], "simVariants":[{"name":...,"label":...,"basestation":...,"probe":...}], "guiHidden":[names]} -- an absent <code>sim_basestation</code> / <code>sim_probe</code> is OMITTED from the entry rather than sent as "", because absent means "independent of that axis" and the picker offers such a variant under every value. Sent automatically by the browser on socket open (webinterface/NetworkClient.js:32).</td>
 </tr>
 <tr>
 <td>selectSource -- connect a profile by its internal name: (this is the top-level equivalent of "load this config")</td>
-<td>0x1000 + {"command":"selectSource","value":"<exact internal name: field>"} , with an optional {"playbackFile":"<abs path to .h5>"} used only when the name contains the literal substring "(play file)" (handler <code>command == "selectSource"</code>, WebSocketServer.cpp:992 on 2026-08-31; a "(play file)" name with no path opens a native QFileDialog and sets SP::Npx::SynthRippleSource::sPlaybackFile). Flows to <code>WebSocketServer::onSourceSelection</code> (:121) -&gt; <code>MainController::handleTextCommand("connect &lt;name&gt;")</code> -&gt; <code>handleConnectRequest</code> -&gt; setupSources then setupProcessors.</td>
+<td>0x1000 + {"command":"selectSource","value":"<exact internal name: field>"} , with an optional {"playbackFile":"<abs path to .h5>"} used only when the name contains the literal substring "(play file)" (handler <code>command == "selectSource"</code>, WebSocketServer.cpp:1127 on 2026-09-01; a "(play file)" name with no path opens a native QFileDialog and sets SP::Npx::SynthRippleSource::sPlaybackFile). Flows to <code>WebSocketServer::onSourceSelection</code> (:121) -&gt; <code>MainController::handleTextCommand("connect &lt;name&gt;")</code> -&gt; <code>handleConnectRequest</code> -&gt; setupSources then setupProcessors.</td>
 </tr>
 <tr>
 <td>Disconnect -- tear the whole graph down (frees hardware, clears all four registries)</td>
@@ -646,15 +650,15 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>setPlaying -- start/stop acquisition on the already-connected profile</td>
-<td>0x1000 + {"command":"setPlaying","value":true|false} -&gt; handler <code>command == "setPlaying"</code> (WebSocketServer.cpp:960 on 2026-08-31) -&gt; <code>WebSocketServer::setPlaying()</code> -&gt; <code>handleTextCommand("play")</code> or <code>handleTextCommand("pause")</code>. NOTE handlePlayRequest returning true means the request was ACCEPTED, not that acquisition is running (comment at MainController.cpp:201).</td>
+<td>0x1000 + {"command":"setPlaying","value":true|false} -&gt; handler <code>command == "setPlaying"</code> (WebSocketServer.cpp:1095 on 2026-09-01) -&gt; <code>WebSocketServer::setPlaying()</code> -&gt; <code>handleTextCommand("play")</code> or <code>handleTextCommand("pause")</code>. NOTE handlePlayRequest returning true means the request was ACCEPTED, not that acquisition is running (comment at MainController.cpp:233).</td>
 </tr>
 <tr>
 <td>getSystemState -- ask outright what the server currently holds (acquisition state, source name, per-source and per-processor liveness)</td>
-<td>0x1000 + {"command":"getSystemState"} -&gt; handler <code>command == "getSystemState"</code> (WebSocketServer.cpp:1120 on 2026-08-31) -&gt; <code>broadcastJson(systemStateJson())</code>, built from <code>MainController::systemState()</code>: {acquisition: no_source|connected|acquiring|unknown, source, sourceDown, sources:[...], processors:[...]}. Polled by webinterface/SystemMonitor.js:28-29.</td>
+<td>0x1000 + {"command":"getSystemState"} -&gt; handler <code>command == "getSystemState"</code> (WebSocketServer.cpp:1298 on 2026-09-01) -&gt; <code>broadcastJson(systemStateJson())</code>, built from <code>MainController::systemState()</code>: {acquisition: no_source|connected|acquiring|unknown, source, sourceDown, sources:[...], processors:[...]}. Polled by webinterface/SystemMonitor.js:28-29.</td>
 </tr>
 <tr>
 <td>setProbeMap -- apply a named IMRO map to the connected profile's sources</td>
-<td>0x1000 + {"command":"setProbeMap","value":"default"|"bank0".."bank2"|"<path>.imro"}. Handler <code>command == "setProbeMap"</code> (WebSocketServer.cpp:1126 on 2026-08-31); it re-reads <code>getSourceConfig(mSourceName)</code> purely to recover the registry module names, then calls <code>sourceObj-&gt;applyNamedMap(which)</code>. Not a config key -- nothing in the YAML sets this.</td>
+<td>0x1000 + {"command":"setProbeMap","value":"default"|"bank0".."bank2"|"<path>.imro"}. Handler <code>command == "setProbeMap"</code> (WebSocketServer.cpp:1304 on 2026-09-01); it re-reads <code>getSourceConfig(mSourceName)</code> purely to recover the registry module names, then calls <code>sourceObj-&gt;applyNamedMap(which)</code>. Not a config key -- nothing in the YAML sets this.</td>
 </tr>
 <tr>
 <td>probeHardware -- WHAT IS PLUGGED IN, without opening any of it</td>
@@ -819,7 +823,7 @@ processor you are adding it to and say which one you chose.</p>
 <tbody>
 <tr>
 <td>Recording start/stop</td>
-<td>RUNTIME ONLY -- there is no YAML key that starts a recording. Two equivalent paths, no binary command id (the old 0x1001 binary command was removed; see the comment above the recorder registration in <code>WebSocketServer::onSourceSelection</code>, <code>src/core/WebSocketServer.cpp:370</code> on 2026-08-31). (a) QWebChannel invokable, which is what the GUI Record button uses: window.recordersByName['proc.npx.recorder'].setRecording(enable, dir, namePrefix, channels) -- Q_INVOKABLE void setRecording(bool, QString outputDir, QString namePrefix, QVariantList channels = {}) at src/modules/recording/RecordProcessor.hpp:44-45, called from webinterface/main.js:821 (stop) and :844 (start), with the handle map built at main.js:810-812. (b) WebSocket JSON, which fans out to EVERY recorder: {"command":"setRecording","value":true|false,"dir":"<path>","name":"<prefix>","channels":[int,...]} -- handler <code>command == "setRecording"</code> (WebSocketServer.cpp:1148 on 2026-08-31). Confirmation comes back as the recorder's own <code>sigRecordingStateChanged</code> (connected at <code>:382</code>), never echoed from the request -- echoing the REQUEST is the issue #18 mistake.</td>
+<td>RUNTIME ONLY -- there is no YAML key that starts a recording. Two equivalent paths, no binary command id (the old 0x1001 binary command was removed; see the comment above the recorder registration in <code>WebSocketServer::onSourceSelection</code>, <code>src/core/WebSocketServer.cpp:490</code> on 2026-09-01). (a) QWebChannel invokable, which is what the GUI Record button uses: window.recordersByName['proc.npx.recorder'].setRecording(enable, dir, namePrefix, channels) -- Q_INVOKABLE void setRecording(bool, QString outputDir, QString namePrefix, QVariantList channels = {}) at src/modules/recording/RecordProcessor.hpp:44-45, called from webinterface/main.js:1242 (stop) and :1265 (start), with the handle map built at main.js:1231-1232. (b) WebSocket JSON, which fans out to EVERY recorder: {"command":"setRecording","value":true|false,"dir":"<path>","name":"<prefix>","channels":[int,...]} -- handler <code>command == "setRecording"</code> (WebSocketServer.cpp:1326 on 2026-09-01). Confirmation comes back as the recorder's own <code>sigRecordingStateChanged</code> (connected at <code>:502</code>), never echoed from the request -- echoing the REQUEST is the issue #18 mistake.</td>
 </tr>
 <tr>
 <td>Recording output directory (dir)</td>
@@ -843,7 +847,7 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>Which band the live view shows</td>
-<td>RUNTIME, browser-side only. The display processor multiplexes every configured stream onto the socket with its id in the packet header; the operator's band choice is a frontend selection among those ids. No backend command exists for it -- DisplayProcessor and NiDaqDisplayProcessor register NO CommandDispatcher subscriber. A repo-wide grep for addSubscriber finds exactly two command ids in use: 0x218 audio (src/modules/audio/AudioProcessor.cpp:855 and again :900) and kBandCommandId = 0x219 (defined src/core/BandFilterProcessor.hpp:162, subscribed src/core/BandFilterProcessor.cpp:136). No WebSocketServer JSON command touches either display processor (the command chain runs WebSocketServer.cpp:854 'setPlaying' through :1135 'quit').</td>
+<td>RUNTIME, browser-side only. The display processor multiplexes every configured stream onto the socket with its id in the packet header; the operator's band choice is a frontend selection among those ids. No backend command exists for it -- DisplayProcessor and NiDaqDisplayProcessor register NO CommandDispatcher subscriber. A repo-wide grep for addSubscriber finds exactly two command ids in use: 0x218 audio (src/modules/audio/AudioProcessor.cpp:1169 and again :1214) and kBandCommandId = 0x219 (defined src/core/BandFilterProcessor.hpp:185, subscribed src/core/BandFilterProcessor.cpp:137). No WebSocketServer JSON command touches either display processor (the command chain runs WebSocketServer.cpp:854 'setPlaying' through :1135 'quit').</td>
 </tr>
 <tr>
 <td>Derived-band display streams on NP2.0 ('lfp', 'spike')</td>
@@ -869,7 +873,7 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>source.npx.pxi :: low_latency</code></td>
 <td>bool-as-string -- the raw scalar is compared against the literal set {"true","1","yes","on"}; ANY other text (including "True", "TRUE", "Yes") is silently false</td>
 <td>false (absent =&gt; mLowLatency stays false)</td>
-<td>ASAP probe polling: the acquisition worker polls every event-loop pass instead of on the 1 ms timer, so each commit carries the fewest LFP samples. Removes the ~800 us block-delivery staleness in the closed loop; costs CPU.</td>
+<td>ASAP probe polling: the acquisition worker polls every event-loop pass instead of on the 1 ms timer, so each commit carries the fewest LFP samples. Removes the ~800 us block-delivery staleness in the closed loop; costs CPU (~98 % of one core against 13.4 %). <strong>No longer config-only:</strong> since #80 it is also a runtime control -- see the <code>lowLatency</code> row in <em>Runtime only</em> below. YAML sets where a fresh connect starts; the runtime request changes it from there, and takes effect at the next Play because the flag is read once, in <code>startAcq</code>.</td>
 </tr>
 <tr>
 <td><code>source.npx.pxi :: imro_path</code></td>
@@ -965,7 +969,7 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>source.npx.simdata :: low_latency</code></td>
 <td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
 <td>false</td>
-<td>ASAP delivery: smaller sample blocks per commit (SimNpx1Worker::setLowLatency, applied at startAcq, SimDataSource.cpp:358).</td>
+<td>ASAP delivery: smaller sample blocks per commit (SimNpx1Worker::setLowLatency, applied at startAcq, SimDataSource.cpp:416).</td>
 </tr>
 <tr>
 <td><code>source.npx.sim2 :: inject_ripples</code></td>
@@ -1001,7 +1005,7 @@ processor you are adding it to and say which one you chose.</p>
 <td><code>source.npx.sim2 :: low_latency</code></td>
 <td _true_1_yes_on_="&quot;true&quot;,&quot;1&quot;,&quot;yes&quot;,&quot;on&quot;">bool-as-string, literal set</td>
 <td>false</td>
-<td>ASAP delivery (SimNpx2Worker::setLowLatency, applied at startAcq, SimData2Source.cpp:299).</td>
+<td>ASAP delivery (SimNpx2Worker::setLowLatency, applied at startAcq, SimData2Source.cpp:323).</td>
 </tr>
 <tr>
 <td><code>source.npx.simadc :: num_channels</code></td>
@@ -1047,9 +1051,9 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td><code>source.npx.synthripples :: outputs (seq) / outputs[].name (string)</code></td>
-<td>seq of maps, iterated with cfg["outputs"].children() and only a <code>has_child("outputs")</code> guard -- NO .is_seq() check, unlike the pxi/onebox paths. Only the child key <code>name</code> is read, as a string, and compared for EXACT equality against "data.npx.ap" / "data.npx.lfp"; the first entry is also used verbatim as a registry lookup key.</td>
-<td>absent/empty =&gt; single-band playback into "data.npx.raw" (SynthRippleSource.cpp:510), and mIsNp2 = true</td>
-<td>THE only YAML key this source reads. Binding BOTH data.npx.ap and data.npx.lfp selects dual-band NP1 playback (30 kHz AP file + 2.5 kHz LFP file). Anything else is single-band playback into outputs[0].name (or data.npx.raw). It also decides which probe the source pretends to be: name != "data.npx.ap" =&gt; NP2 channel map, else NP1 (:524).</td>
+<td>seq of maps, guarded by <code>has_child("outputs") &amp;&amp; cfg["outputs"].is_seq()</code> (SynthRippleSource.cpp:498) -- the same guard as the pxi/onebox paths. <strong>It was missing until #70</strong>, and without it a scalar <code>outputs: raw</code> is iterated as a CHILDLESS node rather than rejected, so the source silently concluded it had been given no outputs at all and picked the wrong band layout instead of reporting a malformed config. Only the child key <code>name</code> is read, as a string, and compared for EXACT equality against "data.npx.ap" / "data.npx.lfp"; the first entry is also used verbatim as a registry lookup key.</td>
+<td>absent/empty =&gt; single-band playback into "data.npx.raw" (SynthRippleSource.cpp:547), and mIsNp2 = true</td>
+<td>THE only YAML key this source reads. Binding BOTH data.npx.ap and data.npx.lfp selects dual-band NP1 playback (30 kHz AP file + 2.5 kHz LFP file). Anything else is single-band playback into outputs[0].name (or data.npx.raw). It also decides which probe the source pretends to be: name != "data.npx.ap" =&gt; NP2 channel map, else NP1 (:560).</td>
 </tr>
 </tbody>
 </table>
@@ -1063,8 +1067,12 @@ processor you are adding it to and say which one you chose.</p>
 </thead>
 <tbody>
 <tr>
+<td>ASAP / low latency, per module (#80)</td>
+<td>ALSO a config key (<code>low_latency:</code> on a source, above) -- this is the runtime twin, and the only way to reach it from the GUI. WebSocket TEXT JSON: {"command":"lowLatency","module":"proc.rippledetector","value":true}. Routed through <code>MainController::setModuleLowLatency</code>, NOT to the module, because the request PROPAGATES UPSTREAM: asking a detector for low latency is worthless unless the band filter and the source feeding it come too, and the controller owns the ledger so releasing gives back exactly what the request switched on. Which modules are offered is the module developer's declaration -- <code>ILowLatencyCapable::exposesLowLatency()</code> in <code>src/core/LowLatency.hpp</code> -- not a config key and not the frontend's choice; today <code>source.npx.pxi</code>/<code>.onebox</code>, <code>source.npx.simdata</code>, <code>source.npx.sim2</code> and <code>proc.rippledetector</code> say yes, and <code>proc.lfp</code>/<code>proc.spike</code> deliberately do not (they have no knob, they only report their edges so the walk can reach the source). The reply is <code>lowLatencyState</code> carrying <code>modules[].active</code> (in force NOW) and <code>modules[].pending</code> (requested, not yet in force -- the source reads its flag in startAcq, so a request made mid-stream lands on the next Play). CONFIRMED state, never the request (#16/#18, #51). Frontend: <code>webinterface/LowLatencyModule.js</code>.</td>
+</tr>
+<tr>
 <td>Playback .h5 file for source.npx.synthripples (which file is replayed)</td>
-<td>NOT a config key. WebSocket TEXT JSON: {"command":"selectSource", "value":"<config name containing '(play file)'>", "playbackFile":"<absolute .h5 path>"}. The <code>selectSource</code> handler checks QFile::exists then writes the STATIC SynthRippleSource::sPlaybackFile (declared SynthRippleSource.hpp:92, defined .cpp:28) before onSourceSelection() (WebSocketServer.cpp:997 on 2026-08-31). Omit <code>playbackFile</code> and the backend pops a non-native QFileDialog and echoes {"event":"playbackFilePicked"} (<code>:1021</code>). Cleared in closeDataSource() (SynthRippleSource.cpp:536). Absent =&gt; hardcoded fallbacks: ../data/synthetic_ripples.h5 (single-band, :273-278) or ../data/synthetic_ripples_np1_lfp.h5 + _ap.h5 (dual-band, :494-498); the AP sibling is derived by string-replacing "_lfp"-&gt;"_ap".</td>
+<td>NOT a config key. WebSocket TEXT JSON: {"command":"selectSource", "value":"<config name containing '(play file)'>", "playbackFile":"<absolute .h5 path>"}. The <code>selectSource</code> handler checks QFile::exists then writes the STATIC SynthRippleSource::sPlaybackFile (declared SynthRippleSource.hpp:93, defined .cpp:29) before onSourceSelection() (WebSocketServer.cpp:1137 on 2026-09-01). Omit <code>playbackFile</code> and the backend pops a non-native QFileDialog and echoes {"event":"playbackFilePicked"} (<code>:1156</code>). Cleared in closeDataSource() (SynthRippleSource.cpp:574). Absent =&gt; hardcoded fallbacks: ../data/synthetic_ripples.h5 (single-band, :277-279) or ../data/synthetic_ripples_np1_lfp.h5 + _ap.h5 (dual-band, :530-535); the AP sibling is derived by string-replacing "_lfp"-&gt;"_ap".</td>
 </tr>
 <tr>
 <td>Probe channel map / electrode selection (NP1 banks, NP2 shank+bank, references, gains, AP filter) -- all sources</td>
@@ -1072,7 +1080,7 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>Named probe-map preset ("default" | "bank0" | "bank1" | "bank2" | "<path>.imro")</td>
-<td>NOT a config key. WebSocket TEXT JSON: {"command":"setProbeMap", "value":"bank1"}. The <code>setProbeMap</code> handler (WebSocketServer.cpp:1126 on 2026-08-31) walks the active config's sources and calls IDataSource::applyNamedMap(which) on each; unhandled =&gt; a guiStatus error. Implementations: NpInterface.cpp:1895 (empty/"default"/"bank0" =&gt; loadDefaultImro; "bank1"/"bank2" are NP1-ONLY and resolve to <exe>/../imro_maps/npx1_bank<N>.imro; anything else is treated as a server-side .imro path), SimDataSource.cpp:394 ("default"|"bank0"|"bank1"|"bank2"), SimData2Source.cpp:335 ("default" | "banka" | "bank0" -- all three map to loadDefaultImro; no bank1/bank2). SynthRippleSource does NOT override it. Base default returns false (IDataSource.hpp:46-49).</td>
+<td>NOT a config key. WebSocket TEXT JSON: {"command":"setProbeMap", "value":"bank1"}. The <code>setProbeMap</code> handler (WebSocketServer.cpp:1304 on 2026-09-01) walks the active config's sources and calls IDataSource::applyNamedMap(which) on each; unhandled =&gt; a guiStatus error. Implementations: NpInterface.cpp:2274 (empty/"default"/"bank0" =&gt; loadDefaultImro; "bank1"/"bank2" are NP1-ONLY and resolve to <exe>/../imro_maps/npx1_bank<N>.imro; anything else is treated as a server-side .imro path), SimDataSource.cpp:456 ("default"|"bank0"|"bank1"|"bank2"), SimData2Source.cpp:361 ("default" | "banka" | "bank0" -- all three map to loadDefaultImro; no bank1/bank2). SynthRippleSource does NOT override it. Base default returns false (IDataSource.hpp:49-52).</td>
 </tr>
 <tr>
 <td>Tip referencing on/off (NP1/NP2 hardware)</td>
@@ -1092,11 +1100,11 @@ processor you are adding it to and say which one you chose.</p>
 </tr>
 <tr>
 <td>Stream start/stop, recording, disconnect</td>
-<td>Runtime WebSocket TEXT JSON, not config. Every one is an <code>else if(command == "...")</code> branch of <code>WebSocketServer::onTextMessageReceived</code>, and grepping the name is the reliable way to find it -- these line numbers drifted 50-150 lines before 2026-08-31. As of that date: setPlaying (:960), pickDirectory (:963), selectSource (:992), Disconnect (:1038), setProbePort (:1044), probeHardware (:1056), listConfigs (:1081), getSystemState (:1120), setProbeMap (:1126), setRecording (:1148), ripple (:1189), restart (:1214), quit (:1283).</td>
+<td>Runtime WebSocket TEXT JSON, not config. Every one is an <code>else if(command == "...")</code> branch of <code>WebSocketServer::onTextMessageReceived</code>, and grepping the name is the reliable way to find it -- these line numbers drifted 50-150 lines before 2026-08-31, and another ~135 between then and 2026-09-01. Re-anchored 2026-09-01: setPlaying (:1095), pickDirectory (:1098), selectSource (:1127), Disconnect (:1173), setProbePort (:1179), probeHardware (:1191), listConfigs (:1216), getSystemState (:1298), setProbeMap (:1304), setRecording (:1326), lowLatency (:1367), ripple (:1395), restart (:1420), quit (:1489).</td>
 </tr>
 <tr>
 <td>BINARY command ids</td>
-<td>NONE of the six Neuropixels sources subscribe to the binary CommandDispatcher at all. The only binary ids in the whole tree are 0x218 (AudioProcessor, src/modules/audio/AudioProcessor.cpp:855 and :900) and kBandCommandId = 0x219 (BandFilterProcessor, src/core/BandFilterProcessor.hpp:162, subscribed at BandFilterProcessor.cpp:136), plus 0x1000, which is not a command but the "this frame wraps a text command" wrapper. Source runtime control is exclusively (a) TEXT-JSON commands in WebSocketServer::onTextMessageReceived and (b) QWebChannel Q_INVOKABLE calls.</td>
+<td>NONE of the six Neuropixels sources subscribe to the binary CommandDispatcher at all. The only binary ids in the whole tree are 0x218 (AudioProcessor, src/modules/audio/AudioProcessor.cpp:1169 and :1214) and kBandCommandId = 0x219 (BandFilterProcessor, src/core/BandFilterProcessor.hpp:185, subscribed at BandFilterProcessor.cpp:137), plus 0x1000, which is not a command but the "this frame wraps a text command" wrapper. Source runtime control is exclusively (a) TEXT-JSON commands in WebSocketServer::onTextMessageReceived and (b) QWebChannel Q_INVOKABLE calls.</td>
 </tr>
 </tbody>
 </table>
@@ -1161,7 +1169,7 @@ operator's existing config that still carries it keeps working.</p>
 profile that silently meant the ADC never started.</p>
 <h3 id="output-names-are-still-not-configurable">Output <em>names</em> are still not configurable<a class="headerlink" href="#output-names-are-still-not-configurable" title="Permanent link">#</a></h3>
 <p>The data-object name a source produces is a C++ literal in every case but <code>SynthRippleSource</code>
-(<code>LFPProcessor.hpp:20</code>, <code>SpikeBandProcessor.hpp:23</code>, <code>AudioProcessor.cpp:856</code>). <code>outputs[].name</code>
+(<code>LFPProcessor.hpp:20</code>, <code>SpikeBandProcessor.hpp:23</code>, <code>AudioProcessor.cpp:941</code>). <code>outputs[].name</code>
 <em>selects among</em> what a source can produce; it does not rename anything. Making outputs genuinely
 configurable is the open half of #70.</p>
 <h2 id="adding-a-key">Adding a key<a class="headerlink" href="#adding-a-key" title="Permanent link">#</a></h2>

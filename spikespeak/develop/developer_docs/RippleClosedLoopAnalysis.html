@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -194,7 +192,8 @@ unaffected. Only the file to read them in moved.
    directly — identical to the live detector.
 6. <strong>Quorum</strong> — per-channel rising-edge → per-channel lockout → count channels whose <code>lastCrossTime</code> is within
    the coincidence window (includes self) → fire if <code>reporting ≥ quorum</code> and past the shared stim-lockout, then
-   bump all channels' lockout (<code>RippleDetector.cpp</code> ~728–769). Reproduced in <code>quorum_detections()</code>.</p>
+   bump all channels' lockout (the <code>else if (active)</code> branch of <code>doRippleDetectionLoop</code>,
+   <code>src/modules/swr/RippleDetector.cpp:1306-1431</code>). Reproduced in <code>quorum_detections()</code>.</p>
 </blockquote>
 <p><strong>Validation:</strong> with this exact chain the offline reconstruction reproduces the online detector on the clean
 tests (offline-quorum crossings match the recorded online-instant firings, 0 unmatched). <strong>Historical note —
@@ -250,20 +249,20 @@ command, so the true offset is milliseconds; any whole-period component is a pai
 now <strong>reduces the coarse offset modulo the sync period</strong> into (−IPI/2, +IPI/2], with a warning when it fires.
 After the fix: unmatched 257→0, and the healthy recordings are bit-identical. It surfaced only because the
 <strong>burst-start-anchored</strong> cross-check (aperiodic ripple-burst gaps) disagreed with nearest-before by ~1 s.</p>
-<h3 id="lessons-internalise-these-for-any-closed-loop-timing-analysis">Lessons (internalise these for any closed-loop timing analysis)<a class="headerlink" href="#lessons-internalise-these-for-any-closed-loop-timing-analysis" title="Permanent link">#</a></h3>
+<h3 id="lessons-internalize-these-for-any-closed-loop-timing-analysis">Lessons (internalize these for any closed-loop timing analysis)<a class="headerlink" href="#lessons-internalize-these-for-any-closed-loop-timing-analysis" title="Permanent link">#</a></h3>
 <ul>
 <li>On a <strong>periodic</strong> sync train, a tiny fit residual, matching intervals, and a clean ppm <strong>do NOT</strong> prove
   correct alignment — a whole-period pairing error hides inside the periodicity. Twice.</li>
 <li><strong>Anchor on the APERIODIC structure.</strong> The burst gaps (or any non-periodic landmark) expose a whole-period
   shift that every scalar metric misses. Cross-check nearest-before against burst-anchored pairing.</li>
-<li><strong>Verify event-by-event, not nearest-neighbour</strong>, and look at the per-channel envelope vs threshold + the
-  raster <strong>first</strong>, before theorising about hardware.</li>
+<li><strong>Verify event-by-event, not nearest-neighbor</strong>, and look at the per-channel envelope vs threshold + the
+  raster <strong>first</strong>, before theorizing about hardware.</li>
 <li>A guard rail now exists: <code>align_timestamps</code> warns on both a pulse-count mismatch and a modulo-wrap. Watch for
   those warnings. See <a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a> for the remaining
   capture-side asymmetry (low priority; the analysis side is fully handled).</li>
 </ul>
 <h2 id="reading-a-count-mismatch-correctly-np10-lessons-2026-07-20">Reading a count mismatch correctly (NP1.0 lessons, 2026-07-20)<a class="headerlink" href="#reading-a-count-mismatch-correctly-np10-lessons-2026-07-20" title="Permanent link">#</a></h2>
-<p>When online detections, offline crossings, and ai4 pulses disagree, <strong>look at the times before theorising</strong>.
+<p>When online detections, offline crossings, and ai4 pulses disagree, <strong>look at the times before theorizing</strong>.
 Two real cases from the NP1.0 regression, both benign, both initially easy to misread as a broken detector:</p>
 <p><strong>1. A recording that starts before the detector arms produces a LEAD-IN.</strong> NP1 test 1 showed 117 offline
 crossings, 100 online detections and 99 ai4 pulses. Nothing was missed: the ai4 train starts at
@@ -280,7 +279,7 @@ scattered through the run.</p>
 play file, not a detection miss. Whenever a gap appears in both the input-derived crossings and the output
 pulses at the same instants, the stimulus is the cause.</p>
 <p>The general rule (see the sync off-by-one bug above): verify closed-loop timing <strong>event by event</strong> against
-the recorded signal, never by nearest-neighbour matching on a periodic train, and never by reasoning about
+the recorded signal, never by nearest-neighbor matching on a periodic train, and never by reasoning about
 the hardware before plotting the envelope against the threshold.</p>
 <h2 id="open-follow-ups">Open follow-ups<a class="headerlink" href="#open-follow-ups" title="Permanent link">#</a></h2>
 <p>See <a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a> — the NI-DAQ dropping a trailing sync
@@ -296,7 +295,7 @@ pulse (stops a beat before the NPX). Low priority; the <code>auto</code> fix han
 <li><a href="#bug-1-the-clock-scale-error-fixed-2026-07-21">Bug #1 — the clock-scale error (fixed 2026-07-21)</a></li>
 <li><a href="#bug-2-matchend-off-by-one-fixed-2026-07-17">Bug #2 — match="end" off-by-one (fixed 2026-07-17)</a></li>
 <li><a href="#bug-3-the-whole-period-wrap-in-matchauto-fixed-2026-07-21">Bug #3 — the whole-period wrap in match="auto" (fixed 2026-07-21)</a></li>
-<li><a href="#lessons-internalise-these-for-any-closed-loop-timing-analysis">Lessons (internalise these for any closed-loop timing analysis)</a></li>
+<li><a href="#lessons-internalize-these-for-any-closed-loop-timing-analysis">Lessons (internalize these for any closed-loop timing analysis)</a></li>
 </ul>
 </li>
 <li><a href="#reading-a-count-mismatch-correctly-np10-lessons-2026-07-20">Reading a count mismatch correctly (NP1.0 lessons, 2026-07-20)</a></li>

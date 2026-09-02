@@ -100,8 +100,9 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
 <a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
@@ -112,9 +113,6 @@
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-</details>
-<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
-<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -208,6 +206,34 @@ prediction. <code>wait_baselines()</code> returns when the thresholds actually e
 </tbody>
 </table>
 <p><code>rippleEnvelope</code> is the vital sign. Zero of them means look upstream, not at z.</p>
+<h3 id="asap-low-latency-ask-for-it-before-play">ASAP (low latency) — ask for it BEFORE <code>play()</code><a class="headerlink" href="#asap-low-latency-ask-for-it-before-play" title="Permanent link">#</a></h3>
+<p>Since #80 (2026-09-01) ASAP is no longer only a YAML key on the source, so a headless run no longer has to
+select a separate <code>*(ASAP)*</code> profile to get it. <code>rig.py</code> has no verb for it yet; send the frame:</p>
+<pre><code class="language-python">rig.send({&quot;command&quot;: &quot;lowLatency&quot;, &quot;module&quot;: &quot;proc.rippledetector&quot;, &quot;value&quot;: True})
+</code></pre>
+<p>The backend replies with a <code>lowLatencyState</code> event carrying <code>ok</code>, <code>module</code>, and a <code>modules</code> array whose
+entries are <code>{name, active, pending, upstream}</code>. Two things to get right:</p>
+<ul>
+<li><strong>Order matters.</strong> The source latches the flag once, in <code>startAcq</code>, and reports nothing in force again on
+  stop. The <em>request</em> survives, so send it between <code>wait_ready()</code> and <code>play()</code> and it is live for that run;
+  a request sent <em>after</em> <code>play()</code> is real but waits for the next one.</li>
+<li><strong>Assert on the <code>source.*</code> entry's <code>active</code>, after Play — never on <code>ok</code>, and never on the detector's
+  entry.</strong> <code>ok</code> only means the request was accepted. The <em>source</em> is the only node with a real knob, and
+  it reads its flag once in <code>startAcq</code>, so its <code>active</code> is false until Play and <code>pending</code> is true in the
+  meantime (<code>NpInterface.hpp:305-306</code>, <code>SimDataSource.hpp:199-200</code>). <code>proc.rippledetector</code> reports
+  <code>active</code> as soon as it records the request (<code>RippleDetector.hpp:178</code> returns <code>mLowLatencyOwned</code>) and
+  never reports <code>pending</code> at all, so reading its entry tells you a request was made, not that a probe is
+  delivering ASAP. <code>tests/gui/low_latency.py</code> asserts on the entry whose name starts with <code>source.</code> for
+  exactly this reason. Publishing a latency number from a run whose source was still on the 1 ms poll is
+  the same class of error as announcing requested state instead of confirmed state. The source also prints
+  which mode it started in (<code>acquisition poll interval 0 ms (low_latency = true)</code>) — that log line is the
+  independent check.</li>
+</ul>
+<p>The request walks upstream from the detector to whoever actually has a knob, which today is only the
+source. On an NP2.0 that walk passes <em>through</em> <code>proc.lfp</code> (which has nothing of its own to tune and simply
+reports its edges) to reach the source; on an NP1.0 the detector reads the native band, so the chain is one
+hop shorter — the same walk, not a special case. What ASAP costs — roughly one core — and what it buys are
+in <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>.</p>
 <hr />
 <h2 id="3-stimulation">3. Stimulation<a class="headerlink" href="#3-stimulation" title="Permanent link">#</a></h2>
 <pre><code class="language-python">rig.set_stim_params(phase_us=60, gap_us=10, freq_hz=1, total_ms=1)   # ONE biphasic pulse
@@ -254,7 +280,7 @@ read both eras, look inside the folder and fall back to <code>out_dir</code> —
 <li><strong>Look one level down.</strong> Globbing <code>out_dir/*.bin.json</code> finds nothing and the failure surfaces as an
   <code>IndexError</code> on an empty list, well away from the cause.</li>
 <li><strong>Pick the NEWEST sidecar, not the first alphabetically.</strong> A second run into the same <code>name</code> adds a
-  second timestamped pair beside the first. Sorting by name and taking <code>[0]</code> silently analyses the
+  second timestamped pair beside the first. Sorting by name and taking <code>[0]</code> silently analyzes the
   OLD recording -- which is exactly what happened on 2026-08-25, reporting a 5 s smoke test's n=104
   as though it were the 1000-detection run. Sort by mtime.</li>
 </ul>
@@ -272,7 +298,7 @@ data = frames[:, meta[&quot;frame&quot;][&quot;header_bytes&quot;]:].copy().view
 <p><strong>The backend writes <code>output.log</code> to its WORKING DIRECTORY</strong>, not next to the binary. If you launch
 it with <code>cwd=REPO</code> the log is <code>REPO/output.log</code>, and the copy in <code>build-*/bin/</code> is whatever was left
 there by an earlier session.</p>
-<p>I spent twenty minutes analysing a stale <code>bin/output.log</code> from six hours earlier and concluded the
+<p>I spent twenty minutes analyzing a stale <code>bin/output.log</code> from six hours earlier and concluded the
 detector had bound to the wrong band on an NP2 probe. It had not. <strong>Check the mtime before you trust
 a log.</strong></p>
 <p>The launcher's own stdout (<code>Press any key to continue . . .</code>) is not the application log — that is
@@ -326,6 +352,7 @@ that a hardware failure had nothing to do with a change I had made that evening.
 <li><a href="#1-use-ripple_toolsrigpy-do-not-hand-roll-the-websocket">1. Use ripple_tools/rig.py. Do not hand-roll the WebSocket.</a></li>
 <li><a href="#2-the-detection-sequence-in-the-only-order-that-works">2. The detection sequence, in the only order that works</a><ul>
 <li><a href="#how-to-tell-not-training-from-trained-but-quiet">How to tell "not training" from "trained but quiet"</a></li>
+<li><a href="#asap-low-latency-ask-for-it-before-play">ASAP (low latency) — ask for it BEFORE play()</a></li>
 </ul>
 </li>
 <li><a href="#3-stimulation">3. Stimulation</a></li>

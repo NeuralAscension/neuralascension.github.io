@@ -757,7 +757,48 @@ anyone tunes them:</p>
 <p>So <code>RECV_TIMEOUT_S</code> (20 s) exists only to notice a socket that will never speak again, and
 <code>DEADLINE_S</code> (180 s) bounds the whole call across any number of interleaved events. Collapsing them
 into one value breaks one case or the other.</p>
-<p>The raised error names §11 as the likely cause, because that is what it was both times.</p></article>
+<p>The raised error names §11 as the likely cause, because that is what it was both times.</p>
+<h2 id="13-a-wedged-backend-hung-the-suite-the-same-way-accepting-a-connection-is-not-being-alive">13. A wedged BACKEND hung the suite the same way — accepting a connection is not being alive<a class="headerlink" href="#13-a-wedged-backend-hung-the-suite-the-same-way-accepting-a-connection-is-not-being-alive" title="Permanent link">#</a></h2>
+<p>§12 bounded the CDP socket to the browser. The <strong>identical defect</strong> sat in
+<code>python/spikespeak_cli.py</code>'s WebSocket client to the backend and survived it, because the fix was
+applied where the bug was found instead of everywhere its shape could occur. Per CLAUDE.md the
+second occurrence is the trigger to write the <strong>rule</strong>, so here it is:</p>
+<blockquote>
+<p><strong>No wait on another process may be unbounded.</strong> Not a socket read, not a pipe read, not a
+<code>wait()</code>. If a deadline cannot be triggered on purpose, nobody has ever seen it work.</p>
+</blockquote>
+<p><code>WSClient.connect(timeout=10)</code> called <code>settimeout(None)</code> on the line <em>after</em> <code>create_connection</code> and
+<em>before</em> reading the handshake reply, so the argument bounded only the TCP connect. That matters
+because of the thing worth internalising:</p>
+<blockquote>
+<p><strong>The OS accepts on a listening socket whether or not the application behind it still runs its
+event loop.</strong> "Connected" therefore never implies "alive", and a health check that only connects
+is not a health check. (Same lesson as §5c's control-plane probe on the OneBox.)</p>
+</blockquote>
+<p>On 2026-09-01 backends were found <strong>alive, listening, accepting, at 0 % CPU, answering nothing on
+either their WebSocket or their HTTP port</strong>. A test that met one blocked forever — in <strong>teardown,
+after its assertions had already passed</strong>. Three things then compounded it:</p>
+<ul>
+<li><code>run_gui_tests.py</code> never caught <code>TimeoutExpired</code>, so one hung test crashed the run and discarded
+  <strong>all 26 results</strong>. That is why the symptom was recorded as <em>"which test hangs changes between
+  runs"</em> — the runner was structurally incapable of naming it.</li>
+<li>The <code>--porcelain</code> branch, which is <strong>the gate's own path</strong>, had no timeout of any kind: iterating
+  a hung child's stdout blocks forever and <code>child.wait(timeout=…)</code> is never reached.</li>
+<li>Teardown sent <code>quit</code>, slept, and never checked that the process died — six leaked backends while
+  reporting success.</li>
+</ul>
+<p>And one that will catch the next person: <code>self._backend</code> is <code>scripts/spikespeak.py</code>, a <strong>launcher</strong>
+that runs the real binary as a child (<code>spikespeak.py:376</code>). Signalling it reaps the wrapper and
+orphans the app. That is the same wrapper-script trap already documented at the Chrome launch — and
+unlike Chrome it is true <strong>on Windows too</strong>, where the wrapper is <code>python.exe</code>.</p>
+<p>Two smaller ones, both cheap to repeat:</p>
+<ul>
+<li>The per-test deadline was the literal <code>900</code>. It is now <code>SPIKESPEAK_GUI_TEST_TIMEOUT</code> <strong>specifically
+  so the timeout path can be tested</strong>; the watchdog's first version crashed the gate's own branch on
+  <code>UnboundLocalError</code> and only a test that could actually fire it found that.</li>
+<li>A source-level guard that greps text will match the <strong>docstring explaining the bug</strong>. The first
+  version of this one did exactly that. Read the AST.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AgentTraps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -783,6 +824,7 @@ into one value breaks one case or the other.</p>
 <li><a href="#10-a-running-gate-has-moments-with-no-backend-process">10. A running gate has moments with no backend process</a></li>
 <li><a href="#11-webinterface-is-served-from-the-working-tree-every-frontend-edit-is-a-live-edit">11. webinterface/ is served from the WORKING TREE — every frontend edit is a live edit</a></li>
 <li><a href="#12-a-dead-browser-used-to-hang-the-suite-forever">12. A dead browser used to hang the suite forever</a></li>
+<li><a href="#13-a-wedged-backend-hung-the-suite-the-same-way-accepting-a-connection-is-not-being-alive">13. A wedged BACKEND hung the suite the same way — accepting a connection is not being alive</a></li>
 </ul>
 </div>
 </aside>

@@ -7376,23 +7376,33 @@ machines and item 6 happens on a different box.</p>
 </tr>
 <tr>
 <td>3</td>
-<td><strong><code>"below threshold"</code> label</strong> — → <strong><code>"no detection"</code></strong> (operator decision)</td>
-<td>🔴 in progress</td>
+<td>~~<strong><code>"below threshold"</code> label</strong> → <strong><code>"no detection"</code></strong>~~</td>
+<td>✅ <strong>DONE</strong> — <code>771b88f</code></td>
 </tr>
 <tr>
 <td>4</td>
-<td><strong>The dock renders four defaults it does not own</strong> — new-channel z → <strong>5.0</strong> to match <code>RippleDetector.cpp</code> (operator decision); the other three render nothing until the backend announces</td>
-<td></td>
+<td>~~<strong>The dock renders four defaults it does not own</strong>~~</td>
+<td>✅ <strong>DONE</strong> — <code>771b88f</code></td>
 </tr>
 <tr>
 <td>5</td>
-<td><strong>Gate speedup</strong> — <code>--jobs 4</code> twice; flip the default if green twice (~10 min/gate). Also make <code>run_gui_tests.py</code> take the same lock as <code>run_all_tests.py</code></td>
-<td></td>
+<td><strong>Gate speedup</strong> — <code>--jobs 4</code> twice; flip the default if green twice. Also make <code>run_gui_tests.py</code> take the gate lock</td>
+<td>🔴 in progress</td>
 </tr>
 <tr>
 <td>6</td>
 <td><strong>Linux run</strong> — the operator runs Configuration 1. The last item on #52</td>
-<td></td>
+<td>deferred by the operator until the gate hang is fixed</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Autodetect with NO probe attached</strong> — OneBox <strong>and</strong> PXIe basestation both connected to one machine, <strong>neither</strong> holding a probe. A state the rig has never been in before. <strong>Read the code before touching the hardware.</strong> Extends to: Intan-over-Ethernet later behaves the same (detect its presence, do nothing if nothing is attached), and if all three DO have probes the operator is <strong>prompted to choose</strong> — unless a custom config names one to autoconnect</td>
+<td>🔴 requested 2026-09-01, hardware is set up NOW</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Configs: confirm the consolidation actually landed</strong> and that both the YAML set and its docs stay simple. <strong>The users are neuroscientists</strong> — the number of selectable configs, and the docs describing them, must not be developer-shaped</td>
+<td>🔴 requested 2026-09-01</td>
 </tr>
 </tbody>
 </table>
@@ -7413,7 +7423,296 @@ them. So the cheap move is simply to re-run it twice, which is this file's own s
 reuses a backend it did not start</strong> (<code>if jobs == 1 and not backend_up()</code>), probing the default ports.
 The full gate takes a system-wide lock and the GUI runner does not, so a second suite launched beside
 a running gate silently attaches to the gate's backend — two suites driving one backend, which is
-exactly the failure that once looked like a regression. Folded into item 5.</p></article>
+exactly the failure that once looked like a regression. Folded into item 5.</p>
+<hr />
+<h2 id="79-the-gate-hang-was-one-wait-with-no-deadline-2026-09-01-item-5">79. THE GATE HANG WAS ONE WAIT WITH NO DEADLINE  (2026-09-01, item 5)<a class="headerlink" href="#79-the-gate-hang-was-one-wait-with-no-deadline-2026-09-01-item-5" title="Permanent link">#</a></h2>
+<p>The GUI suite ran <strong>serially</strong> because of a recorded mystery: at <code>--jobs &gt; 1</code> <em>"one test hangs to the
+900 s subprocess timeout and which test it is changes between runs."</em> An unreliable fast gate being
+worse than a reliable slow one, the default stayed at 1 and every gate paid ~17 extra minutes.</p>
+<p>It was not flakiness. It was one unbounded wait and a reporter that destroyed the evidence.</p>
+<h3 id="what-was-actually-happening">What was actually happening<a class="headerlink" href="#what-was-actually-happening" title="Permanent link">#</a></h3>
+<p>A <code>--jobs 4</code> run was caught <strong>live</strong>, mid-hang, and taken apart:</p>
+<ol>
+<li><strong>A backend wedges.</strong> Process alive, socket listening, TCP connections accepted, <strong>0 % CPU</strong>, and
+   answering nothing on <em>either</em> its WebSocket or its HTTP port. A bounded probe confirmed it: both
+   ports accept and never reply.</li>
+<li><strong>Teardown waits forever.</strong> <code>spikespeak_cli.WSClient.connect</code> called <code>settimeout(None)</code> on the
+   line after <code>create_connection</code> and <strong>before</strong> reading the handshake reply, so its <code>timeout</code>
+   argument bounded only the TCP connect. <code>stream_options</code> was found holding an <strong>ESTABLISHED</strong>
+   socket to a backend that would never answer. The OS accepts on a listening socket whether or not
+   the application behind it still runs its event loop, so <strong>"connected" never implied "alive."</strong></li>
+<li><strong>The report is destroyed.</strong> <code>run_gui_tests.py</code> passed <code>timeout=900</code> and never caught
+   <code>TimeoutExpired</code>. The exception escaped the worker, <code>pool.map</code>, and <code>main()</code> — so one hung test
+   printed a traceback, wrote no <code>gui_test_status.json</code>, and <strong>discarded the pass/fail of all 26
+   tests.</strong> That is precisely why nobody could say which test hung: the runner could not report it.</li>
+<li><strong>Six backends leaked.</strong> Teardown sent <code>quit</code>, slept 4 s, and never looked at whether the process
+   exited — this repo's recurring defect (#16/#18, #51) sitting in the teardown path: a REQUEST
+   treated as a confirmed outcome. Worse, <code>self._backend</code> is the <em>launcher</em>; the real binary is its
+   child (<code>spikespeak.py:376</code>), so even <code>terminate()</code> would have orphaned the app — the identical
+   wrapper-script trap already documented at the Chrome launch, and true on Windows too.</li>
+</ol>
+<p>The hang always struck in <strong>teardown, after the test's assertions had already passed.</strong> The suite was
+never testing anything wrong; it was failing to hang up the phone.</p>
+<h3 id="the-porcelain-branch-had-no-timeout-at-all">The <code>--porcelain</code> branch had no timeout at all<a class="headerlink" href="#the-porcelain-branch-had-no-timeout-at-all" title="Permanent link">#</a></h3>
+<p>Worse than the parallel path, and it is <strong>the gate's own path</strong>. It iterates the child's stdout,
+which blocks forever on a hung child, and only reaches <code>child.wait(timeout=…)</code> once the pipe closes,
+which a hung child never does. A wedged backend could have hung <code>run_all_tests.py</code> <strong>indefinitely</strong>.</p>
+<h3 id="what-changed">What changed<a class="headerlink" href="#what-changed" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spikespeak_cli.WSClient.connect</code></td>
+<td>the deadline covers the <strong>whole handshake</strong>; <code>settimeout(None)</code> moved <em>below</em> the read loop, since unbounded is right for streaming and never right for being greeted</td>
+</tr>
+<tr>
+<td><code>tests/gui/_harness.py</code></td>
+<td>teardown <strong>confirms</strong> the backend died, and kills the <strong>tree</strong> (launcher <em>and</em> binary) on both platforms; POSIX gets its own process group, matching the Chrome launch</td>
+</tr>
+<tr>
+<td><code>scripts/run_gui_tests.py</code></td>
+<td><code>TimeoutExpired</code> is caught and reported as a <strong>failed test</strong>; the porcelain branch gets a watchdog; the deadline is <code>SPIKESPEAK_GUI_TEST_TIMEOUT</code>, <strong>overridable so the timeout path is testable</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="proof-per-claudemd">Proof, per CLAUDE.md<a class="headerlink" href="#proof-per-claudemd" title="Permanent link">#</a></h3>
+<p><code>python/tests/test_gui_runner_timeout.py</code>, 5 cases, each <strong>proved able to fail</strong> by injecting the
+real regression: <code>settimeout(None)</code> moved back above the read loop → red; the <code>TimeoutExpired</code>
+handler removed → red, reproducing the original symptom verbatim (<code>GUI test runner crashed:
+TimeoutExpired(...)</code>, no results); the watchdog disarmed → red. A separate live check drove a
+genuinely wedged server that accepts and never answers — the exact 2026-09-01 condition — and
+confirmed the client now raises in 3.0 s instead of never.</p>
+<p>Two lessons worth keeping. <strong>A deadline nobody can trigger on purpose is a deadline nobody has ever
+seen work</strong> — hence the env override. And the first version of the source-level guard failed on the
+<strong>docstring of the function it was checking</strong>, which explains the bug and so contains the forbidden
+string; it now reads the AST. A source guard that greps text is a guard against writing prose.</p>
+<h3 id="still-open-the-wedge-itself">Still open — the wedge itself<a class="headerlink" href="#still-open-the-wedge-itself" title="Permanent link">#</a></h3>
+<p>These changes make a wedged backend <strong>survivable and reported</strong>; they do not explain why a backend
+stops servicing its event loop while its socket stays open. Since it strikes at teardown, after the
+assertions pass, bounding the wait converts it from a lost run into a clean one — but the wedge is a
+real backend defect and deserves its own issue.</p>
+<hr />
+<h2 id="80-autodetect-with-two-basestations-and-no-probe-read-from-the-code-2026-09-01-item-7">80. AUTODETECT WITH TWO BASESTATIONS AND NO PROBE — READ FROM THE CODE  (2026-09-01, item 7)<a class="headerlink" href="#80-autodetect-with-two-basestations-and-no-probe-read-from-the-code-2026-09-01-item-7" title="Permanent link">#</a></h2>
+<p>The operator connected a <strong>OneBox and a PXIe basestation to one machine with no probe on either</strong> —
+a state the rig has never been in — and asked whether it is handled, <strong>from the code, before
+anything is run against it.</strong> It is handled in part. The gap is specific and worth stating exactly.</p>
+<h3 id="what-already-works-and-why-it-is-safe-to-plug-both-in">What already works, and why it is safe to plug both in<a class="headerlink" href="#what-already-works-and-why-it-is-safe-to-plug-both-in" title="Permanent link">#</a></h3>
+<p><code>Npx::basestations()</code> calls <strong>only</strong> <code>np_scanBS()</code> and <code>np_getDeviceList()</code>. Neither opens a
+basestation; <code>np_openBS()</code> does, and that is where the exclusive claim — and the FT601 handle — begin.
+So <em>"what is plugged in"</em> is answerable <strong>for free</strong>, before anything is claimed, and having both
+attached cannot deny either to another process. The scan is cached, because a vendor call on the main
+thread is a way to lose the Qt event loop, and rigs are not hot-plugged mid-session.</p>
+<p>With both attached, <code>resolveAutoSource()</code> returns <code>ok = false</code> and:</p>
+<blockquote>
+<p>A OneBox and a PXIe basestation are both attached (1 PXIe module and 1 OneBox). Only one can be
+used at a time — select the OneBox or PXIe profile explicitly.</p>
+</blockquote>
+<p><code>WebSocketServer</code> then broadcasts <code>basestation-choice</code> with <code>__BASESTATIONS__:OneBox,PXIe</code> — <strong>a
+choice, not an error</strong>, exactly as the operator asked for. A custom config that names
+<code>source.npx.onebox</code> or <code>source.npx.pxi</code> directly never reaches <code>source.npx.auto</code>, so <strong>autoconnect
+already works</strong>. <code>apiAvailable</code> keeps <em>"this build cannot look"</em> distinct from <em>"nothing is
+attached"</em>, which are different problems for the operator. <code>tests/test_basestationscan.cpp</code> already
+covers the 1-OneBox-plus-1-PXIe case as ambiguous.</p>
+<h3 id="the-gap-there-is-no-concept-of-a-probe-anywhere-in-the-scan">The gap: there is no concept of a probe anywhere in the scan<a class="headerlink" href="#the-gap-there-is-no-concept-of-a-probe-anywhere-in-the-scan" title="Permanent link">#</a></h3>
+<p><code>BasestationInfo</code> is <code>{isOneBox, id}</code>. Nothing reports whether a <strong>headstage or probe</strong> is attached.
+<code>np_scanBS</code>/<code>np_getDeviceList</code> do not carry it; that needs <code>np_openBS</code> and then <code>np_openPort</code> /
+<code>np_detectHeadStage</code> — the claim the scan deliberately avoids. Two consequences:</p>
+<ol>
+<li><strong>In the operator's exact current state — both attached, neither with a probe — the prompt still
+   appears</strong>, offering a choice between two basestations that cannot stream. Whichever is picked
+   fails later, at open time, with an unrelated message. The right answer is <em>"two basestations, no
+   probe on either — attach one"</em>, and the code cannot currently say it.</li>
+<li><strong>The reverse case is worse.</strong> If the OneBox has a probe and the PXIe does not, there is an
+   unambiguous correct answer and the code <strong>still refuses</strong>, because it counts transports, not
+   probes. That is a prompt where none is needed.</li>
+</ol>
+<p>Intan-over-Ethernet does not exist yet (<code>tests/gui/intan_not_implemented.py</code>), and the prompt string
+is the <strong>hardcoded</strong> <code>"OneBox,PXIe"</code> — so adding a third transport means building that list from what
+was actually found rather than appending to a literal.</p>
+<h3 id="the-design-question-which-is-the-operators-to-answer">The design question, which is the operator's to answer<a class="headerlink" href="#the-design-question-which-is-the-operators-to-answer" title="Permanent link">#</a></h3>
+<p>Probe detection costs an <code>np_openBS</code> — the exclusive claim, and on a real rig the thing that must be
+released cleanly. Detection therefore stops being free, and this repo's standing rule is that a
+control-plane probe is <strong>not</strong> a liveness test (#59). The options are a genuine trade:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>cost</th>
+<th>risk</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Leave as is</strong></td>
+<td>none</td>
+<td>the operator is prompted when there is nothing to choose between, and prompted again when there is nothing to decide</td>
+</tr>
+<tr>
+<td><strong>Open, detect, close, during the scan</strong></td>
+<td>a claim per basestation at scan time</td>
+<td>must be released cleanly on every path; a wedged basestation now sits in the <em>detection</em> path, not just the connect path</td>
+</tr>
+<tr>
+<td><strong>Only when ambiguous</strong></td>
+<td>a claim only in the 2-basestation case</td>
+<td>the same risk, confined to the case that actually needs it, and it is the case the operator hit today</td>
+</tr>
+</tbody>
+</table>
+<p>The third is the narrowest and resolves both consequences above: with both attached, ask each whether
+it holds a probe, then either pick the only viable one or say plainly that neither has one.</p>
+<p><strong>Not implemented, and deliberately not run against the rig unattended</strong> — it changes what the
+software does to a physically connected basestation, so it wants the operator present. The pure
+decision function is where the logic belongs (it is already a pure function with its own tests), so
+the probe-aware table can be written and tested with no hardware at all, and only the scan itself
+needs the rig.</p>
+<hr />
+<h2 id="81-the-config-set-measured-rather-than-assumed-2026-09-01-item-8">81. THE CONFIG SET, MEASURED RATHER THAN ASSUMED  (2026-09-01, item 8)<a class="headerlink" href="#81-the-config-set-measured-rather-than-assumed-2026-09-01-item-8" title="Permanent link">#</a></h2>
+<p>The concern was that <em>"every single combination results in a different configuration file"</em> and that a
+neuroscientist would meet a wall of them. Counting what an operator actually SEES gives a different
+picture from counting files.</p>
+<p><strong>36 files. 19 are <code>gui_hidden</code> (script- and CLI-only). 17 are offered, and 14 of those are
+SIMULATIONS.</strong> The operator-facing <em>hardware</em> list is <strong>two</strong> entries plus a placeholder:</p>
+<table>
+<thead>
+<tr>
+<th>offered</th>
+<th>what it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Neuropixels</strong></td>
+<td><code>source.npx.auto</code> — any basestation, any probe, both read from the rig</td>
+</tr>
+<tr>
+<td><strong>PXIe with NI-DAQ</strong></td>
+<td>the same, plus the NI-DAQ</td>
+</tr>
+<tr>
+<td><em>Intan (MicroZed)</em></td>
+<td>placeholder, not implemented</td>
+</tr>
+</tbody>
+</table>
+<p><code>OneBox</code>, <code>PXIe</code> and <code>PXIe + NI-DAQ</code> are deliberately hidden <strong>explicit escapes</strong>, "still selectable
+by name" — which is exactly what the ambiguity prompt tells the operator to pick, and what a custom
+config uses to autoconnect. <strong>Verified end to end:</strong> the prompt's buttons send <code>selectSource "OneBox"</code>
+/ <code>"PXIe"</code>, which match those files' internal <code>name:</code> fields, and <code>gui_hidden</code> suppresses only
+<em>listing</em>, never <em>selection</em>. So the hardware consolidation landed and works. <strong>The remaining
+complexity is in the SIMULATION picker (14), not the hardware one (2).</strong></p>
+<h3 id="the-duplication-that-is-still-real-and-now-provably-harmful">The duplication that IS still real, and now provably harmful<a class="headerlink" href="#the-duplication-that-is-still-real-and-now-provably-harmful" title="Permanent link">#</a></h3>
+<p>Four <code>*Asap.yaml</code> files exist solely because <code>low_latency</code> used to be readable only from a file:</p>
+<pre><code>Npx1OneBoxAsap   Npx1PxiNiDaqAsap   Npx2OneBoxAsap   Npx2PxiNiDaqAsap
+</code></pre>
+<p>Each header states the invariant its purpose depends on — <em>"Identical in every respect EXCEPT
+<code>low_latency: true</code> … quoting an ASAP-vs-default comparison requires the two configs to differ by
+this key ALONE."</em></p>
+<p><strong>Three honour it. <code>Npx2OneBoxAsap</code> does not: it is missing <code>proc.audio</code> entirely.</strong> Git says why, and
+it is the textbook failure of flags-as-filenames: <code>proc.audio</code> was added to the base by feature commit
+<code>1a9572e</code> and <strong>never mirrored into the copy</strong>. So an A/B run with that pair differs in <strong>two</strong> ways
+while the file swears it differs in one — and the file is read by <code>ripple_tools/fair_ab.py</code>, which
+exists to produce published latency numbers.</p>
+<p><strong>#80 removed the reason these files exist.</strong> ASAP is now a runtime control that reports CONFIRMED
+state (<code>active</code> vs <code>pending</code>), which is <em>better</em> evidence than trusting a filename — a toggle can be
+verified in force; a file can only be assumed to have been loaded.</p>
+<p><strong>Deliberately not deleted in this pass.</strong> They are referenced by <code>ripple_tools/fair_ab.py</code>,
+<code>ripple_tools/run_latency_hw.py</code>, <code>python/tests/test_config_channels.py</code> and two <code>user_docs</code> pages.
+Collapsing them means changing tooling whose output is published latency data, on hardware, and the
+right sequence is to switch that tooling to set the flag at runtime <strong>and assert it took</strong> before the
+files go. Doing it blind, overnight, on measurement code is how a silently wrong number gets
+published. Queued with the evidence above so the next pass is mechanical.</p>
+<hr />
+<h2 id="82-the-backend-ignores-quit-far-more-often-than-anyone-knew-2026-09-01-item-5-cont">82. THE BACKEND IGNORES <code>quit</code> FAR MORE OFTEN THAN ANYONE KNEW  (2026-09-01, item 5 cont.)<a class="headerlink" href="#82-the-backend-ignores-quit-far-more-often-than-anyone-knew-2026-09-01-item-5-cont" title="Permanent link">#</a></h2>
+<p>§79 made a wedged backend survivable. Making it VISIBLE then showed the wedge is not rare at all.</p>
+<p>Once the runner started reporting surviving backends — nothing had ever checked, despite <em>"nothing
+left running"</em> being on the hand-back checklist — a green run turned out to be leaking:</p>
+<pre><code>✅ ALL 26 GUI TESTS PASSED
+❌ 1 backend process(es) SURVIVED this run
+</code></pre>
+<p>And once a PASSING test's teardown warnings were surfaced too (the parallel path discards a passing
+test's output, so the harness's own messages went nowhere), the scale became clear:</p>
+<blockquote>
+<p><strong>8 of 26 tests had a backend ignore <code>quit</code> outright.</strong> band_dependency, error_paths, heatmap_view,
+layout_matrix, low_latency, probe_map (twice), ripple_detach.</p>
+</blockquote>
+<p>Every one of them stops at the same place in its own log — <code>Quit requested via control command.</code> →
+<code>Tearing down source...</code> → and then nothing, where a healthy shutdown continues to <code>WebSocket server
+destructor executing</code>. <strong>This is a backend defect, not a test defect</strong>, and the suite is simply the
+first thing that ever exercised shutdown 26 times in ten minutes.</p>
+<p>It is NOT the obvious candidate: quit with no source selected, quit after a failed profile, and quit
+after a good source plus Disconnect were each driven directly and <strong>all exited cleanly in 0.7 s</strong>. The
+untested suspect is the race the harness creates — Chrome is killed first, which starts the backend's
+own <em>"last client gone, quitting in 2000 ms"</em> timer, and then a NEW client connects and sends <code>quit</code>.
+Two shutdown paths, and only under load. <strong>Unproven, and it deserves its own issue.</strong></p>
+<h3 id="why-two-still-leaked-and-the-fix-that-generalises">Why two still leaked, and the fix that generalises<a class="headerlink" href="#why-two-still-leaked-and-the-fix-that-generalises" title="Permanent link">#</a></h3>
+<p>Every teardown path confirmed a <strong>proxy</strong> rather than the outcome:</p>
+<table>
+<thead>
+<tr>
+<th>path</th>
+<th>what it confirmed</th>
+<th>what it missed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>self._backend.wait()</code></td>
+<td>the <strong>launcher</strong> exited</td>
+<td>the binary it started is a separate process</td>
+</tr>
+<tr>
+<td><code>taskkill /T</code></td>
+<td>a signal was sent to a tree</td>
+<td>a child mid-shutdown can be reparented and survive</td>
+</tr>
+<tr>
+<td>the whole block</td>
+<td>—</td>
+<td>it is skipped entirely when <code>ensure_backend()</code> <strong>reused</strong> a backend (<code>proc = None</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>Three routes, all seen. So rather than patch each, teardown now checks <strong>the fact that actually
+matters — is anything still running on THIS test's ports</strong> — and kills it, whatever route left it
+there. Command-line matching keeps it to tools that exist everywhere (PowerShell, <code>pgrep</code>) with no
+new dependency, and it cannot touch another test's backend because every worker owns its port pair.</p>
+<p><strong>And a fourth route was found by reading rather than by failing:</strong> Python does not call <code>__exit__</code>
+when <code>__enter__</code> raises — the context was never entered. <code>Gui.__enter__</code> starts a backend on its
+first line and has several <code>raise</code> sites after it (source never ready, Chrome died, debug port never
+opened), so any of them leaked a backend <em>and</em> a browser with no message at all. <code>__enter__</code> is now
+wrapped: it tears down whatever it had built, then re-raises the original error unchanged.</p>
+<p>The theme of this whole day, stated once: <strong>confirm the thing you care about, not a proxy for it.</strong>
+An accepted TCP connection is not a live application; an exited launcher is not an exited backend;
+a signalled tree is not a dead tree; and a passing test is not a clean one.</p>
+<h3 id="the-last-leak-there-were-two-teardowns-and-only-one-was-fixed">The last leak: there were TWO teardowns, and only one was fixed<a class="headerlink" href="#the-last-leak-there-were-two-teardowns-and-only-one-was-fixed" title="Permanent link">#</a></h3>
+<p>Runs 4 and 5 stayed green and still leaked exactly one backend. The cause was not the escalation —
+it was that <strong>four tests never use <code>Gui</code> at all</strong>: <code>command_surface</code>, <code>intan_not_implemented</code>,
+<code>state_consistency</code> and <code>teardown_while_recording</code> call <code>ensure_backend()</code> directly and hand-rolled
+their own teardown, which sent <code>quit</code>, slept, and never checked. Since the backend ignores <code>quit</code>
+often enough to hit several tests per run, those four leaked a wedged process on any run that caught
+them, and nothing said so.</p>
+<p>Fixing <code>Gui.__exit__</code> could never have fixed them. <strong>Two teardowns means fixing one and still
+leaking</strong>, so there is now one — <code>_harness.stop_backend()</code> — used by <code>Gui.__exit__</code> and by all four
+direct callers. It sends <code>quit</code> (bounded), confirms the process died, kills the tree if not, and
+then always checks the port, since an exited launcher is not an exited backend.</p>
+<p>Two smaller corrections found on the way, both instances of the same habit:</p>
+<ul>
+<li>the port check first matched every process's <strong>command line</strong> for <code>--ws-port N</code>. That enumerated
+  the whole process table — four workers doing that at once under load is exactly when it is slowest
+  — and it <strong>matched the helper process running the query</strong>, whose own command line contains the
+  port number. Reading the port table instead is 25× faster (0.012 s vs 0.296 s), does not degrade
+  with process count, and answers the question actually being asked: not <em>who was started with this
+  number in their arguments</em> but <em>who is holding this socket</em>.</li>
+<li>that check also <strong>swallowed every exception and returned</strong>, so a query that timed out under load
+  was indistinguishable from a clean teardown. A check that fails quietly is not a check; it is a
+  place where the answer is always "nothing to do". It now says so.</li>
+</ul></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -7914,6 +8213,29 @@ exactly the failure that once looked like a regression. Folded into item 5.</p><
 </ul>
 </li>
 <li><a href="#78-the-agreed-queue-2026-09-01-live">78. THE AGREED QUEUE (2026-09-01, live)</a></li>
+<li><a href="#79-the-gate-hang-was-one-wait-with-no-deadline-2026-09-01-item-5">79. THE GATE HANG WAS ONE WAIT WITH NO DEADLINE (2026-09-01, item 5)</a><ul>
+<li><a href="#what-was-actually-happening">What was actually happening</a></li>
+<li><a href="#the-porcelain-branch-had-no-timeout-at-all">The --porcelain branch had no timeout at all</a></li>
+<li><a href="#what-changed">What changed</a></li>
+<li><a href="#proof-per-claudemd">Proof, per CLAUDE.md</a></li>
+<li><a href="#still-open-the-wedge-itself">Still open — the wedge itself</a></li>
+</ul>
+</li>
+<li><a href="#80-autodetect-with-two-basestations-and-no-probe-read-from-the-code-2026-09-01-item-7">80. AUTODETECT WITH TWO BASESTATIONS AND NO PROBE — READ FROM THE CODE (2026-09-01, item 7)</a><ul>
+<li><a href="#what-already-works-and-why-it-is-safe-to-plug-both-in">What already works, and why it is safe to plug both in</a></li>
+<li><a href="#the-gap-there-is-no-concept-of-a-probe-anywhere-in-the-scan">The gap: there is no concept of a probe anywhere in the scan</a></li>
+<li><a href="#the-design-question-which-is-the-operators-to-answer">The design question, which is the operator's to answer</a></li>
+</ul>
+</li>
+<li><a href="#81-the-config-set-measured-rather-than-assumed-2026-09-01-item-8">81. THE CONFIG SET, MEASURED RATHER THAN ASSUMED (2026-09-01, item 8)</a><ul>
+<li><a href="#the-duplication-that-is-still-real-and-now-provably-harmful">The duplication that IS still real, and now provably harmful</a></li>
+</ul>
+</li>
+<li><a href="#82-the-backend-ignores-quit-far-more-often-than-anyone-knew-2026-09-01-item-5-cont">82. THE BACKEND IGNORES quit FAR MORE OFTEN THAN ANYONE KNEW (2026-09-01, item 5 cont.)</a><ul>
+<li><a href="#why-two-still-leaked-and-the-fix-that-generalises">Why two still leaked, and the fix that generalises</a></li>
+<li><a href="#the-last-leak-there-were-two-teardowns-and-only-one-was-fixed">The last leak: there were TWO teardowns, and only one was fixed</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </aside>

@@ -705,16 +705,38 @@ row, a column that renders nothing, a stream that loses its label.</p>
 a complete run from a partial one.</strong> <code>ALL 22 GUI TESTS PASSED</code> is the whole suite as of 2026-08-31;
 <code>ALL 3 GUI TESTS PASSED</code> is a <code>--only</code> run, and it is just as green. A machine-readable
 <code>gui_test_status.json</code> carries the same numbers plus per-test seconds.</p>
-<p><strong>Why these are not part of every compile.</strong> They need a browser and a backend, and they are slow:
-the 2026-08-31 run recorded <strong>41 s</strong> (<code>teardown_while_recording</code>) to <strong>212 s</strong> (<code>stream_options</code>)
-per test, <strong>eight of the 22 over 100 s</strong>, and <strong>~33 minutes</strong> for the suite. That is the wrong tax
-on an edit-compile loop. Run them when you touch <code>webinterface/</code>, and before you push. The runner
-starts ONE backend (with <code>--no-browser</code>) and shares it; each test drives its own isolated Chrome on
-the debug port and closes it again.</p>
-<p><strong>Thirty-three minutes changes how you use it.</strong> Iterate with <code>--only &lt;name&gt;</code> — a substring match on
+<p><strong>Why these are not part of every compile.</strong> They need a browser and a backend, and no DOM shim can
+stand in for either. That is the wrong tax on an edit-compile loop. Run them when you touch
+<code>webinterface/</code>, and before you push.</p>
+<p><strong>They run FOUR AT A TIME since 2026-09-01, and the suite went from ~35 minutes to ~10.</strong> Each job
+gets its own backend on its own port pair and its own isolated Chrome on a private debug port, so
+nothing is shared and nothing has to be reset between tests. <code>--jobs 1</code> restores the serial
+behaviour, where one backend is started and shared — and it is still the only mode that streams a
+test's output live.</p>
+<p>Measured on a 16-core box: <strong>jobs=1 → 2112 s; jobs=4 → 604 s (3.5×); jobs=6 → 1266 s</strong>, i.e. <em>worse</em>
+than 4. Each job is a backend simulating 384 channels at 30 kHz plus a Chromium running WebGL, so
+the ceiling is far below the core count and past the knee contention costs more than concurrency
+gains. <code>auto</code> resolves to <code>min(4, cpus - 2)</code>.</p>
+<p><strong>Why it was serial before, and what that cost.</strong> The recorded reason was that <em>"one test hangs to
+the 900 s subprocess timeout and which test it is changes between runs."</em> That was never flakiness —
+it was one wait with no deadline, plus a reporter that destroyed the evidence. A backend would WEDGE
+(alive, listening, accepting TCP, 0 % CPU, answering nothing); the harness's teardown blocked forever
+on its WebSocket handshake because <code>WSClient.connect()</code> set <code>settimeout(None)</code> <em>before</em> reading the
+reply, so its timeout covered only the TCP connect; and <code>TimeoutExpired</code> was never caught, so the
+hang crashed the run and discarded all 26 results — which is exactly why nobody could ever say which
+test hung. Full account: <code>SpikesPeak_Status.md</code> §79, and <code>AgentTraps.md</code> §13 for the rule.</p>
+<p><strong>Ten minutes still changes how you use it.</strong> Iterate with <code>--only &lt;name&gt;</code> — a substring match on
 the filename, so <code>--only ripple</code> runs <code>ripple_detach</code>, <code>ripple_params</code> and <code>ripple_sidecar</code>. Run the
 whole thing before you push, not before you hand back: a red suite that reaches the remote is red
 for everyone who pulls.</p>
+<p><strong>A hung test is now a FAILED TEST, not a failed run</strong>, so the rest of the suite still reports. The
+per-test deadline is 900 s and is overridable with <code>SPIKESPEAK_GUI_TEST_TIMEOUT</code> — deliberately, so
+the timeout path can be triggered on purpose and tested (<code>python/tests/test_gui_runner_timeout.py</code>).
+A deadline nobody can fire is a deadline nobody has seen work.</p>
+<p><strong>The runner also reports what it left running.</strong> "Nothing left running" is on the hand-back
+checklist and nothing used to check it: a run once reported ALL 26 PASSED while leaving a wedged
+backend holding its ports, visible only in a process listing. Surviving backends are now listed, and
+with <code>--fatal</code> they fail the run.</p>
 <h3 id="runner-flags">Runner flags<a class="headerlink" href="#runner-flags" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -737,13 +759,23 @@ for everyone who pulls.</p>
 </tr>
 <tr>
 <td></td>
+<td><code>--jobs N</code> / <code>-j N</code></td>
+<td>run N tests concurrently, each with its own backend and browser. Default <code>auto</code> = <code>min(4, cpus-2)</code>. <code>--jobs 1</code> is serial and the only mode that streams output live</td>
+</tr>
+<tr>
+<td></td>
 <td><code>--keep-backend</code></td>
-<td>leave the shared backend up afterwards (debugging; not for a rig)</td>
+<td>leave the shared backend up afterwards (debugging; not for a rig). Also suppresses the surviving-backend check, since the survivor is what you asked for</td>
+</tr>
+<tr>
+<td></td>
+<td><code>--force</code></td>
+<td>run even though the gate lock is held. Both runners take the SAME lock now (<code>scripts/_gatelock.py</code>); a child of the gate inherits it through the environment, so the gate does not deadlock against the GUI suite it runs</td>
 </tr>
 <tr>
 <td></td>
 <td><code>--porcelain</code></td>
-<td>one unbuffered <code>EVENT {json}</code> line per event, and each test's output as it arrives. This is how <code>run_all_tests.py</code> shows progress; a 33-minute run is otherwise 33 minutes of silence, and a parent process cannot tell a slow test from a hung one</td>
+<td>one unbuffered <code>EVENT {json}</code> line per event, and each test's output as it arrives. This is how <code>run_all_tests.py</code> shows progress; a ten-minute run is otherwise ten minutes of silence, and a parent process cannot tell a slow test from a hung one</td>
 </tr>
 <tr>
 <td><code>run_all_tests.py</code></td>
@@ -769,7 +801,7 @@ for everyone who pulls.</p>
 </table>
 <p><code>run_all_tests.py</code> runs <strong>all three</strong> suites — C++, then Python, then GUI — behind a live progress
 page with an ETA per test. Python goes second on purpose: two seconds, no browser, no backend, so a
-broken converter is found before the 33-minute browser run rather than after it.</p>
+broken converter is found before the ten-minute browser run rather than after it.</p>
 <p><strong>Why they are not unit tests in the jsdom sense.</strong> <code>fitToolbar()</code> decides whether to fold by
 <em>measuring real layout</em> — it compares row 1's natural width against the wrapper's available width.
 A DOM shim has no layout engine: every width would measure 0 and every assertion would pass

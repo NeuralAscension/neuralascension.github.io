@@ -7712,7 +7712,92 @@ then always checks the port, since an exited launcher is not an exited backend.<
 <li>that check also <strong>swallowed every exception and returned</strong>, so a query that timed out under load
   was indistinguishable from a clean teardown. A check that fails quietly is not a check; it is a
   place where the answer is always "nothing to do". It now says so.</li>
-</ul></article>
+</ul>
+<hr />
+<h2 id="83-the-wedge-found-and-fixed-a-re-entrant-deadlock-on-shutdown-2026-09-01">83. THE WEDGE, FOUND AND FIXED: A RE-ENTRANT DEADLOCK ON SHUTDOWN  (2026-09-01)<a class="headerlink" href="#83-the-wedge-found-and-fixed-a-re-entrant-deadlock-on-shutdown-2026-09-01" title="Permanent link">#</a></h2>
+<p>§82 left the backend wedge open and called it "a real backend defect deserving its own issue." It is
+now closed, and the mechanism is exact.</p>
+<h3 id="three-hypotheses-falsified-before-the-right-move">Three hypotheses falsified before the right move<a class="headerlink" href="#three-hypotheses-falsified-before-the-right-move" title="Permanent link">#</a></h3>
+<p>Each was tested rather than argued, and each was <strong>wrong</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>hypothesis</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>quit</code> hangs when no source is set</td>
+<td><strong>No.</strong> No source, bad profile, and good-source-plus-Disconnect each exited in <strong>0.7 s</strong></td>
+</tr>
+<tr>
+<td>the 2 s auto-quit timer racing an explicit <code>quit</code> (the operator's)</td>
+<td><strong>No.</strong> 0/4 and 0/3 wedged. With a 3 s gap the <code>quit</code> got <code>ConnectionRefusedError</code> — the timer had fired and the app had <strong>already exited cleanly</strong></td>
+</tr>
+<tr>
+<td>an abruptly-killed client leaving a half-open socket</td>
+<td><strong>No.</strong> 0/3. Even with the client <code>taskkill</code>ed, the backend noticed and exited</td>
+</tr>
+</tbody>
+</table>
+<p>Three experiments, no wedge. The right move was to stop guessing and <strong>read a stack</strong>: catch a wedged
+process alive (a temporary harness flag) and attach <code>cdb</code> non-invasively.</p>
+<h3 id="what-the-stack-said">What the stack said<a class="headerlink" href="#what-the-stack-said" title="Permanent link">#</a></h3>
+<pre><code>Qt6Core!QTimer::timeout                       the deferred quit fires
+  SpikesPeak+0x1196f
+    Qt6Core!QThread::terminate                terminate() is called
+      Qt6Core!QThread::finished               ...which emits finished() SYNCHRONOUSLY
+        Qt6Gui!...processApplicationTermination
+          SpikesPeak+0x11961
+            Qt6Core!QThread::isRunning        the handler calls back into the SAME QThread
+              Qt6Core!QBasicMutex::lockInternal
+                KERNELBASE!WaitOnAddress      blocked forever, on the MAIN THREAD
+</code></pre>
+<p>Two nested <code>processApplicationTermination</code> frames — the re-entry, visible in the stack.</p>
+<h3 id="the-cycle-in-srcmaincpp">The cycle, in <code>src/main.cpp</code><a class="headerlink" href="#the-cycle-in-srcmaincpp" title="Permanent link">#</a></h3>
+<pre><code class="language-cpp">connect(kbListenerThread, &amp;QThread::finished, &amp;a, &amp;QApplication::quit);   // :568
+connect(&amp;a, &amp;QCoreApplication::aboutToQuit, [kbListenerThread]() {
+    if (kbListenerThread &amp;&amp; kbListenerThread-&gt;isRunning()) {              // :582
+        kbListenerThread-&gt;terminate();
+</code></pre>
+<p><code>quit</code> → <code>aboutToQuit</code> → <code>terminate()</code> → the thread ends, so <code>finished</code> is emitted <strong>from inside
+<code>terminate()</code> while the QThread's mutex is held</strong> → <code>:568</code> calls <code>QApplication::quit</code> again →
+<code>aboutToQuit</code> re-enters → <code>isRunning()</code> wants that same mutex → the main thread blocks forever. The
+process stays alive, keeps its ports, and answers nothing — which is exactly the wedge.</p>
+<p><strong>Why it was intermittent, and why nobody found it before the suite ran 26 shutdowns in ten
+minutes:</strong> when stdin is closed — every headless and test run — the listener's <code>getline</code> returns and
+the thread ends <em>by itself</em>, so <code>isRunning()</code> is usually already false and nothing is terminated. It
+deadlocks only when the app quits <em>before</em> that has happened. A startup race, widened by load: 8-10
+of 26 tests per run, never the same ones, only in parallel.</p>
+<h3 id="the-fix-and-the-proof">The fix, and the proof<a class="headerlink" href="#the-fix-and-the-proof" title="Permanent link">#</a></h3>
+<p>The <code>aboutToQuit</code> handler runs <strong>once</strong>. The second, re-entrant pass returns before touching the
+QThread, so the mutex is never taken from inside <code>terminate()</code>. A flag rather than a disconnect: the
+second pass has nothing to do either way, and it stays correct if another <code>aboutToQuit</code> path is added.</p>
+<p><strong>Measured, same suite, same machine, same <code>--jobs 4</code>:</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>backends that ignored <code>quit</code></th>
+<th>leaked</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>before</td>
+<td><strong>8-10 of 26</strong>, every run</td>
+<td>1-2 per run</td>
+</tr>
+<tr>
+<td>after</td>
+<td><strong>0</strong></td>
+<td><strong>0</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The harness hardening from §79 and §82 stays: it is what made this findable, and a backend that
+wedges for some <em>other</em> reason is still bounded, killed and reported rather than hanging the gate.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8234,6 +8319,13 @@ then always checks the port, since an exited launcher is not an exited backend.<
 <li><a href="#82-the-backend-ignores-quit-far-more-often-than-anyone-knew-2026-09-01-item-5-cont">82. THE BACKEND IGNORES quit FAR MORE OFTEN THAN ANYONE KNEW (2026-09-01, item 5 cont.)</a><ul>
 <li><a href="#why-two-still-leaked-and-the-fix-that-generalises">Why two still leaked, and the fix that generalises</a></li>
 <li><a href="#the-last-leak-there-were-two-teardowns-and-only-one-was-fixed">The last leak: there were TWO teardowns, and only one was fixed</a></li>
+</ul>
+</li>
+<li><a href="#83-the-wedge-found-and-fixed-a-re-entrant-deadlock-on-shutdown-2026-09-01">83. THE WEDGE, FOUND AND FIXED: A RE-ENTRANT DEADLOCK ON SHUTDOWN (2026-09-01)</a><ul>
+<li><a href="#three-hypotheses-falsified-before-the-right-move">Three hypotheses falsified before the right move</a></li>
+<li><a href="#what-the-stack-said">What the stack said</a></li>
+<li><a href="#the-cycle-in-srcmaincpp">The cycle, in src/main.cpp</a></li>
+<li><a href="#the-fix-and-the-proof">The fix, and the proof</a></li>
 </ul>
 </li>
 </ul>

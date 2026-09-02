@@ -8038,13 +8038,15 @@ offering both and connected nothing until asked, and picking <code>PXIe</code> f
 again after <code>PXIe</code> in the same session connected identically. <code>quit</code> exited 0. Zero failed connects
 on either transport. Full detail and the table in
 <a href="developer_docs/SecondMachineRunbooks.html"><code>SecondMachineRunbooks.md</code></a> under configuration 3.</p>
-<p>Two things the log said that are about the rig, not the code: the NP1.0 probe (serial 22175723312)
-has <strong>no calibration files</strong> on this box, so it streams uncalibrated and the backend says so at
-<code>ERROR</code> level on every connect; and the vendor API reports the NP2.0 headstage as supporting <strong>2
+<p>Two things the log said, one of which I first read wrongly: the NP1.0 probe (serial 22175723312)
+streamed <strong>uncalibrated in this run</strong> — because a <strong>clean clone has no <code>CalibrationInfo/</code></strong>, the
+per-probe CSVs being rig files rather than repository files; the same probe from the rig's working
+tree logs <em>"Using calibration files"</em>, which the PXIe run in §89 showed an hour later. I had recorded
+it as "the probe has no calibration files", which was wrong. And the vendor API reports the NP2.0 headstage as supporting <strong>2
 probes</strong> where the NP1.0 headstage supports 1. The second one is the operator's own reminder from
 today — two probes on ONE headstage is a configuration that has never been tested, and the code
-takes the first dock that opens (§86 covered the <em>ports</em> case, which asks). It is filed as its own
-backlog issue; it gates nothing.</p>
+takes the first dock that opens (§86 covered the <em>ports</em> case, which asks). It is filed as <strong>#82</strong>,
+on the board as backlog; it gates nothing.</p>
 <h3 id="one-small-thing-the-gate-report-got-wrong-about-itself">One small thing the gate report got wrong about itself<a class="headerlink" href="#one-small-thing-the-gate-report-got-wrong-about-itself" title="Permanent link">#</a></h3>
 <p>The <code>hardware_absent</code> notice appeared <strong>twice</strong> in the runner's notices block. The harness prints
 an <code>[untested]</code> line when the skip happens and again in its PASSED-with-untested result block —
@@ -8053,7 +8055,77 @@ Two lines for one fact reads as two untested things, and a count off by a factor
 of number that gets quoted. The collector now reports each notice once, in first-seen order;
 <code>python/tests/test_gui_runner_notices.py</code> pins it and was proved to fail against the old collector.
 The rule: <strong>a collector that greps for a marker is counting prints, not facts, until it
-de-duplicates.</strong></p></article>
+de-duplicates.</strong></p>
+<h2 id="89-two-probes-on-one-basestation-the-question-that-never-reached-the-operator-2026-09-02">89. TWO PROBES ON ONE BASESTATION: THE QUESTION THAT NEVER REACHED THE OPERATOR  (2026-09-02)<a class="headerlink" href="#89-two-probes-on-one-basestation-the-question-that-never-reached-the-operator-2026-09-02" title="Permanent link">#</a></h2>
+<p>The operator put both probes on the OneBox (ports 1 and 2) to see whether the app asks which one to
+stream — a configuration nobody had run. It <strong>did not ask</strong>. The backend detected both and logged
+<em>"Multiple probes detected on ports 1, 2 -- asking the operator which to use"</em>, and what the client
+got was the blocking <strong>"Could not connect OneBox"</strong> dialog with that line quoted inside it, no
+buttons, and the issue #54 <em>"failed connect 1 of 2"</em> heads-up.</p>
+<p><strong>Why, from the code, not a guess.</strong> The question was a queued <code>sigGuiStatus</code> emitted from inside
+<code>initBasestation()</code> just before it returned <code>false</code>. A source's <code>sigGuiStatus</code> is wired to the GUI
+only after a connect has <strong>succeeded</strong> (<code>WebSocketServer.cpp</code>, the "Registered module to WebUI"
+branch), and Qt discards a queued call whose object the failure has torn down — the trap
+<code>ErrorLog.hpp</code> already documents for diagnoses. So by construction the question could never arrive
+on hardware. It was green because <code>tests/gui/error_paths.py</code> drives <code>guiStatus</code> directly and checks
+the picker renders; the picker was fine. The delivery was the defect. (<code>AgentTraps.md</code> §15.)</p>
+<p><strong>The fix</strong> is the shape the repo already uses for exactly this: a process-wide sink that outlives
+the sender. <code>src/core/ConnectChoice</code> (<code>askPorts</code> / <code>takePorts</code> / <code>portsMessage</code>, singleton, mutex,
+same pattern as <code>ConnectAttemptLog</code>) parks the question; the multi-probe branch in
+<code>NpInterface.cpp</code> records it there instead of emitting; and <code>WebSocketServer</code>'s connect-failure
+path takes it and broadcasts <code>probe-choice</code> <strong>immediately</strong>, which suppresses the generic 400 ms
+dialog. The 400 ms lambda also changed shape: it used to <code>return</code> early once a failure was
+explained, which would have skipped the #54 accounting for precisely the explained failures; the
+generic dialog is now conditional and the tally runs either way. The heads-up text says that being
+asked which probe to use counts as a failed connect, because it does — the basestation and its
+ports were opened and closed to find out, which is the footprint #54 is counted on. That the
+question is <em>counted</em> is a decision left as it was; the operator can change it.</p>
+<p><strong>Proved on the hardware, same setup, fresh backend</strong> (<code>probe_choice_drive.py OneBox</code>, frames
+counted at the socket):</p>
+<table>
+<thead>
+<tr>
+<th>step</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>select <code>OneBox</code>, two probes</td>
+<td><code>probe-choice</code> with <code>__PORTS__:1,2</code>; <code>deviceReady</code> false alongside it; nothing connected</td>
+</tr>
+<tr>
+<td><code>setProbePort 1</code>, select again</td>
+<td>connected in 14.2 s, 139.7 frames/s (the NP1.0: AP and LFP), 0 paused, clean Disconnect</td>
+</tr>
+<tr>
+<td><code>setProbePort 2</code>, select again</td>
+<td>connected in 9.8 s, 97.3 frames/s (the NP2.0), 0 paused, clean Disconnect</td>
+</tr>
+<tr>
+<td><code>quit</code></td>
+<td>exited 0; one failed connect tallied, the question</td>
+</tr>
+</tbody>
+</table>
+<p>The backend log confirms the choice was the reason: <em>"Multiple probes on ports 1, 2 -- using the
+operator's choice, port 1"</em>, then <em>"... port 2"</em>.</p>
+<p><strong>Then both probes on the PXIe basestation</strong> (ports 1 and 4), fresh backend, same driver: asked with
+<code>__PORTS__:1,4</code>, nothing connected; port 1 connected in 11.4 s and streamed 90.5 frames/s; port 4
+connected in 9.8 s and streamed 48.3 frames/s; clean Disconnects; <code>quit</code> exited 0; one failed
+connect tallied. (The per-transport frame rates differ by <em>stream count</em>, not health: about 45-48
+frames/s per published stream on every run today — the NP1.0 on the OneBox publishes AP, LFP and
+the OneBox ADC, the NP2.0 on the PXIe publishes <code>raw</code> alone.)</p>
+<p><strong>Made permanent:</strong> <code>tests/test_connectchoice.cpp</code> (a new C++ suite; counts in <code>Testing.md</code>) pins
+the two contracts that are easy to break while tidying — a question is taken exactly once, and the
+<code>__PORTS__:</code> line the GUI parses stays last and space-free. Proved failable: with <code>takePorts</code> left
+non-clearing and a space after the comma, exactly those two cases went red. What is <strong>not</strong>
+automated is the WebSocket branch itself, because the only thing that can park a question is a real
+Neuropixels source; it is proven by the run above and by the driver script, and the second-machine
+runbook says to repeat it whenever that branch is touched.</p>
+<p><strong>The rule, stated once more because this is its second occurrence</strong> (ErrorLog was the first): a
+test that synthesizes an event proves the renderer, not the path. If the question is "does it
+arrive", the test must start from the failure.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8615,6 +8687,7 @@ de-duplicates.</strong></p></article>
 <li><a href="#one-small-thing-the-gate-report-got-wrong-about-itself">One small thing the gate report got wrong about itself</a></li>
 </ul>
 </li>
+<li><a href="#89-two-probes-on-one-basestation-the-question-that-never-reached-the-operator-2026-09-02">89. TWO PROBES ON ONE BASESTATION: THE QUESTION THAT NEVER REACHED THE OPERATOR (2026-09-02)</a></li>
 </ul>
 </div>
 </aside>

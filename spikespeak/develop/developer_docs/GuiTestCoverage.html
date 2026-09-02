@@ -192,7 +192,7 @@ python scripts/run_gui_tests.py --only ripple # while you iterate
 </tr>
 <tr>
 <td><code>error_paths</code></td>
-<td>What the GUI does when things GO WRONG: a refused select, a refused play, a source that cannot load, controls that must be disabled rather than inert</td>
+<td>What the GUI does when things GO WRONG: a refused select, a refused play, a source that cannot load, controls that must be disabled rather than inert. <strong>Its probe-choice check drives <code>guiStatus</code> directly, so it proves the picker RENDERS, not that the question ARRIVES</strong> — on 2026-09-02 the real question never reached the operator while this test was green (Status §89, <code>AgentTraps.md</code> §15); the delivery path is exercised only on hardware, runbook configuration 3 step 5</td>
 <td>11 checks</td>
 </tr>
 <tr>

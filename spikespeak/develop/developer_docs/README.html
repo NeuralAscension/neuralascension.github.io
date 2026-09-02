@@ -1112,7 +1112,7 @@ for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its 
 <tbody>
 <tr>
 <td>Probe</td>
-<td>Neuropixels <strong>1.0</strong> or <strong>2.0 multishank</strong>. <strong>Slot, port and dock are detected at runtime, not hard-coded</strong> — <code>BasestationScan</code> enumerates what is plugged in and <code>NeuropixelsSource::discoverProbeHardware()</code> picks the probe out of it, which is why one profile serves both probes and either basestation. An ambiguous or multi-probe rig is <em>prompted</em>, never guessed (Status §61).</td>
+<td>Neuropixels <strong>1.0</strong> or <strong>2.0 multishank</strong>. <strong>Slot, port and dock are detected at runtime, not hard-coded</strong> — <code>BasestationScan</code> enumerates what is plugged in and <code>NeuropixelsSource::discoverProbeHardware()</code> picks the probe out of it, which is why one profile serves both probes and either basestation. An ambiguous rig — two basestations, or two headstages on two ports — is <em>prompted</em>, never guessed (Status §61, §89). Two probes on the <em>same</em> NP2.0 headstage (both docks) is not yet handled: the first dock that opens is used, see #82.</td>
 </tr>
 <tr>
 <td>Basestation</td>

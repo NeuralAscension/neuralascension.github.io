@@ -843,7 +843,35 @@ connect(&amp;a, &amp;QCoreApplication::aboutToQuit, [kbListenerThread]() {
   build with no PDBs</strong> — Qt exports enough that <code>Qt6Core!QBasicMutex::lockInternal &lt;-
   QThread::isRunning</code> is perfectly legible. When something is <em>hung</em> rather than wrong, the stack is
   the cheapest evidence there is; reach for it before the fourth hypothesis, not after.</li>
-</ul></article>
+</ul>
+<h2 id="15-an-emit-from-inside-a-failing-connect-goes-nowhere-and-the-gui-test-that-covered-it-never-went-through-a-connect">15. An emit from inside a FAILING connect goes nowhere — and the GUI test that "covered" it never went through a connect<a class="headerlink" href="#15-an-emit-from-inside-a-failing-connect-goes-nowhere-and-the-gui-test-that-covered-it-never-went-through-a-connect" title="Permanent link">#</a></h2>
+<p><code>NeuropixelsSource::initBasestation()</code> asks the operator which probe to use when a basestation
+carries more than one, and it asked like this:</p>
+<pre><code class="language-cpp">QMetaObject::invokeMethod(this, [this, msg, ports]() {
+    emit sigGuiStatus(msg + &quot;
+__PORTS__:&quot; + ports, &quot;probe-choice&quot;);
+}, Qt::QueuedConnection);
+return false;                                  // the connect FAILS, on purpose
+</code></pre>
+<p>That emit can never arrive. <code>WebSocketServer</code> connects a source's <code>sigGuiStatus</code> only <strong>after a
+connect has succeeded</strong> (<code>onSourceSelection</code>, the "Registered module to WebUI" line), and a queued
+call on an object that is torn down by the failure is discarded by Qt — <code>ErrorLog.hpp</code> documents
+the identical trap for diagnoses, which is why diagnoses go through a process-wide sink instead.
+On the rig, 2026-09-02, two probes on the OneBox produced the blocking <em>"Could not connect"</em> dialog
+with the question quoted inside it and no buttons.</p>
+<p>It had been green for weeks because <code>tests/gui/error_paths.py</code> <strong>drove <code>guiStatus</code> directly</strong> and
+checked that the picker rendered. It did — the dialog was fine. The <em>delivery</em> was the defect, and a
+test that injects the event past the delivery path cannot see it. The comment in
+<code>WebSocketServer::broadcastStatusEvent</code> had already said as much about the basestation picker.</p>
+<p>The rule, and the second time it has cost a day here: <strong>nothing emitted from inside a failing
+connect reaches the GUI. Anything a failure must deliver goes through a sink that outlives the
+sender</strong> — <code>ErrorLog</code> for diagnoses, <code>ConnectChoice</code> for questions (<code>src/core/ConnectChoice.hpp</code>).
+And the corollary for tests: <strong>a test that synthesizes the event proves the renderer, not the
+path.</strong> If the thing you care about is "does it arrive", the test has to start from the failure.</p>
+<p>The other <code>emit sigGuiStatus</code> calls in <code>initBasestation()</code>'s failure branches (no headstage, no
+probe, init failed, arm failed) are the same dead code. Nobody noticed because <code>ErrorLog</code> quotes the
+<code>qWarning</code> line beside each one into the fallback dialog, so the operator still learns the cause —
+in log prose rather than the sentence that was written for them.</p></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AgentTraps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -871,6 +899,7 @@ connect(&amp;a, &amp;QCoreApplication::aboutToQuit, [kbListenerThread]() {
 <li><a href="#12-a-dead-browser-used-to-hang-the-suite-forever">12. A dead browser used to hang the suite forever</a></li>
 <li><a href="#13-a-wedged-backend-hung-the-suite-the-same-way-accepting-a-connection-is-not-being-alive">13. A wedged BACKEND hung the suite the same way — accepting a connection is not being alive</a></li>
 <li><a href="#14-emitting-a-signal-from-inside-qthreadterminate-can-deadlock-the-main-thread">14. Emitting a signal from inside QThread::terminate() can deadlock the main thread</a></li>
+<li><a href="#15-an-emit-from-inside-a-failing-connect-goes-nowhere-and-the-gui-test-that-covered-it-never-went-through-a-connect">15. An emit from inside a FAILING connect goes nowhere — and the GUI test that "covered" it never went through a connect</a></li>
 </ul>
 </div>
 </aside>

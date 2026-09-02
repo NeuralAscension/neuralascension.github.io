@@ -401,10 +401,13 @@ frames at the socket while streaming, never by a status flag:</p>
 </tbody>
 </table>
 <p>Zero failed connects on either transport, so the issue #54 tally never moved. Two facts from the
-backend log worth knowing: the NP1.0 probe on this rig has <strong>no calibration files</strong> (it streams
-uncalibrated, and the backend says so at <code>ERROR</code> level), and the vendor API reports the OneBox's
+backend log worth knowing: <strong>a clean clone has no <code>CalibrationInfo/</code></strong> (the per-probe CSVs are
+rig files, not repository files), so the NP1.0 streamed <strong>uncalibrated in this run</strong> and the
+backend said so at <code>ERROR</code> level — the same probe on the rig's own working tree finds its files
+(first misread as "the probe has no calibration files"; the PXIe run later the same day corrected
+it) — and the vendor API reports the OneBox's
 NP2.0 headstage as supporting <strong>2 probes</strong> against the NP1.0 headstage's 1 — two probes on ONE
-headstage is an untested configuration, tracked as its own issue. The partial run of 2026-08-29
+headstage is an untested configuration, tracked as #82. The partial run of 2026-08-29
 (9/9 hardware-behavior checks, and the <code>deviceReady</code>-left-true defect it found and fixed) stands
 as the first half of this record.</p>
 </blockquote>
@@ -423,8 +426,23 @@ python -u scripts/run_all_tests.py --no-browser --fatal
 <li><strong>The ambiguity dialog.</strong> With both attached and a probe-agnostic profile, the backend cannot read
    the operator's intent off the hardware and must ask. Confirm the choice dialog appears, offers
    both, is not the blocking hardware-error dialog, and that choosing one connects that one.</li>
-<li><strong>Closing one does not disturb the other.</strong> Connect one, disconnect, connect the other in the same
-   session.</li>
+<li>
+<p><strong>Closing one does not disturb the other.</strong> Connect one, disconnect, connect the other in the same
+   session.</p>
+</li>
+<li>
+<p><strong>Two probes on ONE basestation</strong> (added 2026-09-02, after the first such run found the question
+   never reached the operator — Status §89). Put a headstage on two ports of the same basestation
+   and select that transport by name. It must <strong>ask</strong> (<code>guiStatus</code> kind <code>probe-choice</code>, ports on the
+   <code>__PORTS__:</code> line, <code>deviceReady</code> false, nothing connected), and answering with <code>setProbePort N</code>
+   then selecting again must connect and stream <em>that</em> port; do it for each port in the same
+   session. Judge streaming by binary frames at the socket. The question costs one issue #54 attempt
+   on that transport, so a failed reconnect after the answer is the threshold — stop there. No
+   automated test covers the WebSocket branch that delivers the question (only a real Neuropixels
+   source can ask one), so <strong>repeat this step whenever <code>WebSocketServer</code>'s connect-failure path or
+   <code>ConnectChoice</code> is touched.</strong> The driver used on 2026-09-02 lived in the session scratchpad; it
+   is ~150 lines over <code>spikespeak_cli.WSClient</code> and is easy to rewrite from this paragraph.</p>
+</li>
 </ol>
 <p><strong>Record the suite counts too.</strong> The existing evidence for this configuration is a dialog exercise,
 not a suite result, which is why #52's checkboxes (b) and (c) are unevidenced here.</p>

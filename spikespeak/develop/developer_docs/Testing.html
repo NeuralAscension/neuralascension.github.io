@@ -200,12 +200,12 @@ you; it changes nothing about the build or the suite. Always pass it from a scri
   ✅ PASS  test_bandfilterprocessor   4.01s
   ✅ PASS  test_oneboxwaveplayer      3.04s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 27 SUITES PASSED
+  ✅ ALL 28 SUITES PASSED
 ──────────────────────────────────────────────────────────────────────────
-  ✅ SIMD dispatch: portable scalar path: 27/27 PASSED
+  ✅ SIMD dispatch: portable scalar path: 28/28 PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
-<p><strong>Read the count in that banner.</strong> <code>ALL 27 SUITES PASSED</code> is a complete run as of 2026-09-01; <code>ALL 3
+<p><strong>Read the count in that banner.</strong> <code>ALL 28 SUITES PASSED</code> is a complete run as of 2026-09-02; <code>ALL 3
 SUITES PASSED</code> is a partial one, and it is green. The banner reports how many suites <em>ran</em>, not how
 many exist, so a build that configured only part of the tree, or a <code>ctest -R</code> you forgot you typed,
 passes just as loudly as the real thing. The number is the only thing that tells them apart — which
@@ -215,9 +215,9 @@ is why the totals in this page are worth keeping honest.</p>
   …
   ❌ FAIL  test_oneboxwaveplayer      failed
 ──────────────────────────────────────────────────────────────────────────
-  ❌ 1 OF 27 SUITES FAILED
+  ❌ 1 OF 28 SUITES FAILED
 
-     27/27 Test #27: test_oneboxwaveplayer .........***Failed    0.04 sec
+     28/28 Test #28: test_oneboxwaveplayer .........***Failed    0.04 sec
 
      rerun one suite: ctest --test-dir &lt;build&gt; -C Release -R &lt;name&gt; --output-on-failure
 </code></pre>
@@ -246,7 +246,7 @@ file. So a failure used to print a bare <code>***Failed</code> with no case name
 made debugging a red suite guesswork.</p>
 <p>Every suite now writes a Qt Test log via <code>-o &lt;name&gt;.log,txt</code> (see <code>tests/CMakeLists.txt</code>), and
 <code>scripts/run_tests.py</code> prints it for any suite that fails:</p>
-<pre><code>  ❌ 1 OF 27 SUITES FAILED
+<pre><code>  ❌ 1 OF 28 SUITES FAILED
 
      FAIL!  : TestOneBoxWavePlayer::stopIsSilentWhenNeverUsed() Compared values are not the same
         Actual   (FakeNpx::calls().size()): 2
@@ -257,7 +257,7 @@ made debugging a red suite guesswork.</p>
 <p><code>scripts/run_tests.py</code> runs the whole suite <strong>twice</strong>. The second run (<code>scalar_pass()</code>) sets
 <code>SPIKESPEAK_SIMD=scalar</code> for the child, which forces every dispatcher onto its portable body, and
 prints its own line under the main banner:</p>
-<pre><code>  ✅ SIMD dispatch: portable scalar path: 27/27 PASSED
+<pre><code>  ✅ SIMD dispatch: portable scalar path: 28/28 PASSED
 </code></pre>
 <p><strong>Why it exists.</strong> On a machine with AVX2 — every development machine here — the scalar twin of
 every dispatched routine is dead code at runtime, so the ordinary pass says nothing whatever about
@@ -393,6 +393,11 @@ test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run a
 <td>What a failed connect is allowed to tell the operator</td>
 </tr>
 <tr>
+<td><code>test_connectchoice</code></td>
+<td style="text-align: right;">8</td>
+<td>The question a connect asks instead of connecting (two probes on one basestation) is taken exactly once, and the <code>__PORTS__:</code> marker line the GUI parses stays last and space-free. Added 2026-09-02, the day the real question was found never to reach the operator</td>
+</tr>
+<tr>
 <td><code>test_npx2scale</code></td>
 <td style="text-align: right;">16</td>
 <td>NP2.0 gain/scale arithmetic — microvolts, not counts</td>
@@ -449,8 +454,8 @@ test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run a
 </tr>
 <tr>
 <td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>478</strong></td>
-<td>27 suites, 8.8 s of CTest time per pass (counts re-checked <strong>2026-09-01</strong> against <code>build/tests/*.log</code>, on Linux/GCC 13.3)</td>
+<td style="text-align: right;"><strong>486</strong></td>
+<td>28 suites (counts re-checked <strong>2026-09-02</strong> against <code>build/tests/*.log</code>, on Windows/MSVC 2019; each row is the suite's own <code>Totals: N passed</code>, which includes its init/cleanup)</td>
 </tr>
 </tbody>
 </table>

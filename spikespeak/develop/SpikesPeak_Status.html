@@ -7987,7 +7987,41 @@ kernel level, so a fresh backend cannot bind. One attempt reached <code>Creating
 "source.npx.pxi"</code> and then stopped — no error, no <code>deviceReady = false</code>. That may be the dishonest
 degradation this configuration hunts, or an artifact of powering hardware off under a running driver.
 <strong>Not called either way until it is retested from a clean boot.</strong> And the <strong>PXI-6133 still
-enumerates</strong>, so this was <em>Neuropixels</em>-absent, not hardware-absent.</p></article>
+enumerates</strong>, so this was <em>Neuropixels</em>-absent, not hardware-absent.</p>
+<h3 id="finished-after-the-reboot-pass-plus-the-two-defects-the-honest-degradation-half-was-for">Finished after the reboot: PASS, plus the two defects the honest-degradation half was for<a class="headerlink" href="#finished-after-the-reboot-pass-plus-the-two-defects-the-honest-degradation-half-was-for" title="Permanent link">#</a></h3>
+<p>With the box rebooted, <strong>no PXI or FTDI device enumerated at all</strong> — a true nothing-attached run, not
+the Neuropixels-absent one above. <code>PXIe</code>: <code>deviceReady</code> false at once, <em>"No Basestations found by
+scanBS()!"</em>. <code>Neuropixels</code> (auto): refused immediately and specifically. The backend answered
+<code>getSystemState</code> afterwards and <code>quit</code> exited 0. <strong>The earlier stall at <code>Creating object for
+source.npx.pxi</code> was not a defect</strong> — it was the driver state left by powering the basestations off
+under a running process, and a clean boot cleared it. Deliberately not called until retested; good
+thing.</p>
+<p>The dialog the operator saw was <em>almost</em> right, and the almost is the finding:</p>
+<pre><code>Could not connect &quot;PXIe&quot;.
+The backend reported:
+  [MAIN] ERROR: No Basestations found by scanBS()!
+  [Npx] ERROR: np_arm (close) failed. Code: 31
+  [MATRIX] ERROR clearing StatusBit output. Code: 31
+</code></pre>
+<p>Line one is the cause. Lines two and three are <strong>noise from the failure path</strong>: <code>closeDataSource</code>
+ran its whole vendor sequence — <code>np_arm</code>, five switch-matrix routes, <code>np_closeProbe</code>, <code>np_closePort</code>,
+<code>np_closeBS</code> — against a slot this process never opened, and every call answered <code>NO_SLOT</code> (31).
+Bounded and fast, so harmless <em>today</em>. But <strong>closing what you never opened is the exact pattern
+<code>NpBounded.hpp</code> records as the cause of #54</strong>, and the two transports disagreed about it:
+<code>OneBoxSource::closeDataSource</code> was already gated on <code>mOpened</code> after #54; the PXIe path never was.
+Now gated on <code>basestationOpenedByUs</code>, which is the ledger #54 introduced for precisely this.</p>
+<p>Second, smaller: a refused <code>source.npx.auto</code> was still looked up in the source registry, which logged
+<em>"[ObjectFactory] Error: Class not registered with factory"</em> on every honest refusal — a fault-shaped
+line for a non-fault. The lookup is now skipped when the scan has already refused.</p>
+<p><strong>Permanent:</strong> <code>tests/gui/hardware_absent.py</code>, asserting H1–H5 (false-not-true, names the cause, no
+noise, still alive, no fake fault). It asks <code>probeHardware</code> first — which opens nothing — and skips as
+untested if any basestation is attached, so on the rig it says so rather than spending a #54
+attempt. Proved failable: with both fixes reverted it goes red on exactly H3 and H5.</p>
+<p><strong>And one trap I set for myself.</strong> The first version of that test deadlocked silently for the full
+runner timeout, printing nothing: its <code>wait_for</code> evaluated the predicate under a non-reentrant lock,
+and two predicates called a method that took the same lock. <code>rig.py</code> documents that exact trap
+against its own <code>self.lock</code>, in a comment I had read an hour earlier. Predicates are pure now, and
+the docstring says why.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8542,6 +8576,7 @@ enumerates</strong>, so this was <em>Neuropixels</em>-absent, not hardware-absen
 <li><a href="#2-the-leak-check-added-the-day-before-was-counting-a-proxy">2. The leak check added the day before was counting a proxy</a></li>
 <li><a href="#a-trap-that-is-not-a-repo-bug">A trap that is not a repo bug</a></li>
 <li><a href="#not-yet-done-and-it-needs-a-reboot">Not yet done, and it needs a reboot</a></li>
+<li><a href="#finished-after-the-reboot-pass-plus-the-two-defects-the-honest-degradation-half-was-for">Finished after the reboot: PASS, plus the two defects the honest-degradation half was for</a></li>
 </ul>
 </li>
 </ul>

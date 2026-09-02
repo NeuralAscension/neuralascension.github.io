@@ -293,7 +293,7 @@ need proving — the GUI exists to be looked at — so do not treat it as an ope
 <p><strong>Proves:</strong> the Windows build and all three suites are reproducible off the original box; profiles
 degrade honestly with nothing attached. <strong>Cannot prove:</strong> any hardware path.</p>
 <blockquote>
-<p><strong>Run 2026-09-02, and it earned its place.</strong> Clean clone on Windows with the Neuropixels
+<p><strong>Run 2026-09-02 (twice: before and after a reboot), and it earned its place.</strong> Clean clone on Windows with the Neuropixels
 basestations powered off: <code>build.bat</code> configured and built a fresh clone with <strong>no path edits</strong>
 (27/27 C++ in 91 s), and all three suites went green. The "degrades honestly" half found <strong>two real
 defects</strong>, both now fixed (Status §87):</p>
@@ -304,11 +304,28 @@ defects</strong>, both now fixed (Status §87):</p>
 <li>the gate's own surviving-backend check counted a NAME in <code>tasklist</code> rather than a RUNNING
   process, so already-exited processes that a driver had not let Windows reap failed two gates.</li>
 </ul>
-<p><strong>Still outstanding for a full pass:</strong> the hardware-profile-with-nothing-attached step. Those
-un-reaped processes hold port 1234 at kernel level, so a fresh backend cannot bind until the box is
-rebooted. Note also that the <strong>PXI-6133 still enumerates</strong> with the chassis powered, so that run
-was <em>Neuropixels</em>-absent rather than hardware-absent — which this section defines as not the same
-thing.</p>
+<p><strong>Completed after a reboot the same day — PASS, with two more defects found and fixed.</strong> After the
+reboot no PXI or FTDI device enumerated at all, so this was a true nothing-attached run. Selecting
+<code>PXIe</code>: <code>deviceReady</code> false at once, and a failure naming the cause — <em>"No Basestations found by
+scanBS()!"</em>. Selecting <code>Neuropixels</code> (auto): refused immediately, <em>"No Neuropixels basestation was
+detected. Connect one, or use a simulated source."</em> The backend answered afterwards and <code>quit</code>
+exited 0. The earlier "stops at <code>Creating object for source.npx.pxi</code>" was <strong>not</strong> a defect — it was
+the driver state left by powering the basestations off under a running process; a clean boot cleared
+it.</p>
+<p>What the honest-degradation half found, both fixed the same day (Status §87):</p>
+<ul>
+<li><code>NeuropixelsSource::closeDataSource</code> ran its whole vendor close sequence — <code>np_arm</code>, five
+  switch-matrix routes, <code>np_closeProbe</code>, <code>np_closePort</code>, <code>np_closeBS</code> — against a slot this process
+  <strong>never opened</strong>, all answering <code>NO_SLOT</code> (31), and two of those nine were quoted into the
+  operator's dialog beside the real cause. Closing what you never opened is the pattern
+  <code>NpBounded.hpp</code> records as the cause of #54; <code>OneBoxSource</code> was already gated on <code>mOpened</code> and
+  the PXIe path was not. Now gated on <code>basestationOpenedByUs</code>.</li>
+<li>a refused <code>source.npx.auto</code> was looked up in the registry and logged <em>"[ObjectFactory] Error:
+  Class not registered"</em> on every honest refusal.</li>
+</ul>
+<p><strong>Made permanent</strong> as <code>tests/gui/hardware_absent.py</code>, which asks <code>probeHardware</code> first and skips
+(reported as untested) if any basestation is attached — so it runs on a box with nothing, and on
+the rig it says so rather than spending a #54 attempt.</p>
 </blockquote>
 <p><strong>One trap that cost time, and is not a repo bug.</strong> A clean clone into a DEEP path fails at
 <code>FetchContent</code> with an opaque <em>"Build step for portaudio failed: 1"</em>. The real error is only visible

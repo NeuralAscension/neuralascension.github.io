@@ -196,6 +196,11 @@ python scripts/run_gui_tests.py --only ripple # while you iterate
 <td>11 checks</td>
 </tr>
 <tr>
+<td><code>hardware_absent</code></td>
+<td><strong>A hardware profile selected with NOTHING attached degrades honestly and stays usable</strong> — issue #52's configuration 2, made permanent after its first run (2026-09-02) found two defects on exactly this path: the launcher announcing "servers up" after both servers failed to bind, and a close sequence issued against a basestation this process never opened (the #54 pattern), two of whose <code>NO_SLOT</code> failures were quoted into the operator's dialog beside the real cause. Asserts <code>deviceReady</code> false, a failure that NAMES what was missing, no close/route noise in the dialog or the log, a refused <code>source.npx.auto</code> not logged as a fault, and a backend that still answers afterwards. Asks <code>probeHardware</code> first (opens nothing) and SKIPS — reported as untested — if any basestation is attached, because a probe-less open counts toward the #54 tally. Runs with no browser</td>
+<td>9 checks</td>
+</tr>
+<tr>
 <td><code>audio_panel</code></td>
 <td>The audio monitor: device enumeration, follow-the-default vs pinned, the picker round trip through the backend, threshold/mute</td>
 <td>15 checks</td>
@@ -293,7 +298,7 @@ python scripts/run_gui_tests.py --only ripple # while you iterate
 </tbody>
 </table>
 <p>Every one of them runs against a <strong>real backend</strong> on a simulated source. No hardware.</p>
-<p><strong>Most drive a real browser</strong> over CDP. Four — <code>command_surface</code>, <code>intan_not_implemented</code>,
+<p><strong>Most drive a real browser</strong> over CDP. Four — <code>command_surface</code>, <code>hardware_absent</code>, <code>intan_not_implemented</code>,
 <code>state_consistency</code> and <code>teardown_while_recording</code> — drive the backend over a WebSocket with <strong>no
 browser at all</strong>, because every assertion they make is about what the backend <em>says</em>, and that costs
 seconds instead of the minute a browser costs. Read that as a property of the assertion, not a
@@ -315,7 +320,7 @@ list it is subtracted from.</p>
 <p><strong>The totals are out of the prose on purpose now.</strong> Both times the wrong count and the missing row
 arrived together, because the sentence carrying the count sits nowhere near the row that went
 missing. Counts live in <a href="Testing.html"><code>Testing.md</code></a> and nowhere else (<code>CLAUDE.md</code>); the one subset
-worth calling out here — the four that need no browser — is <strong>named</strong> rather than counted, so it
+worth calling out here — the five that need no browser — is <strong>named</strong> rather than counted, so it
 cannot drift without somebody editing the actual names.</p>
 </blockquote>
 <p>The harness refuses to run at all unless a column has a live WebGL2 context (<code>tests/gui/_harness.py</code>,

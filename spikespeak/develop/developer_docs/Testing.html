@@ -785,11 +785,11 @@ row, a column that renders nothing, a stream that loses its label.</p>
   ✅ PASS  toolbar_layout               118.3s
   ✅ PASS  window_registry               66.9s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 26 GUI TESTS PASSED
+  ✅ ALL 27 GUI TESTS PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
 <p>Same green/red convention as the C++ light — <strong>including that the count is the only thing separating
-a complete run from a partial one.</strong> <code>ALL 26 GUI TESTS PASSED</code> is the whole suite as of 2026-09-01;
+a complete run from a partial one.</strong> <code>ALL 27 GUI TESTS PASSED</code> is the whole suite as of 2026-09-02;
 <code>ALL 3 GUI TESTS PASSED</code> is a <code>--only</code> run, and it is just as green. A machine-readable
 <code>gui_test_status.json</code> carries the same numbers plus per-test seconds.</p>
 <p><strong>Why these are not part of every compile.</strong> They need a browser and a backend, and no DOM shim can

@@ -202,12 +202,12 @@ you; it changes nothing about the build or the suite. Always pass it from a scri
   ✅ PASS  test_bandfilterprocessor   4.01s
   ✅ PASS  test_oneboxwaveplayer      3.04s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 26 SUITES PASSED
+  ✅ ALL 27 SUITES PASSED
 ──────────────────────────────────────────────────────────────────────────
-  ✅ SIMD dispatch: portable scalar path: 26/26 PASSED
+  ✅ SIMD dispatch: portable scalar path: 27/27 PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
-<p><strong>Read the count in that banner.</strong> <code>ALL 26 SUITES PASSED</code> is a complete run as of 2026-08-31; <code>ALL 3
+<p><strong>Read the count in that banner.</strong> <code>ALL 27 SUITES PASSED</code> is a complete run as of 2026-09-01; <code>ALL 3
 SUITES PASSED</code> is a partial one, and it is green. The banner reports how many suites <em>ran</em>, not how
 many exist, so a build that configured only part of the tree, or a <code>ctest -R</code> you forgot you typed,
 passes just as loudly as the real thing. The number is the only thing that tells them apart — which
@@ -217,9 +217,9 @@ is why the totals in this page are worth keeping honest.</p>
   …
   ❌ FAIL  test_oneboxwaveplayer      failed
 ──────────────────────────────────────────────────────────────────────────
-  ❌ 1 OF 26 SUITES FAILED
+  ❌ 1 OF 27 SUITES FAILED
 
-     26/26 Test #26: test_oneboxwaveplayer .........***Failed    0.04 sec
+     27/27 Test #27: test_oneboxwaveplayer .........***Failed    0.04 sec
 
      rerun one suite: ctest --test-dir &lt;build&gt; -C Release -R &lt;name&gt; --output-on-failure
 </code></pre>
@@ -248,7 +248,7 @@ file. So a failure used to print a bare <code>***Failed</code> with no case name
 made debugging a red suite guesswork.</p>
 <p>Every suite now writes a Qt Test log via <code>-o &lt;name&gt;.log,txt</code> (see <code>tests/CMakeLists.txt</code>), and
 <code>scripts/run_tests.py</code> prints it for any suite that fails:</p>
-<pre><code>  ❌ 1 OF 26 SUITES FAILED
+<pre><code>  ❌ 1 OF 27 SUITES FAILED
 
      FAIL!  : TestOneBoxWavePlayer::stopIsSilentWhenNeverUsed() Compared values are not the same
         Actual   (FakeNpx::calls().size()): 2
@@ -259,7 +259,7 @@ made debugging a red suite guesswork.</p>
 <p><code>scripts/run_tests.py</code> runs the whole suite <strong>twice</strong>. The second run (<code>scalar_pass()</code>) sets
 <code>SPIKESPEAK_SIMD=scalar</code> for the child, which forces every dispatcher onto its portable body, and
 prints its own line under the main banner:</p>
-<pre><code>  ✅ SIMD dispatch: portable scalar path: 26/26 PASSED
+<pre><code>  ✅ SIMD dispatch: portable scalar path: 27/27 PASSED
 </code></pre>
 <p><strong>Why it exists.</strong> On a machine with AVX2 — every development machine here — the scalar twin of
 every dispatched routine is dead code at runtime, so the ordinary pass says nothing whatever about
@@ -442,8 +442,8 @@ test functions (<code>initTestCase</code> and <code>cleanupTestCase</code> run a
 </tr>
 <tr>
 <td><strong>Total</strong></td>
-<td style="text-align: right;"><strong>470</strong></td>
-<td>26 suites, 8.8 s of CTest time per pass (counts re-checked <strong>2026-08-31</strong> against <code>build/tests/*.log</code>)</td>
+<td style="text-align: right;"><strong>478</strong></td>
+<td>27 suites, 8.8 s of CTest time per pass (counts re-checked <strong>2026-09-01</strong> against <code>build/tests/*.log</code>, on Linux/GCC 13.3)</td>
 </tr>
 </tbody>
 </table>
@@ -468,10 +468,21 @@ the second pass's count, and <code>ok</code> is false when <strong>either</stron
   &quot;scalar_failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
 </code></pre>
 <h2 id="1a-running-both-suites-on-linux">1a. Running both suites on Linux<a class="headerlink" href="#1a-running-both-suites-on-linux" title="Permanent link">#</a></h2>
-<p><strong>Verified end to end on 2026-08-26</strong> (Linux Mint 22.1 / Ubuntu 24.04 base, GCC 13.3.0, Qt 6.11.1,
-HDF5 1.10.10): <strong>20 of 20 C++ suites, 384 cases</strong> and <strong>10 of 10 GUI tests</strong>. Before that date the
-suites had never been <em>attempted</em> on Linux — both postdate the last Linux build by six weeks — so
-treat anything older than this section as untested rather than as known-good.</p>
+<p><strong>Re-verified from a clean clone on 2026-09-01</strong> (Linux Mint 22.1 / Ubuntu 24.04 base, kernel 6.8,
+Threadripper 1950X, RTX 2080 / NVIDIA 535, GCC 13.3.0, Qt 6.11.1, HDF5 1.10.10, Brave):
+<strong>27 of 27 C++ suites / 478 cases</strong>, <strong>151 of 151 Python tests</strong>, <strong>26 of 26 GUI tests</strong>. The
+2026-08-26 first run was 20/384 and 10 GUI; the difference is the tree growing, not a regression.</p>
+<p><strong>That run is what cleared the WebGL2 renderer on Linux.</strong> SciChart came out on 2026-08-27 and a
+hand-written WebGL2 renderer went in, A/B'd on Windows only — a hand-written renderer being exactly
+the GPU- and driver-dependent thing, and the harness now refuses to run a column without a live one.
+<code>live_view</code>, <code>heatmap_view</code>, <code>heatmap_spatial</code>, <code>probe_map</code>, <code>detached_view</code> and <code>window_registry</code>
+all pass on Mesa/NVIDIA 535 with real WebGL. <strong>Headless is still unproven</strong> — this box had a real X
+session and a real GPU, not SwiftShader.</p>
+<p><strong>The Python suite needs <code>python scripts/build_docs.py</code> run once first on a clean clone.</strong> The
+architecture SVGs it checks are generated and <code>.gitignore</code>d (<code>developer_docs/images/architecture*.svg</code>),
+so a fresh clone has none and <code>test_architecture_diagrams</code> fails with <em>"Architecture SVGs are out of
+date"</em>. That is the gate reporting a missing build step, not a broken tree; regenerate and it is
+151/151.</p>
 <p>A Linux box with no acquisition hardware exercises <strong>everything except the vendor call layer</strong>: the
 same ring buffers, interpreters, display processor, recorder and ripple detector that real hardware
 drives. <code>NPX_HW_ENABLED</code> and <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only, so the PXIe, OneBox and real
@@ -698,11 +709,11 @@ row, a column that renders nothing, a stream that loses its label.</p>
   ✅ PASS  toolbar_layout               118.3s
   ✅ PASS  window_registry               66.9s
 ──────────────────────────────────────────────────────────────────────────
-  ✅ ALL 22 GUI TESTS PASSED
+  ✅ ALL 26 GUI TESTS PASSED
 ──────────────────────────────────────────────────────────────────────────
 </code></pre>
 <p>Same green/red convention as the C++ light — <strong>including that the count is the only thing separating
-a complete run from a partial one.</strong> <code>ALL 22 GUI TESTS PASSED</code> is the whole suite as of 2026-08-31;
+a complete run from a partial one.</strong> <code>ALL 26 GUI TESTS PASSED</code> is the whole suite as of 2026-09-01;
 <code>ALL 3 GUI TESTS PASSED</code> is a <code>--only</code> run, and it is just as green. A machine-readable
 <code>gui_test_status.json</code> carries the same numbers plus per-test seconds.</p>
 <p><strong>Why these are not part of every compile.</strong> They need a browser and a backend, and no DOM shim can

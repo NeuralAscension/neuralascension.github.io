@@ -661,6 +661,98 @@ the line output — alongside the trigger that produced it. One afternoon, and i
 ear column from self-report into measurement. Until then, quote the ranking, not the absolute
 number.</p>
 <hr />
+<h2 id="5c-measured-simulated-np10-on-linux-alsa-2026-09-01">5c. Measured, simulated NP1.0 on Linux / ALSA (2026-09-01)<a class="headerlink" href="#5c-measured-simulated-np10-on-linux-alsa-2026-09-01" title="Permanent link">#</a></h2>
+<p>The first row from a <strong>different operating system and a different host API</strong>, taken during the
+issue #52 configuration-1 gate. No probe: <code>Simulated NPX 1.0 (OneBox)</code> on Linux Mint 22.1, PipeWire
+1.0.5 presenting a PulseAudio server, PortAudio on ALSA. The source is simulated, so this row says
+nothing about any transport — which is the point. Everything upstream of the audio path is replaced,
+and the terms this system owns are asked whether they move.</p>
+<table>
+<thead>
+<tr>
+<th>term</th>
+<th>NP2.0, OneBox (Windows)</th>
+<th>NP1.0, PXIe (Windows)</th>
+<th><strong>Sim NP1.0, Linux/ALSA</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>source_lag_mean_ms</code></td>
+<td>1.00 ms</td>
+<td>1.00 ms</td>
+<td><strong>1.08 ms</strong> (median 1.07, p5–p95 1.06–1.09, n = 20)</td>
+</tr>
+<tr>
+<td><code>source_lag_max_ms</code></td>
+<td>—</td>
+<td>2.40 ms</td>
+<td>2.40 ms</td>
+</tr>
+<tr>
+<td><code>audio_ring_depth_ms</code></td>
+<td>15.11 ms</td>
+<td>3.45 ms</td>
+<td><strong>6.67 ms</strong></td>
+</tr>
+<tr>
+<td><code>output_latency_measured_ms</code></td>
+<td>99.90 ms</td>
+<td>18.87 ms</td>
+<td><strong>14.20 ms</strong></td>
+</tr>
+<tr>
+<td><code>output_latency_ms</code> (promised)</td>
+<td>91.43 ms</td>
+<td>120.00 ms</td>
+<td><strong>8.71 ms</strong></td>
+</tr>
+<tr>
+<td>audio device</td>
+<td>MME → Sound Mapper</td>
+<td>DirectSound → Primary Sound Driver</td>
+<td>ALSA default (PipeWire), 20 devices offered</td>
+</tr>
+<tr>
+<td><strong>raw → ear</strong></td>
+<td><strong>~116.0 ms</strong></td>
+<td><strong>~23.3 ms</strong></td>
+<td><strong>~22.0 ms</strong></td>
+</tr>
+<tr>
+<td><strong>raw → eye</strong></td>
+<td><strong>19.2 ms</strong></td>
+<td><strong>19.4 ms</strong></td>
+<td><strong>~19–21.6 ms</strong> (see the caveat below)</td>
+</tr>
+</tbody>
+</table>
+<p><code>available: true</code>, <code>input_band = data.npx.ap</code>, <code>filtered = false</code>, <strong>0 starved callbacks, 0 device
+underflows</strong>. Audio output works on this box; it is not merely "not fatal".</p>
+<p><strong><code>source_lag_mean_ms</code> is 1.08 ms.</strong> Windows measured 1.00 ms on two transports and two probe
+generations; changing the operating system, the host API and the source moves it by 80 µs. That term
+is the application's, and it does not appear to be anything else's.</p>
+<p><strong>Promised is BELOW measured here, which inverts Windows.</strong> On Windows the promise over-stated the
+device on one row (91.43 promised vs 99.90 measured) and wildly over-stated it on the other (120.00
+vs 18.87). ALSA promises 8.71 ms and delivers 14.20 ms. §5b's warning stands and generalises: the
+promise is a compile-time constant per host API, not a device property, and it is wrong in <strong>both</strong>
+directions depending on which host API you ask.</p>
+<blockquote>
+<p><strong>The <code>raw → eye</code> figure needs a caveat, and <code>measure_av_latency.py</code> currently gets it wrong on a
+multi-band config.</strong> The script's EYE median is computed over <em>every</em> binary frame, and this config
+publishes <strong>three</strong> — ap, lfp and adc — in one burst per display tick. Two of every three gaps are
+therefore intra-burst, and the reported median collapses to <strong>0.6 ms</strong>, which is not a display
+cadence and must not be quoted as one. Counting frame <em>sizes</em> separates them: 139.06 frames/s over
+3 distinct sizes = <strong>46.35 publish ticks/s = 21.6 ms</strong>, median inter-tick gap 18.9 ms — i.e. the
+same ~19 ms as both Windows rows. The Windows rows were taken on configs where the burst was one
+frame, so the bug did not show. <strong>Fix the script to group by tick before quoting its EYE number on
+any multi-band profile.</strong></p>
+</blockquote>
+<h3 id="also-found-here">Also found here<a class="headerlink" href="#also-found-here" title="Permanent link">#</a></h3>
+<p><code>ripple_tools/rig.py</code> raises <code>ValueError: I/O operation on closed file</code> from its reader thread at
+teardown — the capture file is closed while <code>_reader</code> is still writing to it. It fires <em>after</em> the
+measurement, so it does not affect the numbers above, but it makes a clean run end in a traceback.</p>
+<hr />
 <h2 id="5a-still-not-measured">5a. Still not measured<a class="headerlink" href="#5a-still-not-measured" title="Permanent link">#</a></h2>
 <table>
 <thead>
@@ -683,6 +775,12 @@ number.</p>
 <td>19.4 ms</td>
 <td>~23.3 ms</td>
 <td>measured 2026-08-28</td>
+</tr>
+<tr>
+<td>Sim NP1.0, Linux/ALSA</td>
+<td>~19–21.6 ms</td>
+<td>~22.0 ms</td>
+<td>measured 2026-09-01 (§5c)</td>
 </tr>
 <tr>
 <td>NP2.0, PXIe</td>
@@ -734,6 +832,10 @@ is exactly what made the first NP1.0/PXIe row uninterpretable until it was re-ru
 <li><a href="#measured-is-better-and-is-still-portaudio-grading-its-own-homework">"Measured" is better, and is still PortAudio grading its own homework</a></li>
 <li><a href="#what-that-does-and-does-not-invalidate">What that does and does not invalidate</a></li>
 <li><a href="#how-to-actually-settle-it">How to actually settle it</a></li>
+</ul>
+</li>
+<li><a href="#5c-measured-simulated-np10-on-linux-alsa-2026-09-01">5c. Measured, simulated NP1.0 on Linux / ALSA (2026-09-01)</a><ul>
+<li><a href="#also-found-here">Also found here</a></li>
 </ul>
 </li>
 <li><a href="#5a-still-not-measured">5a. Still not measured</a></li>

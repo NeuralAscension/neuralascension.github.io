@@ -7935,7 +7935,59 @@ counts as a failed connect and nothing is wrong with the hardware</strong>.</p>
    is the cheapest of the three: connect twice to a probe-less basestation, then connect a probe and
    acquire. If it streams, the tally is over-counting and the budget is bigger than we think. <strong>Do
    this deliberately, with the probe out of the animal, and expect it to crash.</strong></li>
-</ol></article>
+</ol>
+<hr />
+<h2 id="87-configuration-2-and-the-launcher-saying-servers-up-when-nothing-started-2026-09-02">87. CONFIGURATION 2 — AND THE LAUNCHER SAYING "SERVERS UP" WHEN NOTHING STARTED  (2026-09-02)<a class="headerlink" href="#87-configuration-2-and-the-launcher-saying-servers-up-when-nothing-started-2026-09-02" title="Permanent link">#</a></h2>
+<p>Issue #52's configuration 2 had never been run. It is the cheapest of the five — any Windows box, no
+rig — and it found two defects on its first outing, which is a good argument for the cheap tests.</p>
+<p><strong>The build half passed outright.</strong> Clean clone, <code>build.bat</code>, no path edits, 27/27 C++ suites in
+91 s, then C++ / Python / GUI all green. It also confirmed §84's clean-clone fix: no <em>"Architecture
+SVGs are out of date"</em>, which is the failure this exact scenario used to produce.</p>
+<h3 id="1-the-launcher-announced-success-after-both-servers-failed-to-bind">1. The launcher announced success after both servers failed to bind<a class="headerlink" href="#1-the-launcher-announced-success-after-both-servers-failed-to-bind" title="Permanent link">#</a></h3>
+<p>With the ports taken:</p>
+<pre><code>Failed to start WebSocket server: &quot;The bound address is already in use&quot;
+Failed to start HTTP server on port 8234
+[main] --no-browser: servers up; open &quot;http://localhost:8234&quot; to watch.
+</code></pre>
+<p>Three layers each declined to report it. <code>startSimpleHttpServer</code> was <code>void</code> — logged <code>qCritical</code> and
+returned, telling the caller nothing. <code>WebSocketServer</code>'s constructor logged at <code>qDebug</code> and carried
+on, with no flag and no signal. <code>main.cpp</code> then printed the cowsay banner <em>"Application server is
+running!"</em> <strong>unconditionally</strong>.</p>
+<p><strong>And it ran forever.</strong> The 2 s auto-quit fires when the last client DISCONNECTS, and no client can
+ever connect to a server that never listened — so the process sat there, unreachable, announcing
+success. One did exactly that during this run and was still alive hours later.</p>
+<p>This is the recurring defect (#16/#18, #51) in the launcher itself: <strong>announcing a REQUESTED state
+rather than a CONFIRMED one.</strong> Fixed — the HTTP helper returns <code>bool</code>, <code>main</code> checks
+<code>server-&gt;isListening()</code>, and a backend that cannot bind exits <strong>2</strong>. An HTTP-only failure stays
+non-fatal and says so: the CLI still works, only the browser UI is unserved, and killing the process
+would be a worse answer than a warning.</p>
+<h3 id="2-the-leak-check-added-the-day-before-was-counting-a-proxy">2. The leak check added the day before was counting a proxy<a class="headerlink" href="#2-the-leak-check-added-the-day-before-was-counting-a-proxy" title="Permanent link">#</a></h3>
+<p>Two gates went red on <em>"1 backend process SURVIVED"</em>. Both survivors had <strong><code>HasExited = True</code>,
+<code>HandleCount = 0</code></strong> — processes that had already exited, whose process object Windows had not reaped
+because a device driver still held a reference. It started minutes after the basestations were
+powered off; the six runs before that leaked nothing.</p>
+<p><code>_backend_pids()</code> asked whether a NAME appeared in <code>tasklist</code>. <strong>That is a proxy.</strong> Whether the
+process is RUNNING is the thing, and <code>GetExitCodeProcess</code> answers it. Confirmed against live data
+from this run: of two listed backends it now counts the one with <code>HasExited = False</code> and 305 handles
+and ignores the one with 0 handles that had already exited.</p>
+<p>Failing a gate on a driver's un-reaped bookkeeping is worse than not checking at all — nobody can act
+on it, and it teaches people to ignore a red gate, which is the one outcome the check exists to
+prevent. <strong>That is three times in two days that a check of mine confirmed a proxy instead of the
+outcome.</strong> The pattern is worth naming: <em>whenever a check reads a LIST, ask what the list is a list
+of.</em></p>
+<h3 id="a-trap-that-is-not-a-repo-bug">A trap that is not a repo bug<a class="headerlink" href="#a-trap-that-is-not-a-repo-bug" title="Permanent link">#</a></h3>
+<p>A clean clone into a <strong>deep path</strong> fails at <code>FetchContent</code> with <em>"Build step for portaudio failed:
+1"</em>, and that message names nothing useful. Running the sub-build by hand gives the real one:
+<code>ninja: Filename longer than 260 characters</code>. FetchContent's stamp paths add ~110 characters, so a
+clone root past ~150 blows <code>MAX_PATH</code>. It cost two failed attempts and nearly went into the record as
+a build defect. <strong>Clone somewhere short.</strong> Now in the runbook.</p>
+<h3 id="not-yet-done-and-it-needs-a-reboot">Not yet done, and it needs a reboot<a class="headerlink" href="#not-yet-done-and-it-needs-a-reboot" title="Permanent link">#</a></h3>
+<p>The hardware-profile-with-nothing-attached step is blocked: the un-reaped processes hold port 1234 at
+kernel level, so a fresh backend cannot bind. One attempt reached <code>Creating object for
+"source.npx.pxi"</code> and then stopped — no error, no <code>deviceReady = false</code>. That may be the dishonest
+degradation this configuration hunts, or an artifact of powering hardware off under a running driver.
+<strong>Not called either way until it is retested from a clean boot.</strong> And the <strong>PXI-6133 still
+enumerates</strong>, so this was <em>Neuropixels</em>-absent, not hardware-absent.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8483,6 +8535,13 @@ counts as a failed connect and nothing is wrong with the hardware</strong>.</p>
 <li><a href="#three-designs-three-independent-safety-reviews-no-survivors">Three designs, three independent safety reviews, no survivors</a></li>
 <li><a href="#what-was-built-instead">What was built instead</a></li>
 <li><a href="#what-would-unblock-the-real-feature">What would unblock the real feature</a></li>
+</ul>
+</li>
+<li><a href="#87-configuration-2-and-the-launcher-saying-servers-up-when-nothing-started-2026-09-02">87. CONFIGURATION 2 — AND THE LAUNCHER SAYING "SERVERS UP" WHEN NOTHING STARTED (2026-09-02)</a><ul>
+<li><a href="#1-the-launcher-announced-success-after-both-servers-failed-to-bind">1. The launcher announced success after both servers failed to bind</a></li>
+<li><a href="#2-the-leak-check-added-the-day-before-was-counting-a-proxy">2. The leak check added the day before was counting a proxy</a></li>
+<li><a href="#a-trap-that-is-not-a-repo-bug">A trap that is not a repo bug</a></li>
+<li><a href="#not-yet-done-and-it-needs-a-reboot">Not yet done, and it needs a reboot</a></li>
 </ul>
 </li>
 </ul>

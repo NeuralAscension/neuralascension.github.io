@@ -292,8 +292,29 @@ need proving — the GUI exists to be looked at — so do not treat it as an ope
 <h2 id="configuration-2-windows-no-hardware">Configuration 2 — Windows, no hardware<a class="headerlink" href="#configuration-2-windows-no-hardware" title="Permanent link">#</a></h2>
 <p><strong>Proves:</strong> the Windows build and all three suites are reproducible off the original box; profiles
 degrade honestly with nothing attached. <strong>Cannot prove:</strong> any hardware path.</p>
-<p><strong>This configuration has never been run.</strong> Not once. It is also the cheapest of the five — any
-Windows machine, no rig — and it is the one that probes a live bug, so run it first.</p>
+<blockquote>
+<p><strong>Run 2026-09-02, and it earned its place.</strong> Clean clone on Windows with the Neuropixels
+basestations powered off: <code>build.bat</code> configured and built a fresh clone with <strong>no path edits</strong>
+(27/27 C++ in 91 s), and all three suites went green. The "degrades honestly" half found <strong>two real
+defects</strong>, both now fixed (Status §87):</p>
+<ul>
+<li>the app printed <em>"Application server is running!"</em> and <em>"servers up"</em> <strong>after both servers had
+  failed to bind</strong>, then ran forever, because the 2 s auto-quit fires on a client DISCONNECTING and
+  no client can ever connect. A backend that cannot bind its WebSocket port now exits 2.</li>
+<li>the gate's own surviving-backend check counted a NAME in <code>tasklist</code> rather than a RUNNING
+  process, so already-exited processes that a driver had not let Windows reap failed two gates.</li>
+</ul>
+<p><strong>Still outstanding for a full pass:</strong> the hardware-profile-with-nothing-attached step. Those
+un-reaped processes hold port 1234 at kernel level, so a fresh backend cannot bind until the box is
+rebooted. Note also that the <strong>PXI-6133 still enumerates</strong> with the chassis powered, so that run
+was <em>Neuropixels</em>-absent rather than hardware-absent — which this section defines as not the same
+thing.</p>
+</blockquote>
+<p><strong>One trap that cost time, and is not a repo bug.</strong> A clean clone into a DEEP path fails at
+<code>FetchContent</code> with an opaque <em>"Build step for portaudio failed: 1"</em>. The real error is only visible
+by running the sub-build by hand: <code>ninja: Filename longer than 260 characters</code>. FetchContent's stamp
+paths add ~110 characters, so a clone root beyond ~150 characters blows Windows' <code>MAX_PATH</code>. <strong>Clone
+somewhere short</strong> — <code>C:\sp\spikespeak</code>, not a nested temp directory.</p>
 <p>"No hardware" means <strong>physically disconnected</strong>: no OneBox on USB, no PXIe chassis powered. Running
 a simulated source on a machine that <em>has</em> hardware attached is not this configuration.</p>
 <pre><code class="language-bash">git clone &lt;remote&gt; spikespeak &amp;&amp; cd spikespeak

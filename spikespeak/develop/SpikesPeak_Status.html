@@ -7871,7 +7871,71 @@ claim with no support behind it.</p>
 <p><strong>A session gets a Status entry on the day, even when — especially when — it produced nothing.</strong> A
 null result is a result, and it is the one most likely to go unrecorded, because there are no numbers
 to paste. Had this one been written down, the doc pass would have found it and none of this would
-have needed correcting twice.</p></article>
+have needed correcting twice.</p>
+<hr />
+<h2 id="86-probe-level-autodetect-why-it-cannot-be-built-yet-and-what-was-done-instead-2026-09-02">86. PROBE-LEVEL AUTODETECT: WHY IT CANNOT BE BUILT YET, AND WHAT WAS DONE INSTEAD  (2026-09-02)<a class="headerlink" href="#86-probe-level-autodetect-why-it-cannot-be-built-yet-and-what-was-done-instead-2026-09-02" title="Permanent link">#</a></h2>
+<p>The operator asked for it directly: <em>"the probe level autodetect should run once one of the
+basestations is detected but of course it should state that no probes were found and leave the
+software in an operational state."</em> Their rig is in exactly the state that motivates it — a OneBox
+<strong>and</strong> a PXIe basestation attached, with <strong>no probe on either</strong>.</p>
+<p><strong>Two of the three requirements are already met.</strong> With ONE basestation attached and no probe,
+<code>NpInterface.cpp</code> reports <em>"A Neuropixels basestation was found, but no headstage was detected on any
+port"</em>, <code>initBasestation()</code> returns false, and the caller runs <code>closeDataSource()</code> — which for a
+OneBox also <code>np_unmapBS</code>'s — so nothing stays claimed and the application stays usable. That path
+works today and was not changed.</p>
+<p><strong>The third — running the detection automatically — cannot be done safely right now.</strong> Not because
+it is hard, but because of what a probe-less open <em>is</em>.</p>
+<h3 id="the-blocker-in-one-line">The blocker, in one line<a class="headerlink" href="#the-blocker-in-one-line" title="Permanent link">#</a></h3>
+<p><code>SourceManager.cpp:80</code> counts a failed <code>initDataSource()</code> toward the <strong>issue #54</strong> tally, and a
+basestation with no probe fails exactly there. <strong>So probing a probe-less basestation already spends
+one of the two attempts before the driver is considered unsafe.</strong></p>
+<p><code>ConnectAttemptLog.hpp</code> states the reproduction, and it is unusually well characterized for a bug
+nobody has diagnosed: <strong>two</strong> failed connects on a transport leave the driver in a state where the
+<strong>next</strong> acquisition — on <em>either</em> transport — faults the process with <code>0xC0000005</code> on its first
+read, after reporting a successful connect and an armed acquisition. Zero failures stream; one
+streams; two crash <strong>every time</strong>. A later success does not reset it. Five candidate causes on our
+side were each implemented and re-tested and none of them was it.</p>
+<p>On the operator's current rig an automatic census would open both boxes, find no probe on either,
+and spend <strong>one failure per transport per scan</strong>. The second scan trips the guard on both, and the
+guard is a blocking dialog whose only exits are restart or close. That is not "leave the software in
+an operational state" — it is software that disables itself, automatically, for doing what it was
+asked to do.</p>
+<h3 id="three-designs-three-independent-safety-reviews-no-survivors">Three designs, three independent safety reviews, no survivors<a class="headerlink" href="#three-designs-three-independent-safety-reviews-no-survivors" title="Permanent link">#</a></h3>
+<p>Deliberately different angles: minimum-vendor-surface (reuse the existing connect prefix), an
+explicit <code>ProbeScan</code> with RAII and bounded calls, and an operator-experience angle sceptical of
+speculative opening. Every one came back <strong>needs-changes</strong>, and the findings were not stylistic:</p>
+<ul>
+<li>a <code>scanStep()</code> that copied <code>Npx::npStep</code>'s timeout but <strong>dropped its <code>alive</code> latch</strong>, so an
+  abandoned vendor call would be followed by more calls on the same slot — the one invariant that
+  helper exists to hold;</li>
+<li>a census that performs the exact sequence the #54 guard counts and <strong>deliberately does not count
+  it</strong>, plus a button that makes the bypass unbounded;</li>
+<li>a design claiming <em>"not one <code>np_*</code> call in the diff"</em> that reaches <code>Npx::basestations()</code> — a lazy
+  get-or-scan, the AgentTraps <em>"getter that creates what you asked it to check for"</em> shape — <strong>on an
+  already-open basestation, unbounded, on the main thread</strong>.</li>
+</ul>
+<p>The third angle's own conclusion was that the request should not be implemented as stated, and it
+reached that by reading <code>ConnectAttemptLog.hpp</code> rather than by being cautious in general.</p>
+<h3 id="what-was-built-instead">What was built instead<a class="headerlink" href="#what-was-built-instead" title="Permanent link">#</a></h3>
+<p><strong>The attempt budget is now visible at failure one instead of failure two</strong> (<code>WebSocketServer.cpp</code>).
+The count was silent at one and fatal at two, so there was no moment at which knowing it could still
+change what the operator did. It now says which transport, how many of the two, that one more means
+a restart — and, because this is the case that will actually bite, <strong>that a basestation with no probe
+counts as a failed connect and nothing is wrong with the hardware</strong>.</p>
+<h3 id="what-would-unblock-the-real-feature">What would unblock the real feature<a class="headerlink" href="#what-would-unblock-the-real-feature" title="Permanent link">#</a></h3>
+<p>Probe presence is not obtainable from <code>np_scanBS</code>/<code>np_getDeviceList</code>; it costs <code>np_openBS</code> +
+<code>np_detectHeadStage</code>. So automatic detection needs <strong>one</strong> of:</p>
+<ol>
+<li><strong>#54 diagnosed and fixed</strong>, after which a probe-less open is an ordinary answer rather than a
+   quarter of the way to a process fault. This is the real fix and everything else is a workaround.</li>
+<li><strong>A vendor call that reports headstage presence without claiming the basestation.</strong> Not found in
+   the API surface used here; worth one search of the vendor headers before more design.</li>
+<li><strong>Evidence that a probe-less open is NOT the failure mode #54 counts</strong> — i.e. that the crash needs
+   something the no-headstage path does not do. That is testable on the rig as it stands now, and it
+   is the cheapest of the three: connect twice to a probe-less basestation, then connect a probe and
+   acquire. If it streams, the tally is over-counting and the budget is bigger than we think. <strong>Do
+   this deliberately, with the probe out of the animal, and expect it to crash.</strong></li>
+</ol></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8412,6 +8476,13 @@ have needed correcting twice.</p></article>
 <li><a href="#85-the-2026-08-28-in-vivo-session-it-ran-and-it-was-noisy-recorded-2026-09-02">85. THE 2026-08-28 IN-VIVO SESSION — IT RAN, AND IT WAS NOISY (recorded 2026-09-02)</a><ul>
 <li><a href="#what-actually-happened">What actually happened</a></li>
 <li><a href="#the-lesson-which-is-not-about-this-session">The lesson, which is not about this session</a></li>
+</ul>
+</li>
+<li><a href="#86-probe-level-autodetect-why-it-cannot-be-built-yet-and-what-was-done-instead-2026-09-02">86. PROBE-LEVEL AUTODETECT: WHY IT CANNOT BE BUILT YET, AND WHAT WAS DONE INSTEAD (2026-09-02)</a><ul>
+<li><a href="#the-blocker-in-one-line">The blocker, in one line</a></li>
+<li><a href="#three-designs-three-independent-safety-reviews-no-survivors">Three designs, three independent safety reviews, no survivors</a></li>
+<li><a href="#what-was-built-instead">What was built instead</a></li>
+<li><a href="#what-would-unblock-the-real-feature">What would unblock the real feature</a></li>
 </ul>
 </li>
 </ul>

@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Replacing SciChart in the live view — the measured comparison - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">Developer Docs / Start here / Replacing SciChart in the live view — the measured comparison</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="../user_docs/README.html">SpikesPeak — User Guide</a>
+<a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<h3>Developer Docs</h3>
+<details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
+<a href="README.html">SpikesPeak — Developer Docs</a>
+<a href="AgentTraps.html">Traps that have cost real time</a>
+<a href="SourceSelection.html">Source selection — the rig names itself</a>
+<a href="ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a class="active" href="RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="Profiling.html">Profiling — where the time actually goes</a>
+<a href="AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="Recording.html">SpikesPeak — Recording</a>
+<a href="RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="ControlCLI.html">Control CLI — headless command interface</a>
+<a href="DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">6</span></summary>
+<a href="Building.html">Building and running SpikesPeak</a>
+<a href="Contributing.html">Contributing</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<details class="navgroup"><summary>Unsorted<span class="navcount">1</span></summary>
+<a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="replacing-scichart-in-the-live-view-the-measured-comparison">Replacing SciChart in the live view — the measured comparison<a class="headerlink" href="#replacing-scichart-in-the-live-view-the-measured-comparison" title="Permanent link">#</a></h1>
+<p>A hand-written WebGL2 renderer (<code>webinterface/GlRenderer.js</code>) against SciChart, measured on the rig.
+This is the full experimental record: method, data, result, mechanism and limits. The narrative of
+how the bottleneck was located first is in <a href="RenderingPerformance.html"><code>RenderingPerformance.md</code></a>; the
+interface any replacement must satisfy is <a href="RendererContract.html"><code>RendererContract.md</code></a>.</p>
+<blockquote>
+<p><strong>Status: SciChart was removed from the repo on 2026-08-27.</strong> §1–§8 are the record of the
+comparison that decided it, measured while both renderers were present and left in the tense they
+were written in — they describe a two-renderer world that no longer exists, so read them as
+history, not as instructions. What was deleted, what replaced it, and the part this experiment
+never covered (the probe map, which was the larger half of the removal) are in
+<a href="#9-the-removal-2026-08-27">§9</a>.</p>
+</blockquote>
+<p><strong>Headline.</strong> The win is <strong>CPU, decisively; GPU, marginally</strong>. On the real rig at 480 on-screen
+traces the WebGL2 renderer uses <strong>4.28×</strong> less renderer main-thread CPU and <strong>2.45×</strong> less total
+browser CPU, and holds 60 fps where SciChart falls to 42 ± 5. GPU utilization differs by only
+<strong>1.06×</strong> and board power by <strong>1.01×</strong> — so the CPU saving is <em>not</em> displaced onto the GPU, but
+neither is there a large GPU saving to claim. §3 is the simulated sweep, §3a the hardware validation.</p>
+<hr />
+<h2 id="1-why-this-was-tested">1. Why this was tested<a class="headerlink" href="#1-why-this-was-tested" title="Permanent link">#</a></h2>
+<p>The live view collapsed at 320 traces: 43 fps, renderer main thread saturated. The standing
+explanation was that SciChart is single-threaded and cannot use the GPU properly, so the fix was to
+move drawing to a worker via <code>OffscreenCanvas</code>.</p>
+<p><strong>That explanation was wrong on the part that mattered.</strong> SciChart <em>is</em> a WebGL library and was
+already using the GPU. An isolated harness (<code>benchmarks/renderer_lab.html</code>) showed that putting the
+same 768 000 vertices on the GPU costs <strong>~0.08 ms</strong> inside a 17.4 ms frame — four tenths of one
+percent. Neither the drawing nor the vertex count was the wall.</p>
+<p>The wall was per-frame CPU work that scales with <strong>series count</strong>. Measured directly: a vertex costs
+<strong>9.1× more</strong> when it arrives as a new <em>series</em> than as a new <em>point</em>. That is the fingerprint of a
+fixed per-series cost, and it predicted that a renderer without per-series objects would not pay it.
+This experiment tests whether that prediction survives integration.</p>
+<hr />
+<h2 id="2-method">2. Method<a class="headerlink" href="#2-method" title="Permanent link">#</a></h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Design</td>
+<td>2 renderers × 5 densities (20, 80, 160, 240, 320 on-screen series) × <strong>5 repeats</strong> = 50 cells, plus 1 control</td>
+</tr>
+<tr>
+<td>Interleaving</td>
+<td>the renderer order <strong>flips every repeat</strong> (A/B, B/A, …) so monotonic drift — GPU warming, heap fragmentation, another process waking — lands on both arms equally</td>
+</tr>
+<tr>
+<td>Blocking</td>
+<td>one backend and one browser for the whole run; the renderer is switched live in-page, so nothing else differs between arms</td>
+</tr>
+<tr>
+<td>Control</td>
+<td>an idle cell with the view up and acquisition <strong>paused</strong> — without it the GPU figures include the desktop compositor and mean little</td>
+</tr>
+<tr>
+<td>Dwell</td>
+<td>3 s settle, 8 s measurement; GPU polled every 0.4 s, so each cell yields ~19 samples rather than one reading</td>
+</tr>
+<tr>
+<td>Source</td>
+<td><code>SimNpx2</code> — one 384-channel <code>raw</code> band at 30 kHz, 1 s window, horizontal layout, ripple dock closed, exactly one WebSocket client</td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>RTX 3060 Ti, 1920×1080 at 60 Hz</td>
+</tr>
+</tbody>
+</table>
+<h3 id="instrumentation-with-no-new-dependencies">Instrumentation, with no new dependencies<a class="headerlink" href="#instrumentation-with-no-new-dependencies" title="Permanent link">#</a></h3>
+<ul>
+<li><code>main_thread_busy</code> — renderer main thread, from Chrome's own task accounting
+  (<code>Performance.getMetrics</code> <code>TaskDuration</code> ÷ wall). <strong>A single-core fraction, not a share of 16
+  cores</strong>; 1.000 means saturated.</li>
+<li><code>browser_cpu_cores</code> — <strong>every</strong> browser process, from the Windows process CPU counters. Included
+  deliberately: work moved to the GPU process rather than removed would look free in the metric above.</li>
+<li><code>gpu_util_mean</code>, <code>gpu_power_w</code> — <code>nvidia-smi</code>, which ships with the driver. Utilization is coarse
+  and saturates, so power is reported beside it. On the real rig power settled the GPU question <strong>in
+  the negative</strong>: 19.8 W (SciChart) vs 19.6 W (WebGL2). The two renderers cost the GPU the same
+  energy, which is the strongest single piece of evidence against claiming a GPU saving.</li>
+<li><code>fps</code>, <code>frame_p95_ms</code> — the page's own frame counter.</li>
+</ul>
+<p><code>psutil</code> would have been the obvious way to get process CPU and was <strong>not</strong> installed: no new
+dependencies. PowerShell's process counters answer the same question.</p>
+<p><strong>How the data was produced:</strong></p>
+<pre><code class="language-bash">python benchmarks/renderer_experiment.py 5
+</code></pre>
+<pre><code class="language-bash">python benchmarks/renderer_analysis.py
+</code></pre>
+<p>The first of those <strong>no longer runs against the shipped tree</strong>: it switches arms by calling
+<code>window.__setGl</code>, which was removed with SciChart on 2026-08-27 (§9). There is one renderer now, so
+there is no A/B left to drive. <code>renderer_analysis.py</code> still redraws the figures from the recorded
+CSVs, which are unaffected.</p>
+<hr />
+<h2 id="3-data">3. Data<a class="headerlink" href="#3-data" title="Permanent link">#</a></h2>
+<p>Mean ± SD over n = 5. Main-thread busy and browser CPU are fractions of a core.</p>
+<table>
+<thead>
+<tr>
+<th>series</th>
+<th>main-thread busy</th>
+<th></th>
+<th>browser CPU (cores)</th>
+<th></th>
+<th>GPU util (%)</th>
+<th></th>
+<th>fps</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td>SciChart</td>
+<td>WebGL2</td>
+<td>SciChart</td>
+<td>WebGL2</td>
+<td>SciChart</td>
+<td>WebGL2</td>
+<td>SciChart</td>
+<td>WebGL2</td>
+</tr>
+<tr>
+<td>20</td>
+<td>0.193 ± .009</td>
+<td><strong>0.095 ± .003</strong></td>
+<td>0.338 ± .025</td>
+<td><strong>0.230 ± .044</strong></td>
+<td>13.8</td>
+<td><strong>10.3</strong></td>
+<td>56</td>
+<td>56</td>
+</tr>
+<tr>
+<td>80</td>
+<td>0.444 ± .011</td>
+<td><strong>0.159 ± .006</strong></td>
+<td>0.698 ± .022</td>
+<td><strong>0.397 ± .013</strong></td>
+<td>27.1</td>
+<td><strong>18.1</strong></td>
+<td>56</td>
+<td>56</td>
+</tr>
+<tr>
+<td>160</td>
+<td>0.667 ± .006</td>
+<td><strong>0.173 ± .007</strong></td>
+<td>0.968 ± .026</td>
+<td><strong>0.411 ± .003</strong></td>
+<td>37.4</td>
+<td><strong>21.0</strong></td>
+<td>56</td>
+<td>56</td>
+</tr>
+<tr>
+<td>240</td>
+<td>0.890 ± .008</td>
+<td><strong>0.187 ± .005</strong></td>
+<td>1.311 ± .030</td>
+<td><strong>0.455 ± .051</strong></td>
+<td>38.6</td>
+<td><strong>23.5</strong></td>
+<td>56</td>
+<td>56</td>
+</tr>
+<tr>
+<td><strong>320</strong></td>
+<td><strong>0.999 ± .000</strong></td>
+<td><strong>0.198 ± .006</strong></td>
+<td><strong>1.440 ± .036</strong></td>
+<td><strong>0.485 ± .054</strong></td>
+<td><strong>38.2</strong></td>
+<td><strong>26.7</strong></td>
+<td><strong>43</strong></td>
+<td><strong>56</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Idle control</strong> (view up, paused): 0.077 busy · 0.191 cores · 3.1 % GPU · 10.3 W.
+Subtracting it, the CPU gap at 320 series is ~<strong>7.6×</strong> on the main thread and ~<strong>4.2×</strong> across the
+browser.</p>
+<h3 id="paired-per-repeat-ratios-scichart-webgl2">Paired per-repeat ratios (SciChart ÷ WebGL2)<a class="headerlink" href="#paired-per-repeat-ratios-scichart-webgl2" title="Permanent link">#</a></h3>
+<p>Paired because both arms are measured in the same session within the same repeat, so between-repeat
+drift cancels.</p>
+<table>
+<thead>
+<tr>
+<th>series</th>
+<th>main-thread CPU</th>
+<th>browser CPU</th>
+<th>GPU util</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20</td>
+<td>2.03 ± 0.07×</td>
+<td>1.50 ± 0.26×</td>
+<td>1.38 ± 0.27×</td>
+</tr>
+<tr>
+<td>80</td>
+<td>2.81 ± 0.09×</td>
+<td>1.76 ± 0.09×</td>
+<td>1.50 ± 0.03×</td>
+</tr>
+<tr>
+<td>160</td>
+<td>3.85 ± 0.12×</td>
+<td>2.36 ± 0.07×</td>
+<td>1.79 ± 0.03×</td>
+</tr>
+<tr>
+<td>240</td>
+<td>4.76 ± 0.12×</td>
+<td>2.91 ± 0.32×</td>
+<td>1.64 ± 0.02×</td>
+</tr>
+<tr>
+<td><strong>320</strong></td>
+<td><strong>5.05 ± 0.15×</strong></td>
+<td><strong>2.99 ± 0.28×</strong></td>
+<td><strong>1.43 ± 0.06×</strong></td>
+</tr>
+<tr>
+<td><strong>480 (real rig)</strong></td>
+<td><strong>4.28×</strong></td>
+<td><strong>2.45×</strong></td>
+<td><strong>1.06×</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The CPU gain <strong>grows monotonically with density</strong>, which is the signature of per-series overhead
+being what was removed. <strong>The GPU column does not reproduce on hardware</strong> — treat the sim's 1.43× as
+a simulated-source artifact and the rig's 1.06× as the real answer.</p>
+<h3 id="figures">Figures<a class="headerlink" href="#figures" title="Permanent link">#</a></h3>
+<p><img alt="CPU and GPU load" src="images/renderer/load_cpu_gpu_2026-08-27.png" /></p>
+<p><em>Points are means over five repeats, bars ±1 SD, faint dots the individual repeats. Dashed line is
+the paused control; dotted line at 1.0 is main-thread saturation. Both GPU panels also favor
+WebGL2 </em><em>in the sim only</em><em> — on the real rig at 480 traces the two are at parity (38.0 vs 35.9 %,
+19.8 vs 19.6 W), so read the GPU panels as "no penalty", not as a saving. The one wide error bar —
+WebGL2 power at 20 series — is a single outlying repeat (~20 W against ~11.5 W elsewhere), left in
+rather than trimmed.</em></p>
+<p><img alt="Frame rate and frame-time tail" src="images/renderer/frames_2026-08-27.png" /></p>
+<p><em>Both hold ~57 fps to 240 series. At 320 SciChart drops to 43 fps and its frame-time tail doubles to
+36 ms; WebGL2 stays at 56 fps and 18 ms. This understates the hardware result, where WebGL2 held a
+true 60 ± 0 fps against SciChart's 42 ± 5 at 480 traces (§3a) — the ~57 ceiling here is a
+benchmark-window compositing artifact, not a limit of either renderer.</em></p>
+<p>Raw data: <code>benchmarks/experiment_raw.csv</code> (51 cells) and <code>experiment_summary.csv</code>.
+The figures are regenerated into <code>benchmarks/plots/</code> by <code>renderer_analysis.py</code>; the
+copies here are what the docs book renders.</p>
+<h2 id="3a-validated-on-real-hardware-onebox-np20-480-traces">3a. Validated on real hardware — OneBox + NP2.0, 480 traces<a class="headerlink" href="#3a-validated-on-real-hardware-onebox-np20-480-traces" title="Permanent link">#</a></h2>
+<p>The sweep in §3 uses a simulated source. This is the same comparison on the rig: a real OneBox with
+a real Neuropixels 2.0 probe, four columns of 120 traces each, <strong>every cell verified at exactly 480
+on-screen traces before its numbers were recorded</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>metric</th>
+<th>SciChart</th>
+<th>WebGL2</th>
+<th>ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>main-thread busy</td>
+<td>0.964 ± 0.004</td>
+<td><strong>0.225 ± 0.006</strong></td>
+<td><strong>4.28×</strong></td>
+</tr>
+<tr>
+<td>browser CPU (cores)</td>
+<td>1.327 ± 0.030</td>
+<td><strong>0.541 ± 0.052</strong></td>
+<td><strong>2.45×</strong></td>
+</tr>
+<tr>
+<td>GPU utilization (%)</td>
+<td>38.0 ± 0.4</td>
+<td>35.9 ± 0.2</td>
+<td>1.06×</td>
+</tr>
+<tr>
+<td>GPU power (W)</td>
+<td>19.8 ± 0.1</td>
+<td>19.6 ± 0.1</td>
+<td>1.01×</td>
+</tr>
+<tr>
+<td>frame rate</td>
+<td><strong>42 ± 5 fps</strong></td>
+<td><strong>60 ± 0 fps</strong></td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>n = 4 interleaved repeats, one browser session, real neural data on the <code>raw</code> band.</p>
+<p><strong>The GPU claim from the simulated sweep does not survive here, and the CPU claim gets stronger.</strong>
+In sim the GPU ratio was 1.43×; on hardware it is 1.06× and power is within 1 % — the two renderers
+do comparable GPU work. The honest statement is <strong>"the GPU does much the same; the CPU does about
+four times less."</strong> The frame-rate difference is <em>larger</em> than sim suggested (42 → 60 fps) because a
+real 480-trace layout is heavier than the sim's 320.</p>
+<blockquote>
+<p><strong>The verification that made this trustworthy, after it caught a wrong result.</strong> An earlier run of
+this comparison reported ~156 traces as though it were 480: <code>ChartColumn.setStream()</code> does not set
+<code>userPickedStream</code>, so a later <code>updateStreamSelectors()</code> silently reverted three of the four columns
+to the 12-channel OneBox ADC. The probe said "480" because it was counting allocated series rather
+than what was on screen; <strong>the operator noticed from the screen that only one column carried the
+raw band.</strong> The measurement now re-applies the stream selection after every renderer switch (which
+rebuilds the columns) and <strong>aborts</strong> unless the count is exactly 480.</p>
+<p>A second trap in the same area: counting <code>series.isVisible</code> reported <strong>0 under WebGL</strong>, because the
+SciChart series were deliberately hidden there — so a probe that asked the wrong renderer called a
+full screen empty. Since §9 there is only one renderer left to ask, and the probe is
+<code>window.__benchPointCount(colIndex)</code>, which answers from the GL renderer and returns −1 for no such
+column or a lost context. The rule outlives the particular trap: <strong>an "is anything drawn?" probe
+must ask the thing that is actually drawing.</strong></p>
+</blockquote>
+<hr />
+<hr />
+<p><img alt="SciChart at 480 traces on the rig" src="images/renderer/hw_480_scichart_2026-08-27.png" /></p>
+<p><em>SciChart — four columns of 120 NP2.0 channels, 42 ± 5 fps, renderer main thread at 96 %.</em></p>
+<p><img alt="WebGL2 at 480 traces on the rig" src="images/renderer/hw_480_webgl_2026-08-27.png" /></p>
+<p><em>The WebGL2 renderer — the same 480 traces from the same probe, 60 fps, 22 % of one core. The
+aesthetic is deliberately unchanged: same palette, same per-column bands, same axes.</em></p>
+<h2 id="4-why-it-is-faster-the-mechanism">4. Why it is faster — the mechanism<a class="headerlink" href="#4-why-it-is-faster-the-mechanism" title="Permanent link">#</a></h2>
+<p>Not because the WebGL is cleverer. <strong>Because the live view needs almost none of what a charting
+library does, and SciChart re-establishes all of it, per series, every frame.</strong></p>
+<p>SciChart is general purpose: zoom, pan, tooltips, annotations, several axis types, resampling
+strategies, arbitrary series types, hit-testing. The live view uses none of that on the traces — the
+axes are fixed and label-less, nothing is interactive, there is one series type, and <strong>the data
+arrives already in absolute plot coordinates</strong> because <code>NetworkClient</code> bakes the vertical offset and
+scale into Y at append time. So the generality is paid for and thrown away, 320 times a frame.</p>
+<p>Concretely, four differences, in rough order of how much they matter:</p>
+<p><strong>1. Where the data→pixel transform happens.</strong> SciChart manages a coordinate calculator per series
+and turns values into pixels on the CPU. This renderer uploads <em>raw values</em> and does the transform in
+the vertex shader from four uniforms (<code>xMin, xMax, yMin, yMax</code>). 768 000 transforms per frame move
+from the CPU to GPU lanes that were idle — and the CPU does zero of them.</p>
+<p><strong>2. No per-series objects.</strong> SciChart has a renderable series, a data series, a stroke, a visibility
+flag and a calculator per channel, and walks that scene graph every frame. This renderer has one
+vertex buffer, one color buffer and one VAO per <em>column</em>; a "series" is an offset and a length in a
+<code>drawArrays</code> call. There is nothing to traverse, validate or invalidate.</p>
+<p><strong>3. No JS↔WASM boundary on the data path.</strong> SciChart's samples live in the WASM heap, so every
+<code>appendRange</code> crosses the boundary — 320 crossings per frame, 50 times a second. This renderer's
+staging buffer is a plain <code>Float32Array</code>; an append is a typed-array write.</p>
+<p><strong>4. Fewer draw calls and state changes.</strong> One <code>drawArrays</code> per row against a static VAO, with no
+per-series state transitions in between. <strong>That saving lands on the CPU — the cost of issuing and
+validating the calls — not on the GPU.</strong> On the real rig GPU utilization and power are essentially
+unchanged between the two renderers (38.0 vs 35.9 %, 19.8 vs 19.6 W). Both put the same vertices on
+the same silicon; only one of them makes the CPU work hard to get them there.</p>
+<p>The isolated harness bounds the whole thing: issuing every draw call for 768 000 vertices costs
+<strong>0.076 ms</strong>, against the 17.4 ms SciChart needs at that density. Roughly 17.3 ms of that frame was
+never drawing at all.</p>
+<hr />
+<h2 id="5-architecture-as-built">5. Architecture as built<a class="headerlink" href="#5-architecture-as-built" title="Permanent link">#</a></h2>
+<p>Series-major, double-length, compacted.</p>
+<p>Each row owns a contiguous span of <code>2 × capacity</code> points and is written sequentially, so the visible
+window is <strong>one contiguous <code>drawArrays</code> span</strong> — there is no ring-wrap segment stitching the newest
+sample to the oldest across the screen. When a row's head reaches the end, the last <code>capacity</code> points
+are copied to the front and the head resets: one larger upload roughly once per second, nothing per
+frame.</p>
+<h3 id="the-layout-fork-quantified">The layout fork, quantified<a class="headerlink" href="#the-layout-fork-quantified" title="Permanent link">#</a></h3>
+<p>The buffer layout decides what a frame costs to <em>upload</em>, and there are exactly two candidates.</p>
+<ul>
+<li><strong>Series-major</strong> — <code>[s0 p0..pN][s1 p0..pN]…</code>. Each channel owns a contiguous span, so a frame's new
+  samples land at N different offsets: <strong>N <code>bufferSubData</code> calls</strong>. Memory order is already strip
+  order, so it draws as a plain <code>LINE_STRIP</code> with no index buffer.</li>
+<li><strong>Time-major</strong> — <code>[t0 s0..sN][t1 s0..sN]…</code>. One frame's samples are contiguous, so the whole frame
+  is <strong>one <code>bufferSubData</code></strong>. But consecutive memory is now <em>different channels</em>, so the strip has to
+  be gathered through a <strong>strided index buffer</strong> — built once, never re-uploaded. It trades upload
+  cost for vertex-fetch locality, which is why draw is measured in both arms.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>series</th>
+<th>series-major upload (N calls)</th>
+<th>time-major upload (1 call)</th>
+<th>upload ratio</th>
+<th>draw delta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>80</td>
+<td>0.168 ms</td>
+<td>0.048 ms</td>
+<td>6.3×</td>
+<td>+0.003 ms</td>
+</tr>
+<tr>
+<td>160</td>
+<td>0.232 ms</td>
+<td>0.049 ms</td>
+<td>8.6×</td>
+<td>+0.006 ms</td>
+</tr>
+<tr>
+<td><strong>320</strong></td>
+<td><strong>0.411 ms</strong></td>
+<td><strong>0.050 ms</strong></td>
+<td><strong>11.8×</strong></td>
+<td>−0.003 ms</td>
+</tr>
+<tr>
+<td>640</td>
+<td>0.477 ms</td>
+<td>0.053 ms</td>
+<td>12.2×</td>
+<td>±0.000 ms</td>
+</tr>
+<tr>
+<td>1280</td>
+<td>0.516 ms</td>
+<td>0.048 ms</td>
+<td>12.3×</td>
+<td>−0.004 ms</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Time-major wins the measurement outright.</strong> The strided index buffer is free — draw deltas are
+within ±0.008 ms, which is noise, and at the highest densities time-major is marginally <em>faster</em>.
+Upload is up to 12× cheaper and, unlike series-major, <strong>flat in series count</strong>: it costs the same
+0.05 ms at 1280 series as at 80, because it is one call either way.</p>
+<p><strong>And series-major is what shipped.</strong> The reason is correctness, not performance. A time-major
+<em>ring</em> cannot express "draw the last window as one strip" through a <strong>static</strong> index buffer: once the
+write head wraps, the newest sample and the oldest sample are adjacent in index order, so a static
+buffer draws a horizontal slash across every trace at the wrap point. Fixing it means rebuilding or
+re-uploading the index buffer whenever the head moves — which is precisely the per-frame upload the
+layout existed to avoid — or splitting into two draws and giving part of the win back.</p>
+<p>Series-major sidesteps the wrap entirely: each row owns <code>2 × capacity</code> and is written <em>sequentially</em>,
+so the visible window is always one contiguous range, and the compaction happens once a second rather
+than once a frame.</p>
+<p><strong>The price is 0.36 ms/frame at 320 series — about 2 % of a 17.4 ms budget</strong> — paid to keep the
+traces free of a rendering artifact, at a density where the whole renderer is already 30× under
+budget. That is the right trade today. Revisit it when 0.4 ms is the thing in the way, and expect a
+wrap-aware time-major path to recover somewhat less than the table promises.</p>
+<p>Painting is scheduled <strong>two ways on purpose</strong> — <code>requestAnimationFrame</code> plus a 24 ms timer, whichever
+fires first. See §6.</p>
+<hr />
+<h2 id="6-two-mistakes-that-each-produced-confident-wrong-numbers">6. Two mistakes that each produced confident wrong numbers<a class="headerlink" href="#6-two-mistakes-that-each-produced-confident-wrong-numbers" title="Permanent link">#</a></h2>
+<p><strong>The first A/B showed no gain at all</strong> — 41 fps against 44, both saturated. The GL canvas was
+layered <em>over</em> the SciChart surface, so it looked like a swap while SciChart stayed bound, kept being
+fed by <code>appendRange</code>, and kept drawing. The app was paying for both renderers. <em>A comparison that
+leaves the incumbent running is not a comparison.</em> The fix at the time was to skip the SciChart
+appends and hide its series whenever <code>window.__useGl</code> was set; since §9 there is no incumbent left to
+leave running.</p>
+<p><strong>The renderer appeared to paint 1.0 frames/s</strong> with every buffer full and correct.
+<code>requestAnimationFrame</code> does not fire in a window Chrome believes is occluded
+(<a href="AgentTraps.html"><code>AgentTraps.md</code></a> §5f) — and <code>setTimeout</code>, the obvious fallback, is clamped to ~1 Hz
+in the same state. The GUI harness passed <strong>no anti-throttling flags</strong>, which means every GUI test
+had been running against a page throttled to 1 Hz. Fixed in <code>tests/gui/_harness.py</code>
+(<code>--disable-features=CalculateNativeWinOcclusion</code>, <code>--disable-backgrounding-occluded-windows</code>,
+<code>--disable-renderer-backgrounding</code>); the renderer also schedules a timer alongside rAF so neither can
+hold it hostage.</p>
+<hr />
+<h2 id="7-limits">7. Limits<a class="headerlink" href="#7-limits" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>The CPU figures travel; the GPU figure did not.</strong> Sim gave 5.05×/2.99× at 320 series; the rig
+  gives 4.28×/2.45× at 480 — consistent. But the sim's 1.43× GPU ratio is a <strong>simulated-source
+  artifact</strong>: on hardware it is 1.06× utilization at 1.01× power, i.e. parity. Tellingly,
+  <em>SciChart's</em> GPU utilization reproduced almost exactly (38.2 → 38.0) while <em>WebGL2's</em> did not
+  (26.7 → 35.9) — so the gap closed from the WebGL2 side. <strong>Do not quote a GPU saving.</strong> The sim's
+  ~57 fps ceiling was also a benchmark-window artifact, not a hard vsync limit: on the rig WebGL2
+  held a true 60 ± 0 fps against SciChart's 42 ± 5.</li>
+<li><strong>Simulated single-band source.</strong> A real multi-band load (NP1 <code>ap</code> + <code>lfp</code> + NI-DAQ + ripple
+  detection + recording) adds main-thread work to <strong>both</strong> arms.</li>
+<li><strong>GPU utilization is coarse</strong> — a percentage sampled at 2.5 Hz. Power is reported beside it for
+  that reason.</li>
+<li><strong>Not everything that is not traces.</strong> Per-channel DOM labels, the depth readout, the strip
+  controls and the resize path are the live view's other main-thread work and are unchanged by this.</li>
+<li><strong>This was written while SciChart was still the default</strong>, with the GUI suite gating on it and
+  <code>window.__setGl(true)</code> switching every column live. That limit expired: SciChart was removed on
+  2026-08-27 and the WebGL2 renderer is the only one (§9).</li>
+</ul>
+<hr />
+<h2 id="8-how-the-switch-worked-while-there-was-one">8. How the switch worked, while there was one<a class="headerlink" href="#8-how-the-switch-worked-while-there-was-one" title="Permanent link">#</a></h2>
+<p><strong>All of this was removed on 2026-08-27 (§9) and none of it exists in the tree today.</strong> It is kept
+because the shape of it is the lesson, not the flag names.</p>
+<pre><code>window.__setGl(true)    // every column -&gt; WebGL2, live
+window.__setGl(false)   // back to SciChart
+</code></pre>
+<p>The flag was read when a column was <em>constructed</em>, so <code>__setGl</code> rebuilt the columns; it returned a
+promise, and <strong>awaiting it</strong> is what made a benchmark measure the renderer it had asked for rather
+than the previous one. A switch that rebuilds the thing it switches is asynchronous whether or not
+its caller admits it. <code>BENCH_GL=1 python benchmarks/cdp_bench.py &lt;label&gt;</code> chose the arm from the
+benchmark side and <code>SPIKESPEAK_GUI_RENDERER</code> chose it for the GUI suite; all three selectors are
+gone, because there is nothing left to select between.</p>
+<hr />
+<h2 id="9-the-removal-2026-08-27">9. The removal, 2026-08-27<a class="headerlink" href="#9-the-removal-2026-08-27" title="Permanent link">#</a></h2>
+<p>The experiment above settles the live view. The bundle also drew the <strong>probe map</strong>, which nothing
+above measures and which was the larger half of the work: the roughly 700 lines of electrode, bank
+and shank logic in <code>ImroManager.js</code> sat on top of a SciChart scatter series. Both are hand-written
+now, and <code>webinterface/lib/</code> contains nothing but <code>qwebchannel.js</code>.</p>
+<p><strong>Deleted:</strong> <code>webinterface/lib/index.min.js</code>, <code>webinterface/lib/scichart2d.js</code> and
+<code>webinterface/lib/scichart2d.wasm</code> — 3.5 MB of vendored bundle.</p>
+<p><strong>What draws now:</strong></p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>File</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>live-view traces</td>
+<td><code>webinterface/GlRenderer.js</code> — <code>GlColumnRenderer</code></td>
+<td>WebGL2. One vertex buffer and one VAO per <strong>column</strong>, series-major double-length layout (§5), one <code>drawArrays(LINE_STRIP, …)</code> per trace over a contiguous span. It is now the only renderer.</td>
+</tr>
+<tr>
+<td>probe / electrode map</td>
+<td><code>webinterface/ProbeMap.js</code> — <code>ProbeMap</code></td>
+<td>Plain canvas 2D. It keeps the <code>clear()</code> / <code>appendRange(xs, ys, metas)</code> series API the old scatter had, which is why the electrode/bank/shank logic in <code>ImroManager.js</code> did not have to change at all. It culls to the visible y range, and redraws are reactive: writing <code>isHidden</code>, <code>x1</code> or <code>y2</code> schedules one rAF.</td>
+</tr>
+</tbody>
+</table>
+<p><code>ImroManager.js</code>'s init function is <code>initProbeMap()</code>; it was <code>initImroSciChart()</code>.</p>
+<p><strong>Renamed in the DOM and CSS</strong>, because the library's name was baked into ids a reader would
+otherwise search for and not find:</p>
+<ul>
+<li><code>#scichart-imro-root</code> → <code>#probe-map-root</code></li>
+<li><code>#scichart-container-N</code> → <code>#chart-container-N</code></li>
+<li><code>.scichart-container-wrapper</code> → <code>.chart-container-wrapper</code></li>
+</ul>
+<p><strong>There is now exactly one copy of the samples.</strong> <code>DataStore.js</code> holds no per-channel sample buffer
+at all. There used to be two chart-library FIFOs per channel which the renderer then read back out;
+<code>NetworkClient</code> now hands each decoded batch straight to <code>GlColumnRenderer.appendRow()</code>, and that
+buffer is the only copy.</p>
+<p><strong>Globals removed:</strong> <code>window.__setGl</code>, <code>window.__useGl</code>, and the environment variable
+<code>SPIKESPEAK_GUI_RENDERER</code>. All three existed to choose between renderers.
+<code>window.__benchPointCount(colIndex)</code> <strong>remains</strong> and now answers only from the GL renderer, returning
+−1 for no such column or for a lost context.</p>
+<p><strong>The plot background was in no stylesheet.</strong> The radial gradient behind the traces came from the
+bundle's own default dark theme, so deleting the bundle took the background with it and there was no
+CSS rule to go and look at. It is explicit now, in <code>webinterface/style.css</code> on
+<code>.chart-container-wrapper</code>: <code>radial-gradient(circle, #3C3C3F 0%, #1C1C1E 100%)</code>. The GL canvas clears
+to <strong>transparent</strong> so that gradient shows through.</p>
+<p><strong>The GUI harness asserts instead of selecting.</strong> <code>tests/gui/_harness.py</code> no longer picks a renderer;
+it checks that a column has a live GL renderer and <strong>refuses to run</strong> if not. A blank canvas is not a
+failing test — every layout assertion would sail straight over it — so the suite has to establish
+that something is drawing before any of its measurements mean anything.</p>
+<p><img alt="The probe map, NP1.0" src="images/renderer/probemap_np1_2026-08-27.png" /></p>
+<p><em>NP1.0 in canvas 2D: one shank shaft, the two electrode columns routed to read-out channels in green,
+electrode numbers thinned to whatever fits, and the amber internal-reference site at electrode 191.</em></p>
+<p><img alt="The probe map, NP2.0 multishank" src="images/renderer/probemap_np2_2026-08-27.png" /></p>
+<p><em>NP2.0, four shanks. The read-out channels are all on shank 0 here; the other three shanks draw their
+electrodes in gray with no labels, which is what keeps 5120 sites legible.</em></p>
+<h3 id="how-the-probe-map-is-drawn-now">How the probe map is drawn now<a class="headerlink" href="#how-the-probe-map-is-drawn-now" title="Permanent link">#</a></h3>
+<p><code>ProbeMap</code> is about 380 lines and has no per-point objects. Three details are worth knowing because
+they are the ones a future change is most likely to undo:</p>
+<ul>
+<li><strong>Redraws are reactive, with an equality guard.</strong> Writing <code>isHidden</code>, <code>x1</code> or <code>y2</code> on a shaft, tip
+  or the selection box schedules exactly one <code>requestAnimationFrame</code>. <code>ImroManager</code> mutates these in
+  fifteen places, and requiring a manual redraw call at each one means the first site anybody forgets
+  leaves the operator looking at a stale probe map — which is indistinguishable from a working one.
+  The equality guard matters as much as the reactivity: writing the same value must not schedule a
+  frame, or the write feeds itself a redraw every frame.</li>
+<li><strong>Labels drop when they would collide.</strong> At the default zoom the view spans about 67 electrode rows
+  over ~560 px — roughly 8 px per row, for 16 px type. The old chart library's data-label engine hid
+  colliding labels automatically; drawing all of them turns the column into an unreadable smear.
+  Collision is resolved per SIDE across every series, not per series, so the amber internal-reference
+  label and its neighboring routed electrode compete for the same column of text — and the reference
+  wins, because it is the one label naming something the operator cannot infer from the pattern.</li>
+<li><strong>Dot radius is clamped to the on-screen row pitch.</strong> Each series carries a design radius, but a dot
+  drawn at full size is wider than the row spacing, so adjacent electrodes merge into a solid bar and
+  stop reading as separate sites. Sizing to the pitch keeps them distinct at <em>every</em> zoom rather than
+  at the one that happened to be tuned.</li>
+</ul>
+<p>Everything else is culling: only electrodes inside the visible y range are considered, so a redraw
+touches on the order of a hundred points out of NP2.0's 5120.</p>
+<hr />
+<h2 id="9a-six-defects-the-removal-exposed">9a. Six defects the removal exposed<a class="headerlink" href="#9a-six-defects-the-removal-exposed" title="Permanent link">#</a></h2>
+<p>Removing a dependency is a good way to find out what was quietly leaning on it. Each of these was
+either live before the removal or would have shipped with it.</p>
+<p><strong>1. The channel labels were pinned to the wrong box.</strong> Described below — the largest visible one.</p>
+<p><strong>2. A deliberate teardown reported itself as a fault.</strong> <code>GlColumnRenderer.destroy()</code> calls
+<code>loseContext()</code>, and that fires <code>webglcontextlost</code> <strong>synchronously</strong>. The new "context lost" handler
+therefore fired on every column rebuild — orientation flip, column count, density change — and told
+the operator the live view had broken. The listener now ignores a loss it caused itself.</p>
+<p><strong>3. Two guards became permanently false, in silence.</strong> <code>handleNewStream()</code> and
+<code>handleWindowResize()</code> both tested <code>columns[0].wasmContext</code> — the chart library's handle, used as a
+<em>proxy</em> for "the live view is ready". Deleting the library made both tests always-false with no error
+anywhere: no stream was ever registered and the view sat on "Waiting for data..." forever. This is a
+failure mode this codebase keeps meeting — a proxy standing in for a condition — and it is invisible
+precisely because nothing throws. Both now test what they mean.</p>
+<p><strong>4. The plot background lived only inside the bundle.</strong> Covered in section 9; the reason it was
+recoverable at all is that <a href="RendererContract.html"><code>RendererContract.md</code></a> had recorded the exact
+gradient values before the deletion.</p>
+<p><strong>5. Trace color was keyed to the display row, not the channel.</strong> <code>setLayout()</code> uploaded
+<code>PALETTE[row % 7]</code>, so a trace changed color whenever it moved rows — paging the slider repainted the
+whole column — and the on-screen sequence became a clean repeating 7-cycle. It is deliberately <em>not</em>
+a clean cycle: color is keyed to the read-out channel and depth ordering permutes channels into rows,
+which is what lets an operator follow one channel while scrolling. <code>draw()</code> now pushes each row's
+color as it binds the row. A tidy repeating cycle down a column is the signature of this regressing.</p>
+<p><strong>6. Nothing cleared buffered samples on a relayout.</strong> The y offset and the packed/interleaved
+ordering are baked into each sample <strong>at append time</strong>, so a depth relayout or an ordering switch
+makes everything already buffered wrong — it keeps drawing at its old height under a label that now
+says something else. The old code cleared the library's per-channel buffers for exactly this reason;
+when those buffers went away the calls became guarded no-ops on a field that no longer existed. They
+still ran. They just did nothing. Three call sites now clear the renderer instead: a row rebound to a
+different channel, a depth relayout, and a packed/interleaved switch.</p>
+<p>A seventh, caught in review before it shipped: the chart div was a containing block only because the
+library set <code>position: relative</code> on it <strong>inline</strong>. The absolutely-positioned trace canvas then
+resolved against the wrapper instead — the same box today, by coincidence of the current layout.
+It is stated in CSS now.</p>
+<hr />
+<h3 id="the-latent-bug-the-removal-fixed">The latent bug the removal fixed<a class="headerlink" href="#the-latent-bug-the-removal-fixed" title="Permanent link">#</a></h3>
+<p>The per-channel label overlay was pinned to the chart library's <strong>inset</strong> plot rect, while the GL
+canvas drew into the <strong>full</strong> div. Under WebGL the labels therefore sat slightly high of the traces
+they name — off by the library's own plot margin, which reads like a CSS rounding error rather than
+two renderers disagreeing about where the plot area is.</p>
+<p>The inset was measured at <strong>exactly 5 px</strong> at the bottom, contributed by the (invisible, label-less)
+x-axis: a surface with no x-axis reports the full host height, one with an <code>isVisible: false</code> axis
+also reports the full height, and one with the shipping label-less axis reports <code>hostH - 5</code>. Five
+pixels is 13 % of a row at 20 rows and about <strong>80 % of a row at 120</strong> — which is why the error looked
+like nothing at low density and like a genuine off-by-one at high density.</p>
+<p>With the library gone the plot area <em>is</em> the div, there is only one coordinate system left, and the
+labels align by construction rather than by agreement.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/RendererExperiment.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-why-this-was-tested">1. Why this was tested</a></li>
+<li><a href="#2-method">2. Method</a><ul>
+<li><a href="#instrumentation-with-no-new-dependencies">Instrumentation, with no new dependencies</a></li>
+</ul>
+</li>
+<li><a href="#3-data">3. Data</a><ul>
+<li><a href="#paired-per-repeat-ratios-scichart-webgl2">Paired per-repeat ratios (SciChart ÷ WebGL2)</a></li>
+<li><a href="#figures">Figures</a></li>
+</ul>
+</li>
+<li><a href="#3a-validated-on-real-hardware-onebox-np20-480-traces">3a. Validated on real hardware — OneBox + NP2.0, 480 traces</a></li>
+<li><a href="#4-why-it-is-faster-the-mechanism">4. Why it is faster — the mechanism</a></li>
+<li><a href="#5-architecture-as-built">5. Architecture as built</a><ul>
+<li><a href="#the-layout-fork-quantified">The layout fork, quantified</a></li>
+</ul>
+</li>
+<li><a href="#6-two-mistakes-that-each-produced-confident-wrong-numbers">6. Two mistakes that each produced confident wrong numbers</a></li>
+<li><a href="#7-limits">7. Limits</a></li>
+<li><a href="#8-how-the-switch-worked-while-there-was-one">8. How the switch worked, while there was one</a></li>
+<li><a href="#9-the-removal-2026-08-27">9. The removal, 2026-08-27</a><ul>
+<li><a href="#how-the-probe-map-is-drawn-now">How the probe map is drawn now</a></li>
+</ul>
+</li>
+<li><a href="#9a-six-defects-the-removal-exposed">9a. Six defects the removal exposed</a><ul>
+<li><a href="#the-latent-bug-the-removal-fixed">The latent bug the removal fixed</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

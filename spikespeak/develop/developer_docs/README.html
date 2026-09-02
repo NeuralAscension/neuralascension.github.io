@@ -1080,8 +1080,8 @@ SSH packages below are what is genuinely per-task. Third-party packages only (st
 </tr>
 <tr>
 <td><strong>requests</strong> + <strong>websocket-client</strong></td>
-<td>the CDP GUI-screenshot harness (<code>python/tools/cdp.py</code>)</td>
-<td><code>pip install requests websocket-client</code></td>
+<td>the GUI test harness (<code>tests/gui/_harness.py</code>) and the CDP screenshot tool (<code>python/tools/cdp.py</code>)</td>
+<td><code>pip install -e python[test]</code> (pinned in <code>python/pyproject.toml</code>), or <code>pip install requests websocket-client</code></td>
 </tr>
 <tr>
 <td><strong>paramiko</strong></td>

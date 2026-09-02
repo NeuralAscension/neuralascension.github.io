@@ -363,15 +363,50 @@ honestly" half has never been observed on a Windows box with nothing attached.</
 <p><strong>Proves:</strong> both transports coexist — slot enumeration, <code>mapBS</code>, and which basestation a profile
 picks. The fullest case of the five.</p>
 <blockquote>
-<p><strong>Partly run, 2026-08-29, 9/9 on the hardware-behavior checks</strong> (enumeration sees both and reports
-itself ambiguous; a probe-agnostic profile asks rather than guesses, tagged
-<code>kind: "basestation-choice"</code>; <code>PXIe</code> connects and streams; <code>OneBox</code> fails for the right reason — a
-missing probe, the probe being on the PXIe — which is what proves the profile reached the box it
-named; and the PXIe still connects afterwards). Both suites were green in that hardware state.
-It found one defect, now fixed: a Disconnect left <code>deviceReady</code> true, so the OneBox failure was
-reported as <code>Still connected to ""</code> instead of <code>No Headstage detected on any port!</code>.</p>
-<p><strong>Still to do for a full pass:</strong> a clean <code>git clone</code>, and a probe on the OneBox so a OneBox connect
-can be shown to SUCCEED rather than only to fail correctly.</p>
+<p><strong>PASS — full run 2026-09-02, clean clone, a probe on each basestation</strong> (an NP1.0 on the PXIe
+basestation, an NP2.0 on the OneBox). Cloned to a short path (<code>C:\sp_c3</code>; see the MAX_PATH trap
+under configuration 2), <code>build.bat</code> with no path edits, then the gate with both basestations
+attached: all three suites green (the counts live in <a href="Testing.html"><code>Testing.md</code></a>), and
+<code>hardware_absent</code> skipped itself as untested because two basestations were attached, which is
+what it is for. Then steps 1–4 below, driven over the WebSocket and judged by counting binary
+frames at the socket while streaming, never by a status flag:</p>
+<table>
+<thead>
+<tr>
+<th>step</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 enumeration</td>
+<td><code>1 PXIe module and 1 OneBox</code>, <code>ambiguous: true</code></td>
+</tr>
+<tr>
+<td>2 <code>PXIe</code> by name</td>
+<td><code>deviceReady</code> in 11.3 s; 90.5 frames/s streaming, 0 paused; clean Disconnect</td>
+</tr>
+<tr>
+<td>2 <code>OneBox</code> by name</td>
+<td><code>deviceReady</code> in 7.7 s; 97.2 frames/s streaming, 0 paused; clean Disconnect — <strong>the row this configuration lacked</strong></td>
+</tr>
+<tr>
+<td>3 <code>Neuropixels</code> (auto)</td>
+<td><code>basestation-choice</code> offering <code>OneBox, PXIe</code>; nothing connected without asking; picking <code>PXIe</code> from it connected and streamed</td>
+</tr>
+<tr>
+<td>4 <code>OneBox</code> again after <code>PXIe</code>, same session</td>
+<td>connected and streamed identically; <code>quit</code> exited 0</td>
+</tr>
+</tbody>
+</table>
+<p>Zero failed connects on either transport, so the issue #54 tally never moved. Two facts from the
+backend log worth knowing: the NP1.0 probe on this rig has <strong>no calibration files</strong> (it streams
+uncalibrated, and the backend says so at <code>ERROR</code> level), and the vendor API reports the OneBox's
+NP2.0 headstage as supporting <strong>2 probes</strong> against the NP1.0 headstage's 1 — two probes on ONE
+headstage is an untested configuration, tracked as its own issue. The partial run of 2026-08-29
+(9/9 hardware-behavior checks, and the <code>deviceReady</code>-left-true defect it found and fixed) stands
+as the first half of this record.</p>
 </blockquote>
 <p>Setup: OneBox on USB3 <strong>and</strong> PXIe chassis powered with the basestation seated, both at once. Power
 the chassis <strong>before</strong> launching — a chassis powered on afterwards is a documented cause of a

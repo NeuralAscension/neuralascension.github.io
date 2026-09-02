@@ -587,9 +587,9 @@ blanket <code>pkill -f brave</code> closes the operator's real windows. Beware t
 also matches <strong>the shell running it</strong>, which kills your own command instead — match on
 <code>user-data-dir=/tmp/spikespeak_guitest</code> and signal the pids.</p>
 <h2 id="1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30">1b. The Python suite — the offline half, and it was ungated until 2026-08-30<a class="headerlink" href="#1b-the-python-suite-the-offline-half-and-it-was-ungated-until-2026-08-30" title="Permanent link">#</a></h2>
-<pre><code class="language-bash">python -m unittest discover python/tests        # 182 tests, ~16 s
+<pre><code class="language-bash">python -m unittest discover python/tests        # 190 tests, ~16 s
 </code></pre>
-<p><strong>It needs numpy.</strong> Six of the seventeen files import it at module scope — the ones that touch real
+<p><strong>It needs numpy.</strong> Six of the nineteen files import it at module scope — the ones that touch real
 signal data (<code>band_response</code>, <code>openephys_export</code>, <code>reader_all_channels</code>, <code>reader_scale</code>,
 <code>spikeglx_convert</code>, <code>sync_pairing</code>) — so without numpy <code>discover</code> reports import errors rather than
 a green run — which is not the same thing as a pass and does not
@@ -665,12 +665,20 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 <td>a hung GUI test is reported as a failed test, never allowed to crash the run</td>
 </tr>
 <tr>
+<td><code>test_gui_runner_notices.py</code></td>
+<td>a notice the harness printed twice (at the skip, and again beside PASSED) reaches the runner's notices block once. Added 2026-09-02 after a gate report listed one untested thing as two</td>
+</tr>
+<tr>
 <td><code>test_gatelock.py</code></td>
 <td>the shared gate lock — excludes a rival run without excluding its own child</td>
 </tr>
 <tr>
 <td><code>test_architecture_current.py</code></td>
 <td>the generated architecture diagrams match the code they depict</td>
+</tr>
+<tr>
+<td><code>test_committed_docs_render.py</code></td>
+<td><strong>a committed document may not embed a file that is not committed.</strong> Added 2026-09-01: the architecture overview embedded 35 SVGs, none in the repository, so on GitHub it showed 35 broken images while its prose was current</td>
 </tr>
 <tr>
 <td><code>test_doc_citations.py</code></td>
@@ -686,7 +694,7 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 </tr>
 </tbody>
 </table>
-<p>Seventeen files, <strong>182 tests</strong> as of 2026-09-01.</p>
+<p>Nineteen files, <strong>190 tests</strong> as of 2026-09-02.</p>
 <p><strong>This table has now been wrong twice, the same way.</strong> It said five files and 121 tests until
 <code>test_band_response.py</code> was added on 2026-08-31 — and the five missing tests were exactly the file
 it had forgotten. Then on 2026-09-01 the Linux run updated the page's <em>headline</em> totals to

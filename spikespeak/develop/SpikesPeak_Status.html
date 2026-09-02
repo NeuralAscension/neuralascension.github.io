@@ -8021,7 +8021,39 @@ attempt. Proved failable: with both fixes reverted it goes red on exactly H3 and
 runner timeout, printing nothing: its <code>wait_for</code> evaluated the predicate under a non-reentrant lock,
 and two predicates called a method that took the same lock. <code>rig.py</code> documents that exact trap
 against its own <code>self.lock</code>, in a comment I had read an hour earlier. Predicates are pure now, and
-the docstring says why.</p></article>
+the docstring says why.</p>
+<h2 id="88-configuration-3-both-basestations-a-probe-on-each-pass-2026-09-02">88. CONFIGURATION 3 — BOTH BASESTATIONS, A PROBE ON EACH: PASS  (2026-09-02)<a class="headerlink" href="#88-configuration-3-both-basestations-a-probe-on-each-pass-2026-09-02" title="Permanent link">#</a></h2>
+<p>The last row of #52. An NP1.0 on the PXIe basestation and an NP2.0 on the OneBox, both powered,
+a clean clone at a short path (<code>C:\sp_c3</code>), built with no path edits.</p>
+<p><strong>The gate first, with the hardware attached.</strong> All three suites green (counts in
+<a href="developer_docs/Testing.html"><code>Testing.md</code></a>). <code>hardware_absent</code> did what it was built to do the day
+before: asked <code>probeHardware</code>, saw two basestations, and reported itself untested rather than
+spend an issue #54 attempt. No backend survived the run.</p>
+<p><strong>Then the part only this configuration can show</strong>, driven over the WebSocket by a script that
+counts binary frames at the socket and never force-kills: <code>PXIe</code> by name opened the chassis and
+streamed (90.5 frames/s, 0 while paused, clean Disconnect); <code>OneBox</code> by name opened the OneBox and
+streamed (97.2 frames/s) — the one row #52 had never had, because every earlier run had the probe
+on the other transport; <code>Neuropixels</code> (auto) with both attached raised <code>basestation-choice</code>
+offering both and connected nothing until asked, and picking <code>PXIe</code> from it connected; and <code>OneBox</code>
+again after <code>PXIe</code> in the same session connected identically. <code>quit</code> exited 0. Zero failed connects
+on either transport. Full detail and the table in
+<a href="developer_docs/SecondMachineRunbooks.html"><code>SecondMachineRunbooks.md</code></a> under configuration 3.</p>
+<p>Two things the log said that are about the rig, not the code: the NP1.0 probe (serial 22175723312)
+has <strong>no calibration files</strong> on this box, so it streams uncalibrated and the backend says so at
+<code>ERROR</code> level on every connect; and the vendor API reports the NP2.0 headstage as supporting <strong>2
+probes</strong> where the NP1.0 headstage supports 1. The second one is the operator's own reminder from
+today — two probes on ONE headstage is a configuration that has never been tested, and the code
+takes the first dock that opens (§86 covered the <em>ports</em> case, which asks). It is filed as its own
+backlog issue; it gates nothing.</p>
+<h3 id="one-small-thing-the-gate-report-got-wrong-about-itself">One small thing the gate report got wrong about itself<a class="headerlink" href="#one-small-thing-the-gate-report-got-wrong-about-itself" title="Permanent link">#</a></h3>
+<p>The <code>hardware_absent</code> notice appeared <strong>twice</strong> in the runner's notices block. The harness prints
+an <code>[untested]</code> line when the skip happens and again in its PASSED-with-untested result block —
+both on purpose — and the runner's collector grepped the whole output for the marker and kept both.
+Two lines for one fact reads as two untested things, and a count off by a factor of two is the kind
+of number that gets quoted. The collector now reports each notice once, in first-seen order;
+<code>python/tests/test_gui_runner_notices.py</code> pins it and was proved to fail against the old collector.
+The rule: <strong>a collector that greps for a marker is counting prints, not facts, until it
+de-duplicates.</strong></p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8577,6 +8609,10 @@ the docstring says why.</p></article>
 <li><a href="#a-trap-that-is-not-a-repo-bug">A trap that is not a repo bug</a></li>
 <li><a href="#not-yet-done-and-it-needs-a-reboot">Not yet done, and it needs a reboot</a></li>
 <li><a href="#finished-after-the-reboot-pass-plus-the-two-defects-the-honest-degradation-half-was-for">Finished after the reboot: PASS, plus the two defects the honest-degradation half was for</a></li>
+</ul>
+</li>
+<li><a href="#88-configuration-3-both-basestations-a-probe-on-each-pass-2026-09-02">88. CONFIGURATION 3 — BOTH BASESTATIONS, A PROBE ON EACH: PASS (2026-09-02)</a><ul>
+<li><a href="#one-small-thing-the-gate-report-got-wrong-about-itself">One small thing the gate report got wrong about itself</a></li>
 </ul>
 </li>
 </ul>

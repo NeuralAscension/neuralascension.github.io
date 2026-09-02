@@ -798,6 +798,37 @@ unlike Chrome it is true <strong>on Windows too</strong>, where the wrapper is <
   <code>UnboundLocalError</code> and only a test that could actually fire it found that.</li>
 <li>A source-level guard that greps text will match the <strong>docstring explaining the bug</strong>. The first
   version of this one did exactly that. Read the AST.</li>
+</ul>
+<h2 id="14-emitting-a-signal-from-inside-qthreadterminate-can-deadlock-the-main-thread">14. Emitting a signal from inside <code>QThread::terminate()</code> can deadlock the main thread<a class="headerlink" href="#14-emitting-a-signal-from-inside-qthreadterminate-can-deadlock-the-main-thread" title="Permanent link">#</a></h2>
+<p><code>QThread::finished</code> is emitted <strong>synchronously, from inside <code>terminate()</code>, while the QThread's own
+mutex is held.</strong> So any slot connected to <code>finished</code> that touches that same QThread — <code>isRunning()</code>,
+<code>wait()</code>, <code>quit()</code> — blocks on a mutex the call above it is holding. On the main thread that is the
+whole application.</p>
+<p><code>src/main.cpp</code> had exactly that shape, and it cost most of a day:</p>
+<pre><code class="language-cpp">connect(kbListenerThread, &amp;QThread::finished, &amp;a, &amp;QApplication::quit);   // (1)
+connect(&amp;a, &amp;QCoreApplication::aboutToQuit, [kbListenerThread]() {
+    if (kbListenerThread &amp;&amp; kbListenerThread-&gt;isRunning()) {              // (3)
+        kbListenerThread-&gt;terminate();                                    // (2)
+</code></pre>
+<p><code>quit</code> → <code>aboutToQuit</code> → <strong>(2)</strong> <code>terminate()</code> → <code>finished</code> fires inside it → <strong>(1)</strong> calls
+<code>QApplication::quit</code> again → <code>aboutToQuit</code> <strong>re-enters</strong> → <strong>(3)</strong> <code>isRunning()</code> wants the held mutex
+→ blocked forever. The process stays alive, keeps its ports open, and answers nothing.</p>
+<p>Three things worth taking from it:</p>
+<ul>
+<li><strong>A shutdown handler must be idempotent.</strong> <code>aboutToQuit</code> is not guaranteed to run once if anything
+  it does can cause another <code>quit()</code>. The fix was a flag, not a disconnect: the second pass has
+  nothing to do either way, and a flag survives someone adding a third <code>aboutToQuit</code> handler later.</li>
+<li><strong>"Intermittent" usually means "there is a race, and something usually wins."</strong> This one deadlocked
+  only when the app quit <em>before</em> the listener thread had noticed stdin was closed and exited by
+  itself — so it needed load, and it struck different tests each run. It was invisible for months
+  and then hit 8-10 of 26 tests once a suite ran 26 shutdowns in ten minutes.</li>
+<li><strong>READ THE STACK.</strong> Three hypotheses were falsified by experiment first — quit-with-no-source, the
+  2 s auto-quit timer racing an explicit <code>quit</code>, and a half-open socket from a killed client. All
+  three were wrong, and each took a build-and-run cycle. Attaching <code>cdb</code> non-invasively to a wedged
+  process (<code>cdb -pv -p &lt;pid&gt; -c "~*k; qd"</code>) answered it in ten minutes, and it works on a <strong>Release
+  build with no PDBs</strong> — Qt exports enough that <code>Qt6Core!QBasicMutex::lockInternal &lt;-
+  QThread::isRunning</code> is perfectly legible. When something is <em>hung</em> rather than wrong, the stack is
+  the cheapest evidence there is; reach for it before the fourth hypothesis, not after.</li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/AgentTraps.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -825,6 +856,7 @@ unlike Chrome it is true <strong>on Windows too</strong>, where the wrapper is <
 <li><a href="#11-webinterface-is-served-from-the-working-tree-every-frontend-edit-is-a-live-edit">11. webinterface/ is served from the WORKING TREE — every frontend edit is a live edit</a></li>
 <li><a href="#12-a-dead-browser-used-to-hang-the-suite-forever">12. A dead browser used to hang the suite forever</a></li>
 <li><a href="#13-a-wedged-backend-hung-the-suite-the-same-way-accepting-a-connection-is-not-being-alive">13. A wedged BACKEND hung the suite the same way — accepting a connection is not being alive</a></li>
+<li><a href="#14-emitting-a-signal-from-inside-qthreadterminate-can-deadlock-the-main-thread">14. Emitting a signal from inside QThread::terminate() can deadlock the main thread</a></li>
 </ul>
 </div>
 </aside>

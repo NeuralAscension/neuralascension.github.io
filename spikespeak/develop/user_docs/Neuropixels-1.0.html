@@ -144,9 +144,6 @@
   <main class="content"><article class="markdown-body"><h1 id="using-a-neuropixels-10-probe">Using a Neuropixels 1.0 Probe<a class="headerlink" href="#using-a-neuropixels-10-probe" title="Permanent link">#</a></h1>
 <p>A step-by-step walkthrough: connect a Neuropixels 1.0 probe, choose which electrodes record, push that
 map to the probe, and watch the live signal. For the toolbar reference, see <a href="README.html"><code>README.md</code></a>.</p>
-<blockquote>
-<p>📷 <em>A step still marked <code>📷</code> has no capture yet. A missing screenshot is not a missing feature.</em></p>
-</blockquote>
 <hr />
 <h2 id="a-60-second-primer-on-the-10-probe">A 60-second primer on the 1.0 probe<a class="headerlink" href="#a-60-second-primer-on-the-10-probe" title="Permanent link">#</a></h2>
 <p>A Neuropixels 1.0 shank has <strong>960 electrodes</strong>, but the probe can only read out <strong>384 channels</strong> at
@@ -176,8 +173,12 @@ once. So each of the 384 channels is wired to <strong>one</strong> electrode cho
    card's analog and digital inputs (that entry appears only when a PXIe module is detected). There is
    no "NPX 1.0" entry, and no <code>PXIe</code> entry either unless a OneBox is attached at the same time and the
    scan has to ask.
+   <strong>Two probes on the basestation</strong> (one per port) make the connect stop and ask <strong>"Which probe?"</strong>,
+   one button per port. The question counts as one failed connect and the answer holds for the life of
+   the backend — see the note under <em>What must be connected</em> in <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a> §1;
+   it applies to the PXIe chassis in exactly the same way.
    <img alt="Source dropdown" src="images/source_dropdown_2026-08-27.png" /></li>
-<li>Watch the <strong>status box</strong> (right side): <code>Connecting to Neuropixels…</code> → <code>Found Neuropixels 1.0 probe</code> /
+<li>Watch the <strong>status box</strong> (left of the toolbar's second row): <code>Connecting to Neuropixels…</code> → <code>Found Neuropixels 1.0 probe</code> /
    <code>Connected — device ready</code> (green). The <strong>Probe Map</strong> and <strong>Live Data</strong> tabs appear, and <strong>Play</strong>
    becomes available.
    - If it goes <strong>red</strong>, the probe wasn't found — check the PXI connection and the console window.</li>
@@ -191,7 +192,7 @@ once. So each of the 384 channels is wired to <strong>one</strong> electrode cho
 the map live (each Apply briefly pauses and restarts streaming automatically).</p>
 <hr />
 <h2 id="3-configure-the-channel-map-probe-map-tab">3. Configure the channel map (Probe Map tab)<a class="headerlink" href="#3-configure-the-channel-map-probe-map-tab" title="Permanent link">#</a></h2>
-<p><img alt="NP1 probe map editor" src="images/np1_probemap_2026-08-21.png" /></p>
+<p><img alt="NP1 probe map editor" src="images/np1_probemap_2026-09-02.png" /></p>
 <p>The panel shows the shank with its electrodes:
 - <strong>Green</strong> = currently selected to record. <strong>Gray</strong> = available but not selected. <strong>Amber</strong> =
   internal-reference site (can't be selected).</p>
@@ -229,6 +230,12 @@ want the complete uniform window.</p>
 - <strong>Save .imro</strong> — downloads the current map as a standard <code>.imro</code> file (via your browser's download).
 - <strong>Load .imro</strong> — pick a <code>.imro</code> file; the editor loads + displays it. <em>Loading does not apply it</em> —
   click <strong>Apply</strong> to push it to the probe.</p>
+<p><strong>Tip referencing:</strong>
+- The <strong>Tip referencing</strong> checkbox under the map buttons flips every channel between the <strong>external
+  reference</strong> (default, unchecked) and the <strong>probe tip</strong>. It is written to hardware <strong>immediately</strong> —
+  there is no Apply step for it — and the status reads <code>Tip referencing enabled (referencing to probe
+  tip)</code> in green. If the write fails, the checkbox <strong>flips itself back</strong> and the status goes red, so
+  the box always shows what the probe is actually doing.</p>
 <hr />
 <h2 id="4-apply-the-map-to-the-probe">4. Apply the map to the probe<a class="headerlink" href="#4-apply-the-map-to-the-probe" title="Permanent link">#</a></h2>
 <p>Click <strong>Apply Map to Hardware</strong>. SpikesPeak automatically does the safe sequence for you: pause
@@ -244,7 +251,7 @@ streaming (if running) → write the new map → <strong>verify</strong> it read
 <h2 id="5-read-the-live-data">5. Read the live data<a class="headerlink" href="#5-read-the-live-data" title="Permanent link">#</a></h2>
 <p>Press <strong>▶ Play</strong> (status: <code>Streaming started</code>) — the view switches itself to <strong>Live Data</strong> on the
 backend's confirmation.</p>
-<p><img alt="NP1 live view" src="images/np1_liveview_2026-08-21.png" /></p>
+<p><img alt="NP1 live view" src="images/np1_liveview_2026-09-02.png" /></p>
 <p><strong>Layout:</strong>
 - One <strong>trace per channel</strong>, stacked vertically and <strong>sorted by depth</strong> — the <strong>deepest</strong> electrode
   (probe tip) is at the <strong>bottom</strong>, shallower going up. The slider rail is labeled <code>shallow</code> (top) /
@@ -264,12 +271,28 @@ backend's confirmation.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Cols</strong> (toolbar)</td>
-<td>Show 1–4 chart columns side by side.</td>
+<td><strong>Columns:</strong> (toolbar; <strong>Rows:</strong> in vertical layout)</td>
+<td>How many strips to show, 1–4.</td>
+</tr>
+<tr>
+<td><strong>Horizontal ⬌ / Vertical ⬍</strong> (toolbar)</td>
+<td><em>Horizontal</em> = side-by-side columns (20 channels each by default) for a landscape monitor. <em>Vertical</em> = full-width stacked rows (40 each), for a portrait monitor.</td>
+</tr>
+<tr>
+<td><strong>Ch</strong> (toolbar)</td>
+<td>Channels per strip: <code>Auto / 20 / 40 / 60 / 80 / 120</code>. Each column also has its own <strong>Ch</strong> in its control strip.</td>
+</tr>
+<tr>
+<td><strong>⛶</strong> (toolbar)</td>
+<td>Open <strong>another view window</strong> — more columns or rows of the same live data, on a second monitor; no toolbar in it. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3b.</td>
+</tr>
+<tr>
+<td><strong>Traces / Heatmap</strong> (per column)</td>
+<td>Switch the column between traces and a time × channel heatmap of the same band. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3a.</td>
 </tr>
 <tr>
 <td><strong>Band selector</strong> (per column)</td>
-<td>Choose the data stream — typically <strong>AP</strong> (spikes) or <strong>LFP</strong> (local field).</td>
+<td>Choose the data stream — <strong>AP Band</strong> (spikes) or <strong>LFP Band</strong> (local field).</td>
 </tr>
 <tr>
 <td><strong>Shank</strong> (per column)</td>
@@ -294,6 +317,10 @@ backend's confirmation.</p>
 </tbody>
 </table>
 <p>The column header shows the <strong>electrode range</strong> currently visible (deepest ↕ shallowest).</p>
+<p>There is no <strong>Bands ▼</strong> button on a 1.0: the probe already streams AP and LFP from the headstage, so
+nothing is derived (the 2.0 pages' LFP/Spike switches do not apply). The <strong>♪</strong> button in the same
+toolbar row opens the <strong>spike audio monitor</strong> — listen to one channel through the speakers — see
+<a href="SpikeAudio.html"><code>SpikeAudio.md</code></a>.</p>
 <hr />
 <h2 id="6-record-to-disk">6. Record to disk<a class="headerlink" href="#6-record-to-disk" title="Permanent link">#</a></h2>
 <blockquote>
@@ -306,14 +333,21 @@ and pressing <strong>● Record</strong> again starts writing. SpikesPeak writes
 and LFP</strong>) to <code>&lt;directory&gt;/&lt;name&gt;/&lt;name&gt;_ap_&lt;timestamp&gt;.bin</code> and <code>…_lfp_&lt;timestamp&gt;.bin</code>. Press Record
 again to stop — <strong>streaming keeps going</strong> (only <strong>Pause</strong> stops it).</p>
 <p>The button tells you which of the three states you are in:</p>
-<p><img alt="Armed — a muted-red ready ring; nothing is on disk yet" src="images/record_armed_2026-07-07.png" /></p>
+<p><img alt="Armed — a muted-red ready ring; nothing is on disk yet" src="images/record_armed_2026-09-02.png" /></p>
 <p><img alt="Recording — Play is a white ⏸ in a green ring (streaming), Record is solid red (writing)" src="images/record_buttons_2026-07-13.png" /></p>
+<p><em>Both are July 2026 captures: the button states are what they still are, but the toolbar around
+them is older than the one described in §5. Cropped re-captures are pending.</em></p>
 <hr />
 <h2 id="7-disconnect-quit">7. Disconnect / quit<a class="headerlink" href="#7-disconnect-quit" title="Permanent link">#</a></h2>
-<ul>
-<li><strong>Disconnect</strong> releases the probe and returns the Source to "None".</li>
-<li><strong>Closing the browser</strong> quits the whole app after ~2 s (a refresh won't).</li>
-</ul>
+<p>Do it in this order every time: <strong>stop → pause → disconnect → quit.</strong></p>
+<ol>
+<li><strong>Stop the recording</strong>, if one is running — press <strong>● Record</strong> so the button stops being solid red.
+   (Pause the SWR Detector dock too, if it is running, so nothing can fire during teardown.)</li>
+<li><strong>⏸ Pause</strong> the stream on the toolbar — the Play button returns to a green <strong>▶</strong>.</li>
+<li><strong>Disconnect</strong> — releases the probe and returns the Source to "None".</li>
+<li><strong>Quit</strong> — <strong>closing the browser</strong> quits the whole app after ~2 s (a refresh won't), or type <code>quit</code>
+   at the backend console. Never force-kill the backend while a probe is connected.</li>
+</ol>
 <hr />
 <h2 id="tips-troubleshooting">Tips &amp; troubleshooting<a class="headerlink" href="#tips-troubleshooting" title="Permanent link">#</a></h2>
 <ul>

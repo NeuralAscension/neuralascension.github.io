@@ -179,7 +179,7 @@ this rig — the OneBox ADC is where a sync line or a stimulus monitor gets capt
 </tr>
 <tr>
 <td><strong>Headstage cable</strong></td>
-<td>From a OneBox probe port to the headstage. SpikesPeak finds the port itself — you do not tell it which one.</td>
+<td>From a OneBox probe port to the headstage. With <strong>one</strong> probe on the box SpikesPeak finds the port itself — you do not tell it which one. With a probe on <strong>each</strong> of two ports it stops and asks <strong>"Which probe?"</strong> — see the note under this table.</td>
 </tr>
 <tr>
 <td><strong>Probe</strong></td>
@@ -195,6 +195,25 @@ this rig — the OneBox ADC is where a sync line or a stimulus monitor gets capt
 </tr>
 </tbody>
 </table>
+<blockquote>
+<p><strong>Two probes on the box.</strong> Since 2026-09-02 a basestation carrying a probe on each of two ports does
+not guess: the connect stops, a <strong>"Which probe?"</strong> dialog offers one button per port (<code>Port 1</code>,
+<code>Port 2</code>), and picking one reconnects on that port. Three things to know before you rely on it:</p>
+<ul>
+<li><strong>The question costs one failed connect.</strong> SpikesPeak streams one probe at a time, and to find out
+  there were two it opened and closed the basestation — the footprint issue #54 counts. Two failed
+  connects in one backend run bring up the <em>Restart SpikesPeak</em> dialog (§10), so the question is one
+  of your two. <strong>Cancel</strong> closes the dialog with nothing connected — and the attempt is still counted.</li>
+<li><strong>The answer is permanent for the life of the backend.</strong> It is recorded process-wide, is not
+  cleared by <strong>Disconnect</strong>, and every later connect uses it silently for as long as that port still
+  has a probe. There is no GUI control to be asked again: to stream the <em>other</em> probe later, restart
+  the backend, or send the raw WebSocket command <code>{"command": "setProbePort", "value": &lt;port&gt;}</code> —
+  the control CLI in <a href="CommandLineControl.html"><code>CommandLineControl.md</code></a> has no subcommand for it yet.</li>
+<li><strong>Two probes on one headstage's two docks is untested</strong> (a 2.0 headstage reports two). The code
+  takes the first dock that opens, silently. Tracked as #82; until it is closed, one probe per
+  headstage.</li>
+</ul>
+</blockquote>
 <h3 id="the-ftdi-driver-one-time-and-version-critical">The FTDI driver — one-time, and version-critical<a class="headerlink" href="#the-ftdi-driver-one-time-and-version-critical" title="Permanent link">#</a></h3>
 <p>The OneBox is an FTDI <strong>FT601</strong> USB-3 bridge. The Neuropixels API will not talk to it without the
 right <strong>D3XX</strong> driver, and it is fussy about which one:</p>
@@ -245,17 +264,21 @@ RESET). Shut down the way §9 describes; it takes ten seconds.</p>
 <li>Open the <strong>Source</strong> dropdown and pick <strong><code>Neuropixels</code></strong>.</li>
 </ol>
 <p><img alt="Source dropdown" src="images/source_dropdown_2026-08-27.png" /></p>
-<p>You name neither the basestation nor the probe. <code>Neuropixels</code> scans, finds the OneBox, opens it,
-   and the probe identifies itself; everything that depends on which probe it is (which bands exist,
-   whether the LFP has to be computed, what the ripple detector reads) follows from that answer. The
-   12-channel ADC streams alongside.</p>
+<p>You name neither the basestation nor the probe (with two probes on the box you are asked which
+   port — §1). <code>Neuropixels</code> scans, finds the OneBox, opens it, and the probe identifies itself;
+   everything that depends on which probe it is (which bands exist, whether the LFP has to be
+   computed, what the ripple detector reads) follows from that answer. The 12-channel ADC streams
+   alongside.</p>
 <p><strong>If a PXIe module is plugged into this machine as well</strong>, the scan is ambiguous, so the auto entry
    is withdrawn and the menu asks which basestation to use — pick <strong><code>OneBox</code></strong> there.</p>
 <p>Until 2026-08-26 there were five OneBox entries, one per probe and per variant, and picking the
-   wrong one silently gave you flat traces and an empty recording. Those, and the explicit <code>OneBox</code> /
-   <code>PXIe</code> / <code>PXIe + NI-DAQ</code> overrides, still exist for reproducing old measurements and are still
-   selectable by name from the control CLI — but they are <strong>no longer in the dropdown</strong> unless the
-   scan is ambiguous. See §3a.</p>
+   wrong one silently gave you flat traces and an empty recording. Those still exist for reproducing
+   old measurements and are still selectable by name from the control CLI, but they are <strong>no longer
+   in the dropdown</strong> (§3a). The explicit <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> profiles reappear in
+   the dropdown <strong>only when the scan is ambiguous</strong>. The auto-detecting <code>PXIe with NI-DAQ</code> is left
+   out of that menu on purpose: it resolves the basestation itself, so offering it where the scan
+   has just failed to resolve would only ask the same question again (fixed 2026-09-02; until then
+   the menu offered it, and picking it did exactly that).</p>
 <ol start="2">
 <li><strong>What you should see, in this order</strong> (watch the status box on the left of the second row):
    - <code>Connecting to Neuropixels…</code> (the status line is built from the profile name, so it says
@@ -305,8 +328,8 @@ because they are measurement tools rather than everyday choices. Select them wit
 <td>Adds the ADC's 12 comparator outputs as a separate logic-level band.</td>
 </tr>
 <tr>
-<td><code>NPX 2.0 Multishank (OneBox, ASAP)</code> · <code>NPX 1.0 (OneBox, ASAP)</code></td>
-<td><strong>Latency-benchmark variants, and now the <em>old</em> way to get ASAP.</strong> Identical to the normal profile except the source polls the probe on every event-loop pass instead of every 1 ms, which costs about a whole CPU core of busy-spin. Since 2026-09-01 you switch that on from the <strong>⚡ ASAP</strong> tab instead (§8), on whatever profile you were already using; these are kept so a published A/B can be reproduced with exactly the file it was run on. See <a href="../developer_docs/LatencyProfiling.html"><code>../developer_docs/LatencyProfiling.md</code></a>.</td>
+<td><em><code>NPX 2.0 Multishank (OneBox, ASAP)</code> · <code>NPX 1.0 (OneBox, ASAP)</code></em></td>
+<td><strong>Deleted 2026-09-02.</strong> They were the old way to get ASAP delivery. Reproduce a published ASAP A/B with the base profile plus the ⚡ ASAP tab, or <code>rig.set_low_latency()</code> from a script — see <a href="RippleDetection.html"><code>RippleDetection.md</code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -393,7 +416,7 @@ backend's confirmation.</p>
 </thead>
 <tbody>
 <tr>
-<td><strong>Cols</strong> (Rows in vertical layout)</td>
+<td><strong>Columns:</strong> (<strong>Rows:</strong> in vertical layout)</td>
 <td>How many strips, 1–4.</td>
 </tr>
 <tr>
@@ -407,6 +430,14 @@ backend's confirmation.</p>
 <tr>
 <td><strong>Time</strong></td>
 <td>Time width of the view: 1 / 2 / 5 / 10 s.</td>
+</tr>
+<tr>
+<td><strong>⛶</strong></td>
+<td>Open <strong>another view window</strong> — more columns or rows of the same live data, on a second monitor. It has no toolbar (no play, no record, no probe map). See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3b.</td>
+</tr>
+<tr>
+<td><strong>▾ view</strong> / <strong>▾ source</strong> <em>(chips)</em></td>
+<td>Appear only when the window is too narrow to hold the view or source controls. <strong>Hover</strong> to peek; <strong>click</strong>, or press <strong>Ctrl+Shift+V</strong> / <strong>Ctrl+Shift+S</strong>, to pin them open.</td>
 </tr>
 </tbody>
 </table>
@@ -563,7 +594,7 @@ you record.</p>
 <p><strong>The OneBox ADC is not affected by this picker, on purpose.</strong> It always records the 12 channels its
 profile configures. A probe read-out index means nothing to an analog input, and on a OneBox rig the
 ADC band is where your stim monitor and sync line are captured — silently dropping it would make the
-recording unanalysable. There is no ADC channel grid in the GUI; to change what the ADC records, edit
+recording unanalyzable. There is no ADC channel grid in the GUI; to change what the ADC records, edit
 the profile's <code>channels:</code> list (see <a href="../developer_docs/ConfigReference.html"><code>../developer_docs/ConfigReference.md</code></a>).</p>
 </blockquote>
 <h3 id="then-record">Then: record<a class="headerlink" href="#then-record" title="Permanent link">#</a></h3>

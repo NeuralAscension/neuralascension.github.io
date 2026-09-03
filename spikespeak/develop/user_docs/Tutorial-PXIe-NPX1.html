@@ -155,15 +155,17 @@ filenames. Everything stated here about behavior was verified on the rig on 2026
 </blockquote>
 <hr />
 <h2 id="1-launch-and-choose-the-pxie">1. Launch, and choose the PXIe<a class="headerlink" href="#1-launch-and-choose-the-pxie" title="Permanent link">#</a></h2>
-<p>Start SpikesPeak and click <strong>Source</strong>. With a PXIe basestation attached the menu offers <strong>PXIe</strong>, and
-— because the NI-DAQ card lives in the same chassis — <strong>PXIe with NI-DAQ</strong>, which adds the card's
-analog and digital inputs as extra streams beside the probe. Choose the latter if you want the
-NI-DAQ channels (stimulation pulses, sync, anything on the BNCs) recorded with the probe.</p>
-<p>If a OneBox is attached at the same time the menu says so and lists both by name, as in the 2.0
-tutorial; SpikesPeak never guesses between them.</p>
+<p>Start SpikesPeak and click <strong>Source</strong>. With only the PXIe attached the menu offers <strong>Neuropixels</strong>
+— the basestation and the probe are both detected, and the row says what was found — and, because
+the NI-DAQ card lives in the same chassis, <strong>PXIe with NI-DAQ</strong>, which adds the card's analog and
+digital inputs as extra streams beside the probe. Choose the latter if you want the NI-DAQ channels
+(stimulation pulses, sync, anything on the BNCs) recorded with the probe.</p>
+<p>If a OneBox is attached at the same time the menu says so and lists the basestations by name —
+<strong>OneBox</strong>, <strong>PXIe</strong>, <strong>PXIe + NI-DAQ</strong> — as in the 2.0 tutorial; SpikesPeak never guesses between
+them.</p>
 <p>Connecting opens the chassis slot, finds the headstage and the probe, and writes the default map.
 The <strong>Probe Map</strong> tab opens on it.</p>
-<p><img alt="The 1.0 probe map" src="images/np1_probemap_2026-08-21.png" /></p>
+<p><img alt="The 1.0 probe map" src="images/np1_probemap_2026-09-02.png" /></p>
 <h2 id="2-the-10-map-one-shank-three-banks-two-columns">2. The 1.0 map: one shank, three banks, two columns<a class="headerlink" href="#2-the-10-map-one-shank-three-banks-two-columns" title="Permanent link">#</a></h2>
 <p>A 1.0 probe has a single shank of 960 electrodes in two columns (left and right), read out 384 at a
 time. The electrodes are grouped in three <strong>banks</strong> of 384 — bank 0 nearest the tip, bank 1 above it,
@@ -181,7 +183,7 @@ the walkthrough is in <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</c
 <h2 id="3-apply-and-stream">3. Apply, and stream<a class="headerlink" href="#3-apply-and-stream" title="Permanent link">#</a></h2>
 <p><strong>Apply Map to Hardware</strong> writes the selection to the probe and reads it back; the status line
 reports it. Then <strong>Live Data</strong> and <strong>Play</strong>.</p>
-<p><img alt="The 1.0 live view" src="images/np1_liveview_2026-08-21.png" /></p>
+<p><img alt="The 1.0 live view" src="images/np1_liveview_2026-09-02.png" /></p>
 <p>The difference from a 2.0 is the <strong>bands</strong>: a 1.0 probe produces <strong>AP</strong> (spikes, 0.3–10 kHz) and
 <strong>LFP</strong> (0.5–500 Hz) <em>on the probe itself</em>, so both arrive as separate streams and there is no
 <strong>Bands</strong> menu — pick <code>AP Band</code> or <code>LFP Band</code> per column from the column's <strong>Stream</strong> dropdown. A 2.0

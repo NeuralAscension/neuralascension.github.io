@@ -172,6 +172,14 @@ live signal.</p>
 <td><strong>Start to finish on the OneBox with an NPX 2.0 multishank probe — the hardware on the rig now: FTDI driver, connect, 4-shank map, live view, recording, the 12-channel OneBox ADC, and how to shut down without costing a power-cycle.</strong></td>
 </tr>
 <tr>
+<td><a href="Tutorial-OneBox-NPX2.html"><strong><code>Tutorial-OneBox-NPX2.md</code></strong></a></td>
+<td><strong>Step-by-step, one screenshot per click, on the real rig (2026-09-02): a 2.0 probe on the OneBox — choose electrodes across three shanks, apply, stream, one shank per column, the per-column controls and dropdowns, 120 traces per column. The narrated video is being produced.</strong></td>
+</tr>
+<tr>
+<td><a href="Tutorial-PXIe-NPX1.html"><code>Tutorial-PXIe-NPX1.md</code></a></td>
+<td>The same sequence for a 1.0 probe on the PXIe basestation, and what differs on a 1.0 (banks, two columns, AP/LFP from the probe itself). Per-step screenshots to follow.</td>
+</tr>
+<tr>
 <td><a href="Exporting-Recordings.html"><strong><code>Exporting-Recordings.md</code></strong></a></td>
 <td><strong>Turning a finished session into SpikeGLX or Open Ephys for analysis — what converts, what to check before an experiment, and the things that will surprise you.</strong></td>
 </tr>
@@ -201,13 +209,17 @@ ripple module.)</p>
 <ol>
 <li><strong>Launch.</strong> Run <strong><code>run_spikespeak.bat</code></strong> (<code>./run_spikespeak.sh</code> on Linux/macOS). A dedicated browser
    window opens at <code>http://localhost:8234</code>. (Details: <a href="#launching-spikespeak">Launching SpikesPeak</a>.)</li>
-<li><strong>Pick a source.</strong> Toolbar <strong>Source</strong> ▸ <strong><code>Simulated Data…</code></strong> → <strong>Neuropixels 1.0 — Ripple Detection
-   (GUI)</strong>. It connects with no probe attached.</li>
+<li><strong>Pick a source.</strong> Toolbar <strong>Source</strong> ▸ <strong><code>Simulated Data ›</code></strong> ▸ <strong>OneBox</strong> (or <strong>PXIe</strong> — this
+   scenario is offered under both) ▸ <strong>Neuropixels 1.0</strong> ▸ <strong>Neuropixels 1.0 — Ripple Detection (GUI)</strong>.
+   It connects with no probe attached.</li>
 </ol>
 <p><img alt="Simulated Data picker" src="images/sim_picker_2026-08-27.png" />
 3. <strong>Play.</strong> Press <strong>▶</strong> — the view switches itself to the <strong>Live Data</strong> tab, and you'll see the live
    waveforms, one trace per channel, stacked by depth.</p>
-<p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview_2026-08-21.png" />
+<p><img alt="Live Data view — depth-sorted traces" src="images/np1_liveview_2026-09-02.png" /></p>
+<p><em>An older shot, from a real 1.0 probe on the OneBox: its toolbar still reads </em><em>Window</em><em> / </em><em>Ripple
+   Detection</em><em> where today's reads </em><em>Time</em><em> / </em><em>SWR Detector</em><em>, and the watermark is from the chart
+   library removed on 2026-08-27. The traces are the thing to look at.</em>
 4. <strong>Open the SWR Detector.</strong> Click <strong>SWR Detector</strong> in the toolbar; the dock slides in on the right.
 5. <strong>Add a channel + arm.</strong> Drag an electrode label from the view (or type a number and <strong>Add</strong>), set
    <strong>Parameter-estimation time = 3 s</strong> (quick test — the shot below still shows the 10 s default),
@@ -224,9 +236,11 @@ ripple module.)</p>
 <ol>
 <li>Run <strong><code>run_spikespeak.bat</code></strong> — or <strong><code>./run_spikespeak.sh</code></strong> on Linux/macOS. A console window opens
    (status/log messages) and a <strong>dedicated browser window</strong> opens automatically on the UI (served
-   locally at <code>http://localhost:8234</code>).
-   - 📷 <em>the console + the browser opening</em></li>
+   locally at <code>http://localhost:8234</code>).</li>
 </ol>
+<p><img alt="The browser window as it opens — Source: None, status Ready" src="images/tut_onebox_np2_01_launch_2026-09-02.png" /></p>
+<p><em>The browser half of the launch: </em><em>Source: None</em><em>, status </em><em>Ready</em><em>. The console window is a separate
+   window and not in this frame.</em></p>
 <blockquote>
 <p><strong>Use the launcher, not <code>bin/SpikesPeak.exe</code>.</strong> The launcher is what puts Qt, the Neuropixels API
 and HDF5 on <code>PATH</code>. Started without them the exe exits <strong><code>0xC0000135</code></strong> (STATUS_DLL_NOT_FOUND)
@@ -264,7 +278,13 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </blockquote>
 <hr />
 <h2 id="the-toolbar-left-right">The toolbar (left → right)<a class="headerlink" href="#the-toolbar-left-right" title="Permanent link">#</a></h2>
-<p>📷 <em>the toolbar</em></p>
+<p><img alt="The toolbar with a Neuropixels 2.0 probe connected on the OneBox" src="images/tut_onebox_np2_04_connected_2026-09-02.png" /></p>
+<p><em>The two toolbar rows, here with a 2.0 multishank probe connected on the OneBox and not yet playing (the
+full window, so the Probe Map underneath is in frame too). It is the fullest toolbar a OneBox rig shows,
+short of </em><em>♪</em><em>, which had not appeared yet at this point — it is there once streaming starts (see the
+live view in <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3). A 1.0 probe's toolbar has no </em><em>Bands ▾</em><em>, because a 1.0
+streams hardware AP and LFP bands and there is nothing to derive; a PXIe rig with an NI-DAQ card shows
+</em><em>▤ NI-DAQ</em><em> where </em><em>▣ OneBox</em><em> is here.</em></p>
 <h3 id="row-1-transport-view-source">Row 1 — transport, view, source<a class="headerlink" href="#row-1-transport-view-source" title="Permanent link">#</a></h3>
 <table>
 <thead>
@@ -299,8 +319,8 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <td>Seconds of history shown by <strong>trace</strong> columns (1 / 2 / 5 / 10 s). Heatmap columns carry their own span, set per column. It was called <em>Window</em> until detached view windows landed, at which point "Window" started reading as <em>which window</em>.</td>
 </tr>
 <tr>
-<td><strong>Cols</strong></td>
-<td>How many side-by-side chart columns to show (1–4; default 2). Reads <strong>Rows</strong> in vertical layout.</td>
+<td><strong>Columns:</strong> / <strong>Rows:</strong></td>
+<td>How many side-by-side chart columns to show (1–4; default 2). The label reads <strong>Columns:</strong> in horizontal layout and <strong>Rows:</strong> in vertical.</td>
 </tr>
 <tr>
 <td><strong>⛶</strong></td>
@@ -308,7 +328,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>Ch</strong></td>
-<td>Channels shown per column/row: <code>Auto</code> (20 horizontal / 40 vertical), 20, 40, 60, 80, 120. In heatmap mode an <strong>All</strong> option appears.</td>
+<td>Channels shown per column/row: <code>Auto</code> (20 horizontal / 40 vertical), 20, 40, 60, 80, 120.</td>
 </tr>
 <tr>
 <td><strong>Horizontal ⬌ / Vertical ⬍</strong></td>
@@ -320,7 +340,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>Source</strong></td>
-<td>Pick the input: <strong>Neuropixels</strong> (basestation and probe both auto-detected), <strong>PXIe with NI-DAQ</strong> (shown when a PXIe module is present), <strong>Intan (MicroZed) — not implemented yet</strong> (listed on purpose; it refuses to connect and says so), or <strong>Simulated Data ›</strong>, which drills down system → probe → scenario. Selecting one <strong>connects</strong> it. If both a OneBox and a PXIe module are attached the menu asks which to use instead of guessing, offering <strong>OneBox</strong> / <strong>PXIe</strong> / <strong>PXIe with NI-DAQ</strong>.</td>
+<td>Pick the input: <strong>Neuropixels</strong> (basestation and probe both auto-detected), <strong>PXIe with NI-DAQ</strong> (shown when a PXIe module is present), <strong>Intan (MicroZed) — not implemented yet</strong> (listed on purpose; it refuses to connect and says so), or <strong>Simulated Data ›</strong>, which drills down system → probe → scenario. Selecting one <strong>connects</strong> it. If both a OneBox and a PXIe module are attached the menu asks which to use instead of guessing, offering <strong>OneBox</strong> / <strong>PXIe</strong> / <strong>PXIe + NI-DAQ</strong> (the explicit profiles; the auto-detecting <em>PXIe with NI-DAQ</em> is left out there because it would only ask again).</td>
 </tr>
 <tr>
 <td><strong>Disconnect</strong></td>
@@ -363,7 +383,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>▤ NI-DAQ</strong></td>
-<td>Appears when an <strong>NI-DAQ</strong> card is connected — that device's panel.</td>
+<td>Appears when an <strong>NI-DAQ</strong> card is connected — that device's panel. It shows a readout of the device (name, product, number of analog input channels) and two selects: <strong>Voltage range</strong> (each option is labeled with the bit depth the device reports for that window — a narrower range gives finer resolution; the code used to take the widest without asking) and <strong>Terminal configuration</strong> (RSE / NRSE / Differential / Pseudo-differential). Both <strong>apply on the next connect</strong> — not immediately, and not on Play, because DAQmx fixes them when the input channel is created — so after changing one, <strong>Disconnect</strong> and reselect <strong><code>PXIe with NI-DAQ</code></strong>.</td>
 </tr>
 <tr>
 <td><strong>⇄ Convert</strong></td>
@@ -387,6 +407,10 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 <tr>
 <td><strong>Traces / Heatmap</strong></td>
 <td>The first dropdown in each column's control strip. <strong>Traces</strong> is one line per channel; <strong>Heatmap</strong> is time across, channel down, color for amplitude — the way to see the whole probe at once. Same channels, same band, different way of looking. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3a.</td>
+</tr>
+<tr>
+<td><strong>Ch:</strong> <em>(per column)</em></td>
+<td>That column's own channel count (<code>Auto</code> / 20 / 40 / 60 / 80 / 120), overriding the toolbar's <strong>Ch</strong> for the one column. In heatmap mode it gains an <strong>All</strong> option — the whole probe in one column, which is the usual way to look at one. See <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a> §3a.</td>
 </tr>
 <tr>
 <td><strong>▾ controls</strong> <em>(chip)</em></td>
@@ -474,7 +498,7 @@ channel-map editor exactly like a real probe, so they are the best hardware-free
 </tr>
 <tr>
 <td><strong>Neuropixels OneBox</strong></td>
-<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. <code>source.npx.onebox</code> is registered in <code>src/core/Utils.cpp</code>. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output works and is measured on <strong>DAC0 → breakout BNC IO0</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed 2026-08-24). It <strong>has</strong> now been compared against the Pi path (2026-08-25): the DAC reaches voltage a median <strong>363 µs earlier</strong>, order-corrected, n ≈ 1000 per ordering — but it is a <strong>voltage</strong> source where the AM 2300 is a <strong>constant-current</strong> stimulator, so read that as a transport comparison, not a stimulus one (<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>). <strong>Operator walkthrough: <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a>.</strong></td>
+<td>✅ <strong>Supported.</strong> Connect, stream, record and reconnect with NP1.0 or NP2.0 over USB3, plus the box's own 12-channel ADC in volts. Closed-loop ripple→stim runs on it at <strong>0.92 ms</strong> (NP1.0) / <strong>0.55 ms</strong> (NP2.0) with ASAP delivery — see <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. The WavePlayer stim output works and is measured on <strong>DAC0 → breakout BNC IO0</strong> (<a href="https://github.com/NeuralAscension/SpikesPeak/issues/49">#49</a> closed 2026-08-24). It <strong>has</strong> now been compared against the Pi path (2026-08-25): the DAC reaches voltage a median <strong>363 µs earlier</strong>, order-corrected, n ≈ 1000 per ordering — but it is a <strong>voltage</strong> source where the AM 2300 is a <strong>constant-current</strong> stimulator, so read that as a transport comparison, not a stimulus one (<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>). <strong>Operator walkthrough: <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code></a>.</strong></td>
 </tr>
 </tbody>
 </table></article>

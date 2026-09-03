@@ -166,7 +166,7 @@ branch rather than joining one. That also unblocks the repo-wide reformat, which
 exactly this — see <a href="CodeStyle.html"><code>CodeStyle.md</code></a> §3.</p>
 <h3 id="closing-out-a-feature-branch">Closing out a feature branch<a class="headerlink" href="#closing-out-a-feature-branch" title="Permanent link">#</a></h3>
 <p>Merging it and deleting the ref is not the end of it. <strong>The documentation site publishes one copy of
-the book per branch, and nothing takes a copy down when its branch goes away</strong> — the deploy action
+the book per allowlisted branch, and nothing takes a copy down when its branch goes away</strong> — the deploy action
 writes <code>spikespeak/&lt;branch&gt;/</code> into the website repository, and the version list on that site's
 landing page is hand-written <em>there</em>, not generated here. Neither notices a merge. The full
 arrangement is in <a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a>, "The published site".</p>

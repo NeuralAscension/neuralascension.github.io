@@ -204,11 +204,19 @@ sources (and <code>scripts/docs_style.css</code> for styling) and re-run the gen
 </table>
 <h2 id="the-published-site">The published site<a class="headerlink" href="#the-published-site" title="Permanent link">#</a></h2>
 <p><code>docs_site/</code> is git-ignored here, but it does not stay local: <code>.github/workflows/deploy-pages.yml</code>
-runs this generator on a push to <strong>any</strong> branch and copies the result into a <strong>second repository</strong>,
+runs this generator on a push to a branch named in
+<code>.github/docs-publish-branches.txt</code> -- today just <code>develop</code> --
+and copies the result into a <strong>second repository</strong>,
 <code>NeuralAscension/neuralascension.github.io</code> (branch <code>master</code>), under <code>spikespeak/&lt;branch-name&gt;</code>. That
 repo's root <code>CNAME</code> is <code>neuralascension.com</code>, so <code>develop</code> is served at
-<a href="https://neuralascension.com/spikespeak/develop/">https://neuralascension.com/spikespeak/develop/</a>, and a branch called <code>feature/Thing</code> at
-<code>.../spikespeak/feature/Thing/</code>.</p>
+<a href="https://neuralascension.com/spikespeak/develop/">https://neuralascension.com/spikespeak/develop/</a>, and a branch called <code>feature/Thing</code> would be at
+<code>.../spikespeak/feature/Thing/</code> -- if, and only if, that name were added to the allowlist.</p>
+<p><strong>The allowlist fails closed.</strong> The trigger names the branches it will publish, and a second guard
+step re-checks the name against <code>docs-publish-branches.txt</code> before the deploy token is used, so a
+missing file, an empty file, a typo or an unlisted branch all end the run without publishing. It used
+to be <code>branches: ['**']</code>, which is how five orphaned branch folders came to be served for four months
+(214 MB, hand-deleted 2026-09-03). Adding a branch means editing <strong>both</strong> the trigger and the list;
+they compose to their intersection, so disagreeing about a name can only ever under-publish.</p>
 <p>Two properties of that arrangement are easy to be caught by, because neither is visible from this
 repository:</p>
 <ul>

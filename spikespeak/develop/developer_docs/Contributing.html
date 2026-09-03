@@ -156,11 +156,32 @@ the long-lived integration line while OneBox work was open — and <code>develop
 <strong>fast-forward</strong>, not by PR. <code>main</code> has one commit on it, the initial one, and has never received a
 merge. So "PR into <code>develop</code>" is the shape to aim for, not a description of the log; if you are
 about to open a PR, ask the operator which base they want rather than inferring it.</p>
-<p><strong>As of 2026-09-01 no branch carries unmerged work.</strong> <code>feature/OneBoxSupport</code> was fast-forwarded
-into <code>develop</code> on 2026-09-01 (<code>60889d7</code>) — the ref still exists locally and on <code>origin</code>, but it
-points at the same commit as <code>develop</code> — and <code>gh pr list</code> shows nothing open, so the next piece of
-work starts a new branch rather than joining one. That also unblocks the repo-wide reformat, which
-has been waiting on exactly this — see <a href="CodeStyle.html"><code>CodeStyle.md</code></a> §3.</p>
+<p><strong>As of 2026-09-03 no branch carries unmerged work.</strong> <code>feature/OneBoxSupport</code> was fast-forwarded
+into <code>develop</code> on 2026-09-01 (<code>60889d7</code>) and the ref has since been deleted: <code>origin</code> carries only
+<code>develop</code> and <code>main</code>, and <code>gh pr list</code> shows nothing open, so the next piece of work starts a new
+branch rather than joining one. That also unblocks the repo-wide reformat, which has been waiting on
+exactly this — see <a href="CodeStyle.html"><code>CodeStyle.md</code></a> §3.</p>
+<h3 id="closing-out-a-feature-branch">Closing out a feature branch<a class="headerlink" href="#closing-out-a-feature-branch" title="Permanent link">#</a></h3>
+<p>Merging it and deleting the ref is not the end of it. <strong>The documentation site publishes one copy of
+the book per branch, and nothing takes a copy down when its branch goes away</strong> — the deploy action
+writes <code>spikespeak/&lt;branch&gt;/</code> into the website repository, and the version list on that site's
+landing page is hand-written <em>there</em>, not generated here. Neither notices a merge. The full
+arrangement is in <a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a>, "The published site".</p>
+<p>So when you close a branch out, in <code>NeuralAscension/neuralascension.github.io</code> (branch <code>master</code>):</p>
+<ol>
+<li>delete <code>spikespeak/&lt;branch&gt;/</code> — about 40 MB per branch, served forever otherwise;</li>
+<li>delete that branch's link from <code>spikespeak/index.html</code>.</li>
+</ol>
+<p>Both in one commit, and check the result against the origin rather than a browser reload: the page
+carries a ten-minute <code>max-age</code>, so your own tab will keep showing the old list well after the site is
+correct.</p>
+<p>This is written down because it was missed. On 2026-09-03, two days after <code>feature/OneBoxSupport</code>
+was merged and deleted, <a href="https://neuralascension.com/spikespeak/">https://neuralascension.com/spikespeak/</a> still offered it as "the active
+working branch", next to a build that predated the two-probe port fix, the config consolidation and
+the architecture overview — a visitor choosing the more active-sounding of the two links got the
+staler documentation. Cleaned up in <code>11d8f9e</code> on the website repo. Four folders from branches closed
+before that one are still orphaned there: <code>AsapPerModule</code>, <code>ProbeHeatmapAndDetachedViews</code>,
+<code>SpikeAudio</code>, <code>SpikeBandProcessor</code>.</p>
 <p><strong>Commit messages are one imperative sentence saying what the commit makes true</strong>, not what files it
 touched. No trailing period. An optional lowercase area prefix (<code>gui:</code>, <code>sim:</code>, <code>Intan:</code>) when the
 subject would otherwise be ambiguous, and the issue number in parentheses when there is one:</p>
@@ -230,7 +251,10 @@ Exit code 0 from <code>run_all_tests.py</code> means nothing unless you passed <
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#branches-and-commits">Branches and commits</a></li>
+<li><a href="#branches-and-commits">Branches and commits</a><ul>
+<li><a href="#closing-out-a-feature-branch">Closing out a feature branch</a></li>
+</ul>
+</li>
 <li><a href="#issues">Issues</a></li>
 <li><a href="#before-you-push">Before you push</a></li>
 <li><a href="#house-rules">House rules</a></li>

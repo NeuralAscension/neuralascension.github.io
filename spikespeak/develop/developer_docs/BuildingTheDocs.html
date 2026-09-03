@@ -199,6 +199,28 @@ sources (and <code>scripts/docs_style.css</code> for styling) and re-run the gen
 </tr>
 </tbody>
 </table>
+<h2 id="the-published-site">The published site<a class="headerlink" href="#the-published-site" title="Permanent link">#</a></h2>
+<p><code>docs_site/</code> is git-ignored here, but it does not stay local: <code>.github/workflows/deploy-pages.yml</code>
+runs this generator on a push to <strong>any</strong> branch and copies the result into a <strong>second repository</strong>,
+<code>NeuralAscension/neuralascension.github.io</code> (branch <code>master</code>), under <code>spikespeak/&lt;branch-name&gt;</code>. That
+repo's root <code>CNAME</code> is <code>neuralascension.com</code>, so <code>develop</code> is served at
+<a href="https://neuralascension.com/spikespeak/develop/">https://neuralascension.com/spikespeak/develop/</a>, and a branch called <code>feature/Thing</code> at
+<code>.../spikespeak/feature/Thing/</code>.</p>
+<p>Two properties of that arrangement are easy to be caught by, because neither is visible from this
+repository:</p>
+<ul>
+<li><strong>The version list at <code>spikespeak/index.html</code> is hand-written in the website repo.</strong> This generator
+  only ever writes <code>spikespeak/&lt;branch&gt;/</code>; nothing here adds or removes an entry on that page.</li>
+<li><strong>Deleting a branch does not delete its published folder.</strong> The action's <code>clean: true</code> is scoped to
+  its own <code>target-folder</code>, so a merged branch's book keeps being served indefinitely, at roughly
+  40 MB apiece.</li>
+</ul>
+<p>So a branch that has been closed out has to be closed out <em>there</em> as well — see
+<a href="Contributing.html"><code>Contributing.md</code></a>, "Closing out a feature branch". GitHub Pages keeps serving a
+deleted path for a minute or two after the push, and a browser will hold the old landing page for its
+ten-minute <code>max-age</code> after that, so confirm against the origin rather than a reload:</p>
+<pre><code>curl -s -o /dev/null -w &quot;%{http_code}\n&quot; https://neuralascension.com/spikespeak/feature/Thing/
+</code></pre>
 <h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
 <p>The generator needs Python with the <strong><code>markdown</code></strong> package, and nothing else:</p>
 <pre><code>pip install markdown
@@ -367,6 +389,7 @@ no architecture diagram and no error saying so.</p>
 <ul>
 <li><a href="#tldr">TL;DR</a></li>
 <li><a href="#where-everything-lives">Where everything lives</a></li>
+<li><a href="#the-published-site">The published site</a></li>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#adding-a-document">Adding a document</a></li>
 <li><a href="#nav-grouping-how-a-long-section-stays-navigable">Nav grouping (how a long section stays navigable)</a></li>

@@ -8203,7 +8203,39 @@ the teardown order with the bounded vendor calls, the low-latency graph, the tra
 options and the <code>Config.js</code> rewrite, the frontend module catalog, the two stimulation paths, and where
 the three suites live — every <code>file:line</code> it cites is checked by <code>test_doc_citations.py</code>. The developer
 README's START HERE now points there first; <code>SpikesPeak_Architecture_Review.md</code> is filed as history
-and rationale.</p></article>
+and rationale.</p>
+<h2 id="91-onebox-support-closed-out-and-the-site-closed-out-with-it-2026-09-03">91. ONEBOX SUPPORT CLOSED OUT, AND THE SITE CLOSED OUT WITH IT  (2026-09-03)<a class="headerlink" href="#91-onebox-support-closed-out-and-the-site-closed-out-with-it-2026-09-03" title="Permanent link">#</a></h2>
+<p>The OneBox effort ends here. #52 is closed with all five configurations passing on real hardware, #82
+is filed for the one case nobody has tested (two probes on a single NP2.0 headstage), and the
+documentation that describes any of it has been through two audits.</p>
+<p><strong>The published site was carrying four months of dead branches.</strong> <code>neuralascension.com/spikespeak</code> is
+produced by a GitHub Action that writes <code>spikespeak/&lt;branch&gt;</code> into a <em>second</em> repository for every
+branch that is ever pushed, and its landing page is hand-written <em>there</em> rather than generated here.
+Neither notices a merge. So <code>feature/OneBoxSupport</code> was still being offered as "the active working
+branch" two days after it was merged and deleted, pointing at a build that predated the two-probe
+port fix, the config consolidation and the architecture overview — a visitor picking the more
+active-sounding of the two links got the staler documentation. That folder and its link are gone, and
+so are the four older ones behind it (<code>AsapPerModule</code>, <code>ProbeHeatmapAndDetachedViews</code>, <code>SpikeAudio</code>,
+<code>SpikeBandProcessor</code>): 214 MB down to 55 MB, <code>develop</code> and the landing page being the whole of what
+is published. <strong>The obligation is now written down</strong> in <code>Contributing.md</code> ("Closing out a feature
+branch") and <code>BuildingTheDocs.md</code> ("The published site"), because the reason it was missed is that
+the deploy arrangement was documented nowhere in this repository at all.</p>
+<p><strong>Three runbooks carry what this session did not finish</strong>, each written to be picked up by somebody
+with none of its context: <code>NextTask_ConfigAudit.md</code> (the operator's stated next priority),
+<code>NextTask_LiveViewScrolling.md</code> (the probe-map scroll bar and whole-shank viewing, specified and
+deliberately parked), and <code>NextTask_UserDocs.md</code> (the reference pages are done and every screenshot
+in them resolves and is committed; the step-by-step 1.0 tutorial and the videos are the operator's
+own work). The still-capture harness that produced the 2.0 tutorial's 25 dated screenshots lived in a
+session scratchpad and would have died with it; it is now beside the screen recorder under
+<code>SpikesPeakRecorder utorial_capture</code> with a README of its traps.</p>
+<p><strong>What the config audit still has open</strong>, in short, because it is the next thing: two profiles
+declare the same <code>sim_variant</code> — the key that groups configs in the simulated picker — and the
+collision is invisible only because one of them is <code>gui_hidden</code>, while that same file's header
+explains it was hidden to avoid showing the operator identical words. Around it sit a comment
+asserting the profile is selectable directly beneath <code>gui_hidden: true</code>, a "differing ONLY in
+auto_start" that omits the difference that matters, a "the only ripple option offered in the UI" that
+six profiles falsify, and a comment about recording twelve analog channels sitting on the comparator
+band. A uniqueness check on <code>sim_variant</code> would have caught the first the day it appeared.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8767,6 +8799,7 @@ and rationale.</p></article>
 </li>
 <li><a href="#89-two-probes-on-one-basestation-the-question-that-never-reached-the-operator-2026-09-02">89. TWO PROBES ON ONE BASESTATION: THE QUESTION THAT NEVER REACHED THE OPERATOR (2026-09-02)</a></li>
 <li><a href="#90-the-asap-config-copies-are-gone-and-the-menu-offers-a-profile-that-connects-2026-09-02">90. THE ASAP CONFIG COPIES ARE GONE, AND THE MENU OFFERS A PROFILE THAT CONNECTS (2026-09-02)</a></li>
+<li><a href="#91-onebox-support-closed-out-and-the-site-closed-out-with-it-2026-09-03">91. ONEBOX SUPPORT CLOSED OUT, AND THE SITE CLOSED OUT WITH IT (2026-09-03)</a></li>
 </ul>
 </div>
 </aside>

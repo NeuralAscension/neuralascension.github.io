@@ -111,10 +111,13 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+<a href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
+<a href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
+<a href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -660,6 +663,18 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <tr>
 <td><a href="NextTask_DocsRefresh.html"><code>NextTask_DocsRefresh.md</code></a></td>
 <td><strong>IN PROGRESS — the documentation refresh.</strong> Which screenshots have been recaptured on the real rig, which are still stale and exactly what each one needs (a ripple signal, the NP2 probe, a play file, NI-DAQ), which prose has been corrected and what is still wrong, and the traps that waste a recapture pass.</td>
+</tr>
+<tr>
+<td><a href="NextTask_ConfigAudit.html"><code>NextTask_ConfigAudit.md</code></a></td>
+<td><strong>OPEN, and the operator's next priority (2026-09-03).</strong> The config findings the 2026-09-02 sweeps left behind, re-checked by hand: two profiles sharing a <code>sim_variant</code>, a header that contradicts the <code>gui_hidden</code> line above it, a "differs ONLY in" that understates a three-way difference, a "the only ripple option" that six profiles falsify, and a comment attached to the wrong recording block. Each with the invariant test that would make it unwritable.</td>
+</tr>
+<tr>
+<td><a href="NextTask_LiveViewScrolling.html"><code>NextTask_LiveViewScrolling.md</code></a></td>
+<td><strong>OPEN, specified by the operator, not started.</strong> A scroll bar on the probe map, and seeing a whole selected shank at once (or scrolling it) in <strong>both</strong> the heatmap and the traces. Why the pager's range is legitimately zero today, the two places that set <code>slider.max</code>, and the band-resolution seam that serves both views at once.</td>
+</tr>
+<tr>
+<td><a href="NextTask_UserDocs.html"><code>NextTask_UserDocs.md</code></a></td>
+<td><strong>Reference pages done; the 1.0 step-by-step and the videos are the operator's.</strong> Proof that every user-doc screenshot resolves and is committed, what is left, where the capture harness now lives outside the repo, and the two rig runs that failed and why.</td>
 </tr>
 </tbody>
 </table>

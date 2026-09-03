@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code style — the formatter, and why it has not been run yet - SpikesPeak Docs</title>
+<title>Next task — scrolling the probe map, and seeing a whole shank at once - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Working on this repo / Code style — the formatter, and why it has not been run yet</span>
+  <span class="crumb">Developer Docs / Plans and open briefs / Next task — scrolling the probe map, and seeing a whole shank at once</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -102,21 +102,21 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
 <a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
-<a class="active" href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
-<a href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
+<a class="active" href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
 <a href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
 </details>
 <h3>Architecture</h3>
@@ -144,208 +144,112 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="code-style-the-formatter-and-why-it-has-not-been-run-yet">Code style — the formatter, and why it has not been run yet<a class="headerlink" href="#code-style-the-formatter-and-why-it-has-not-been-run-yet" title="Permanent link">#</a></h1>
-<p>Issue #24 asks for consistent formatting and suggests clang-format. <code>.clang-format</code> now exists and
-<strong>describes the style already in the tree</strong>. It has deliberately <strong>not</strong> been applied repo-wide;
-this page is the measurement and the plan, so that is a decision somebody makes rather than a diff
-that lands.</p>
-<hr />
-<h2 id="1-the-style-was-measured-not-chosen">1. The style was measured, not chosen<a class="headerlink" href="#1-the-style-was-measured-not-chosen" title="Permanent link">#</a></h2>
-<p>A preset picked off the shelf would have rewritten almost everything. Every setting below was
-derived by counting what is actually here — <strong>measured 2026-08-30 over <code>src/</code>, 104 files and 25,843
-lines</strong>. (The tree is 115 files / 28,045 lines as of 2026-09-01; the absolute counts below are that
-snapshot, and §2 records a re-measurement that says the conclusion has not moved.)</p>
-<table>
-<thead>
-<tr>
-<th>setting</th>
-<th>evidence</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>IndentWidth: 4</code>, <code>UseTab: Never</code></td>
-<td>9,664 lines indent by 4 (the 4,065 at 8 are nesting). <strong>Exactly one tab in the whole tree.</strong></td>
-</tr>
-<tr>
-<td><code>ColumnLimit: 100</code></td>
-<td>p50 = 37, p90 = 97, <strong>p95 = 100</strong>, p99 = 106. 1,237 lines exceed 100; only 92 exceed 110.</td>
-</tr>
-<tr>
-<td><code>BreakBeforeBraces</code> with <code>AfterFunction: true</code></td>
-<td>638 function definitions open on the next line, 204 on the same.</td>
-</tr>
-<tr>
-<td><code>AlwaysBreakAfterReturnType: TopLevelDefinitions</code></td>
-<td><strong>414 definitions</strong> are written <code>bool</code> ⏎ <code>Class::method(...)</code>. The most distinctive thing about how this code looks, and clang-format expresses it exactly.</td>
-</tr>
-<tr>
-<td><code>PointerAlignment: Left</code></td>
-<td><code>Type* name</code> 338 vs <code>Type *name</code> 50; references 443 vs 22.</td>
-</tr>
-</tbody>
-</table>
-<p>Three things are switched <strong>off</strong> on purpose:</p>
-<ul>
-<li><strong><code>SortIncludes: false</code>.</strong> The tree mixes Qt, std, vendored SDK and local headers in an order that
-  is sometimes load-bearing — the Neuropixels and NI-DAQ SDK headers are order-sensitive. A
-  formatter reordering them is a compile error waiting to happen on a machine nobody is watching.</li>
-<li><strong><code>ReflowComments: false</code>.</strong> The comments <em>are</em> the documentation in this codebase, and many are
-  hand-wrapped tables and diagrams. Reflowing them destroys that, and it is the single change most
-  likely to make people distrust the formatter and turn it off.</li>
-<li><strong>No <code>.clang-tidy</code>.</strong> Formatting and linting are different arguments; conflating them means the
-  formatting change gets blocked on a lint debate.</li>
-</ul>
-<p>Written for <strong>clang-format 12</strong>, which is what ships with the VS 2019 toolchain this repo builds
-with:</p>
-<pre><code>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe
-</code></pre>
-<p>(<code>ReferenceAlignment</code> and <code>SortIncludes: Never</code> are 13+ and are not used.)</p>
-<hr />
-<h2 id="2-what-applying-it-would-cost-measured">2. What applying it would cost — measured<a class="headerlink" href="#2-what-applying-it-would-cost-measured" title="Permanent link">#</a></h2>
-<p>Measured <strong>2026-08-30</strong>, with clang-format 12:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>files that would change</td>
-<td><strong>103 of 104</strong></td>
-</tr>
-<tr>
-<td>lines that would change</td>
-<td><strong>9,429 of 25,843 — 36.5 % of the tree</strong></td>
-</tr>
-<tr>
-<td>worst single file</td>
-<td><code>NpInterface.cpp</code>, 1,324 lines</td>
-</tr>
-</tbody>
-</table>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-scrolling-the-probe-map-and-seeing-a-whole-shank-at-once">Next task — scrolling the probe map, and seeing a whole shank at once<a class="headerlink" href="#next-task-scrolling-the-probe-map-and-seeing-a-whole-shank-at-once" title="Permanent link">#</a></h1>
+<p><strong>Status: open, specified by the operator on 2026-09-02/03, not started.</strong> Parked deliberately until
+the documentation work was finished.</p>
+<h2 id="what-the-operator-asked-for-in-their-words">What the operator asked for, in their words<a class="headerlink" href="#what-the-operator-asked-for-in-their-words" title="Permanent link">#</a></h2>
 <blockquote>
-<p><strong>Re-measured 2026-09-01</strong>, same binary, same config, over the grown tree: <strong>114 of 115 files</strong>,
-<strong>9,760 of 28,045 lines — 34.8 %</strong>. Two thousand new lines moved the ratio by under two points, so
-nothing below needs re-deciding; the ablation table is still the 2026-08-30 run and is a
-comparison between variants rather than an absolute, which is what it is for.</p>
+<p>"ensure the heatmap view allows me to scroll up and down or all the channels of the shank selected
+are displayed all at once upon selection, or if it's not all channels then just whatever channels
+are selected we can scroll up and down the shank. The all channels within a shank being viewable
+also needs to be implemented for the live trace view rather than heatmap as well."</p>
+<p>"finish up the scrolling for the probe map view (have a scroll bar added) and the other heatmap
+view things"</p>
 </blockquote>
-<p>Where that comes from, by ablation:</p>
-<table>
-<thead>
-<tr>
-<th>variant</th>
-<th>changed lines</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>the config as written</td>
-<td>9,429</td>
-</tr>
-<tr>
-<td><code>ColumnLimit: 0</code> (never reflow code)</td>
-<td><strong>6,280</strong></td>
-</tr>
-<tr>
-<td><code>SpacesBeforeTrailingComments: 1</code></td>
-<td>9,387</td>
-</tr>
-<tr>
-<td><code>KeepEmptyLinesAtTheStartOfBlocks: true</code></td>
-<td>9,395</td>
-</tr>
-<tr>
-<td><code>AlignTrailingComments: false</code></td>
-<td>9,431</td>
-</tr>
-<tr>
-<td><code>BinPackParameters: false</code></td>
-<td>9,559</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Line reflow is a third of the diff; the other ~6,300 lines are irreducible.</strong> That residue is real
-style drift — the exact thing a formatter exists to remove — so shrinking the diff by setting
-<code>ColumnLimit: 0</code> would be buying a smaller number by giving up the rule most worth enforcing. The
-config keeps 100.</p>
-<p>Everything else is noise, which is the useful result: the config is a close description, and no
-single setting is fighting the codebase.</p>
-<hr />
-<h2 id="3-why-it-is-not-applied-yet">3. Why it is not applied yet<a class="headerlink" href="#3-why-it-is-not-applied-yet" title="Permanent link">#</a></h2>
-<p><strong>36.5 % of lines is a <code>git blame</code> event.</strong> Three things have to be true first, and none of them is
-about the formatter:</p>
+<p>Three deliverables, then:</p>
 <ol>
-<li><strong>No PR open across the same files.</strong> A reformat lands as a conflict in every in-flight branch.
-   <strong>As of 2026-09-01 this condition is met</strong>: <code>gh pr list</code> shows nothing open, PR #69
-   (<code>feature/ProbeHeatmapAndDetachedViews</code>) merged 2026-08-30 and #81 (<code>feature/AsapPerModule</code>)
-   merged 2026-09-01, and <code>feature/OneBoxSupport</code> was merged into <code>develop</code> on 2026-09-01. So the
-   only thing still standing between here and step 3 is the operator's decision — which is what this
-   page exists to hand them, not to pre-empt.</li>
-<li><strong>It goes in ALONE</strong>, as one commit that changes nothing but whitespace, so a reviewer can verify
-   that claim by rerunning the formatter rather than by reading 9,429 lines.</li>
-<li><strong><code>.git-blame-ignore-revs</code> gets that commit's SHA.</strong> The file itself landed on <strong>2026-08-30</strong> —
-   header, instructions and the rule for what may go in it — and is deliberately empty of SHAs,
-   because the reformat has not happened. Adding the SHA is a step in the reformat commit, not a
-   separate task.</li>
+<li><strong>The Probe Map view gets a scroll bar.</strong></li>
+<li><strong>The heatmap</strong>, when a shank is selected, shows that shank's channels in full, or lets the shown
+   window be scrolled up and down the shank.</li>
+<li><strong>The trace view</strong> does the same.</li>
 </ol>
-<p>It is not automatic. Enable it once per clone:</p>
-<p><code>bash
-   git config blame.ignoreRevsFile .git-blame-ignore-revs</code></p>
-<p>Without this, <code>git blame</code> on a third of the codebase points at the reformat instead of at the
-   change that actually introduced the line — which is how a formatting commit costs a team more
-   than the inconsistency did.</p>
-<hr />
-<h2 id="4-until-then-format-what-you-touch">4. Until then: format what you touch<a class="headerlink" href="#4-until-then-format-what-you-touch" title="Permanent link">#</a></h2>
-<p>Windows, VS 2019 (the toolchain the config was written for):</p>
-<pre><code class="language-bash">&quot;C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
+<h2 id="why-the-window-behaves-the-way-it-does-today">Why the window behaves the way it does today<a class="headerlink" href="#why-the-window-behaves-the-way-it-does-today" title="Permanent link">#</a></h2>
+<p>All of this lives in <code>webinterface/ChartColumn.js</code>, which resolves a column's <strong>band</strong> from its
+stream, its shank and its side filter, and then shows a window of that band:</p>
+<pre><code>shownSlots = useDepth ? TRACES : min(TRACES, band.count)      // TRACES is the Ch density setting
+maxBottom  = max(bandStart, bandEnd - shownSlots)             // deepest slot the window may start at
+slider.min = bandStart
+slider.max = maxBottom                                        // ~line 946
 </code></pre>
-<p>Windows, VS 2022 — same layout, different year, and Community/Professional/Enterprise each have
-their own tree:</p>
-<pre><code class="language-bash">&quot;C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
+<p>So <strong>the pager's range is the band minus the window</strong>, and it is legitimately <strong>zero whenever the
+selected shank carries no more channels than the column already shows</strong>. That is correct behavior
+that looks exactly like a dead control, and it has already cost time twice: it is written up in
+<a href="LiveDataView.html"><code>LiveDataView.md</code></a>, and a tutorial capture run on 2026-09-02 died on it when its
+column happened to be on the NI-DAQ stream, which has eight channels and therefore never pages.</p>
+<p><strong>There is a second, band-unaware assignment to the same property</strong> near line 1247:</p>
+<pre><code>this.slider.max = Config.NUM_CHANNELS - n;
 </code></pre>
-<p>Linux — a first-class dev path since 2026-08-26 (<a href="Building.html"><code>Building.md</code></a>,
-<a href="Testing.html"><code>Testing.md</code></a> §1a), so it needs an invocation that is not a Windows absolute path:</p>
-<pre><code class="language-bash">sudo apt install clang-format          # or clang-format-14, etc.
-clang-format -i -style=file &lt;file&gt;
-</code></pre>
-<p><strong>A newer clang-format is safe against this config.</strong> Nothing here is a 13+ option — the two that
-would have been, <code>ReferenceAlignment</code> and <code>SortIncludes: Never</code>, are deliberately not used, and
-<code>SortIncludes</code> is written in the boolean form every version understands. A newer binary reads the
-file unchanged. What it does <em>not</em> guarantee is a byte-identical diff: formatters change their
-defaults for settings nobody has pinned, so <strong>do not mix versions inside one commit</strong>, and use one
-version for the repo-wide pass when it happens.</p>
-<p><strong>Do not reformat a file you are only reading.</strong> A feature diff with 300 unrelated whitespace lines
-in it is a diff nobody reviews properly, and that is a worse outcome than inconsistent bracing.</p>
-<p>To check without writing:</p>
-<pre><code class="language-bash">clang-format --dry-run --Werror -style=file &lt;file&gt;
-</code></pre>
-<hr />
-<h2 id="5-the-staged-plan">5. The staged plan<a class="headerlink" href="#5-the-staged-plan" title="Permanent link">#</a></h2>
-<ol>
-<li><strong>Now</strong> — <code>.clang-format</code> and <code>.editorconfig</code> land; no code changes. <em>(done)</em>
-   <code>.git-blame-ignore-revs</code> landed alongside them on <strong>2026-08-30</strong>, empty of SHAs by design.</li>
-<li><strong>Merge the open PR.</strong> <em>(done — the queue was empty on 2026-09-01; see §3.1)</em></li>
-<li><strong>The reformat</strong>, alone, in one commit, immediately after a merge and before new work starts.
-   Add its SHA to <code>.git-blame-ignore-revs</code> in the <em>same</em> commit — the file is already there and
-   waiting; it is the SHA that is missing, not the file.</li>
-<li><strong>Then</strong> decide whether to enforce it — a CI check or a pre-commit hook. That is its own
-   decision, because a formatter that blocks a push at 2 a.m. on a rig is a formatter people
-   disable. A <code>--dry-run --Werror</code> check over <strong>changed files only</strong> is the version worth having.</li>
-</ol>
-<p>Not planned: reformatting <code>ext/</code> or <code>external/</code>. Those are vendored and must stay byte-comparable
-with upstream.</p></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/CodeStyle.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<p>which is computed from the whole probe rather than the column's band. Work out which of the two wins
+in each code path before changing either. If they can disagree, that is a defect in its own right and
+worth a test.</p>
+<p>The heatmap is not a separate channel model: the same resolution is recorded once as
+<code>this._hmBand = { start, end, chanAt }</code> and <code>heatmapChannels()</code> reads it, deliberately, so that the
+heatmap and the traces beside it show the same channels in the same order on the same time base. <strong>A
+change to the window model therefore serves both views if it is made in the band resolution rather
+than in either renderer</strong> — that is the seam to aim for, and keeping it is a requirement, not a
+preference: the operator asked specifically that a heatmap and its traces be comparable.</p>
+<p>The Probe Map is different code: <code>webinterface/ProbeMap.js</code>, plain canvas 2D, with a zoom model
+rather than a scrollbar. At default zoom the view spans roughly 67 electrode rows in about 560 px on
+a probe that can carry 5120 electrodes, so most of the map is off-screen with no visible affordance
+saying so. That is the complaint.</p>
+<h2 id="constraints-that-are-not-negotiable">Constraints that are not negotiable<a class="headerlink" href="#constraints-that-are-not-negotiable" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>No chart library.</strong> The traces are a hand-written WebGL2 renderer and the probe map is canvas 2D,
+  on purpose and after measurement — <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a>. Adding a
+  charting or virtual-scroll dependency is the operator's decision, not a convenience.</li>
+<li><strong>The WebGL context budget is about 16.</strong> Showing "all channels at once" must not become one
+  context per anything. Count contexts before and after — <a href="DetachedViews.html"><code>DetachedViews.md</code></a>.</li>
+<li><strong>Nothing new on the hot path.</strong> The 30 kHz path is not touched by the GUI, but per-frame cost is
+  real: a label overlay is DOM, and one element per channel across a full shank is a different order
+  of magnitude from the current window. Measure, do not assume.</li>
+<li><strong>The frontend is served live from the working tree.</strong> Do not edit <code>webinterface/</code> while a backend
+  or a gate is running; prototype in the scratchpad and apply when nothing is up.</li>
+<li><strong>The GUI suite gates this.</strong> Anything in <code>webinterface/</code> means
+  <code>python scripts/run_gui_tests.py</code>, and the toolbar or a control changing means
+  <code>user_docs/README.md</code>'s toolbar table and <code>user_docs/GUI-Guide.md</code> change in the <em>same</em> commit.</li>
+</ul>
+<h2 id="suggested-shape-to-be-confirmed-against-the-code">Suggested shape, to be confirmed against the code<a class="headerlink" href="#suggested-shape-to-be-confirmed-against-the-code" title="Permanent link">#</a></h2>
+<p>Resolve the three asks into one question — <em>what does this column show, and what can the operator
+move</em> — and answer it in the band resolution:</p>
+<ul>
+<li>Decide what "all channels of the shank" means when the shank has more channels than the column has
+  vertical pixels. A 1.0 bank is 384 and a 2.0 shank can be far more; at some density the traces
+  stop being readable and the honest answer is a scrollable window, which is ask 2's own fallback
+  ("or if it's not all channels then just whatever channels are selected we can scroll").</li>
+<li>Make the pager range meaningful rather than zero when the band fits: either the control disappears,
+  or it says the whole band is shown. A control that is present, enabled and inert is the thing that
+  wasted the time.</li>
+<li>For the probe map, a real scrollbar bound to the same view state the zoom already maintains,
+  rather than a second view model.</li>
+</ul>
+<h2 id="what-done-looks-like">What "done" looks like<a class="headerlink" href="#what-done-looks-like" title="Permanent link">#</a></h2>
+<ul>
+<li>On a four-shank 2.0, selecting a shank in a column shows that shank's channels in full, or scrolls
+  through them, in <strong>both</strong> the trace view and the heatmap, with the two staying on the same channels
+  and the same time base.</li>
+<li>The probe map has a scroll bar that moves the view and reflects where the view is.</li>
+<li>New GUI tests, each <strong>proved failable</strong> by injecting the regression and watching it go red —
+  <a href="InvariantTests.html"><code>InvariantTests.md</code></a>, and <code>tests/gui/</code> for the existing shape. The invariant
+  worth writing is not "the slider has range on this profile" but <strong>a column's pager range is never
+  silently zero while channels remain unseen</strong>, which is the class this task is about.</li>
+<li><code>user_docs</code> updated in the same commit if anything an operator clicks moved.</li>
+<li>Full gate green: <code>python scripts/run_all_tests.py --no-browser --fatal</code>.</li>
+</ul>
+<h2 id="before-you-start">Before you start<a class="headerlink" href="#before-you-start" title="Permanent link">#</a></h2>
+<p>A read-only survey workflow over <code>ProbeMap.js</code>, <code>ChartColumn.js</code>, <code>GlRenderer.js</code>, <code>GlHeatmap.js</code> and
+<code>tests/gui/</code> was launched for this task on 2026-09-02 and <strong>cancelled at the operator's request</strong>
+before it reported, so there is no digest to inherit. The file and line references above were read by
+hand on 2026-09-03 and are the starting points, not a substitute for that survey.</p></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_LiveViewScrolling.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-style-was-measured-not-chosen">1. The style was measured, not chosen</a></li>
-<li><a href="#2-what-applying-it-would-cost-measured">2. What applying it would cost — measured</a></li>
-<li><a href="#3-why-it-is-not-applied-yet">3. Why it is not applied yet</a></li>
-<li><a href="#4-until-then-format-what-you-touch">4. Until then: format what you touch</a></li>
-<li><a href="#5-the-staged-plan">5. The staged plan</a></li>
+<li><a href="#what-the-operator-asked-for-in-their-words">What the operator asked for, in their words</a></li>
+<li><a href="#why-the-window-behaves-the-way-it-does-today">Why the window behaves the way it does today</a></li>
+<li><a href="#constraints-that-are-not-negotiable">Constraints that are not negotiable</a></li>
+<li><a href="#suggested-shape-to-be-confirmed-against-the-code">Suggested shape, to be confirmed against the code</a></li>
+<li><a href="#what-done-looks-like">What "done" looks like</a></li>
+<li><a href="#before-you-start">Before you start</a></li>
 </ul>
 </div>
 </aside>

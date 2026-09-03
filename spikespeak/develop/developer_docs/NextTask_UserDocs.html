@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code style — the formatter, and why it has not been run yet - SpikesPeak Docs</title>
+<title>Next task — finishing the user documentation - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Working on this repo / Code style — the formatter, and why it has not been run yet</span>
+  <span class="crumb">Developer Docs / Plans and open briefs / Next task — finishing the user documentation</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -102,22 +102,22 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
 <a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
-<a class="active" href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
 <a href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
-<a href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
+<a class="active" href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
 </details>
 <h3>Architecture</h3>
 <a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
@@ -144,208 +144,113 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="code-style-the-formatter-and-why-it-has-not-been-run-yet">Code style — the formatter, and why it has not been run yet<a class="headerlink" href="#code-style-the-formatter-and-why-it-has-not-been-run-yet" title="Permanent link">#</a></h1>
-<p>Issue #24 asks for consistent formatting and suggests clang-format. <code>.clang-format</code> now exists and
-<strong>describes the style already in the tree</strong>. It has deliberately <strong>not</strong> been applied repo-wide;
-this page is the measurement and the plan, so that is a decision somebody makes rather than a diff
-that lands.</p>
-<hr />
-<h2 id="1-the-style-was-measured-not-chosen">1. The style was measured, not chosen<a class="headerlink" href="#1-the-style-was-measured-not-chosen" title="Permanent link">#</a></h2>
-<p>A preset picked off the shelf would have rewritten almost everything. Every setting below was
-derived by counting what is actually here — <strong>measured 2026-08-30 over <code>src/</code>, 104 files and 25,843
-lines</strong>. (The tree is 115 files / 28,045 lines as of 2026-09-01; the absolute counts below are that
-snapshot, and §2 records a re-measurement that says the conclusion has not moved.)</p>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-finishing-the-user-documentation">Next task — finishing the user documentation<a class="headerlink" href="#next-task-finishing-the-user-documentation" title="Permanent link">#</a></h1>
+<p><strong>Status: the reference pages are done and current. What is left is the step-by-step 1.0 tutorial and
+the videos, and the operator has said they will do those themselves (2026-09-03).</strong></p>
+<h2 id="where-it-stands">Where it stands<a class="headerlink" href="#where-it-stands" title="Permanent link">#</a></h2>
+<p><code>user_docs/</code> is eleven pages carrying fifty-eight distinct image references. Checked on 2026-09-03:</p>
 <table>
 <thead>
 <tr>
-<th>setting</th>
-<th>evidence</th>
+<th>check</th>
+<th>result</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>IndentWidth: 4</code>, <code>UseTab: Never</code></td>
-<td>9,664 lines indent by 4 (the 4,065 at 8 are nesting). <strong>Exactly one tab in the whole tree.</strong></td>
+<td>references resolving to a file on disk</td>
+<td>all of them</td>
 </tr>
 <tr>
-<td><code>ColumnLimit: 100</code></td>
-<td>p50 = 37, p90 = 97, <strong>p95 = 100</strong>, p99 = 106. 1,237 lines exceed 100; only 92 exceed 110.</td>
+<td>referenced images committed to the repo</td>
+<td>all of them</td>
 </tr>
 <tr>
-<td><code>BreakBeforeBraces</code> with <code>AfterFunction: true</code></td>
-<td>638 function definitions open on the next line, 204 on the same.</td>
+<td>images on disk that no page references</td>
+<td>none</td>
 </tr>
 <tr>
-<td><code>AlwaysBreakAfterReturnType: TopLevelDefinitions</code></td>
-<td><strong>414 definitions</strong> are written <code>bool</code> ⏎ <code>Class::method(...)</code>. The most distinctive thing about how this code looks, and clang-format expresses it exactly.</td>
-</tr>
-<tr>
-<td><code>PointerAlignment: Left</code></td>
-<td><code>Type* name</code> 338 vs <code>Type *name</code> 50; references 443 vs 22.</td>
+<td>pages linking a video file that does not exist</td>
+<td>none</td>
 </tr>
 </tbody>
 </table>
-<p>Three things are switched <strong>off</strong> on purpose:</p>
+<p>So there are <strong>no broken or missing screenshots</strong>, and nothing is waiting on an image that was never
+captured. The 2026-09-02 audit pass recaptured the seven shots that still carried the removed chart
+library's watermark or a pre-rename toolbar, and every page that reuses an older shot now says in
+text which rig it came from and what is dated about it.</p>
+<p>Two tutorials exist:</p>
 <ul>
-<li><strong><code>SortIncludes: false</code>.</strong> The tree mixes Qt, std, vendored SDK and local headers in an order that
-  is sometimes load-bearing — the Neuropixels and NI-DAQ SDK headers are order-sensitive. A
-  formatter reordering them is a compile error waiting to happen on a machine nobody is watching.</li>
-<li><strong><code>ReflowComments: false</code>.</strong> The comments <em>are</em> the documentation in this codebase, and many are
-  hand-wrapped tables and diagrams. Reflowing them destroys that, and it is the single change most
-  likely to make people distrust the formatter and turn it off.</li>
-<li><strong>No <code>.clang-tidy</code>.</strong> Formatting and linting are different arguments; conflating them means the
-  formatting change gets blocked on a lint debate.</li>
+<li><a href="../user_docs/Tutorial-OneBox-NPX2.html"><code>../user_docs/Tutorial-OneBox-NPX2.md</code></a> — complete, one
+  dated screenshot per click, captured on the real 2.0 multishank on the OneBox on 2026-09-02.</li>
+<li><a href="../user_docs/Tutorial-PXIe-NPX1.html"><code>../user_docs/Tutorial-PXIe-NPX1.md</code></a> — the 1.0 companion.
+  The prose was verified on the rig the same day, but <strong>its per-step stills were never captured</strong>,
+  and the page says so in a note at the top rather than pretending otherwise.</li>
 </ul>
-<p>Written for <strong>clang-format 12</strong>, which is what ships with the VS 2019 toolchain this repo builds
-with:</p>
-<pre><code>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe
-</code></pre>
-<p>(<code>ReferenceAlignment</code> and <code>SortIncludes: Never</code> are 13+ and are not used.)</p>
-<hr />
-<h2 id="2-what-applying-it-would-cost-measured">2. What applying it would cost — measured<a class="headerlink" href="#2-what-applying-it-would-cost-measured" title="Permanent link">#</a></h2>
-<p>Measured <strong>2026-08-30</strong>, with clang-format 12:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>files that would change</td>
-<td><strong>103 of 104</strong></td>
-</tr>
-<tr>
-<td>lines that would change</td>
-<td><strong>9,429 of 25,843 — 36.5 % of the tree</strong></td>
-</tr>
-<tr>
-<td>worst single file</td>
-<td><code>NpInterface.cpp</code>, 1,324 lines</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Re-measured 2026-09-01</strong>, same binary, same config, over the grown tree: <strong>114 of 115 files</strong>,
-<strong>9,760 of 28,045 lines — 34.8 %</strong>. Two thousand new lines moved the ratio by under two points, so
-nothing below needs re-deciding; the ablation table is still the 2026-08-30 run and is a
-comparison between variants rather than an absolute, which is what it is for.</p>
-</blockquote>
-<p>Where that comes from, by ablation:</p>
-<table>
-<thead>
-<tr>
-<th>variant</th>
-<th>changed lines</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>the config as written</td>
-<td>9,429</td>
-</tr>
-<tr>
-<td><code>ColumnLimit: 0</code> (never reflow code)</td>
-<td><strong>6,280</strong></td>
-</tr>
-<tr>
-<td><code>SpacesBeforeTrailingComments: 1</code></td>
-<td>9,387</td>
-</tr>
-<tr>
-<td><code>KeepEmptyLinesAtTheStartOfBlocks: true</code></td>
-<td>9,395</td>
-</tr>
-<tr>
-<td><code>AlignTrailingComments: false</code></td>
-<td>9,431</td>
-</tr>
-<tr>
-<td><code>BinPackParameters: false</code></td>
-<td>9,559</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Line reflow is a third of the diff; the other ~6,300 lines are irreducible.</strong> That residue is real
-style drift — the exact thing a formatter exists to remove — so shrinking the diff by setting
-<code>ColumnLimit: 0</code> would be buying a smaller number by giving up the rule most worth enforcing. The
-config keeps 100.</p>
-<p>Everything else is noise, which is the useful result: the config is a close description, and no
-single setting is fighting the codebase.</p>
-<hr />
-<h2 id="3-why-it-is-not-applied-yet">3. Why it is not applied yet<a class="headerlink" href="#3-why-it-is-not-applied-yet" title="Permanent link">#</a></h2>
-<p><strong>36.5 % of lines is a <code>git blame</code> event.</strong> Three things have to be true first, and none of them is
-about the formatter:</p>
+<h2 id="what-remains">What remains<a class="headerlink" href="#what-remains" title="Permanent link">#</a></h2>
 <ol>
-<li><strong>No PR open across the same files.</strong> A reformat lands as a conflict in every in-flight branch.
-   <strong>As of 2026-09-01 this condition is met</strong>: <code>gh pr list</code> shows nothing open, PR #69
-   (<code>feature/ProbeHeatmapAndDetachedViews</code>) merged 2026-08-30 and #81 (<code>feature/AsapPerModule</code>)
-   merged 2026-09-01, and <code>feature/OneBoxSupport</code> was merged into <code>develop</code> on 2026-09-01. So the
-   only thing still standing between here and step 3 is the operator's decision — which is what this
-   page exists to hand them, not to pre-empt.</li>
-<li><strong>It goes in ALONE</strong>, as one commit that changes nothing but whitespace, so a reviewer can verify
-   that claim by rerunning the formatter rather than by reading 9,429 lines.</li>
-<li><strong><code>.git-blame-ignore-revs</code> gets that commit's SHA.</strong> The file itself landed on <strong>2026-08-30</strong> —
-   header, instructions and the rule for what may go in it — and is deliberately empty of SHAs,
-   because the reformat has not happened. Adding the SHA is a step in the reformat commit, not a
-   separate task.</li>
+<li><strong>Per-step stills for the 1.0 tutorial</strong>, on a 1.0 probe on the PXIe basestation.</li>
+<li><strong>The narrated videos</strong> for both tutorials. <code>user_docs/videos/</code> exists and is empty; the operator
+   decides from the file size whether they are committed or uploaded, so leave them untracked until
+   that is decided.</li>
+<li><strong>One line to correct once a video exists or is abandoned.</strong>
+   <code>Tutorial-OneBox-NPX2.md</code> §9 says <em>"These are all in the video and in the reference pages; the
+   stills were not captured on this pass."</em> There is no video yet, so as written it points at
+   something that does not exist. Either the video lands, or that sentence should promise only the
+   reference pages.</li>
 </ol>
-<p>It is not automatic. Enable it once per clone:</p>
-<p><code>bash
-   git config blame.ignoreRevsFile .git-blame-ignore-revs</code></p>
-<p>Without this, <code>git blame</code> on a third of the codebase points at the reformat instead of at the
-   change that actually introduced the line — which is how a formatting commit costs a team more
-   than the inconsistency did.</p>
-<hr />
-<h2 id="4-until-then-format-what-you-touch">4. Until then: format what you touch<a class="headerlink" href="#4-until-then-format-what-you-touch" title="Permanent link">#</a></h2>
-<p>Windows, VS 2019 (the toolchain the config was written for):</p>
-<pre><code class="language-bash">&quot;C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
+<h2 id="the-capture-tooling-and-where-it-now-lives">The capture tooling, and where it now lives<a class="headerlink" href="#the-capture-tooling-and-where-it-now-lives" title="Permanent link">#</a></h2>
+<p>The harness that produced the 2.0 tutorial's twenty-five dated stills was written in a session
+scratchpad, which does not survive the session. It has been copied to a durable location <strong>outside
+this repository</strong>, alongside the screen recorder built for the same job:</p>
+<pre><code>C:\Users\BIOEl\SpikesPeakRecorder\                 the click-to-run screen recorder
+C:\Users\BIOEl\SpikesPeakRecorder\tutorial_capture\ the still/screencast harness + its README
 </code></pre>
-<p>Windows, VS 2022 — same layout, different year, and Community/Professional/Enterprise each have
-their own tree:</p>
-<pre><code class="language-bash">&quot;C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
+<p>It is deliberately not in the repo: it is an operator tool, it drives real hardware, and
+<a href="Contributing.html"><code>Contributing.md</code></a> keeps working files out of the tree. Run it as</p>
+<pre><code>python tutorial_capture.py &lt;path-to-repo&gt; PXIe pxie_np1        # or: OneBox onebox_np2
 </code></pre>
-<p>Linux — a first-class dev path since 2026-08-26 (<a href="Building.html"><code>Building.md</code></a>,
-<a href="Testing.html"><code>Testing.md</code></a> §1a), so it needs an invocation that is not a Windows absolute path:</p>
-<pre><code class="language-bash">sudo apt install clang-format          # or clang-format-14, etc.
-clang-format -i -style=file &lt;file&gt;
-</code></pre>
-<p><strong>A newer clang-format is safe against this config.</strong> Nothing here is a 13+ option — the two that
-would have been, <code>ReferenceAlignment</code> and <code>SortIncludes: Never</code>, are deliberately not used, and
-<code>SortIncludes</code> is written in the boolean form every version understands. A newer binary reads the
-file unchanged. What it does <em>not</em> guarantee is a byte-identical diff: formatters change their
-defaults for settings nobody has pinned, so <strong>do not mix versions inside one commit</strong>, and use one
-version for the repo-wide pass when it happens.</p>
-<p><strong>Do not reformat a file you are only reading.</strong> A feature diff with 300 unrelated whitespace lines
-in it is a diff nobody reviews properly, and that is a worse outcome than inconsistent bracing.</p>
-<p>To check without writing:</p>
-<pre><code class="language-bash">clang-format --dry-run --Werror -style=file &lt;file&gt;
-</code></pre>
-<hr />
-<h2 id="5-the-staged-plan">5. The staged plan<a class="headerlink" href="#5-the-staged-plan" title="Permanent link">#</a></h2>
-<ol>
-<li><strong>Now</strong> — <code>.clang-format</code> and <code>.editorconfig</code> land; no code changes. <em>(done)</em>
-   <code>.git-blame-ignore-revs</code> landed alongside them on <strong>2026-08-30</strong>, empty of SHAs by design.</li>
-<li><strong>Merge the open PR.</strong> <em>(done — the queue was empty on 2026-09-01; see §3.1)</em></li>
-<li><strong>The reformat</strong>, alone, in one commit, immediately after a merge and before new work starts.
-   Add its SHA to <code>.git-blame-ignore-revs</code> in the <em>same</em> commit — the file is already there and
-   waiting; it is the SHA that is missing, not the file.</li>
-<li><strong>Then</strong> decide whether to enforce it — a CI check or a pre-commit hook. That is its own
-   decision, because a formatter that blocks a push at 2 a.m. on a rig is a formatter people
-   disable. A <code>--dry-run --Werror</code> check over <strong>changed files only</strong> is the version worth having.</li>
-</ol>
-<p>Not planned: reformatting <code>ext/</code> or <code>external/</code>. Those are vendored and must stay byte-comparable
-with upstream.</p></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/CodeStyle.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<p>It brings up its own backend and an isolated Chrome, writes
+<code>user_docs/images/tut_&lt;tag&gt;_NN_&lt;step&gt;_&lt;date&gt;.png</code> into the repo, and tears the rig down the safe way:
+pause, Disconnect, confirm <code>deviceReady</code> false, then <code>quit</code>. <strong>It never force-kills a backend with a
+probe open</strong>, which is the rule that costs a power-cycle to break.</p>
+<h2 id="what-went-wrong-on-the-two-attempts-so-it-does-not-happen-a-third-time">What went wrong on the two attempts, so it does not happen a third time<a class="headerlink" href="#what-went-wrong-on-the-two-attempts-so-it-does-not-happen-a-third-time" title="Permanent link">#</a></h2>
+<p>Both runs on 2026-09-02 connected, applied a cross-bank map and streamed correctly, then died in the
+same place.</p>
+<ul>
+<li><strong>Run 1</strong> stopped at the channel pager, which had a range of zero. The column was on the NI-DAQ
+  stream, which has eight channels and so never pages. Not a bug: see
+  <a href="NextTask_LiveViewScrolling.html"><code>NextTask_LiveViewScrolling.md</code></a> for why the range is legitimately
+  zero, and note that the default layout on <code>PXIe + NI-DAQ</code> puts NI-DAQ in the second column.</li>
+<li><strong>Run 2</strong> got a real pager range and then lost its Chrome connection when the front end was closed
+  by hand mid-run.</li>
+</ul>
+<p>Three fixes went into the harness afterwards and are in the copy above: every optional step is fenced
+so one failure costs a step rather than the whole rig session; <code>set_columns</code> waits for the column
+count before anything touches a column; and the pager step logs what the stream dropdown <em>says</em>
+against what the column actually <em>draws</em>. <code>TUT_NOCAST=1</code> skips the screencast when only stills are
+wanted.</p>
+<h2 id="rules-that-apply-to-any-change-here">Rules that apply to any change here<a class="headerlink" href="#rules-that-apply-to-any-change-here" title="Permanent link">#</a></h2>
+<ul>
+<li><code>user_docs/</code> is written for someone who is not reading the code. If anything an operator clicks
+  changes, <code>user_docs/README.md</code>'s toolbar table and <code>user_docs/GUI-Guide.md</code> change in the <strong>same</strong>
+  commit.</li>
+<li>A hand-maintained screenshot carries its capture date in the filename, and
+  <code>python/tests/test_screenshot_dates.py</code> enforces that the date stays true. Runner-written names are
+  exempt.</li>
+<li>Regenerate the book with <code>python scripts/build_docs.py</code> and read its last line: <code>N links, 0 broken</code>.</li>
+<li>The published site is a <strong>separate repository</strong> — <a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a>, "The
+  published site".</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_UserDocs.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-style-was-measured-not-chosen">1. The style was measured, not chosen</a></li>
-<li><a href="#2-what-applying-it-would-cost-measured">2. What applying it would cost — measured</a></li>
-<li><a href="#3-why-it-is-not-applied-yet">3. Why it is not applied yet</a></li>
-<li><a href="#4-until-then-format-what-you-touch">4. Until then: format what you touch</a></li>
-<li><a href="#5-the-staged-plan">5. The staged plan</a></li>
+<li><a href="#where-it-stands">Where it stands</a></li>
+<li><a href="#what-remains">What remains</a></li>
+<li><a href="#the-capture-tooling-and-where-it-now-lives">The capture tooling, and where it now lives</a></li>
+<li><a href="#what-went-wrong-on-the-two-attempts-so-it-does-not-happen-a-third-time">What went wrong on the two attempts, so it does not happen a third time</a></li>
+<li><a href="#rules-that-apply-to-any-change-here">Rules that apply to any change here</a></li>
 </ul>
 </div>
 </aside>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Code style — the formatter, and why it has not been run yet - SpikesPeak Docs</title>
+<title>Next task — the config audit that is still open - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">Developer Docs / Working on this repo / Code style — the formatter, and why it has not been run yet</span>
+  <span class="crumb">Developer Docs / Plans and open briefs / Next task — the config audit that is still open</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -102,20 +102,20 @@
 <a href="GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
 <a href="SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
 </details>
-<details class="navgroup" open><summary>Working on this repo<span class="navcount">7</span></summary>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
 <a href="Building.html">Building and running SpikesPeak</a>
 <a href="ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
 <a href="Contributing.html">Contributing</a>
-<a class="active" href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
 <a href="BuildingTheDocs.html">The Documentation Book (HTML)</a>
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">6</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
 <a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
-<a href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
+<a class="active" href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
 <a href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
 <a href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
 </details>
@@ -144,208 +144,137 @@
 <a href="archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="code-style-the-formatter-and-why-it-has-not-been-run-yet">Code style — the formatter, and why it has not been run yet<a class="headerlink" href="#code-style-the-formatter-and-why-it-has-not-been-run-yet" title="Permanent link">#</a></h1>
-<p>Issue #24 asks for consistent formatting and suggests clang-format. <code>.clang-format</code> now exists and
-<strong>describes the style already in the tree</strong>. It has deliberately <strong>not</strong> been applied repo-wide;
-this page is the measurement and the plan, so that is a decision somebody makes rather than a diff
-that lands.</p>
+  <main class="content"><article class="markdown-body"><h1 id="next-task-the-config-audit-that-is-still-open">Next task — the config audit that is still open<a class="headerlink" href="#next-task-the-config-audit-that-is-still-open" title="Permanent link">#</a></h1>
+<p><strong>Status: open, and the operator has called it the important one to do next (2026-09-03).</strong></p>
+<p>The 2026-09-02 documentation audits swept <code>config/</code> twice. The first pass produced the deletion of the
+five <code>*Asap.yaml</code> copies and a set of header corrections; the second pass corrected four more headers
+and then <strong>died partway through verification on a usage limit</strong>, leaving its config lens the only one
+never finished. What follows is what survived that, re-checked by hand against the files on
+2026-09-03, plus the one structural defect the sweep exposed.</p>
+<p>Every finding below is quoted from the file as it stands today. None of them is applied.</p>
 <hr />
-<h2 id="1-the-style-was-measured-not-chosen">1. The style was measured, not chosen<a class="headerlink" href="#1-the-style-was-measured-not-chosen" title="Permanent link">#</a></h2>
-<p>A preset picked off the shelf would have rewritten almost everything. Every setting below was
-derived by counting what is actually here — <strong>measured 2026-08-30 over <code>src/</code>, 104 files and 25,843
-lines</strong>. (The tree is 115 files / 28,045 lines as of 2026-09-01; the absolute counts below are that
-snapshot, and §2 records a re-measurement that says the conclusion has not moved.)</p>
+<h2 id="1-two-profiles-claim-the-same-sim_variant">1. Two profiles claim the same <code>sim_variant</code><a class="headerlink" href="#1-two-profiles-claim-the-same-sim_variant" title="Permanent link">#</a></h2>
+<pre><code>config/SimNpx1LatencyBaseline.yaml:12   sim_variant: &quot;Neuropixels 1.0 — Ripple Detection (GUI)&quot;
+config/SimNpx1RippleModule.yaml         sim_variant: &quot;Neuropixels 1.0 — Ripple Detection (GUI)&quot;
+</code></pre>
+<p><code>sim_variant</code> is what groups a profile under the GUI's <strong>Simulated Data</strong> picker, and no two profiles
+should carry the same one. <code>SimNpx1LatencyBaseline</code> is a latency bench, not the ripple-detection GUI
+config; the string is a leftover from whatever it was cloned from. It does not surface today only
+because the file also carries <code>gui_hidden: true</code>, so the collision is invisible <strong>until somebody
+unhides it</strong> — and the same file's own header explains that it was hidden precisely to avoid putting
+"three buttons reading identical words in front of the operator."</p>
+<p>Fix: give it a <code>sim_variant</code> that describes it, or drop the key, since a <code>gui_hidden</code> profile has no
+use for one.</p>
+<p><strong>Then make the class unwritable</strong>, which is the point of doing this at all — see
+<a href="InvariantTests.html"><code>InvariantTests.md</code></a>. A <code>python/tests</code> case asserting that <code>sim_variant</code> is unique
+across <code>config/*.yaml</code> costs nothing and would have caught this the day it was introduced.
+<code>test_config_no_asap_twins.py</code> is the worked example of the shape: read every config, assert a
+property, and prove the test red before you rely on it.</p>
+<h2 id="2-a-header-that-contradicts-the-line-above-it">2. A header that contradicts the line above it<a class="headerlink" href="#2-a-header-that-contradicts-the-line-above-it" title="Permanent link">#</a></h2>
+<pre><code>config/SimNpx1LatencyBaseline.yaml:10   gui_hidden: true
+config/SimNpx1LatencyBaseline.yaml:11   # Selectable in the GUI &quot;Simulated Data&quot; picker (sim_variant key groups every config that carries it).
+</code></pre>
+<p>Lines 6 to 9 explain at length why the profile is hidden. Line 11 then says it is selectable in the
+picker. Same copy-paste as finding 1, and a reader who trusts the comment over the key is misled.</p>
+<h2 id="3-differing-only-in-understates-the-difference">3. "differing ONLY in" understates the difference<a class="headerlink" href="#3-differing-only-in-understates-the-difference" title="Permanent link">#</a></h2>
+<pre><code>config/SimNpx1RippleModule.yaml:9   It is the same NP1 ripple sim as SimNpx1Ripples.yaml … differing ONLY in:
+config/SimNpx1RippleModule.yaml:10    - auto_start: false   -&gt; the module does not run until the user presses Start
+</code></pre>
+<p>Diffing the two files with comments stripped, they differ in three ways, and the omitted one is the
+operationally significant one:</p>
 <table>
 <thead>
 <tr>
-<th>setting</th>
-<th>evidence</th>
+<th></th>
+<th><code>SimNpx1Ripples.yaml</code></th>
+<th><code>SimNpx1RippleModule.yaml</code></th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>IndentWidth: 4</code>, <code>UseTab: Never</code></td>
-<td>9,664 lines indent by 4 (the 4,065 at 8 are nesting). <strong>Exactly one tab in the whole tree.</strong></td>
+<td><code>gui_hidden</code></td>
+<td><code>true</code></td>
+<td>absent, so it is offered in the picker</td>
 </tr>
 <tr>
-<td><code>ColumnLimit: 100</code></td>
-<td>p50 = 37, p90 = 97, <strong>p95 = 100</strong>, p99 = 106. 1,237 lines exceed 100; only 92 exceed 110.</td>
+<td><code>sim_probe</code></td>
+<td>absent</td>
+<td><code>"1.0"</code></td>
 </tr>
 <tr>
-<td><code>BreakBeforeBraces</code> with <code>AfterFunction: true</code></td>
-<td>638 function definitions open on the next line, 204 on the same.</td>
-</tr>
-<tr>
-<td><code>AlwaysBreakAfterReturnType: TopLevelDefinitions</code></td>
-<td><strong>414 definitions</strong> are written <code>bool</code> ⏎ <code>Class::method(...)</code>. The most distinctive thing about how this code looks, and clang-format expresses it exactly.</td>
-</tr>
-<tr>
-<td><code>PointerAlignment: Left</code></td>
-<td><code>Type* name</code> 338 vs <code>Type *name</code> 50; references 443 vs 22.</td>
+<td><code>auto_start</code></td>
+<td>absent, defaults false</td>
+<td><code>false</code>, stated</td>
 </tr>
 </tbody>
 </table>
-<p>Three things are switched <strong>off</strong> on purpose:</p>
+<p>So the honest difference is <em>which one the operator can see</em>, and the comment names the one thing that
+is arguably not a difference at all. Rewrite it against a real diff.</p>
+<h2 id="4-the-only-ripple-option-offered-in-the-ui-is-false">4. "the only ripple option offered in the UI" is false<a class="headerlink" href="#4-the-only-ripple-option-offered-in-the-ui-is-false" title="Permanent link">#</a></h2>
+<pre><code>config/SimNpx1Ripples.yaml:8   (SimNpx1RippleModule.yaml, &quot;Ripple Detection (GUI)&quot;) is the only ripple option offered in the UI.
+</code></pre>
+<p>Six profiles carrying <code>sim_variant</code> are ripple sources, and all of them reach the picker:
+<code>SimNpx1RippleModule</code>, <code>SimNpx2RippleModule</code>, <code>SimNpx1NiDaqRipples</code>, <code>SimNpx2NiDaqRipples</code>,
+<code>SimNpx2RealNiDaqRipples</code>, and the two play-file profiles <code>Npx1SynthRipples</code> / <code>NpxSynthRipples</code>. The
+sentence was probably true when only the NP1 module existed. It is a claim about the UI written in a
+file the UI does not read, which is why nothing caught it.</p>
+<h2 id="5-a-comment-attached-to-the-wrong-recording-block">5. A comment attached to the wrong recording block<a class="headerlink" href="#5-a-comment-attached-to-the-wrong-recording-block" title="Permanent link">#</a></h2>
+<pre><code>config/Npx2OneBoxDigitalIn.yaml:74   # OneBox ADC: record all 12 analog channels.
+config/Npx2OneBoxDigitalIn.yaml:75   - data_name: &quot;data.npx.adc.di&quot;     &lt;- the COMPARATOR band, not the analog one
+config/Npx2OneBoxDigitalIn.yaml:80   - data_name: &quot;data.npx.adc&quot;        &lt;- the 12 analog channels, uncommented
+</code></pre>
+<p>The comment describes the block below the one it sits on. This profile exists specifically to
+distinguish the analog band from the logic band, so the misplacement is worse here than it would be
+anywhere else.</p>
+<h2 id="6-a-onebox-explanation-inside-the-pxie-profile">6. A OneBox explanation inside the PXIe profile<a class="headerlink" href="#6-a-onebox-explanation-inside-the-pxie-profile" title="Permanent link">#</a></h2>
+<pre><code>config/NeuropixelsNiDaq.yaml:46   Keep it: the closed-loop stimulus capture rides on it, and it costs no probe
+                                  bandwidth, because the OneBox samples the ADC either way.
+</code></pre>
+<p><code>NeuropixelsNiDaq</code> is the PXIe-plus-NI-DAQ profile, and the same comment three lines above correctly
+says a PXIe basestation has no ADC. The justification for keeping the band is then given in terms of
+the OneBox. Not wrong so much as answering a different profile's question; state why <em>this</em> profile
+permits the band.</p>
+<h2 id="7-deferred-on-purpose-the-inert-data-keys">7. Deferred on purpose: the inert <code>data:</code> keys<a class="headerlink" href="#7-deferred-on-purpose-the-inert-data-keys" title="Permanent link">#</a></h2>
+<p>25 config files carry a <code>data:</code> key beside <code>name:</code> on source outputs, about 64 lines, and the parser
+ignores it. Status §90 records the decision not to delete them: a blind sweep of 25 files with the GUI
+suite as the only check is the wrong trade for a key that does nothing. Left here so the next person
+knows it was a decision and not an oversight. If it is ever done, do it with a test that asserts the
+parser's output is unchanged, not by eye.</p>
+<hr />
+<h2 id="how-to-do-this-work">How to do this work<a class="headerlink" href="#how-to-do-this-work" title="Permanent link">#</a></h2>
+<p>Doc-only and config-comment-only changes still go through the gate, because <code>config/</code> is read by the
+Python suite (<code>test_config_channels.py</code>, <code>test_config_no_asap_twins.py</code>) and by the architecture
+generator:</p>
+<pre><code>python scripts/build_docs.py                        # regenerates the architecture SVGs
+python -m unittest discover python/tests            # seconds
+python scripts/run_all_tests.py --no-browser --fatal
+</code></pre>
+<p>Findings 1 and 3 change behavior-adjacent keys rather than only comments, so they want the full gate.
+Findings 2, 4, 5, 6 are comment-only.</p>
+<p><strong>Do not restate suite or case counts here or anywhere outside
+<a href="Testing.html"><code>Testing.md</code></a></strong> — see <a href="Contributing.html"><code>Contributing.md</code></a>.</p>
+<h2 id="what-is-already-done-so-you-do-not-redo-it">What is already done, so you do not redo it<a class="headerlink" href="#what-is-already-done-so-you-do-not-redo-it" title="Permanent link">#</a></h2>
 <ul>
-<li><strong><code>SortIncludes: false</code>.</strong> The tree mixes Qt, std, vendored SDK and local headers in an order that
-  is sometimes load-bearing — the Neuropixels and NI-DAQ SDK headers are order-sensitive. A
-  formatter reordering them is a compile error waiting to happen on a machine nobody is watching.</li>
-<li><strong><code>ReflowComments: false</code>.</strong> The comments <em>are</em> the documentation in this codebase, and many are
-  hand-wrapped tables and diagrams. Reflowing them destroys that, and it is the single change most
-  likely to make people distrust the formatter and turn it off.</li>
-<li><strong>No <code>.clang-tidy</code>.</strong> Formatting and linting are different arguments; conflating them means the
-  formatting change gets blocked on a lint debate.</li>
-</ul>
-<p>Written for <strong>clang-format 12</strong>, which is what ships with the VS 2019 toolchain this repo builds
-with:</p>
-<pre><code>C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe
-</code></pre>
-<p>(<code>ReferenceAlignment</code> and <code>SortIncludes: Never</code> are 13+ and are not used.)</p>
-<hr />
-<h2 id="2-what-applying-it-would-cost-measured">2. What applying it would cost — measured<a class="headerlink" href="#2-what-applying-it-would-cost-measured" title="Permanent link">#</a></h2>
-<p>Measured <strong>2026-08-30</strong>, with clang-format 12:</p>
-<table>
-<thead>
-<tr>
-<th></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>files that would change</td>
-<td><strong>103 of 104</strong></td>
-</tr>
-<tr>
-<td>lines that would change</td>
-<td><strong>9,429 of 25,843 — 36.5 % of the tree</strong></td>
-</tr>
-<tr>
-<td>worst single file</td>
-<td><code>NpInterface.cpp</code>, 1,324 lines</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Re-measured 2026-09-01</strong>, same binary, same config, over the grown tree: <strong>114 of 115 files</strong>,
-<strong>9,760 of 28,045 lines — 34.8 %</strong>. Two thousand new lines moved the ratio by under two points, so
-nothing below needs re-deciding; the ablation table is still the 2026-08-30 run and is a
-comparison between variants rather than an absolute, which is what it is for.</p>
-</blockquote>
-<p>Where that comes from, by ablation:</p>
-<table>
-<thead>
-<tr>
-<th>variant</th>
-<th>changed lines</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>the config as written</td>
-<td>9,429</td>
-</tr>
-<tr>
-<td><code>ColumnLimit: 0</code> (never reflow code)</td>
-<td><strong>6,280</strong></td>
-</tr>
-<tr>
-<td><code>SpacesBeforeTrailingComments: 1</code></td>
-<td>9,387</td>
-</tr>
-<tr>
-<td><code>KeepEmptyLinesAtTheStartOfBlocks: true</code></td>
-<td>9,395</td>
-</tr>
-<tr>
-<td><code>AlignTrailingComments: false</code></td>
-<td>9,431</td>
-</tr>
-<tr>
-<td><code>BinPackParameters: false</code></td>
-<td>9,559</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Line reflow is a third of the diff; the other ~6,300 lines are irreducible.</strong> That residue is real
-style drift — the exact thing a formatter exists to remove — so shrinking the diff by setting
-<code>ColumnLimit: 0</code> would be buying a smaller number by giving up the rule most worth enforcing. The
-config keeps 100.</p>
-<p>Everything else is noise, which is the useful result: the config is a close description, and no
-single setting is fighting the codebase.</p>
-<hr />
-<h2 id="3-why-it-is-not-applied-yet">3. Why it is not applied yet<a class="headerlink" href="#3-why-it-is-not-applied-yet" title="Permanent link">#</a></h2>
-<p><strong>36.5 % of lines is a <code>git blame</code> event.</strong> Three things have to be true first, and none of them is
-about the formatter:</p>
-<ol>
-<li><strong>No PR open across the same files.</strong> A reformat lands as a conflict in every in-flight branch.
-   <strong>As of 2026-09-01 this condition is met</strong>: <code>gh pr list</code> shows nothing open, PR #69
-   (<code>feature/ProbeHeatmapAndDetachedViews</code>) merged 2026-08-30 and #81 (<code>feature/AsapPerModule</code>)
-   merged 2026-09-01, and <code>feature/OneBoxSupport</code> was merged into <code>develop</code> on 2026-09-01. So the
-   only thing still standing between here and step 3 is the operator's decision — which is what this
-   page exists to hand them, not to pre-empt.</li>
-<li><strong>It goes in ALONE</strong>, as one commit that changes nothing but whitespace, so a reviewer can verify
-   that claim by rerunning the formatter rather than by reading 9,429 lines.</li>
-<li><strong><code>.git-blame-ignore-revs</code> gets that commit's SHA.</strong> The file itself landed on <strong>2026-08-30</strong> —
-   header, instructions and the rule for what may go in it — and is deliberately empty of SHAs,
-   because the reformat has not happened. Adding the SHA is a step in the reformat commit, not a
-   separate task.</li>
-</ol>
-<p>It is not automatic. Enable it once per clone:</p>
-<p><code>bash
-   git config blame.ignoreRevsFile .git-blame-ignore-revs</code></p>
-<p>Without this, <code>git blame</code> on a third of the codebase points at the reformat instead of at the
-   change that actually introduced the line — which is how a formatting commit costs a team more
-   than the inconsistency did.</p>
-<hr />
-<h2 id="4-until-then-format-what-you-touch">4. Until then: format what you touch<a class="headerlink" href="#4-until-then-format-what-you-touch" title="Permanent link">#</a></h2>
-<p>Windows, VS 2019 (the toolchain the config was written for):</p>
-<pre><code class="language-bash">&quot;C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
-</code></pre>
-<p>Windows, VS 2022 — same layout, different year, and Community/Professional/Enterprise each have
-their own tree:</p>
-<pre><code class="language-bash">&quot;C:/Program Files/Microsoft Visual Studio/2022/Community/VC/Tools/Llvm/bin/clang-format.exe&quot; -i -style=file &lt;file&gt;
-</code></pre>
-<p>Linux — a first-class dev path since 2026-08-26 (<a href="Building.html"><code>Building.md</code></a>,
-<a href="Testing.html"><code>Testing.md</code></a> §1a), so it needs an invocation that is not a Windows absolute path:</p>
-<pre><code class="language-bash">sudo apt install clang-format          # or clang-format-14, etc.
-clang-format -i -style=file &lt;file&gt;
-</code></pre>
-<p><strong>A newer clang-format is safe against this config.</strong> Nothing here is a 13+ option — the two that
-would have been, <code>ReferenceAlignment</code> and <code>SortIncludes: Never</code>, are deliberately not used, and
-<code>SortIncludes</code> is written in the boolean form every version understands. A newer binary reads the
-file unchanged. What it does <em>not</em> guarantee is a byte-identical diff: formatters change their
-defaults for settings nobody has pinned, so <strong>do not mix versions inside one commit</strong>, and use one
-version for the repo-wide pass when it happens.</p>
-<p><strong>Do not reformat a file you are only reading.</strong> A feature diff with 300 unrelated whitespace lines
-in it is a diff nobody reviews properly, and that is a worse outcome than inconsistent bracing.</p>
-<p>To check without writing:</p>
-<pre><code class="language-bash">clang-format --dry-run --Werror -style=file &lt;file&gt;
-</code></pre>
-<hr />
-<h2 id="5-the-staged-plan">5. The staged plan<a class="headerlink" href="#5-the-staged-plan" title="Permanent link">#</a></h2>
-<ol>
-<li><strong>Now</strong> — <code>.clang-format</code> and <code>.editorconfig</code> land; no code changes. <em>(done)</em>
-   <code>.git-blame-ignore-revs</code> landed alongside them on <strong>2026-08-30</strong>, empty of SHAs by design.</li>
-<li><strong>Merge the open PR.</strong> <em>(done — the queue was empty on 2026-09-01; see §3.1)</em></li>
-<li><strong>The reformat</strong>, alone, in one commit, immediately after a merge and before new work starts.
-   Add its SHA to <code>.git-blame-ignore-revs</code> in the <em>same</em> commit — the file is already there and
-   waiting; it is the SHA that is missing, not the file.</li>
-<li><strong>Then</strong> decide whether to enforce it — a CI check or a pre-commit hook. That is its own
-   decision, because a formatter that blocks a push at 2 a.m. on a rig is a formatter people
-   disable. A <code>--dry-run --Werror</code> check over <strong>changed files only</strong> is the version worth having.</li>
-</ol>
-<p>Not planned: reformatting <code>ext/</code> or <code>external/</code>. Those are vendored and must stay byte-comparable
-with upstream.</p></article>
-    <footer class="pagefoot">Generated from <code>developer_docs/CodeStyle.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+<li>The five <code>*Asap.yaml</code> duplicates are deleted and <code>test_config_no_asap_twins.py</code> keeps them out.</li>
+<li>Headers in <code>SimNpx1Ripples</code>, <code>SimNpx2Ripples</code>, <code>Npx2OneBoxDigitalIn</code> and <code>SimNpx1LatencyBaseline</code>
+  were corrected on 2026-09-02 for the "detector fires as shipped" claim, the twin-differs-by-one-key
+  claim, the ADC voltage range, and the script default. Findings 2 to 5 above are what those passes
+  left behind.</li>
+<li><code>ConfigReference.md</code> was corrected for the <code>gui_hidden</code> count and the deleted profiles.</li>
+</ul></article>
+    <footer class="pagefoot">Generated from <code>developer_docs/NextTask_ConfigAudit.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
 <ul>
-<li><a href="#1-the-style-was-measured-not-chosen">1. The style was measured, not chosen</a></li>
-<li><a href="#2-what-applying-it-would-cost-measured">2. What applying it would cost — measured</a></li>
-<li><a href="#3-why-it-is-not-applied-yet">3. Why it is not applied yet</a></li>
-<li><a href="#4-until-then-format-what-you-touch">4. Until then: format what you touch</a></li>
-<li><a href="#5-the-staged-plan">5. The staged plan</a></li>
+<li><a href="#1-two-profiles-claim-the-same-sim_variant">1. Two profiles claim the same sim_variant</a></li>
+<li><a href="#2-a-header-that-contradicts-the-line-above-it">2. A header that contradicts the line above it</a></li>
+<li><a href="#3-differing-only-in-understates-the-difference">3. "differing ONLY in" understates the difference</a></li>
+<li><a href="#4-the-only-ripple-option-offered-in-the-ui-is-false">4. "the only ripple option offered in the UI" is false</a></li>
+<li><a href="#5-a-comment-attached-to-the-wrong-recording-block">5. A comment attached to the wrong recording block</a></li>
+<li><a href="#6-a-onebox-explanation-inside-the-pxie-profile">6. A OneBox explanation inside the PXIe profile</a></li>
+<li><a href="#7-deferred-on-purpose-the-inert-data-keys">7. Deferred on purpose: the inert data: keys</a></li>
+<li><a href="#how-to-do-this-work">How to do this work</a></li>
+<li><a href="#what-is-already-done-so-you-do-not-redo-it">What is already done, so you do not redo it</a></li>
 </ul>
 </div>
 </aside>

@@ -20,15 +20,16 @@
     <g id="edges">
         <path d="M 880.0 182.0 C 880.0 207.8, 808.0 224.0, 808.0 242.0 L 808.0 268.0" fill="none" stroke="#4a5568" stroke-width="1.0" opacity="0.35"/>
         <path d="M 880.0 182.0 C 880.0 207.8, 952.0 224.0, 952.0 242.0 L 952.0 268.0" fill="none" stroke="#4a5568" stroke-width="1.0" opacity="0.35"/>
-        <path d="M 808.0 446.0 C 808.0 489.0, 880.0 489.0, 880.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 952.0 446.0 C 952.0 489.0, 880.0 489.0, 880.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1096.0 446.0 C 1096.0 489.0, 585.6 489.0, 585.6 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 1096.0 446.0 C 1096.0 489.0, 729.6 489.0, 729.6 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 1096.0 446.0 C 1096.0 489.0, 1030.4 489.0, 1030.4 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1096.0 446.0 C 1096.0 489.0, 1174.4 489.0, 1174.4 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 650.6 555.0 C 676.6 555.0, 546.0 423.0, 520.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 794.6 555.0 C 820.6 555.0, 690.0 423.0, 664.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 1239.4 555.0 C 1265.4 555.0, 1266.0 423.0, 1240.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 664.0 446.0 C 664.0 489.0, 1102.4 489.0, 1102.4 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 808.0 446.0 C 808.0 489.0, 798.3 489.0, 798.3 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 952.0 446.0 C 952.0 489.0, 798.3 489.0, 798.3 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1096.0 446.0 C 1096.0 489.0, 503.9 489.0, 503.9 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 1096.0 446.0 C 1096.0 489.0, 647.9 489.0, 647.9 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 1096.0 446.0 C 1096.0 489.0, 948.7 489.0, 948.7 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1096.0 446.0 C 1096.0 489.0, 1256.1 489.0, 1256.1 532.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 568.9 555.0 C 594.9 555.0, 546.0 423.0, 520.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 712.9 555.0 C 738.9 555.0, 690.0 423.0, 664.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 1321.1 555.0 C 1347.1 555.0, 1266.0 423.0, 1240.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
         <path d="M 808.0 314.0 C 808.0 357.0, 808.0 357.0, 808.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 808.0 314.0 C 808.0 357.0, 952.0 357.0, 952.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 952.0 314.0 C 952.0 357.0, 1096.0 357.0, 1096.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
@@ -53,16 +54,18 @@
         <text x="1096.0" y="427.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">data.npx.raw</text>
         <rect x="1175.0" y="400.0" width="130.0" height="46" rx="6" fill="#22543d" stroke="#48bb78" stroke-width="1.6"/>
         <text x="1240.0" y="427.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">data.spike</text>
-        <rect x="520.6" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="585.6" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.audio</text>
-        <rect x="664.6" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="729.6" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.lfp</text>
-        <rect x="808.6" y="532.0" width="142.8" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="880.0" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.nidaq.display</text>
-        <rect x="965.4" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="1030.4" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.display</text>
-        <rect x="1109.4" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="1174.4" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.spike</text>
+        <rect x="438.9" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="503.9" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.audio</text>
+        <rect x="582.9" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="647.9" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.lfp</text>
+        <rect x="726.9" y="532.0" width="142.8" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="798.3" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.nidaq.display</text>
+        <rect x="883.7" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="948.7" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.display</text>
+        <rect x="1027.7" y="532.0" width="149.4" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="1102.4" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.rippledetector</text>
+        <rect x="1191.1" y="532.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="1256.1" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.spike</text>
         <rect x="743.0" y="268.0" width="130.0" height="46" rx="6" fill="#2a4365" stroke="#4299e1" stroke-width="1.6"/>
         <text x="808.0" y="295.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">source.nidaq</text>
         <rect x="887.0" y="268.0" width="130.0" height="46" rx="6" fill="#2a4365" stroke="#4299e1" stroke-width="1.6"/>

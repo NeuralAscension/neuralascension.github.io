@@ -21,19 +21,20 @@
         <path d="M 880.0 182.0 C 880.0 207.8, 801.6 224.0, 801.6 242.0 L 801.6 268.0" fill="none" stroke="#4a5568" stroke-width="1.0" opacity="0.35"/>
         <path d="M 880.0 182.0 C 880.0 207.8, 955.1 224.0, 955.1 242.0 L 955.1 268.0" fill="none" stroke="#4a5568" stroke-width="1.0" opacity="0.35"/>
         <path d="M 808.0 446.0 C 808.0 489.0, 736.0 489.0, 736.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 808.0 446.0 C 808.0 555.0, 876.9 555.0, 876.9 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 808.0 446.0 C 808.0 555.0, 795.2 555.0, 795.2 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 952.0 446.0 C 952.0 489.0, 880.0 489.0, 880.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 952.0 446.0 C 952.0 555.0, 732.9 555.0, 732.9 664.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 952.0 446.0 C 952.0 555.0, 876.9 555.0, 876.9 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 952.0 446.0 C 952.0 555.0, 651.2 555.0, 651.2 664.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 952.0 446.0 C 952.0 555.0, 795.2 555.0, 795.2 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 1096.0 446.0 C 1096.0 489.0, 1024.0 489.0, 1024.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1096.0 446.0 C 1096.0 555.0, 876.9 555.0, 876.9 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 736.0 578.0 C 736.0 621.0, 1024.0 621.0, 1024.0 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 880.0 578.0 C 880.0 621.0, 1024.0 621.0, 1024.0 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1024.0 578.0 C 1024.0 621.0, 1024.0 621.0, 1024.0 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 797.9 687.0 C 823.9 687.0, 690.0 423.0, 664.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
-        <path d="M 1024.0 710.0 C 1024.0 753.0, 736.0 753.0, 736.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1024.0 710.0 C 1024.0 753.0, 880.0 753.0, 880.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1024.0 710.0 C 1024.0 753.0, 1024.0 753.0, 1024.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1096.0 446.0 C 1096.0 555.0, 795.2 555.0, 795.2 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1096.0 446.0 C 1096.0 555.0, 1099.1 555.0, 1099.1 664.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 736.0 578.0 C 736.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 880.0 578.0 C 880.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1024.0 578.0 C 1024.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 716.2 687.0 C 742.2 687.0, 690.0 423.0, 664.0 446.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
+        <path d="M 942.3 710.0 C 942.3 753.0, 736.0 753.0, 736.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 942.3 710.0 C 942.3 753.0, 880.0 753.0, 880.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 942.3 710.0 C 942.3 753.0, 1024.0 753.0, 1024.0 796.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 801.6 314.0 C 801.6 357.0, 808.0 357.0, 808.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 955.1 314.0 C 955.1 357.0, 952.0 357.0, 952.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 955.1 314.0 C 955.1 357.0, 1096.0 357.0, 1096.0 400.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
@@ -62,12 +63,14 @@
         <text x="880.0" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">interp.npx.ap</text>
         <rect x="959.0" y="532.0" width="130.0" height="46" rx="6" fill="#44337a" stroke="#9f7aea" stroke-width="1.6"/>
         <text x="1024.0" y="559.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">interp.npx.lfp</text>
-        <rect x="667.9" y="664.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="732.9" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.audio</text>
-        <rect x="811.9" y="664.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="876.9" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.display</text>
-        <rect x="955.9" y="664.0" width="136.2" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
-        <text x="1024.0" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.record…</text>
+        <rect x="586.2" y="664.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="651.2" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.audio</text>
+        <rect x="730.2" y="664.0" width="130.0" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="795.2" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.display</text>
+        <rect x="874.2" y="664.0" width="136.2" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="942.3" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.npx.record…</text>
+        <rect x="1024.4" y="664.0" width="149.4" height="46" rx="6" fill="#742a2a" stroke="#f56565" stroke-width="1.6"/>
+        <text x="1099.1" y="691.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">proc.rippledetector</text>
         <rect x="671.0" y="796.0" width="130.0" height="46" rx="6" fill="#1a202c" stroke="#a0aec0" stroke-width="1.6"/>
         <text x="736.0" y="816.0" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">File:</text>
         <text x="736.0" y="831.0" fill="#cbd5e0" font-family="sans-serif" font-size="10" text-anchor="middle">adc.bin</text>

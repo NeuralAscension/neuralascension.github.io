@@ -26,7 +26,7 @@
         <path d="M 952.0 446.0 C 952.0 555.0, 795.2 555.0, 795.2 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 1096.0 446.0 C 1096.0 489.0, 1024.0 489.0, 1024.0 532.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 1096.0 446.0 C 1096.0 555.0, 795.2 555.0, 795.2 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
-        <path d="M 1096.0 446.0 C 1096.0 555.0, 1099.1 555.0, 1099.1 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
+        <path d="M 1096.0 446.0 C 1096.0 555.0, 1099.1 555.0, 1099.1 664.0" fill="none" stroke="#f6ad55" stroke-width="1.6" opacity="0.75" stroke-dasharray="6 4"/>
         <path d="M 736.0 578.0 C 736.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 880.0 578.0 C 880.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>
         <path d="M 1024.0 578.0 C 1024.0 621.0, 942.3 621.0, 942.3 664.0" fill="none" stroke="#718096" stroke-width="1.6" opacity="0.75"/>

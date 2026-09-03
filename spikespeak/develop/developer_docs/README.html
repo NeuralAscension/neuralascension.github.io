@@ -200,11 +200,13 @@ configure), <code>libasound2-dev</code> installed <em>before</em> the first conf
 looked at. No hardware row can be closed there.</p>
 </blockquote>
 <ol>
-<li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one
-   pass: hosting model, threading, data plane, module command model. Nothing else makes sense first.
-   It is a dated snapshot — it predates the OneBox transport, the WebGL2 renderer, the heatmap and
-   detached views, source selection and #80 — so read it for the shape of the core and the tables
-   below for what has been built since.</li>
+<li><strong><a href="../images/architecture_overview.html"><code>../images/architecture_overview.md</code></a></strong> — the whole system in
+   one pass, current as of 2026-09-02: the connect path and its three stop points, the four
+   processors C++ wires without a profile, faults and liveness, the teardown order, the low-latency
+   graph (#80), the transport, the frontend module catalog, the two stimulation paths, where the
+   three suites live — and the pipeline diagrams, generated from the code. Nothing else makes sense
+   first. <a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a> is the <em>history
+   and rationale</em> (why an external browser, the Option-A command model); read it second, for why.</li>
 <li><strong><a href="#operating-this-repo-gotchas-that-cost-agents-time-read-first">"Operating this repo"</a></strong> (below on this
    page) — the gotchas that cost agents hours: <strong>the working tree IS the deployment</strong> — <code>webinterface/</code>
    and <code>config/*.yaml</code> are served live from the repo (one copy, no build), so never edit them while a
@@ -329,7 +331,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></td>
-<td>Understand the whole system: hosting model, threading, data plane, QWebChannel surface, per-module command model (Option A).</td>
+<td><strong>History and rationale</strong> — why an external browser, the Option-A per-module command model, the file-I/O rule. A dated snapshot (it predates the OneBox transport, the WebGL2 renderer, the heatmap, detached views, source selection and #80); the current overview is <a href="../images/architecture_overview.html"><code>../images/architecture_overview.md</code></a>.</td>
 </tr>
 </tbody>
 </table>
@@ -691,7 +693,7 @@ that finishes it, and the archive's own table says what superseded it.</p>
 </tr>
 <tr>
 <td><a href="../images/architecture_overview.html"><code>../images/architecture_overview.md</code></a></td>
-<td>Architecture narrative + the per-profile pipeline diagrams, generated from the code by <code>scripts/make_architecture.py</code> (see <a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a>).</td>
+<td><strong>THE current architecture overview</strong> (2026-09-02): connect path, auto-provisioned processors, faults/liveness, teardown, the low-latency graph, transport, frontend catalog, stim paths, suites — plus the per-profile pipeline diagrams, generated from the code by <code>scripts/make_architecture.py</code> (see <a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a>).</td>
 </tr>
 <tr>
 <td><a href="../user_docs/README.html"><code>../user_docs/</code></a></td>

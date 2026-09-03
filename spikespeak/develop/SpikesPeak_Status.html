@@ -8181,7 +8181,23 @@ script with no default profile; the docs site's home page still said the archite
 the twelve <code>RecordingTests/latency/asap_comparison_onebox_*.png</code> figures that <code>CLOSED_LOOP_LATENCY.md</code>
 embeds were never committed (3.5 MB, no <code>.bin</code>). Of the unverified 28, the ones checked by hand and
 fixed: the sentence above about EXEMPT. Left alone on purpose: the suggestion to add a Status exception
-to CLAUDE.md's no-counts-outside-Testing.md rule — the rule is the operator's.</p></article>
+to CLAUDE.md's no-counts-outside-Testing.md rule — the rule is the operator's.</p>
+<p><strong>The two architecture leftovers, closed (2026-09-03).</strong> <code>scripts/make_architecture.py</code>'s
+<code>AUTO_PROVISIONED</code> table had three entries while <code>ArchitectureDiagrams.md</code> had already been corrected
+to say four: <code>proc.rippledetector</code>, which <code>ProcessorManager</code> provisions on any profile with an LFP band
+that declares no detector of its own (<code>src/core/ProcessorManager.cpp:234</code>), was still drawn as an
+orphan on every hardware and auto profile — the exact defect the table exists to prevent. The entry
+carries a third field, <em>only if undeclared</em>, because unlike the derived bands and audio this one is
+not provisioned when the profile wired it itself, and a declared edge must stay solid; the ten
+profiles that declare a detector regenerate byte-identical but for the legend. <code>--check</code> is clean and
+<code>test_architecture_current</code> passes. And <code>images/architecture_overview.md</code> is now <strong>the</strong> current
+overview rather than a snapshot with a caveat: the connect path and its three stop points, the four
+auto-provisioned processors and the <code>hasData</code> rule, faults and liveness and the confirmed-state rule,
+the teardown order with the bounded vendor calls, the low-latency graph, the transport with ports as
+options and the <code>Config.js</code> rewrite, the frontend module catalog, the two stimulation paths, and where
+the three suites live — every <code>file:line</code> it cites is checked by <code>test_doc_citations.py</code>. The developer
+README's START HERE now points there first; <code>SpikesPeak_Architecture_Review.md</code> is filed as history
+and rationale.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">

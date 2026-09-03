@@ -111,10 +111,9 @@
 <a href="../UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="../SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup"><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="../NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="../NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="../NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="../NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
 <a href="../NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
 <a href="../NextTask_UserDocs.html">Next task — finishing the user documentation</a>
@@ -135,6 +134,7 @@
 <a class="active" href="README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
 <a href="NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
@@ -199,6 +199,12 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 <td>The run sheet that finished that matrix.</td>
 <td>2026-08-20</td>
 <td><strong>Done</strong> -- same results, same write-up (<code>SpikesPeak_Status.md</code> §48). Kept for the traps it names, each of which cost a run: <code>record_ripples.py --dir</code> is the OUTER directory and the tool writes the bands into <code>&lt;dir&gt;/&lt;name&gt;/</code>; the analysis step's <code>recdir</code> is positional and is that INNER directory; the stim must be <strong>gated</strong> as well as armed; do not pipe the runner into <code>tail</code>; and a OneBox analysis needs <code>--stim-band adc --stim-channel N</code>.</td>
+</tr>
+<tr>
+<td><code>NextTask_DocsRefresh.md</code></td>
+<td>The documentation refresh: which screenshots still showed the removed chart library or a pre-rename toolbar, and which prose contradicted the GUI.</td>
+<td>2026-09-03</td>
+<td><strong>Done.</strong> Every screenshot it listed was recaptured on the real rig or a simulated source and dated; its prose corrections were applied and independently re-verified. Two items outlived it and moved to <a href="../NextTask_UserDocs.html"><code>../NextTask_UserDocs.md</code></a>: the <code>images/maindisplay.PNG</code> recapture, and a check of the sim-picker list in <code>GUI-Guide.md</code> §1.</td>
 </tr>
 <tr>
 <td><code>NextTask_OneBoxSupport.md</code></td>

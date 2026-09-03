@@ -111,10 +111,9 @@
 <a href="UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
 <a href="SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
 </details>
-<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">6</span></summary>
+<details class="navgroup" open><summary>Plans and open briefs<span class="navcount">5</span></summary>
 <a href="NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
 <a href="NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
-<a href="NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="NextTask_ConfigAudit.html">Next task — the config audit that is still open</a>
 <a href="NextTask_LiveViewScrolling.html">Next task — scrolling the probe map, and seeing a whole shank at once</a>
 <a class="active" href="NextTask_UserDocs.html">Next task — finishing the user documentation</a>
@@ -135,6 +134,7 @@
 <a href="archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
 <a href="archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
 <a href="archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="archive/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
 <a href="archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
 <a href="archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
 <a href="archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
@@ -230,6 +230,25 @@ so one failure costs a step rather than the whole rig session; <code>set_columns
 count before anything touches a column; and the pager step logs what the stream dropdown <em>says</em>
 against what the column actually <em>draws</em>. <code>TUT_NOCAST=1</code> skips the screencast when only stills are
 wanted.</p>
+<h2 id="inherited-from-the-retired-docs-refresh-brief">Inherited from the retired docs-refresh brief<a class="headerlink" href="#inherited-from-the-retired-docs-refresh-brief" title="Permanent link">#</a></h2>
+<p><code>NextTask_DocsRefresh.md</code> was archived on 2026-09-03. Its screenshot work is done and its prose
+corrections were applied and re-verified; two items outlived it:</p>
+<ul>
+<li><strong><code>images/maindisplay.PNG</code> is still the July build, with the removed chart library's watermark
+  burned into all four live-view columns.</strong> It is the repository's only screenshot. The reference to
+  it was taken out of the root <code>README.md</code> on 2026-08-31, so nothing renders it today and no page is
+  broken — but the file is still there, still wrong, and the front page has no picture. Recapture it
+  on the WebGL2 renderer using the recipe in <a href="GuiTesting.html"><code>GuiTesting.md</code></a> §6, overwrite the file,
+  and only then put the line back in <code>README.md</code>. <strong>Do not restore the reference first:</strong> a
+  screenshot advertising a deleted dependency is worse than no screenshot.</li>
+<li><strong><code>user_docs/GUI-Guide.md</code> §1's simulated-data picker list.</strong> The picker is built from every config
+  carrying a <code>sim_variant:</code> key, and there are fifteen. Confirm the page still describes what the
+  picker shows before trusting it, and note that two of those fifteen currently declare the <em>same</em>
+  variant string — see <a href="NextTask_ConfigAudit.html"><code>NextTask_ConfigAudit.md</code></a>.</li>
+</ul>
+<p>One thing there that is <strong>not</strong> to be "fixed": <code>GUI-Guide.md</code> §4 says the NI-DAQ record buttons are
+0-indexed, and that sentence is correct (<code>ImroManager.js</code> renders <code>b.textContent = ch</code>). An old image
+contradicted it; the image was recaptured. Leave the sentence alone.</p>
 <h2 id="rules-that-apply-to-any-change-here">Rules that apply to any change here<a class="headerlink" href="#rules-that-apply-to-any-change-here" title="Permanent link">#</a></h2>
 <ul>
 <li><code>user_docs/</code> is written for someone who is not reading the code. If anything an operator clicks
@@ -250,6 +269,7 @@ wanted.</p>
 <li><a href="#what-remains">What remains</a></li>
 <li><a href="#the-capture-tooling-and-where-it-now-lives">The capture tooling, and where it now lives</a></li>
 <li><a href="#what-went-wrong-on-the-two-attempts-so-it-does-not-happen-a-third-time">What went wrong on the two attempts, so it does not happen a third time</a></li>
+<li><a href="#inherited-from-the-retired-docs-refresh-brief">Inherited from the retired docs-refresh brief</a></li>
 <li><a href="#rules-that-apply-to-any-change-here">Rules that apply to any change here</a></li>
 </ul>
 </div>

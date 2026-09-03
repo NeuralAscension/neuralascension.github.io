@@ -8188,9 +8188,12 @@ to say four: <code>proc.rippledetector</code>, which <code>ProcessorManager</cod
 that declares no detector of its own (<code>src/core/ProcessorManager.cpp:234</code>), was still drawn as an
 orphan on every hardware and auto profile — the exact defect the table exists to prevent. The entry
 carries a third field, <em>only if undeclared</em>, because unlike the derived bands and audio this one is
-not provisioned when the profile wired it itself, and a declared edge must stay solid; the ten
-profiles that declare a detector regenerate byte-identical but for the legend. <code>--check</code> is clean and
-<code>test_architecture_current</code> passes. And <code>images/architecture_overview.md</code> is now <strong>the</strong> current
+not provisioned when the profile wired it itself, and a declared edge must stay solid. The first cut
+got that wrong in a second way: the auto pairs were a module-level set, so the pair Npx1Pxi provisioned
+recolored the same edge SimNpx1Ripples <em>declares</em> — a claim about one profile leaking into another.
+They are per profile now (returned by <code>auto_wire</code>, passed to <code>generate_svg</code>; in the union graph a pair
+is auto only if no profile declares it), and the profiles that declare a detector regenerate
+byte-identical to before. <code>--check</code> is clean and <code>test_architecture_current</code> passes. And <code>images/architecture_overview.md</code> is now <strong>the</strong> current
 overview rather than a snapshot with a caveat: the connect path and its three stop points, the four
 auto-provisioned processors and the <code>hasData</code> rule, faults and liveness and the confirmed-state rule,
 the teardown order with the bounded vendor calls, the low-latency graph, the transport with ports as

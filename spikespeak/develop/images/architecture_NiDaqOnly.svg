@@ -14,8 +14,6 @@
         <text x="473" y="70" fill="#cbd5e0" font-family="sans-serif" font-size="12">Processor</text>
         <rect x="559" y="58" width="14" height="14" rx="3" fill="#1a202c" stroke="#a0aec0" stroke-width="1"/>
         <text x="578" y="70" fill="#cbd5e0" font-family="sans-serif" font-size="12">Sink</text>
-        <path d="M 631 65 l 26 0" stroke="#f6ad55" stroke-width="2" stroke-dasharray="6 4"/>
-        <text x="663" y="70" fill="#cbd5e0" font-family="sans-serif" font-size="12">auto-provisioned in C++ (not in the profile)</text>
     </g>
     <g id="edges">
         <path d="M 880.0 182.0 C 880.0 207.8, 880.0 224.0, 880.0 242.0 L 880.0 268.0" fill="none" stroke="#4a5568" stroke-width="1.0" opacity="0.35"/>

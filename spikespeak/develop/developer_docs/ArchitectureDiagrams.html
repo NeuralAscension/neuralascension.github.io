@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -166,12 +168,12 @@ that was never produced.</p>
 <td><code>developer_docs/images/architecture.svg</code> + one per config, <strong>git-ignored</strong></td>
 </tr>
 <tr>
-<td>Committed copy</td>
-<td><code>images/architecture.svg</code>, for the repo README only — refreshed by the docs build</td>
+<td>Committed copies</td>
+<td><code>images/architecture.svg</code> (the repo README embeds it) + every <code>images/architecture_&lt;Config&gt;.svg</code> that <code>images/architecture_overview.md</code> embeds — refreshed by the docs build, asserted by <code>python/tests/test_committed_docs_render.py</code></td>
 </tr>
 <tr>
 <td>Run</td>
-<td><code>python scripts/build_docs.py</code> (regenerates, then refreshes the committed copy)</td>
+<td><code>python scripts/build_docs.py</code> (regenerates, then refreshes the committed copies)</td>
 </tr>
 <tr>
 <td>Verify</td>
@@ -179,7 +181,7 @@ that was never produced.</p>
 </tr>
 <tr>
 <td>Test</td>
-<td><code>python/tests/test_architecture_current.py</code></td>
+<td><code>python/tests/test_architecture_current.py</code> + <code>python/tests/test_committed_docs_render.py</code></td>
 </tr>
 </tbody>
 </table>
@@ -222,12 +224,12 @@ a config's identity is that <code>name:</code> field and never the filename — 
 </tr>
 </tbody>
 </table>
-<p><strong>Three processors are wired by C++ instead, and the parser cannot see that.</strong> <code>proc.lfp</code>,
-<code>proc.spike</code> and <code>proc.audio</code> are auto-provisioned by <code>ProcessorManager</code>, so profiles never mention
-their inputs. Before 2026-09-01 they were therefore drawn as <strong>orphans</strong> — boxes with no line
-touching them — which reads as <em>"connected to nothing"</em> when the truth is <em>"connected by code this
-parser does not read"</em>. The operator spotted it in the picture, which is the only place it was
-visible.</p>
+<p><strong>Four processors are wired by C++ instead, and the parser cannot see that.</strong> <code>proc.lfp</code>,
+<code>proc.spike</code>, <code>proc.audio</code> and <code>proc.rippledetector</code> are auto-provisioned by <code>ProcessorManager</code>
+when a profile does not declare them, so profiles need never mention their inputs. Before
+2026-09-01 they were therefore drawn as <strong>orphans</strong> — boxes with no line touching them — which
+reads as <em>"connected to nothing"</em> when the truth is <em>"connected by code this parser does not
+read"</em>. The operator spotted it in the picture, which is the only place it was visible.</p>
 <p>They are now supplied by an explicit table in the generator, <code>AUTO_PROVISIONED</code>:</p>
 <table>
 <thead>
@@ -257,9 +259,16 @@ visible.</p>
 <td><code>data.audio</code></td>
 <td>any probe band exists</td>
 </tr>
+<tr>
+<td><code>proc.rippledetector</code></td>
+<td><code>data.npx.lfp</code> (a 1.0's native band), else <code>data.lfp</code></td>
+<td>— (it consumes only; created idle until the dock's Start)</td>
+<td>any LFP band exists, native or derived</td>
+</tr>
 </tbody>
 </table>
-<p>Ground truth for that table is <code>src/core/ProcessorManager.cpp</code> (the two auto-provision blocks),
+<p>Ground truth for that table is <code>src/core/ProcessorManager.cpp</code> (the three auto-provision blocks —
+lfp/spike, audio, ripple — provisioning four processors),
 <code>src/modules/audio/AudioProcessor.cpp</code> (which band audio listens to) and
 <a href="DerivedBands.html"><code>DerivedBands.md</code></a> §5.</p>
 <blockquote>
@@ -315,7 +324,7 @@ drawn as an orphan. There is no way around that short of parsing C++ control flo
 worse trade.</p>
 <p><strong>A source name that is an ALIAS rather than a registered module gets no box at all</strong> — the profiles
 naming it come out with a missing stage, not a dangling edge. <code>source.npx.auto</code> is the live example;
-see 2. If you add another, expect the same and say so wherever the picture is read.</p>
+see §2. If you add another, expect the same and say so wherever the picture is read.</p>
 <p><strong>After changing the generator, regenerate and look at the picture.</strong> The tests check that the SVGs
 match the code and that the committed copy matches the generated one; neither can tell you the
 layout is legible. To render one without a browser window:</p>
@@ -323,9 +332,13 @@ layout is legible. To render one without a browser window:</p>
   --screenshot=out.png file:///ABSOLUTE/PATH/developer_docs/images/architecture.svg
 </code></pre>
 <p><strong>Do not commit <code>developer_docs/images/architecture*.svg</code></strong> — they are git-ignored and derived. The
-single exception is <code>images/architecture.svg</code>, which the repo README embeds; GitHub renders the
-README from the repository and cannot see a git-ignored file. That copy is written by the docs build
-and asserted byte-identical to the generated one, so it is committed without being hand-maintained.</p>
+exception is a rule, not a file: <strong>anything a committed document embeds is committed.</strong> GitHub
+renders Markdown from the repository and cannot see a git-ignored file, so <code>images/architecture.svg</code>
+(embedded by the repo README) and every <code>images/architecture_&lt;Config&gt;.svg</code> that
+<code>images/architecture_overview.md</code> embeds are tracked. Those copies are written by the docs build —
+the README's is asserted byte-identical to the generated one, and
+<code>python/tests/test_committed_docs_render.py</code> fails if any committed document embeds a file that is
+not in the repository — so they are committed without being hand-maintained.</p>
 <p><strong>These files are deliberately not dated</strong>, unlike the screenshots (<a href="KnowledgeOps.html"><code>KnowledgeOps.md</code></a>
 §8). A hand-made artifact cannot say how old it is and nothing re-derives it, so it carries a date.
 These are a function of the wiring and are re-derived every build — and a date stamped inside the SVG

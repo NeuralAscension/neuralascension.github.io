@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -455,30 +457,26 @@ reproducing old measurements and hidden from the dropdown. <code>Npx2OneBoxDigit
 that the OneBox dock's threshold panel configures.</p>
 <details>
 <summary><b>Neuropixels 1.0 — hardware</b></summary>
-<p><code>Asap</code> variants set the low-latency source flag ([<code>../developer_docs/LatencyProfiling.md</code>]) and are
-otherwise identical to their siblings. They <strong>are</strong> selectable in the GUI, so picking one by accident
-is possible.</p>
+<p>Low-latency (ASAP) delivery is a <strong>runtime request</strong> since #80 (2026-09-01) -- the ⚡ ASAP control in
+the GUI, <code>rig.set_low_latency()</code>, or the CLI's <code>asap</code> verb -- and the <code>*Asap.yaml</code> profile copies
+that used to carry it were deleted on 2026-09-02 ([<code>../developer_docs/LatencyProfiling.md</code>]).</p>
 <p><strong>PXIe</strong></p>
 <p><img alt="Npx1Pxi" src="architecture_Npx1Pxi.svg" />
-<img alt="Npx1PxiNiDaq" src="architecture_Npx1PxiNiDaq.svg" />
-<img alt="Npx1PxiNiDaqAsap" src="architecture_Npx1PxiNiDaqAsap.svg" /></p>
+<img alt="Npx1PxiNiDaq" src="architecture_Npx1PxiNiDaq.svg" /></p>
 <p><strong>OneBox</strong></p>
-<p><img alt="Npx1OneBox" src="architecture_Npx1OneBox.svg" />
-<img alt="Npx1OneBoxAsap" src="architecture_Npx1OneBoxAsap.svg" /></p>
+<p><img alt="Npx1OneBox" src="architecture_Npx1OneBox.svg" /></p>
 </details>
 <details>
 <summary><b>Neuropixels 2.0 — hardware</b></summary>
 <p><strong>PXIe</strong></p>
 <p><img alt="Npx2Pxi" src="architecture_Npx2Pxi.svg" />
-<img alt="NpxPxiNiDaq" src="architecture_NpxPxiNiDaq.svg" />
-<img alt="Npx2PxiNiDaqAsap" src="architecture_Npx2PxiNiDaqAsap.svg" /></p>
+<img alt="NpxPxiNiDaq" src="architecture_NpxPxiNiDaq.svg" /></p>
 <p><strong>OneBox</strong> — <code>Npx2OneBox</code> is what the current rig runs.</p>
 <p><code>Npx2OneBoxNoAdc</code> is a <strong>measurement control, not an operational profile</strong>: it differs from
 <code>Npx2OneBox</code> in exactly one variable — whether the 12-channel ADC band exists — which is what makes
 it usable as the control arm of a recording-throughput measurement. A session recorded with it has no
 stimulus channel at all, because the closed-loop stimulus is captured through that ADC.</p>
 <p><img alt="Npx2OneBox" src="architecture_Npx2OneBox.svg" />
-<img alt="Npx2OneBoxAsap" src="architecture_Npx2OneBoxAsap.svg" />
 <img alt="Npx2OneBoxNoAdc" src="architecture_Npx2OneBoxNoAdc.svg" /></p>
 </details>
 <details>
@@ -506,9 +504,9 @@ hardware does not, it is the rig and not the code ([<code>../developer_docs/Test
 <img alt="SimNpx1Ripples" src="architecture_SimNpx1Ripples.svg" />
 <img alt="SimNpx1NiDaqRipples" src="architecture_SimNpx1NiDaqRipples.svg" />
 <img alt="SimNpx1RippleModule" src="architecture_SimNpx1RippleModule.svg" /></p>
-<p>The latency A/B pair, identical but for the low-latency flag — which is the entire point of them:</p>
-<p><img alt="SimNpx1LatencyBaseline" src="architecture_SimNpx1LatencyBaseline.svg" />
-<img alt="SimNpx1LatencyAsap" src="architecture_SimNpx1LatencyAsap.svg" /></p>
+<p>The latency bench, the known-ASAP-off seed for a scripted A/B (the ASAP side is the same profile
+with the runtime request made before Play):</p>
+<p><img alt="SimNpx1LatencyBaseline" src="architecture_SimNpx1LatencyBaseline.svg" /></p>
 </details>
 <details>
 <summary><b>Simulated — NPX 2.0</b></summary>

@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -142,7 +144,7 @@
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-module-communication-frontend-backend-commands">SpikesPeak — Module Communication (frontend ⇄ backend commands)<a class="headerlink" href="#spikespeak-module-communication-frontend-backend-commands" title="Permanent link">#</a></h1>
 <p>How the browser UI sends <strong>commands</strong> to backend modules, and the <strong>one standard</strong> every module
 should follow: a per-module <code>Q_INVOKABLE</code> exposed over QWebChannel ("Option A"). This doc covers the
-two modules migrated to the standard so far — the <strong>Neuropixels source</strong> and the <strong>Recording sink</strong> —
+modules on the standard — the <strong>Neuropixels sources</strong> (PXIe, OneBox and the sims) and the <strong>Recording sink</strong> —
 and gives the general recipe for the rest.</p>
 <blockquote>
 <p>Wider context: <a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a> §7 (the
@@ -151,7 +153,8 @@ see <a href="Recording.html"><code>Recording.md</code></a>.</p>
 </blockquote>
 <hr />
 <h2 id="1-the-transport-one-websocket-three-multiplexed-channels">1. The transport: one WebSocket, three multiplexed channels<a class="headerlink" href="#1-the-transport-one-websocket-three-multiplexed-channels" title="Permanent link">#</a></h2>
-<p>The backend serves the UI over HTTP <code>:8234</code> and opens the system browser; <strong>all</strong> backchannel traffic
+<p>The backend serves the UI over HTTP <code>:8234</code> and opens it in a dedicated Chromium app-window (<code>--tab</code>
+for a system-browser tab, <code>--no-browser</code> for none — architecture review §1); <strong>all</strong> backchannel traffic
 rides one WebSocket on <code>:1234</code> (<code>NetworkClient.js</code> ⇄ <code>WebSocketServer.cpp</code>), split three ways:</p>
 <table>
 <thead>

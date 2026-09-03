@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -150,7 +152,7 @@ repo now.</strong></p>
 <p>What is true today: <strong>Linux is a supported, hardware-free dev path — one of several.</strong> The tree is
 proven on five machine configurations (<a href="SecondMachineRunbooks.html"><code>SecondMachineRunbooks.md</code></a>), the
 primary checkout is Windows with a live OneBox and both probes, <code>CLAUDE.md</code> carries a
-hardware-safety section for exactly that reason, and <code>SpikesPeak_Status.md</code> §65 is an <em>in vivo</em>
+hardware-safety section for exactly that reason, and <code>SpikesPeak_Status.md</code> §85 is an <em>in vivo</em>
 session on 2026-08-28. Build and test instructions for every platform are in
 <a href="Building.html"><code>Building.md</code></a> and <a href="Testing.html"><code>Testing.md</code></a>; this page is not the place to learn
 them.</p>
@@ -183,8 +185,10 @@ are what was built.</p>
 <p>Build/verify specifics on the 2026-07-06 box: Qt <strong>6.11.1</strong> (<code>~/Qt/6.11.1/gcc_64</code>), cmake/ninja from
 <code>~/Qt/Tools</code>; the real blocker was the vendored <code>v4/NeuropixAPI.h</code> MSVC macros
 (<code>__declspec</code>/<code>__stdcall</code>) — now guarded <code>#ifndef _WIN32</code> like the v3 header. Launch headless with
-<code>QT_QPA_PLATFORM=offscreen</code> (offscreen because WebEngineWidgets needs a platform plugin and there
-was no display); today <code>./run_spikespeak.sh --no-browser</code> does the environment for you.
+<code>QT_QPA_PLATFORM=offscreen</code> (offscreen because the backend is a <code>QApplication</code> and needs a platform
+plugin even with no window, and there was no display; WebEngineWidgets, which this line used to
+blame, has since been removed from <code>CMakeLists.txt</code> — see <a href="ControlCLI.html"><code>ControlCLI.md</code></a>); today
+<code>./run_spikespeak.sh --no-browser</code> does the environment for you.
 matplotlib/pip were absent there, so <code>plot_recording.py</code>'s PNGs were replaced by a numpy check.
 The rig had moved to a labmate, so dev happened on Linux against the sim source — which is what
 superseded the older "do NOT use Simulated Data" note (that one was specific to the <em>Windows
@@ -261,7 +265,9 @@ header</strong> first (<code>[u8 idLen][idStr][u32 numCh][u32 numBins]…</code>
    ✅ Leave NI-DAQ sim out of v1. Capture the forward-looking design in
    <a href="#simulated-sources-are-per-module-design-corrected-2026-07-06">Simulated sources are PER-MODULE</a> below (the user explicitly
    wants sim to eventually cover NP2.0 and non-NPX probes like NeuroNexus, with a way to pick which hardware
-   is being simulated).</li>
+   is being simulated). <em>(Overtaken the same day: Status §14 approved and built <code>NiDaqSimSource</code> as its own
+   follow-on, and the "hardware-agnostic" framing was corrected to one sim class per module — the section
+   linked above.)</em></li>
 <li><strong>Fold the synthetic-ripple source into this work.</strong> ✅ Software-simulated ripples are easier to work with
    than the hardware-injected ones. This matters for a concrete upcoming test: the user will later <strong>play a
    ripple audio file into saline</strong> with the probe in the bath (one of the final bench tests before <em>in vivo</em>).
@@ -358,15 +364,19 @@ a leaky abstraction. So:</p>
 <li><strong>One simulated source class per source module</strong>, living in that module's folder, registered by name
   (<code>source.&lt;module&gt;.sim</code> / <code>source.npx.simdata</code> / …). It writes the SAME registry data object(s), in the
   SAME dtype + aux (<code>PacketInfo</code>) shape, as that module's <em>real</em> hardware source — so the display / record /
-  ripple pipeline can't tell sim from hardware. Today: <code>SimulatedDataSource</code> (NPX1.0, <code>source.npx.simdata</code>)
-  and <code>SynthRippleSource</code> (<code>source.npx.synthripples</code>). Next: a <strong>simulated NI-DAQ source</strong> (its own class;
-  see Status §14). Later: a camera module ships its own sim source, etc.</li>
+  ripple pipeline can't tell sim from hardware. Today: <code>SimulatedDataSource</code> (NPX1.0, <code>source.npx.simdata</code>),
+  <code>SynthRippleSource</code> (<code>source.npx.synthripples</code>) and the <strong>simulated NI-DAQ source</strong> <code>NiDaqSimSource</code>
+  (<code>source.nidaq.sim</code>, its own class in <code>src/modules/nidaq/</code>, built 2026-07-06 — Status §14 — and
+  registered on every platform). Later: a camera module ships its own sim source, etc.</li>
 <li><strong>Flexibility lives INSIDE each module's sim</strong> — the <em>scenario/signal</em> is what varies (NPX: clean sine vs
-  software ripples; NI-DAQ: which analog waveforms + the shared TTL sync train), parameterised by a small
+  software ripples; NI-DAQ: which analog waveforms + the shared TTL sync train), parameterized by a small
   per-module profile struct (e.g. <code>SimSignalProfile</code> in <code>SimDataSource.hpp</code>). It is NOT one class emulating
   different <em>hardware</em>.</li>
 <li><strong>"Which simulation to run" is selected by the user</strong> — via distinct config profiles (each a dropdown
-  entry) and/or a "what to simulate" picker shown when <em>Simulated Data</em> is chosen (planned; Status §14).
+  entry) and a "what to simulate" picker shown when <em>Simulated Data</em> is chosen (built 2026-07-06, Status
+  §14; since 2026-08-26 it drills down basestation → probe → scenario from the profiles' <code>sim_variant:</code> /
+  <code>sim_basestation:</code> / <code>sim_probe:</code> keys — <a href="SourceSelection.html"><code>SourceSelection.md</code></a> §5, asserted by
+  <code>tests/gui/sim_picker.py</code>).
   Add a sim scenario = add a sim class (if it's a new module) or a new profile+config (if it's a new
   scenario for an existing module), plus a test YAML.</li>
 <li><strong>Guidance when adding ANY new hardware source:</strong> ship a sibling simulated source class in the same module

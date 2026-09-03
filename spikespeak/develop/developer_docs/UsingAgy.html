@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -190,7 +192,7 @@ no terminal grant — safer than <code>--yolo</code>):</p>
 <pre><code class="language-bash"># Put the spec in a file (Bash heredocs here cap ~5 KB per command; write big specs in chunks or a file),
 # then pipe it so you dodge the arg-length limit:
 agy-delegate --model &quot;Claude Opus 4.6 (Thinking)&quot; --mode accept-edits \
-  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak&quot; --timeout 15m - &lt; /tmp/spec.txt
+  --dir &quot;C:/Users/BIOEl/Documents/Code/SpikesPeak&quot; --timeout 15m - &lt; &lt;scratchpad&gt;/spec.txt
 </code></pre>
 <p>Used this session for the Option A "transform worker" refactor. <strong>Always pass <code>--dir &lt;repo-root&gt;</code></strong> so agy
 reads the real files (and <code>AGENTS.md</code> if present) instead of pasted code. Run in the <strong>background</strong>
@@ -203,17 +205,21 @@ touch the control path"), demand a graceful fallback, and ask for a <code>===DIG
 verification</strong>. The loop that catches real bugs here (a static "looks right" review is NOT enough — a subtle
 data-binding slip silently blanked all the live traces this session and only a GUI run caught it):</p>
 <ol>
-<li><strong>Diff review.</strong> Snapshot the target files first (<code>cp … /tmp/agy_baseline/</code>), then <code>diff</code> after — read
-   agy's <em>actual</em> changes, not just its digest. Check for hallucinated APIs and broken invariants.</li>
-<li><strong>Syntax check.</strong> JS: <code>cp file.js /tmp/x.mjs &amp;&amp; node --check /tmp/x.mjs</code>. C: <code>gcc -fsyntax-only</code> isn't
-   available for the Pi/ARM code on this box, so review + brace-balance instead.</li>
-<li><strong>Deploy</strong> the pure-frontend changes to where the backend serves them:
-   <code>cp webinterface/* build-Desktop_Qt_6_7_3_MSVC2019_64bit-Release/webinterface/</code> (no C++ rebuild for
-   JS/HTML/CSS). For C++ changes, rebuild (vcvars64 + <code>cmake --build …</code>).</li>
+<li><strong>Diff review.</strong> Snapshot the target files into the session scratchpad first (never <code>/tmp</code>, never the
+   repo — <code>CLAUDE.md</code>, "No scratch files in the repo"), then <code>diff</code> after — read agy's <em>actual</em> changes,
+   not just its digest. Check for hallucinated APIs and broken invariants.</li>
+<li><strong>Syntax check.</strong> JS: copy the file into the scratchpad as <code>x.mjs</code> and <code>node --check</code> it. C:
+   <code>gcc -fsyntax-only</code> isn't available for the Pi/ARM code on this box, so review + brace-balance instead.</li>
+<li><strong>There is no deploy step.</strong> <code>webinterface/</code> is served straight from the working tree, so JS/HTML/CSS
+   edits need no copy and no rebuild — hard-reload the browser (Ctrl+Shift+R). The flip side: <strong>never edit
+   <code>webinterface/</code> while a backend or the test gate is running</strong>; that changes the code under test
+   mid-flight. For C++ changes, <code>build.bat --no-pause</code> (<code>./build.sh</code> on Linux/macOS) — not a bare
+   <code>cmake --build</code>, which dies without the MSVC environment on Windows and skips the test gate everywhere.</li>
 <li><strong>Run it for real.</strong> <code>python run_spikespeak.py --no-browser</code> (or the exe with Qt/Neuropix/HDF5 on PATH) + an
    isolated Chrome on <code>--remote-debugging-port=9222</code>; drive via <code>python/tools/cdp.py</code>. <strong>Confirm live traces
-   actually render</strong> (<code>window.app.columns[i].onScreenSeries[0].dataSeries.count() &gt; 0</code>), not just that the
-   layout drew.</li>
+   actually render</strong> — <code>window.__benchPointCount(i) &gt; 0</code> asks the WebGL2 renderer for column <em>i</em>'s own
+   buffer occupancy (<code>-1</code> = no such column, or a lost GL context), which is the one thing a blank canvas
+   at a healthy 60 fps cannot fake. Not just that the layout drew.</li>
 <li><strong>Measure.</strong> <code>benchmarks/cdp_bench.py</code> sweeps channel density and reads <code>window.__perfStats</code> +
    CDP <code>Performance.getMetrics</code> (fps, frame time, main-thread busy). Compare before/after; the numbers are
    the acceptance criterion, not agy's prose.</li>

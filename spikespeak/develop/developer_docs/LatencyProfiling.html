@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -423,7 +425,7 @@ section below.</p>
 <h3 id="the-one-module-that-opts-in-and-how-an-operator-turns-it-on">The one module that opts in, and how an operator turns it on<a class="headerlink" href="#the-one-module-that-opts-in-and-how-an-operator-turns-it-on" title="Permanent link">#</a></h3>
 <p>The ripple detector, because it closes a sub-millisecond loop. The shipped simulated ripple profiles
 (<code>SimNpx{1,2}Ripples</code>, <code>SimNpx{1,2}RippleModule</code>, <code>SimNpx{1,2}NiDaqRipples</code>,
-<code>SimNpx2RealNiDaqRipples</code>) and the four <code>*(ASAP)*</code> hardware profiles set the key on their source
+<code>SimNpx2RealNiDaqRipples</code>) set the key on their source node; the play-file profiles do not. (The four <code>*(ASAP)*</code> hardware profile copies that also did were deleted on 2026-09-02 -- request ASAP at runtime.)
 node; the <code>*SynthRipples*</code> play-file profiles do not.</p>
 <p><strong>Since 2026-09-01 an operator does not have to edit YAML at all</strong> — the <strong>⚡ ASAP</strong> panel asks for it
 per module and the request walks upstream to the source (issue #80, the section below). What did
@@ -558,7 +560,7 @@ latency win nothing but the closed loop uses.</p>
 (low_latency = true)</code> with the <code>Npx2PxiNiDaqAsap</code> config; NP2 raw 30 kHz × 384 ch and NI-DAQ 40 kHz
 (AI + DI) streamed at rate.</em></p>
 </blockquote>
-<p>Benchmark configs <code>SimNpx1LatencyBaseline</code> / <code>SimNpx1LatencyAsap</code> differ only in this flag (plus a 0.5 s
+<p>Benchmark config <code>SimNpx1LatencyBaseline</code> is the known-off seed for this A/B (its <code>SimNpx1LatencyAsap</code> twin, deleted 2026-09-02, was the same file with the flag on; the runtime request replaces it). It carries a 0.5 s
 ripple period so 1000 samples take ~9 min instead of ~33).</p>
 <h3 id="measured-effect-ab-n1000-each-live-pi-simulation">Measured effect (A/B, n=1000 each, live Pi, simulation)<a class="headerlink" href="#measured-effect-ab-n1000-each-live-pi-simulation" title="Permanent link">#</a></h3>
 <p><code>SimNpx1LatencyBaseline</code> vs <code>SimNpx1LatencyAsap</code> — identical except the flag. Medians, microseconds:</p>
@@ -672,9 +674,10 @@ a <strong>214–631 µs</strong> mean backlog on this rig — 15–43 % of the t
 <code>Npx2MSProbe::setLowLatency()</code> — same one-line timer change, <code>setInterval(mLowLatency ? 0 : 1)</code>, wired in
 <code>NeuropixelsSource::startAcq</code>), which polls on every event-loop pass (interval 0) instead of every 1 ms.
 The <strong>request size is unchanged</strong> so the probe can still catch up if it ever falls behind — only the poll
-cadence changes. Configs <strong><code>Npx1PxiNiDaqAsap</code></strong> and <strong><code>Npx2PxiNiDaqAsap</code></strong> differ from their default
-counterparts (<code>Npx1PxiNiDaq</code>, <code>NpxPxiNiDaq</code>) by that key alone — nothing but the profile name and the
-comments explaining the key move with it, which is what makes them a fair A/B. The backend logs
+cadence changes. The hardware A/B was measured with <strong><code>Npx1PxiNiDaqAsap</code></strong> and <strong><code>Npx2PxiNiDaqAsap</code></strong>, copies of their default
+counterparts (<code>Npx1PxiNiDaq</code>, <code>NpxPxiNiDaq</code>) with that key alone flipped — a fair A/B at the time.
+Those copies were deleted on 2026-09-02; the same A/B is now the base profile with and without the
+runtime request (<code>run_latency_hw.py --asap</code>), which can be <em>confirmed</em> in force. The backend logs
 <code>acquisition poll interval 0 ms (low_latency = true)</code> at start — check it to confirm the flag actually
 took before trusting an A/B.</p>
 <p>Staleness is still bounded below by the Neuropixels API's own packetization: below that the data has not
@@ -886,7 +889,8 @@ python ripple_tools/latency_breakdown.py --n 1000 --fig lat.png --out lat.json
 
 # the A/B used for the numbers above
 python ripple_tools/latency_breakdown.py --source &quot;Latency Bench NP1 (baseline delivery)&quot; --n 1000 ...
-python ripple_tools/latency_breakdown.py --source &quot;Latency Bench NP1 (ASAP delivery)&quot;     --n 1000 ...
+# ASAP arm: the &quot;Latency Bench NP1 (ASAP delivery)&quot; profile was deleted 2026-09-02; run the baseline profile
+# with ASAP requested at runtime first (rig.set_low_latency() + wait_low_latency(), or run_latency_hw.py --asap).
 
 # the DEFINITIVE closed-loop latency, from a recording with NI-DAQ
 python ripple_tools/analyze_recording.py &lt;recdir&gt; --ws &lt;recdir&gt;/&lt;name&gt;_ws.jsonl --figs &lt;recdir&gt;/analysis

@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -479,7 +481,7 @@ the second pass's count, and <code>ok</code> is false when <strong>either</stron
 <pre><code class="language-json">{ &quot;generated&quot;: &quot;2026-09-01T22:54:25&quot;, &quot;total&quot;: 27, &quot;passed&quot;: 27, &quot;failed&quot;: 0,
   &quot;scalar_failed&quot;: 0, &quot;ok&quot;: true, &quot;suites&quot;: [ ... ] }
 </code></pre>
-<h2 id="1a-running-both-suites-on-linux">1a. Running both suites on Linux<a class="headerlink" href="#1a-running-both-suites-on-linux" title="Permanent link">#</a></h2>
+<h2 id="1a-running-all-three-suites-on-linux">1a. Running all three suites on Linux<a class="headerlink" href="#1a-running-all-three-suites-on-linux" title="Permanent link">#</a></h2>
 <p><strong>Re-verified from a clean clone on 2026-09-01</strong> (Linux Mint 22.1 / Ubuntu 24.04 base, kernel 6.8,
 Threadripper 1950X, RTX 2080 / NVIDIA 535, GCC 13.3.0, Qt 6.11.1, HDF5 1.10.10, Brave):
 <strong>27 of 27 C++ suites / 478 cases</strong>, <strong>151 of 151 Python tests</strong>, <strong>26 of 26 GUI tests</strong>. The
@@ -505,8 +507,10 @@ step and skips with the command to run; STALE is a defect and stays red. A fresh
 same ring buffers, interpreters, display processor, recorder and ripple detector that real hardware
 drives. <code>NPX_HW_ENABLED</code> and <code>NIDAQ_HW_ENABLED</code> are Windows-branch-only, so the PXIe, OneBox and real
 NI-DAQ sources are simply never registered. <strong>A green Linux run closes no hardware row.</strong></p>
-<h3 id="the-two-commands">The two commands<a class="headerlink" href="#the-two-commands" title="Permanent link">#</a></h3>
+<h3 id="the-three-commands">The three commands<a class="headerlink" href="#the-three-commands" title="Permanent link">#</a></h3>
 <pre><code class="language-bash">./build.sh                                  # configures build/ on first use, then builds + runs the C++ suite
+</code></pre>
+<pre><code class="language-bash">python3 -m unittest discover python/tests   # the Python suite: no browser, no backend; needs numpy (§1b)
 </code></pre>
 <pre><code class="language-bash">DISPLAY=:0 python3 scripts/run_gui_tests.py --fatal
 </code></pre>
@@ -642,6 +646,10 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 <td>the config channel spec — every selectable hardware profile records all probe channels</td>
 </tr>
 <tr>
+<td><code>test_config_no_asap_twins.py</code></td>
+<td>no config may end in <code>Asap.yaml</code>, and no two configs may be the same profile once <code>name:</code>, comments and <code>low_latency:</code> are ignored — ASAP is a runtime request, and a duplicate profile is a drift waiting to happen. Added 2026-09-02; red against the tree before the five copies were deleted, green after</td>
+</tr>
+<tr>
 <td><code>test_band_response.py</code></td>
 <td>the NP1.0 band split, pinned to the <strong>same numbers as the C++ side</strong> (<code>test_simbandresponse</code>). Added 2026-08-31 after the live simulator and the play-file generator were found to disagree by a factor of fifteen, each internally consistent — a per-language test could not have caught it. See <a href="InvariantTests.html"><code>InvariantTests.md</code></a></td>
 </tr>
@@ -699,7 +707,7 @@ counting suites saw four Python files and assumed the gate covered them.</p>
 </tr>
 </tbody>
 </table>
-<p>Nineteen files, <strong>190 tests</strong> as of 2026-09-02.</p>
+<p>Twenty files, <strong>192 tests</strong> as of 2026-09-02.</p>
 <p><strong>This table has now been wrong twice, the same way.</strong> It said five files and 121 tests until
 <code>test_band_response.py</code> was added on 2026-08-31 — and the five missing tests were exactly the file
 it had forgotten. Then on 2026-09-01 the Linux run updated the page's <em>headline</em> totals to
@@ -1192,8 +1200,8 @@ setter set something.</p>
 <li><a href="#the-suites">The suites</a></li>
 </ul>
 </li>
-<li><a href="#1a-running-both-suites-on-linux">1a. Running both suites on Linux</a><ul>
-<li><a href="#the-two-commands">The two commands</a></li>
+<li><a href="#1a-running-all-three-suites-on-linux">1a. Running all three suites on Linux</a><ul>
+<li><a href="#the-three-commands">The three commands</a></li>
 <li><a href="#what-linux-needs-that-windows-does-not">What Linux needs that Windows does not</a></li>
 <li><a href="#three-things-that-are-different-on-linux-and-are-not-bugs">Three things that are different on Linux and are not bugs</a></li>
 <li><a href="#layout_matrixs-portrait-half-reports-itself-untested-without-a-portrait-display">layout_matrix's portrait half REPORTS ITSELF UNTESTED without a portrait display</a></li>

@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -160,7 +162,7 @@ parallel-work map). Read those to <em>extend</em> the system; read this to <em>u
 </blockquote>
 <hr />
 <h2 id="how-to-read-this-page">How to read this page<a class="headerlink" href="#how-to-read-this-page" title="Permanent link">#</a></h2>
-<p><strong>Core review 2026-06-23 · completion pass 2026-07-21 (§11) · spot-corrected 2026-08-31 and 2026-09-01.</strong></p>
+<p><strong>Core review 2026-06-23 · completion pass 2026-07-21 (§11) · spot-corrected 2026-08-31, 2026-09-01 and 2026-09-02.</strong></p>
 <p>This is a <strong>dated snapshot</strong>, not a living description of the system, and it is the page
 <code>README.md</code> sends newcomers to for "the whole system" — so know its edges before you trust it. The
 core it describes (hosting, threading, the data plane, the registry/factory, the QWebChannel command
@@ -328,7 +330,7 @@ slot with <code>np_mapBS</code>, and it carries two things the PXIe path has no 
 <tr>
 <td>UI delivery</td>
 <td>Static HTTP server on <strong>:8234</strong> serves <code>../webinterface</code></td>
-<td>the <code>HttpServer</code> class in <code>main.cpp</code></td>
+<td><code>startSimpleHttpServer()</code> in <code>main.cpp</code> (a <code>QTcpServer</code>; rewrites the <code>ws://localhost:&lt;port&gt;</code> literal in <code>Config.js</code> as it serves it)</td>
 </tr>
 <tr>
 <td>UI launch</td>
@@ -956,8 +958,9 @@ on a count mismatch. This is the reference for any recorded-timing work: <a href
 <p>Both probes are validated <strong>end-to-end on real hardware in saline</strong> — synthetic ripple → detection →
 Pi/AM 2300 → NI-DAQ ai4 — across the full quorum × delivery matrix (1000 detections/cell), sub-millisecond
 with ASAP. Saline bench validation is <strong>done</strong>.</p>
-<p><strong>Updated 2026-09-01.</strong> The milestone this section named as next — <strong>in-vivo recording under
-anesthesia</strong> — came round on <strong>2026-08-28</strong> (Status §65). The latency matrix has since been completed
+<p><strong>Updated 2026-09-01; Status citation corrected 2026-09-02.</strong> The milestone this section named as
+next — <strong>in-vivo recording under anesthesia</strong> — came round on <strong>2026-08-28</strong> (Status §85 — it ran;
+the recording was noisy and the closed-loop numbers remain saline-bench figures). The latency matrix has since been completed
 on the <strong>OneBox</strong> as well as PXIe, and <code>feature/OneBoxSupport</code> was merged into <code>develop</code> on
 2026-09-01 (Status §84), so OneBox support is complete and there is no live feature branch. Dated
 log: <code>../SpikesPeak_Status.md</code> — read its Session index from the bottom up, because this section is

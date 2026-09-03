@@ -26,12 +26,14 @@
 <a href="../../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../README.html">SpikesPeak — Developer Docs</a>
@@ -175,13 +177,25 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 <td><code>StimClosedLoop_Status.md</code></td>
 <td>The authoritative session record for the ripple→stim closed loop (ESP32 → Pi 3B+ → AM 2300), its build/fire-path verification, and the 2026-07-09/07-15 hardware results.</td>
 <td>2026-07-20</td>
-<td>Status/results → <code>SpikesPeak_Status.md</code> §21–§25. Living reference → <code>RippleDetection.md</code>, <code>RippleGui.md</code>, <code>RippleClosedLoopAnalysis.md</code>, <code>../../RecordingTests/NP{1,2}_RIPPLE_TESTS.md</code>. Pi setup → <code>raspberrypi_pulsegenerator/README.md</code>.</td>
+<td>Status/results → <code>SpikesPeak_Status.md</code> §21–§25. Living reference → <code>RippleDetection.md</code>, <code>RippleGui.md</code>, <code>RippleClosedLoopAnalysis.md</code>, <code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code>. Pi setup → <code>raspberrypi_pulsegenerator/README.md</code>.</td>
 </tr>
 <tr>
 <td><code>NextTask_NP1RippleRegression.md</code></td>
 <td>The task brief for the NP1.0 closed-loop regression after the NP2-focused commit.</td>
 <td>2026-07-20</td>
 <td>The regression <strong>passed</strong>; that report was later folded into <a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a> (commit 74adeeb) + <code>SpikesPeak_Status.md</code> §25.</td>
+</tr>
+<tr>
+<td><code>NextTask_OneBoxClosedLoopLatency.md</code></td>
+<td>The brief that opened OneBox closed-loop latency, NP1.0 and NP2.0.</td>
+<td>2026-08-20</td>
+<td><strong>Done</strong> -- the full matrix (three channel/quorum settings, baseline and ASAP) ran on <strong>both</strong> probes. Results → <a href="../../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>; method → <a href="../LatencyProfiling.html"><code>../LatencyProfiling.md</code></a>; <code>SpikesPeak_Status.md</code> §48. Kept for the operator knowledge in it: how the stim capture moved off the NI-DAQ and onto the OneBox's <strong>own ADC</strong> (two streams from one device need no alignment at all, which deletes the sync step that had already produced one wrong answer), and the three things to confirm before trusting an ADC-captured pulse.</td>
+</tr>
+<tr>
+<td><code>NextTask_OneBoxLatencyMatrix.md</code></td>
+<td>The run sheet that finished that matrix.</td>
+<td>2026-08-20</td>
+<td><strong>Done</strong> -- same results, same write-up (<code>SpikesPeak_Status.md</code> §48). Kept for the traps it names, each of which cost a run: <code>record_ripples.py --dir</code> is the OUTER directory and the tool writes the bands into <code>&lt;dir&gt;/&lt;name&gt;/</code>; the analysis step's <code>recdir</code> is positional and is that INNER directory; the stim must be <strong>gated</strong> as well as armed; do not pipe the runner into <code>tail</code>; and a OneBox analysis needs <code>--stim-band adc --stim-channel N</code>.</td>
 </tr>
 <tr>
 <td><code>NextTask_OneBoxSupport.md</code></td>
@@ -211,7 +225,7 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 <td><code>NextTask_LinuxBringUp.md</code></td>
 <td>Getting SpikesPeak building and both suites green on Linux.</td>
 <td>2026-08-26</td>
-<td><strong>Done</strong> -- 20 C++ suites / 384 cases and 10 GUI tests green on Linux. <code>SpikesPeak_Status.md</code> §59; the durable instructions are in <a href="../Building.html"><code>../Building.md</code></a> and <a href="../Testing.html"><code>../Testing.md</code></a>.</td>
+<td><strong>Done</strong> -- the C++ and GUI suites green on Linux (the counts live in <a href="../Testing.html"><code>../Testing.md</code></a>). <code>SpikesPeak_Status.md</code> §59; the durable instructions are in <a href="../Building.html"><code>../Building.md</code></a> and <a href="../Testing.html"><code>../Testing.md</code></a>.</td>
 </tr>
 <tr>
 <td><code>NextTask_SyncPulseCountCheck.md</code></td>
@@ -234,7 +248,7 @@ git diff &lt;old-sha&gt;..HEAD -- developer_docs/          # what the docs say n
 <li><strong>Status snapshots</strong> (<code>*_Status.md</code> scoped to one effort) get archived once their content is merged into
   <code>SpikesPeak_Status.md</code>. The one exception is the top-level <code>SpikesPeak_Status.md</code> itself, which is the
   permanent running log.</li>
-<li><strong>Never archive a living reference doc</strong> (e.g. <code>Neuropixels2.0.md</code>, <code>SimDataLinux.md</code>, <code>NiDaq.md</code>) just
+<li><strong>Never archive a living reference doc</strong> (e.g. <code>Neuropixels2.0.md</code>, <code>NiDaq.md</code>) just
   because it is old — those are subsystem references, not snapshots.</li>
 <li>Always add the row above, with what superseded it. An archive without that column is just a junk drawer.</li>
 </ul></article>

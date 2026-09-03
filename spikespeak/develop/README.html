@@ -26,12 +26,14 @@
 <a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -199,8 +201,9 @@ Play. You should see streaming traces within a second or two.</p>
 <li><code>--no-pause</code> — <code>build.bat</code> holds its console window open by default so a double-click does not
   vanish before you can read the result. In a script that becomes a hang at <em>"Press any key to
   continue"</em>, so scripted callers opt out. (<code>SP_NO_PAUSE=1</code> does the same for a whole session.)</li>
-<li><code>--no-browser</code> — without it the backend opens your <em>default</em> browser for you. Drop the flag if
-  that is what you want; keep it if you are driving a browser yourself.</li>
+<li><code>--no-browser</code> — without it the backend opens the GUI in a dedicated browser app-window for you
+  (<code>--tab</code> puts it in your default browser as a tab instead). Drop the flag if that is what you
+  want; keep it if you are driving a browser yourself.</li>
 </ul>
 <p>The launcher is not decoration: the app needs Qt, the vendored Neuropixels DLLs and HDF5 on <code>PATH</code>,
 and <code>run_spikespeak</code> reads the build's own <code>CMakeCache.txt</code> to find the exact ones that built it.

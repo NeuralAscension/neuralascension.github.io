@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -948,7 +950,7 @@ of delay from the Pi path while barely moving the DAC.</em></p>
 <h3 id="reproducing">Reproducing<a class="headerlink" href="#reproducing" title="Permanent link">#</a></h3>
 <pre><code class="language-bash">python ripple_tools/fair_ab.py 1000 11 2      # n per ordering, DAC channel, Pi channel
 </code></pre>
-<p>Profile: <code>Npx2OneBoxAsap.yaml</code> plus <code>dac_trigger: true</code> and <code>dac_trigger_order: dac_first|stim_first</code>.
+<p>Profile: <code>Npx2OneBox.yaml</code> with ASAP requested at runtime (<code>fair_ab.py</code> requests it and asserts it took; the <code>Npx2OneBoxAsap.yaml</code> copy it used to read was deleted 2026-09-02), plus <code>dac_trigger: true</code> and <code>dac_trigger_order: dac_first|stim_first</code>.
 Detector at z = 0 (the probe is in air; noise must cross constantly), lockout 0.05 s, quorum 1. The
 edge detector uses a <strong>max-based</strong> threshold with a 5 ms debounce — a percentile misses a 130 µs pulse
 entirely, which is 0.02 % of the samples in a run this long.</p>
@@ -1005,7 +1007,8 @@ fixed. Detail: <a href="../developer_docs/RippleClosedLoopAnalysis.html"><code>.
   modulo the sync period, with a warning.</li>
 </ul>
 <h2 id="how-to-reproduce">How to reproduce<a class="headerlink" href="#how-to-reproduce" title="Permanent link">#</a></h2>
-<pre><code class="language-bash"># record (real hardware). NP1: --source &quot;NPX 1.0 with NI-DAQ [(ASAP)]&quot;; NP2: &quot;NPX 2.0 Multishank with NI-DAQ [(ASAP)]&quot;
+<pre><code class="language-bash"># record (real hardware). NP1: --source &quot;NPX 1.0 with NI-DAQ&quot;; NP2: &quot;NPX 2.0 Multishank with NI-DAQ&quot;.
+# Add --asap for the ASAP cells (the &quot;(ASAP)&quot; profile copies were deleted 2026-09-02; --asap refuses to record until the source confirms).
 python ripple_tools/run_latency_hw.py --source &quot;&lt;config name&gt;&quot; \
     --dir &lt;abs recdir&gt; --name &lt;name&gt; --nchan 2 --quorum 2 --n 1000
 

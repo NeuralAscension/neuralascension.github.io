@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -297,8 +299,10 @@ python scripts/run_gui_tests.py --only ripple # while you iterate
 </tr>
 </tbody>
 </table>
-<p>Every one of them runs against a <strong>real backend</strong> on a simulated source. No hardware.</p>
-<p><strong>Most drive a real browser</strong> over CDP. Four — <code>command_surface</code>, <code>hardware_absent</code>, <code>intan_not_implemented</code>,
+<p>Every one of them runs against a <strong>real backend</strong> on a simulated source — except <code>hardware_absent</code>,
+which selects the hardware profiles (<code>PXIe</code>, then <code>Neuropixels</code>) with nothing attached and skips
+itself (reported as untested) when a basestation is present. None of them needs hardware.</p>
+<p><strong>Most drive a real browser</strong> over CDP. Five — <code>command_surface</code>, <code>hardware_absent</code>, <code>intan_not_implemented</code>,
 <code>state_consistency</code> and <code>teardown_while_recording</code> — drive the backend over a WebSocket with <strong>no
 browser at all</strong>, because every assertion they make is about what the backend <em>says</em>, and that costs
 seconds instead of the minute a browser costs. Read that as a property of the assertion, not a
@@ -1025,7 +1029,9 @@ also what found the audio button appearing on 1.0 sources</strong>, where no shi
   GUI asserted to follow it.</li>
 <li><strong>Error and fault surfaces</strong> — the hardware-error modal, the processor-fault relay, the source
   stall banner.</li>
-<li><strong>Real hardware.</strong> Every GUI test runs on a simulated source by design.</li>
+<li><strong>Real hardware.</strong> Every GUI test runs on a simulated source by design; the one exception,
+  <code>hardware_absent</code>, selects the hardware profiles (<code>PXIe</code>, then <code>Neuropixels</code>) precisely because
+  nothing is attached, so it proves the refusal path and nothing about a probe.</li>
 </ul>
 <h2 id="6-conventions-these-tests-follow">6. Conventions these tests follow<a class="headerlink" href="#6-conventions-these-tests-follow" title="Permanent link">#</a></h2>
 <ul>

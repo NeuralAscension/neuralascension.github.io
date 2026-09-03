@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -224,7 +226,7 @@ basestation nor the probe — both are read from the rig.</p>
 <td><code>gui_hidden</code>. <strong>Superseded by the row above</strong> — it is the told-what-to-open form, kept as the explicit override when a OneBox and a PXIe module are attached at once. Selectable by name.</td>
 </tr>
 <tr>
-<td><code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank with NI-DAQ</code>, and the <code>(ASAP)</code> variants</td>
+<td><code>NPX 1.0 with NI-DAQ</code>, <code>NPX 2.0 Multishank with NI-DAQ</code> (their <code>(ASAP)</code> copies were deleted 2026-09-02; ASAP is a runtime request)</td>
 <td>fixed per file</td>
 <td>real</td>
 <td><code>gui_hidden</code> legacy, selectable by name; published measurements reference these names and must stay reproducible.</td>
@@ -426,8 +428,8 @@ chip — hover to peek, click or <code>Ctrl+Shift+V</code> to pin.</p>
 <p>The digital lines are <strong>already acquired</strong>. In <code>NIDAQDevice::acquireData</code> (<code>NiDaqInterface.cpp</code>), each
 active digital port is read with <code>DAQmxReadDigitalU8</code>/<code>U32</code>, bit-shifted by port index into a single
 status word, and stored <strong>per sample</strong> in the AI packet aux as <code>NiDaqPacketInfo.digitalBitmask</code>
-(time-aligned with the analog samples via the shared AI sample clock). It is captured but <strong>not yet
-exposed as its own displayable stream</strong>.</p>
+(time-aligned with the analog samples via the shared AI sample clock). It was captured but not exposed
+as its own stream until 2026-07-14 (next section).</p>
 <h3 id="digital-io-stream-implemented-2026-07-14">Digital I/O stream — implemented (2026-07-14)<a class="headerlink" href="#digital-io-stream-implemented-2026-07-14" title="Permanent link">#</a></h3>
 <p>The DI is now surfaced as its own <code>data.nidaq.di</code> stream, so it renders as <strong>NIDAQ DI/O</strong> in a second
 live-view column. What was added:</p>

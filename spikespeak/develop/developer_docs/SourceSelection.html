@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -152,12 +154,13 @@ PXIe with NI-DAQ         (only when a PXIe module is detected)
 Simulated Data…
 None
 </code></pre>
-<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI. Of those three,
-<strong>only <code>OneBox</code> and <code>PXIe</code> are ever surfaced in the menu</strong>, and only when the scan is ambiguous — see
-§2, where <code>source.npx.auto</code> REFUSES to pick with both a OneBox and a PXIe attached and the GUI raises
-a <code>basestation-choice</code> dialog instead. (<code>main.js</code>'s ambiguous branch also offers <strong><code>PXIe with
-NI-DAQ</code></strong>, but that is the everyday visible profile, not the hidden <code>PXIe + NI-DAQ</code>. Watch those two
-names — see §7.)</p>
+<p><code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> remain selectable by name from the control CLI, and <strong>all three
+surface in the menu only when the scan is ambiguous</strong> — see §2, where <code>source.npx.auto</code> REFUSES to
+pick with both a OneBox and a PXIe attached and the GUI raises a <code>basestation-choice</code> dialog instead.
+The everyday <code>PXIe with NI-DAQ</code> is deliberately <em>withheld</em> from that menu: it resolves the basestation
+itself, so offering it where the scan has just refused would only ask the same question again
+(<code>main.js</code> <code>renderSourceRoot()</code>, the <code>ambiguous</code> branch; fixed 2026-09-02, until then it was offered
+and did exactly that). Watch those two names — see §7.</p>
 <p>This document is how that works and what you have to know before editing a profile.</p>
 <hr />
 <h2 id="1-why-a-profile-could-ever-be-wrong-for-the-probe">1. Why a profile could ever be "wrong for the probe"<a class="headerlink" href="#1-why-a-profile-could-ever-be-wrong-for-the-probe" title="Permanent link">#</a></h2>
@@ -266,7 +269,7 @@ processors:
 the OneBox ADC, and to work out whether the profile expects a particular probe. It does <strong>not</strong>
 create the bands — the probe branch does. Listing a band the probe does not stream costs nothing.</p>
 <p><strong>An output entry has exactly one live key, <code>name:</code>.</strong> The <code>data:</code> key that used to sit beside it was
-read by nothing and was deleted from every shipped config on 2026-08-30 (#70). It is live on a
+read by nothing on a source output (#70, 2026-08-30) — it is still written in most shipped configs beside <code>name:</code> and is simply ignored there. It is live on a
 <em>processor's</em> <code>inputs:</code> list — where it is the stream id — which is presumably why somebody copied it
 onto sources; the two blocks look identical and are not. Unknown keys are ignored, so an old config
 that still carries it keeps working. See <a href="ConfigReference.html"><code>ConfigReference.md</code></a> §<code>outputs:</code>.</p>
@@ -328,11 +331,13 @@ needs, and the digital-input profile from #67.</p>
 <p><strong>The ASAP profiles are no longer how you get ASAP.</strong> Since #80, low latency is a per-module
 runtime control in the GUI (<code>webinterface/LowLatencyModule.js</code>), and turning it on for a module
 propagates it upstream to whatever feeds that module — so a profile whose entire difference is
-<code>low_latency: true</code> on the source no longer needs to exist. The five that do exist —
-<code>config/Npx1OneBoxAsap.yaml</code>, <code>Npx1PxiNiDaqAsap.yaml</code>, <code>Npx2OneBoxAsap.yaml</code>,
-<code>Npx2PxiNiDaqAsap.yaml</code>, <code>SimNpx1LatencyAsap.yaml</code>, the exact set <code>src/core/LowLatency.hpp</code> names in
-its rationale — stay hidden and selectable by their <code>name:</code> fields ("NPX 1.0 (OneBox, ASAP)" and so
-on) for the same reason as the rest of §4: published latency numbers name them. See
+<code>low_latency: true</code> on the source no longer needs to exist — and since <strong>2026-09-02 none does</strong>: the
+five copies (<code>Npx1OneBoxAsap</code>, <code>Npx1PxiNiDaqAsap</code>, <code>Npx2OneBoxAsap</code>, <code>Npx2PxiNiDaqAsap</code>,
+<code>SimNpx1LatencyAsap</code>, the set <code>src/core/LowLatency.hpp</code> names in its rationale) were deleted once the
+tooling that read them (<code>ripple_tools/fair_ab.py</code>, <code>run_latency_hw.py --asap</code>, <code>rig.set_low_latency()</code>,
+the CLI's <code>asap</code> verb) could request ASAP at runtime <em>and confirm it in force</em>. Published numbers that
+name those profiles remain valid as history; <code>python/tests/test_config_no_asap_twins.py</code> keeps a twin
+from coming back. See
 <a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a> and <a href="ConfigReference.html"><code>ConfigReference.md</code></a> for the
 config key and its runtime twin.</p>
 <hr />
@@ -364,10 +369,10 @@ session and a second browser both land in <code>reflectSource()</code>.</p>
 Simulated Data, then a separator and None. Drawn the other way round this reads as a menu whose top
 row is "do nothing", which is not what an operator sees.</p>
 <p><strong>This is not the tree from §1's middle era.</strong> <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> were the menu for
-about a day and are now <code>gui_hidden: true</code>. Two of them — <strong><code>OneBox</code> and <code>PXIe</code></strong> — surface here
+about a day and are now <code>gui_hidden: true</code>. All three — <strong><code>OneBox</code>, <code>PXIe</code> and <code>PXIe + NI-DAQ</code></strong> — surface here
 <strong>only when the scan is ambiguous</strong> (a OneBox and a PXIe module both attached), as the explicit
-override for a question the backend refuses to guess at. <code>PXIe + NI-DAQ</code> is never surfaced: the
-third row that branch offers is <code>PXIe with NI-DAQ</code>, the visible everyday profile. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
+override for a question the backend refuses to guess at. The auto-resolving <code>PXIe with NI-DAQ</code> is
+withheld there (since 2026-09-02) because it would only ask again. Watch the two similar names: <strong><code>PXIe with NI-DAQ</code></strong> is the everyday profile
 (<code>config/NeuropixelsNiDaq.yaml</code>) and <strong><code>PXIe + NI-DAQ</code></strong> is the hidden superseded one
 (<code>config/PxieNiDaq.yaml</code>). They are different profiles with different <code>name:</code> fields, and <code>name:</code> is
 the identity.</p>

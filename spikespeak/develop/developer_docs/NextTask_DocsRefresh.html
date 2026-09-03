@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -140,9 +142,10 @@
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="in-progress-documentation-refresh-screenshots-prose">In progress — documentation refresh (screenshots + prose)<a class="headerlink" href="#in-progress-documentation-refresh-screenshots-prose" title="Permanent link">#</a></h1>
-<p><strong>State: partly done. This file is the handoff; it is accurate as of 2026-08-25.</strong></p>
+<p><strong>State: partly done. This file is the handoff; it is accurate as of 2026-09-02.</strong> Move it to
+<code>archive/</code> once the two NP2 recaptures and the remaining items under §2 "Still to fix" are done.</p>
 <p>The GUI changed substantially on 2026-08-20/21 (two-row toolbar, collapsible column strips,
-<code>OneBox ADC (SDR)</code> / <code>IO0..IO11</code> labelling, one-line control strips, minimum widths). Most
+<code>OneBox ADC (SDR)</code> / <code>IO0..IO11</code> labeling, one-line control strips, minimum widths). Most
 documentation screenshots and a good deal of prose still described the GUI that existed before that.
 On 2026-08-25 the strip rule changed again: a strip now collapses <strong>only when one row does not fit</strong>,
 never on column count — see <a href="LiveDataView.html"><code>LiveDataView.md</code></a> §4, and the screenshot trap below.</p>
@@ -162,19 +165,19 @@ and vertical full-screen on the portrait display:</p>
 </thead>
 <tbody>
 <tr>
-<td><code>user_docs/images/np1_liveview_2026-08-21.png</code></td>
+<td><code>user_docs/images/np1_liveview_2026-09-02.png</code></td>
 <td>3 columns: <strong>AP Band + LFP Band + OneBox ADC (SDR)</strong>, band names visible — on the 1920 landscape display the strips are already open in flow at 3 columns, so pin nothing (see the trap below)</td>
 </tr>
 <tr>
-<td><code>user_docs/images/vertical_liveview_2026-08-21.png</code></td>
+<td><code>user_docs/images/vertical_liveview_2026-09-02.png</code></td>
 <td>same three bands, vertical, portrait 1080×2560 full screen</td>
 </tr>
 <tr>
-<td><code>user_docs/images/np1_probemap_2026-08-21.png</code></td>
+<td><code>user_docs/images/np1_probemap_2026-09-02.png</code></td>
 <td>Probe Map, Edit Map mode</td>
 </tr>
 <tr>
-<td><code>user_docs/images/record_selection_2026-08-21.png</code></td>
+<td><code>user_docs/images/record_selection_2026-09-02.png</code></td>
 <td>Select Recording Channels mode</td>
 </tr>
 <tr>
@@ -195,7 +198,7 @@ and vertical full-screen on the portrait display:</p>
 </tr>
 <tr>
 <td><code>developer_docs/images/ripple_detection_module_2026-08-21.png</code></td>
-<td>whole ripple module in one frame</td>
+<td>whole ripple module in one frame — this one is the <strong>NP2.0</strong> probe on the OneBox (<code>NPX 2.0 Multishank (OneBox)</code> in the source dropdown), not the NP1.0</td>
 </tr>
 <tr>
 <td><code>developer_docs/images/stim_pulse_preview_2026-08-21.png</code></td>
@@ -211,25 +214,60 @@ and vertical full-screen on the portrait display:</p>
 </tr>
 </tbody>
 </table>
+<p>All of these predate the 2026-08-27 SciChart removal, so every live-view pane in them carries the
+<strong>SciChart watermark</strong> and the old <code>Columns:</code> label (checked 2026-09-02 on <code>np1_liveview</code>,
+<code>quickstart_sim_streaming</code> and <code>ripple_detection_module</code>). They are current for the two-row toolbar
+and the strips they were taken to show, and stale for the renderer — the WebGL2 recapture owed to
+<code>images/maindisplay.PNG</code> (§2) is owed to these as well, not only to the two NP2 shots below.</p>
+<p>Recaptured 2026-09-01 on the <strong>simulated ripple sources and the HDF5 play file</strong>, not the real probe. The
+probe signals were floating on the rig, so there was nothing real to detect — and a "detecting" screenshot
+with nothing detecting is worse than a stale one. The sim sources detect for real, which met that
+objection; all six are already embedded (<code>user_docs/RippleDetection.md</code>, <code>user_docs/SimulatedData.md</code>,
+<code>user_docs/README.md</code>):</p>
+<table>
+<thead>
+<tr>
+<th>image</th>
+<th>shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_docs/images/ripple/np1_training_2026-09-01.png</code></td>
+<td>per-channel training progress (NP1 sim)</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/np1_livez_2026-09-01.png</code></td>
+<td>editing a z-score while running (NP1 sim)</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/np1_detecting_2026-09-01.png</code></td>
+<td>live detection (NP1 sim; referenced by two docs)</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/np2_detecting_2026-09-01.png</code></td>
+<td>NP2 quorum-2 detection (NP2 sim)</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/playfile_probemap_2026-09-01.png</code></td>
+<td>Probe Map on an HDF5 play file</td>
+</tr>
+<tr>
+<td><code>user_docs/images/ripple/playfile_detecting_2026-09-01.png</code></td>
+<td>detecting on the replayed file</td>
+</tr>
+</tbody>
+</table>
 <h3 id="not-recaptured-and-why">NOT recaptured, and why<a class="headerlink" href="#not-recaptured-and-why" title="Permanent link">#</a></h3>
-<p><strong>Need a real ripple signal.</strong> The probe signals were floating, so there was nothing to detect. A
-"detecting" screenshot with nothing detecting is worse than a stale one — it documents behaviour that
-is not happening.</p>
-<ul>
-<li><code>user_docs/images/ripple/np1_training_2026-09-01.png</code> — per-channel training progress</li>
-<li><code>user_docs/images/ripple/np1_livez_2026-09-01.png</code> — editing a z-score while running</li>
-<li><code>user_docs/images/ripple/np1_detecting_2026-09-01.png</code> — live detection (referenced by TWO docs)</li>
-<li><code>user_docs/images/ripple/np2_detecting_2026-09-01.png</code> — NP2 quorum detection</li>
-</ul>
-<p><strong>Need the NP2.0 probe</strong> (the OneBox had NP1.0):</p>
-<ul>
-<li><code>user_docs/images/np2_liveview_2026-08-21.png</code>, <code>user_docs/images/np2_editor_2026-08-21.png</code>, and <code>np2_detecting_2026-09-01.png</code></li>
-</ul>
+<p><strong>Need the NP2.0 probe — and they advertise a deleted dependency.</strong> <code>user_docs/images/np2_liveview_2026-08-21.png</code>
+and <code>user_docs/images/np2_editor_2026-08-21.png</code> (embedded by <code>user_docs/GUI-Guide.md</code> and
+<code>user_docs/OneBox-NPX2.md</code>) have the <strong>SciChart watermark</strong>, the old <code>Columns:</code> toolbar label and the old
+<code>NPX 2.0 Multishank (OneBox)</code> source name burned in. The NP2-on-OneBox rig that produced
+<code>user_docs/images/tut_onebox_np2_*_2026-09-02.png</code> is the one to recapture them from.</p>
 <p><strong>Need something else entirely:</strong></p>
 <ul>
-<li><code>user_docs/images/ripple/playfile_probemap_2026-09-01.png</code>, <code>playfile_detecting_2026-09-01.png</code> — an HDF5 play file</li>
 <li><code>developer_docs/images/nidaq_dio_syncpulse_2026-07-14.png</code> — the NI-DAQ DI/O stream</li>
-<li><code>user_docs/images/record_armed_2026-07-07.png</code>, <code>record_buttons_2026-07-13.png</code> — the recording flow (armed / recording);
+<li><code>user_docs/images/record_armed_2026-09-02.png</code>, <code>record_buttons_2026-07-13.png</code> — the recording flow (armed / recording);
   capturable any time, simply not done yet</li>
 </ul>
 <h3 id="deliberately-left-alone-these-are-not-stale">Deliberately left alone — these are NOT stale<a class="headerlink" href="#deliberately-left-alone-these-are-not-stale" title="Permanent link">#</a></h3>
@@ -244,8 +282,11 @@ with Gui(monitor=&quot;landscape&quot;) as g:   # &quot;portrait&quot; for verti
 </code></pre>
 <p>Traps that will otherwise waste a pass:</p>
 <ul>
-<li><strong>The <code>Probe Map | Live Data</code> tabs only appear when the source config's <code>name:</code> contains "NPX".</strong>
-  <code>SimNpx1.yaml</code> is named "Simulated Data", so it shows no tab bar at all. Use an NPX-named source.</li>
+<li><strong>The <code>Probe Map | Live Data</code> tabs appear only once <code>initProbeMap</code> succeeds</strong> — i.e. when the selected
+  source registers a probe object with <code>getImroAsJson</code>. The source's <em>name</em> is not consulted: the old
+  <code>name:</code> contains "NPX" gate went with the source-selection refactor (<code>main.js</code> and <code>NetworkClient.js</code>
+  both carry the comment), so <code>SimNpx1.yaml</code> — still named "Simulated Data" — shows the tab bar too.
+  Pick the source for what it publishes, not what it is called.</li>
 <li><strong>Play/Record have an in-flight PENDING state</strong> (dimmed, pulsing, disabled). Wait for it to settle
   or the button screenshot captures the wrong meaning.</li>
 <li><strong>A strip collapses when one row (448px) does not fit beside the depth readout — not past a
@@ -288,7 +329,7 @@ with Gui(monitor=&quot;landscape&quot;) as g:   # &quot;portrait&quot; for verti
 </tr>
 <tr>
 <td><code>user_docs/GUI-Guide.md</code></td>
-<td>band names (<code>AP / LFP / RAW / NI-DAQ</code> → the six actually shown), the non-existent <strong>Scale</strong> control, the missing per-column channel count, and the collapsible strip behaviour</td>
+<td>band names (<code>AP / LFP / RAW / NI-DAQ</code> → the six actually shown), the non-existent <strong>Scale</strong> control, the missing per-column channel count, and the collapsible strip behavior</td>
 </tr>
 <tr>
 <td><code>user_docs/GUI-Guide.md</code></td>
@@ -298,22 +339,31 @@ with Gui(monitor=&quot;landscape&quot;) as g:   # &quot;portrait&quot; for verti
 <td><code>developer_docs/Fdir.md</code></td>
 <td>the System chip is in the toolbar's <strong>first row</strong> beside the clock, not in the status line</td>
 </tr>
+<tr>
+<td><code>developer_docs/RippleGui.md</code></td>
+<td>described hand-syncing <code>RippleModule.js</code> into a build tree. There is no copy step and nothing to deploy — <code>webinterface/</code> is served straight from the working tree (struck 2026-09-02)</td>
+</tr>
+<tr>
+<td><code>developer_docs/NiDaq.md</code></td>
+<td>called the toolbar control <code>Columns:</code>; it ships as <code>Cols</code> (corrected in that doc 2026-08-31; struck here 2026-09-02)</td>
+</tr>
+<tr>
+<td><code>user_docs/GUI-Guide.md</code></td>
+<td>never mentioned the OneBox; it now does — the <code>Neuropixels</code> source row, and the <code>OneBox</code> / <code>PXIe</code> choice when both basestations are attached (struck 2026-09-02)</td>
+</tr>
+<tr>
+<td><code>developer_docs/RippleDetection.md</code></td>
+<td>"the GUI is identical for a real probe" — true of the live-view panes and the dock; a OneBox or NI-DAQ source also adds its own device panel tab (<code>▣ OneBox</code>, <code>▤ NI-DAQ</code>) (fixed 2026-09-02)</td>
+</tr>
 </tbody>
 </table>
 <h3 id="still-to-fix">Still to fix<a class="headerlink" href="#still-to-fix" title="Permanent link">#</a></h3>
 <ul>
-<li><code>developer_docs/RippleGui.md</code> — describes hand-syncing <code>RippleModule.js</code> into the build tree. The
-  webinterface deploy is now an <strong>always-run CMake target</strong>; that step is obsolete.</li>
-<li><code>developer_docs/RippleDetection.md</code> — "the GUI is identical for a real probe" is now true only of
-  the live-view panes; a real source adds its own device panel tab (<code>▣ OneBox</code>, <code>▤ NI-DAQ</code>).</li>
-<li><code>developer_docs/NiDaq.md</code> — refers to the toolbar control as <code>Columns:</code>; it ships as <code>Cols</code> and
-  lives inside the <code>.tb-view</code> group that folds behind a <code>▾ view</code> chip on a narrow bar.</li>
 <li><code>user_docs/RippleDetection.md</code> §4 — the "Detection &amp; stimulation" section predates the master
   <code>enable stimulation</code> gate, the arm/disarm stim-server toggle, <code>⚡ Test Fire</code>, and the stim pulse
   fields.</li>
 <li><code>user_docs/GUI-Guide.md</code> — the layout toggle is described as always visible beside Columns/Rows; it
   folds behind the <code>▾ view</code> chip on a narrow bar (which is exactly the portrait case).</li>
-<li><strong><code>user_docs/GUI-Guide.md</code> never mentions the OneBox at all.</strong> Its own gap, and the largest one.</li>
 <li><code>user_docs/GUI-Guide.md</code> §1 — the source list and the sim-picker variant list are both out of date
   (the picker is built from every config with a <code>sim_variant:</code> key — roughly fourteen now).</li>
 <li><strong><code>images/maindisplay.PNG</code> — the repo's only screenshot, and it advertises a deleted dependency.</strong>

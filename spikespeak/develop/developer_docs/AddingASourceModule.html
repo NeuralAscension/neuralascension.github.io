@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -150,7 +152,9 @@ the factory/registry/config model and the CircularBuffer contract. For consumers
 </blockquote>
 <hr />
 <h2 id="0-the-contract-srccoreidatasourcehpp">0. The contract (<code>src/core/IDataSource.hpp</code>)<a class="headerlink" href="#0-the-contract-srccoreidatasourcehpp" title="Permanent link">#</a></h2>
-<pre><code class="language-cpp">class IDataSource : public QObject {
+<pre><code class="language-cpp">// Also an ILowLatencyCapable and an IGraphNode (src/core/LowLatency.hpp) -- every method of both
+// has a default, so a source that says nothing compiles untouched (see &quot;ASAP / low latency&quot; below).
+class IDataSource : public QObject, public ILowLatencyCapable, public IGraphNode {
     Q_OBJECT
 public:
     virtual bool initDataSource(ryml::ConstNodeRef cfg) = 0; // open + size buffers + addProducer
@@ -158,8 +162,11 @@ public:
     virtual bool startAcq() = 0;                              // begin producing (spin worker)
     virtual bool stopAcq()  = 0;                              // stop producing (join worker)
     virtual void handleWebCommand(const QJsonObject&amp;) {}      // generic no-op hook (see §8)
+    virtual QList&lt;IDataSourceWorker*&gt; acquisitionWorkers() const { return {}; } // liveness (see &quot;Liveness&quot; below)
+    virtual bool applyNamedMap(const QString&amp; which) { return false; } // &quot;default&quot; / &quot;bankN&quot; / .imro path; NPX overrides
 signals:
-    void dataReady(const QByteArray&amp; data);                  // optional direct-to-browser path
+    void dataReady(const QByteArray&amp; data);                  // declared, but nothing connects it (§2.3)
+    void sigGuiStatus(const QString&amp; message, const QString&amp; kind); // toolbar status; kind = &quot;error&quot; | &quot;info&quot; | &quot;success&quot;
 };
 </code></pre>
 <p>Lifecycle is driven by <code>SourceManager</code> + <code>MainController</code>:
@@ -200,7 +207,8 @@ anymore; don't add new ones.</p>
 <strong>simulated source class in the same module</strong> (its own class — data shape is hardware-specific; do NOT try
 to make one generic sim source for all hardware — SimDataLinux.md). It writes the SAME registry buffer(s)
 in the SAME dtype/aux shape as the real source, so the module is fully testable with no hardware. See
-<code>SimulatedDataSource</code> (NPX) as the template; a simulated NI-DAQ source is the next one (Status §14).</p>
+<code>SimulatedDataSource</code> (NPX, <code>source.npx.simdata</code>) and <code>NiDaqSimSource</code> (<code>source.nidaq.sim</code>, in
+<code>src/modules/nidaq/</code>) as the two templates.</p>
 </blockquote>
 <hr />
 <h2 id="1-threading-rules">1. Threading rules<a class="headerlink" href="#1-threading-rules" title="Permanent link">#</a></h2>
@@ -258,11 +266,14 @@ args are forwarded by the factory (e.g. <code>NeuropixelsSource</code> is regist
 sources:
   - name: &quot;source.mymod.thing&quot;   # &lt;-- registry name from 2.4
     outputs:
-      - { data: &quot;raw&quot;, name: &quot;data.mymod.raw&quot; }
+      - { name: &quot;data.mymod.raw&quot; }  # `name` is the only live key on an outputs entry
 processors:                       # optional: which sinks run for this profile
   - name: &quot;proc.npx.display&quot;
     inputs: [ { data: &quot;raw&quot;, name: &quot;data.mymod.raw&quot; } ]
 </code></pre>
+<p><code>data:</code> (the stream id) is live only on a processor's <code>inputs:</code>; on a source's <code>outputs:</code> entry the only
+key anything reads is <code>name</code> — the entry is a declaration, and <code>Configuration</code> warns about one that
+lacks it (#70).</p>
 <p><code>initDataSource</code> receives this source subtree as <code>cfg</code>; read whatever you need from it
 (<code>cfg.has_child("imro_path")</code> is the NPX example). <strong>Configs are no longer copied next to the exe</strong>
 (since 2026-08-26): the app resolves <code>config/</code> as <code>&lt;exe&gt;/../config</code>, which from <code>bin/</code> is the repo's

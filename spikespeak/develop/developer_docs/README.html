@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a class="active" href="README.html">SpikesPeak — Developer Docs</a>
@@ -143,15 +145,17 @@
 <p>Onboarding + reference for the SpikesPeak acquisition stack (Qt/C++ backend, external-browser UI,
 closed-loop stimulation). <strong>Start here</strong>, then jump to the doc for your task below.</p>
 <blockquote>
-<p><strong>Current state, checked 2026-09-01.</strong> <code>feature/OneBoxSupport</code> was <strong>merged into <code>develop</code></strong> on
+<p><strong>Current state, checked 2026-09-02.</strong> <code>feature/OneBoxSupport</code> was <strong>merged into <code>develop</code></strong> on
 2026-09-01 (fast-forward, <code>60889d7</code>); OneBox support is complete and there is no live feature
-branch (Status §84). <strong>Both basestations
+branch (Status §84). #52 is closed — all five second-machine configurations have run, the last two on 2026-09-02 (§87, §88) —
+and two probes on one basestation now prompt the operator instead of being guessed at (§89). <strong>Both basestations
 are production paths</strong> — PXIe <em>and</em> the <strong>OneBox</strong> (USB3/FTDI) stream NP1.0 and NP2.0, record, and
 close the loop. The closed-loop latency matrix is complete on the OneBox as well as PXIe: 11 cells ×
 1000 detections per probe, <strong>11,000 detections / 11,000 confirmed fires / 0 unmatched</strong>,
 sub-millisecond with ASAP delivery, with the OneBox matching or beating PXIe in every cell (Status
 §48, 2026-08-20). Saline bench validation finished 2026-07-21; the milestone that used to sit at the
-end of this banner — in-vivo under anesthesia — came round on 2026-08-28 (§65). The live view has had
+end of this banner — in-vivo under anesthesia — came round on 2026-08-28: it ran, the recording was
+noisy, and every quoted closed-loop figure is still a saline-bench number (§85). The live view has had
 no chart library since 2026-08-27 (§62). Measured numbers: the <strong>Hardware Results</strong> page
 (<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>).</p>
 <p><strong>This paragraph is a snapshot and will rot. The log will not</strong> — current status lives in
@@ -197,10 +201,15 @@ looked at. No hardware row can be closed there.</p>
 </blockquote>
 <ol>
 <li><strong><a href="SpikesPeak_Architecture_Review.html"><code>SpikesPeak_Architecture_Review.md</code></a></strong> — the whole system in one
-   pass: hosting model, threading, data plane, module command model. Nothing else makes sense first.</li>
+   pass: hosting model, threading, data plane, module command model. Nothing else makes sense first.
+   It is a dated snapshot — it predates the OneBox transport, the WebGL2 renderer, the heatmap and
+   detached views, source selection and #80 — so read it for the shape of the core and the tables
+   below for what has been built since.</li>
 <li><strong><a href="#operating-this-repo-gotchas-that-cost-agents-time-read-first">"Operating this repo"</a></strong> (below on this
-   page) — the gotchas that cost agents hours: frontend is served from the <strong>build tree</strong>, backend logs go to
-   <strong><code>output.log</code></strong>, the server <strong>auto-quits when the last WebSocket client leaves</strong>, and how to launch.</li>
+   page) — the gotchas that cost agents hours: <strong>the working tree IS the deployment</strong> — <code>webinterface/</code>
+   and <code>config/*.yaml</code> are served live from the repo (one copy, no build), so never edit them while a
+   backend or the GUI suite is running; backend logs go to <strong><code>output.log</code></strong>; the server <strong>auto-quits
+   when the last WebSocket client leaves</strong>; and how to launch.</li>
 <li><strong><a href="ControlCLI.html"><code>ControlCLI.md</code></a></strong> — how to drive the backend with no GUI. This is how you <em>do</em> anything
    headlessly; almost every script under <code>ripple_tools/</code> is built on the same WS client.</li>
 <li><strong><a href="GuiTesting.html"><code>GuiTesting.md</code></a></strong> — the UI is an external browser, so "check the GUI" means driving a
@@ -213,11 +222,13 @@ looked at. No hardware row can be closed there.</p>
 <li><strong>The doc for your actual task</strong> from the tables below.</li>
 </ol>
 <p><strong>Before you touch hardware</strong>, also read the Safety rules in the <code>spikespeak</code> skill (never force-kill a
-backend with a real probe attached; never leave the rig streaming; kill only the debug-port Chrome).</p>
+backend with a real probe attached; never leave the rig UP — not streaming, not merely connected — while
+you are not using it; kill only the debug-port Chrome).</p>
 <p><strong>Skills you have on this repo:</strong> the <strong><code>spikespeak</code></strong> project skill (<code>.claude/skills/spikespeak/</code> — the
 cross-machine memory, since <code>~/.claude</code> auto-memories do NOT travel between machines; architecture,
 build/run, configs, safety — read it); <strong><code>dataviz</code></strong> (read before making ANY figure — it has a runnable
-palette validator, <code>scripts/validate_palette.js</code>; the latency figures use validated light+dark palettes);
+palette validator, the skill's own <code>scripts/validate_palette.js</code>, in the dataviz skill directory and not in
+this repo; the latency figures use validated light+dark palettes);
 and <strong><code>agy</code></strong> delegation (<a href="UsingAgy.html"><code>UsingAgy.md</code></a> — Claude conducts + verifies, agy executes
 bulk/spec-driven work; always re-run the gate yourself).</p>
 <p><strong>Verification culture — the one habit that matters here.</strong> Claims about this system are cheap and often
@@ -232,13 +243,13 @@ numerically. Two examples that actually happened, both written up in
 </ul>
 <p>Generalizing from a single artifact, or theorizing about hardware before plotting the signal, is the
 characteristic failure mode on this repo.</p>
-<h3 id="traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)<a class="headerlink" href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop" title="Permanent link">#</a></h3>
+<h3 id="traps-this-repo-has-already-sprung-internalize-before-touching-the-closed-loop">Traps this repo has already sprung (internalize before touching the closed loop)<a class="headerlink" href="#traps-this-repo-has-already-sprung-internalize-before-touching-the-closed-loop" title="Permanent link">#</a></h3>
 <p>The concrete domain facts behind the tables below — each is documented in full where linked:</p>
 <ul>
 <li><strong>NP2 offline reproduction uses an EXACT 2nd-order Bessel <code>data.lfp</code> (−3 dB @ 400 Hz) then ÷12.</strong> An
   older <code>raw÷12 + DC-removal</code> approximation is <strong>wrong — never reintroduce it.</strong> NP1 reads native
   <code>data.npx.lfp</code> directly (decimation 1). (<a href="RippleDetection.html"><code>RippleDetection.md</code></a>)</li>
-<li><strong>Latency stage splits use MEANS, not medians.</strong> The batching counter is quantised to one input sample
+<li><strong>Latency stage splits use MEANS, not medians.</strong> The batching counter is quantized to one input sample
   (400 µs), so medians snap to 0/400/800 µs and are not additive; the <code>net+stim</code> term is a residual by
   subtraction. (<a href="LatencyProfiling.html"><code>LatencyProfiling.md</code></a>)</li>
 <li><strong>ASAP delivery</strong> (acquisition poll 1 ms → 0, opt-in) is the only latency lever. On NP2 it also
@@ -257,12 +268,12 @@ characteristic failure mode on this repo.</p>
   (<a href="RippleClosedLoopAnalysis.html"><code>RippleClosedLoopAnalysis.md</code></a> is the sync canon.)</li>
 <li><strong>A generic command/event subscription bus does NOT exist yet</strong> (the one live item left on the retired
   <code>todo.txt</code>; folded into Status §31) — it's approximated by config-wired data streams + Qt signals +
-  <code>Q_INVOKABLE</code> + a vestigial <code>CommandDispatcher</code>. See architecture review §11.6 and
+  <code>Q_INVOKABLE</code> + the two-subscriber <code>CommandDispatcher</code> (audio <code>0x218</code>, bands <code>0x219</code>). See architecture review §11.6 and
   <code>../NextSessionPrompts/01_command_event_subscription.md</code>.</li>
 </ul>
 <h2 id="what-is-here">What is here<a class="headerlink" href="#what-is-here" title="Permanent link">#</a></h2>
-<p>59 pages, in eleven groups, plus eleven retired briefs and snapshots in <code>archive/</code> (twelve files,
-counting the archive's own index). <strong>The generated book uses the same groups, in the same order</strong>, as
+<p>The pages sit in eleven groups, plus the retired briefs and snapshots in <code>archive/</code> (which carries its
+own index). <strong>The generated book uses the same groups, in the same order</strong>, as
 the collapsible sections of its left nav (<code>scripts/build_docs.py</code> → <code>GROUPS</code>). If you add a doc, or move
 one between groups, do it in <strong>both</strong> places — the map a human reads and the map the book renders are no
 use to anyone once they disagree. The build prints a warning naming any page that is in neither.</p>
@@ -302,7 +313,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="ConfigReference.html"><code>ConfigReference.md</code></a></td>
-<td><strong>Every config key, and the much longer list of what is NOT one.</strong> 77 keys across every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
+<td><strong>Every config key, and the much longer list of what is NOT one.</strong> The keys of every source and processor, extracted from the call sites and verified against the shipped profiles, plus the runtime-only parameters that no profile can set (the ripple detector's channels, z, lockout and quorum among them) and the two opposite boolean idioms.</td>
 </tr>
 <tr>
 <td><a href="RendererExperiment.html"><code>RendererExperiment.md</code></a></td>
@@ -310,7 +321,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="SourceSelection.html"><code>SourceSelection.md</code></a></td>
-<td><strong>Why the Source dropdown lists <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> instead of twelve profiles, and how the probe names itself.</strong> <code>Neuropixels</code> is <code>source.npx.auto</code> — basestation <em>and</em> probe read from the rig, resolved before any source object is built; <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> are now <code>gui_hidden: true</code> escapes, selectable <strong>by name</strong> from the control CLI; only the first two are ever put back in the menu, and only when the scan finds a OneBox <em>and</em> a PXIe (<code>main.js renderSourceRoot()</code>, the <code>ambiguous</code> branch). The connect order that makes it work (<code>setupSources</code> finishes before <code>setupProcessors</code>, so the registry already holds the detected probe's bands), the six probe-dependent decisions and where each is made, what a hardware profile still declares, and the two config keys the simulated picker cascades on.</td>
+<td><strong>Why the Source dropdown lists <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> instead of twelve profiles, and how the probe names itself.</strong> <code>Neuropixels</code> is <code>source.npx.auto</code> — basestation <em>and</em> probe read from the rig, resolved before any source object is built; <code>OneBox</code> / <code>PXIe</code> / <code>PXIe + NI-DAQ</code> are now <code>gui_hidden: true</code> escapes, selectable <strong>by name</strong> from the control CLI; all three are put back in the menu (the auto <code>PXIe with NI-DAQ</code> is withheld there, since it would only ask again), and only when the scan finds a OneBox <em>and</em> a PXIe (<code>main.js renderSourceRoot()</code>, the <code>ambiguous</code> branch). The connect order that makes it work (<code>setupSources</code> finishes before <code>setupProcessors</code>, so the registry already holds the detected probe's bands), the six probe-dependent decisions and where each is made, what a hardware profile still declares, and the two config keys the simulated picker cascades on.</td>
 </tr>
 <tr>
 <td><a href="ClosedLoopDriving.html"><code>ClosedLoopDriving.md</code></a></td>
@@ -407,7 +418,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="OpenEphys-OneBox-Reference.html"><code>OpenEphys-OneBox-Reference.md</code></a></td>
-<td>How the vendored OpenEphys plugin drives the <strong>OneBox</strong> USB basestation — a digest cross-checked symbol-by-symbol against the vendored v4 header. Supporting reference for <a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a>, which is the authority.</td>
+<td>How the vendored OpenEphys plugin drives the <strong>OneBox</strong> USB basestation — a digest cross-checked symbol-by-symbol against the vendored v4 header. The port is shipped: the shipped code, <a href="../user_docs/OneBox-NPX2.html"><code>../user_docs/OneBox-NPX2.md</code></a> and <a href="SourceSelection.html"><code>SourceSelection.md</code></a> are the authority, and the archived plan (<a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a>) is history — one of its scope items was unbuildable.</td>
 </tr>
 </tbody>
 </table>
@@ -426,7 +437,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="FilterDebugging.html"><code>FilterDebugging.md</code></a></td>
-<td>The per-sample filter <code>.bin</code> dumps, the two compile-time kill switches (<code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code>, <code>DEBUGGING_LFP_FILTERS</code> — both ship <strong>false</strong>), the dump formats, and how the filters were <strong>validated</strong> to float32 rounding.</td>
+<td>The per-sample filter <code>.bin</code> dumps and their compile-time kill switches — <code>DEBUGGING_RIPPLE_DETECTION_FILTERS</code> in the detector and <code>kDebugFilters</code> in the shared <code>BandFilterProcessor</code> (it used to be <code>DEBUGGING_LFP_FILTERS</code> in an <code>LFPProcessor.cpp</code> that no longer exists, and now gates one dump <strong>per derived band</strong>) — all shipping <strong>false</strong>; the dump formats, and how the filters were <strong>validated</strong> to float32 rounding.</td>
 </tr>
 <tr>
 <td><a href="SpikeAudio.html"><code>SpikeAudio.md</code></a></td>
@@ -434,7 +445,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="SimdDispatch.html"><code>SimdDispatch.md</code></a></td>
-<td><strong>What AVX2 is worth, and when</strong> (issue #34) — why the bug was the BUILD rather than the missing check, why CPUID alone is not sufficient (XCR0), the 2.89x the vectorised filter measures, and the end-to-end null result on NP1.0 that looked like a failure and was not. Also: why the gate runs the C++ suite twice.</td>
+<td><strong>What AVX2 is worth, and when</strong> (issue #34) — why the bug was the BUILD rather than the missing check, why CPUID alone is not sufficient (XCR0), the 2.89x the vectorized filter measures, and the end-to-end null result on NP1.0 that looked like a failure and was not. Also: why the gate runs the C++ suite twice.</td>
 </tr>
 </tbody>
 </table>
@@ -450,10 +461,6 @@ build rather than by someone noticing a lonely nav entry.</p>
 <tr>
 <td><a href="RippleDetection.html"><code>RippleDetection.md</code></a></td>
 <td>The SWR detection algorithm + the NP1 vs NP2 detector input paths (native LFP vs derived <code>data.lfp</code>).</td>
-</tr>
-<tr>
-<td><a href="KnowledgeOps.html"><code>KnowledgeOps.md</code></a></td>
-<td><strong>Where what you learned goes.</strong> The decision table: a mechanical mistake becomes a CHECK, a rule spanning call sites becomes an invariant test, a derivable fact goes in <code>scripts/facts.py</code> and nowhere else, and prose is reserved for WHY. Also how to turn a trap into a check, when NOT to, and how to keep the agent skill current.</td>
 </tr>
 <tr>
 <td><a href="SimulatedSignals.html"><code>SimulatedSignals.md</code></a></td>
@@ -481,7 +488,7 @@ build rather than by someone noticing a lonely nav entry.</p>
 </tr>
 <tr>
 <td><a href="AudioVideoLatency.html"><code>AudioVideoLatency.md</code></a></td>
-<td><strong>What you see, what you hear, and how old both are.</strong> You see a spike ~73 ms BEFORE you hear it: the trace is ~19 ms behind the probe, the speaker ~92 ms, and 91.4 ms of that is PortAudio's output latency rather than anything SpikesPeak can shrink. Includes what is instrumented, what each figure costs, and the two mistakes made getting there (a poll-time data race, and a claim that the ring depth was unmeasurable).</td>
+<td><strong>What you see, what you hear, and how old both are.</strong> You see it first: the trace is ~19 ms behind the probe; the speaker was ~116 ms on the old default audio device (99.9 ms of it the device's measured output latency, which nothing in SpikesPeak can shrink) and ~47 ms is expected on the follower device chosen since 2026-08-25 — not yet re-measured. Includes what is instrumented, what each figure costs, and the two mistakes made getting there (a poll-time data race, and a claim that the ring depth was unmeasurable).</td>
 </tr>
 </tbody>
 </table>
@@ -517,7 +524,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="ProbeActivityHeatmap.html"><code>ProbeActivityHeatmap.md</code></a></td>
-<td>Feature plan — live probe-activity heatmap on the probe map.</td>
+<td><strong>UNBUILT — the SPATIAL heatmap</strong> (color the electrodes on the probe map by activity, no time axis; the SpikeGLX Shank Viewer model). Not the built time × channel column, which is <a href="HeatmapView.html"><code>HeatmapView.md</code></a>. A superseded plan: its two SciChart-based rendering options have been void since 2026-08-27; kept for the requirements and the visual argument, and the metric pipeline it needs now exists.</td>
 </tr>
 <tr>
 <td><a href="HeatmapView.html"><code>HeatmapView.md</code></a></td>
@@ -574,16 +581,20 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 <td><strong>Making a defect class unwritable — and why it is not textbook TDD.</strong> Arrived at by having the same bug FOUR times: the system announcing what was REQUESTED instead of what was CONFIRMED (#16/#18, #51, and two more on 2026-08-30). Each was fixed with a test about the bug rather than the rule it broke, so the next appeared where the last fix did not reach. The practice: write the <strong>predicate</strong> down and check it at every transition, so a future connect path that publishes a name before the connect succeeds cannot pass — whoever writes it. Also the rule of thumb (<strong>the second time a bug of the same shape appears, stop fixing bugs and write down the rule</strong>) and the point that a source which refuses on purpose is test infrastructure, not a placeholder.</td>
 </tr>
 <tr>
+<td><a href="KnowledgeOps.html"><code>KnowledgeOps.md</code></a></td>
+<td><strong>Where what you learned goes.</strong> The decision table: a mechanical mistake becomes a CHECK, a rule spanning call sites becomes an invariant test, a derivable fact goes in <code>scripts/facts.py</code> and nowhere else, and prose is reserved for WHY. Also how to turn a trap into a check, when NOT to, and how to keep the agent skill current.</td>
+</tr>
+<tr>
 <td><a href="GuiTestCoverage.html"><code>GuiTestCoverage.md</code></a></td>
 <td><strong>What the GUI tests actually cover</strong> — the 16-cell layout matrix (columns × ripple dock × orientation) with screenshots, every stream option's expected units/labels/depth, the GUI→backend parameter round trip, and an explicit list of what is NOT covered yet. The matrix's <strong>vertical axis now reports <code>[untested]</code></strong> when no portrait display is attached, instead of running a landscape window twice and passing; PASSED-with-untested is a different result from PASSED and reaches the runner's own output.</td>
 </tr>
 <tr>
 <td><a href="GuiTesting.html"><code>GuiTesting.md</code></a></td>
-<td>Drive + screenshot the browser GUI headlessly (CDP harness), UI element ids, teardown discipline, the 9/9 smoke test.</td>
+<td>Drive + screenshot the browser GUI headlessly (CDP harness), UI element ids, teardown discipline, the one-shot functional smoke test (§5).</td>
 </tr>
 <tr>
 <td><a href="SecondMachineRunbooks.html"><code>SecondMachineRunbooks.md</code></a></td>
-<td><strong>Standing up this tree somewhere else</strong> — one runbook per configuration of #52 (Linux/no hardware, Windows/no hardware, OneBox+PXIe together, PXIe alone, OneBox alone): exact commands, what each proves and cannot prove, what to paste back into the issue, and the traps specific to each. Read the "one trap that affects every configuration" section before trusting a green <code>layout_matrix</code>.</td>
+<td><strong>Standing up this tree somewhere else</strong> — one runbook per configuration of #52 (closed 2026-09-02, every configuration having run at least once: Linux/no hardware, Windows/no hardware, OneBox+PXIe together, PXIe alone, OneBox alone): exact commands, what each proves and cannot prove, what evidence to record (in <code>../SpikesPeak_Status.md</code> now that the issue is closed), and the traps specific to each. Read the "one trap that affects every configuration" section before trusting a green <code>layout_matrix</code>.</td>
 </tr>
 </tbody>
 </table>
@@ -602,7 +613,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a></td>
-<td><strong>How the pipeline pictures are made, and why none of them is drawn by hand.</strong> <code>scripts/make_architecture.py</code> reads <code>src/core/Utils.cpp</code> and every <code>config/*.yaml</code> and emits the SVGs; the docs build re-runs it, and a test asserts the output still matches the code. Read it before changing the generator, and read 2 before concluding that a node with no edges is disconnected — <code>proc.lfp</code>, <code>proc.spike</code> and <code>proc.audio</code> are wired by C++, not by any profile, and were drawn as orphans until 2026-09-01. Also the layout rules and what each one cost: top-down bands (columns made it 1580x2460), text-measured boxes (fixed ones overflowed by 70 px), and bundled config edges (37 profiles into 9 sources was an untraceable hairball).</td>
+<td><strong>How the pipeline pictures are made, and why none of them is drawn by hand.</strong> <code>scripts/make_architecture.py</code> reads <code>src/core/Utils.cpp</code> and every <code>config/*.yaml</code> and emits the SVGs; the docs build re-runs it, and a test asserts the output still matches the code. Read it before changing the generator, and read §2 before concluding that a node with no edges is disconnected — <code>proc.lfp</code>, <code>proc.spike</code> and <code>proc.audio</code> are wired by C++, not by any profile, and were drawn as orphans until 2026-09-01. Also the layout rules and what each one cost: top-down bands (columns made it 1580x2460), text-measured boxes (fixed ones overflowed by 70 px), and bundled config edges (one edge per profile into each source was an untraceable hairball; the page carries the counts, with their date).</td>
 </tr>
 <tr>
 <td><a href="BuildingTheDocs.html"><code>BuildingTheDocs.md</code></a></td>
@@ -614,7 +625,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="CodeStyle.html"><code>CodeStyle.md</code></a></td>
-<td><strong>The formatter, and why it has not been run yet.</strong> <code>.clang-format</code> DESCRIBES the style already in the tree -- every setting derived by counting, not chosen from a preset: 4-space and exactly one tab in 25,843 lines, 100 columns at the measured p95, brace-on-next-line 638-to-204, and the <strong>414</strong> definitions written <code>bool</code> then <code>Class::method(...)</code>. Applying it would touch <strong>36.5 % of lines</strong>, of which reflow is only a third -- so it waits for an empty PR queue, lands alone, and takes a <code>.git-blame-ignore-revs</code> entry in the same commit. Include sorting and comment reflow are off on purpose, and the reasons are the interesting part.</td>
+<td><strong>The formatter, and why it has not been run yet.</strong> <code>.clang-format</code> DESCRIBES the style already in the tree -- every setting derived by counting, not chosen from a preset: 4-space indentation (one lone tab in the whole tree), 100 columns at the measured p95, brace-on-next-line by a three-to-one majority, and the definitions written <code>bool</code> then <code>Class::method(...)</code>. Applying it would touch <strong>about a third of all lines</strong> (the page carries the measured figure, with its date), of which reflow is only a third -- so it waits for an empty PR queue, lands alone, and takes a <code>.git-blame-ignore-revs</code> entry in the same commit. Include sorting and comment reflow are off on purpose, and the reasons are the interesting part.</td>
 </tr>
 <tr>
 <td><a href="UsingAgy.html"><code>UsingAgy.md</code></a></td>
@@ -622,7 +633,7 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="SimDataLinux.html"><code>SimDataLinux.md</code></a></td>
-<td>Make the simulated NP1.0 source fully work on Linux (no hardware): the spec, locked decisions, phased plan.</td>
+<td>The design record (done 2026-07-06) for the simulated NP1.0 source on Linux: Option A (sim rides the real <code>data.npx.*</code> pipeline, so the GUI cannot tell sim from hardware) and the one-simulated-source-class-per-module rule that <a href="AddingASourceModule.html"><code>AddingASourceModule.md</code></a> cites. Not a build guide — see <a href="Building.html"><code>Building.md</code></a> and <a href="Testing.html"><code>Testing.md</code></a> §1a.</td>
 </tr>
 </tbody>
 </table>
@@ -637,43 +648,21 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </thead>
 <tbody>
 <tr>
-<td><a href="archive/NextTask_OneBoxClosedLoopLatency.html"><code>archive/NextTask_OneBoxClosedLoopLatency.md</code></a></td>
-<td><strong>Archived 2026-08-20 — done.</strong> The brief that opened OneBox closed-loop latency, NP1.0 and NP2.0. Kept because the operator knowledge in it is reusable: how the stim capture moved off the NI-DAQ and onto the OneBox's <strong>own ADC</strong> (two streams from one device need no alignment at all, which deletes the sync step that had already produced one wrong answer), and the three things to confirm before trusting an ADC-captured pulse. Results: <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>.</td>
-</tr>
-<tr>
-<td><a href="archive/NextTask_OneBoxLatencyMatrix.html"><code>archive/NextTask_OneBoxLatencyMatrix.md</code></a></td>
-<td><strong>Archived 2026-08-20 — done.</strong> The run sheet that finished the matrix. Kept for the traps it names, which cost a run each: <code>record_ripples.py --dir</code> is the OUTER directory and the tool makes its own inner one; the stim must be <strong>gated</strong> as well as armed; do not pipe the runner to <code>tail</code>; and the OneBox analyzer needs <code>--stim-band adc --stim-channel N</code>.</td>
-</tr>
-<tr>
-<td><a href="archive/NextTask_OneBoxSupport.html"><code>archive/NextTask_OneBoxSupport.md</code></a></td>
-<td><strong>Implementation plan for Neuropixels OneBox</strong> (USB basestation) — verified v4 API deltas vs PXI (platform + <code>mapBS</code> + FTDI check), reuse of the probe workers/IMRO, the new 12-ch ADC stream, and the DAC/WavePlayer native closed-loop stim output. One new file pair (<code>OneBoxSource.*</code>) + a thin virtual seam; phased 0→5. Includes the exact FTDI D3XX 1.3.0.10 driver + link.</td>
-</tr>
-<tr>
 <td><a href="NextTask_SourceArchitecture.html"><code>NextTask_SourceArchitecture.md</code></a></td>
-<td>Open design brief — <strong>reorganizing "source options"</strong>: taming the config explosion + the dual picker (Phase 1 shipped 2026-08-26: 36 config files, three operator-visible source entries), and supporting arbitrary NPX simulation, NeuroNexus/Intan probes, and <strong>replay-a-recording-by-hitting-Play</strong>. Current-state map + four options + a phased plan. Planning only.</td>
+<td>Open design brief — <strong>reorganizing "source options"</strong>: taming the config explosion + the dual picker, and supporting arbitrary NPX simulation, NeuroNexus/Intan probes, and <strong>replay-a-recording-by-hitting-Play</strong>. Phase 1 shipped 2026-08-26 (36 config files; three operator-visible hardware entries that day) and was overtaken on 2026-08-27 by the self-naming rig — two visible entries, <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code>, with <code>OneBox</code>/<code>PXIe</code>/<code>PXIe + NI-DAQ</code> now <code>gui_hidden</code> (see <a href="SourceSelection.html"><code>SourceSelection.md</code></a>); Phases 2–3 (arbitrary sim geometry, replay-by-Play, Intan/NeuroNexus) remain the open part. Current-state map + four options + a phased plan. Planning only.</td>
 </tr>
 <tr>
 <td><a href="NextTask_CommandEventBus.html"><code>NextTask_CommandEventBus.md</code></a></td>
 <td>Open design brief — the <strong>config-declared, runtime-modifiable, unified command <em>and</em> event subscription bus</strong> (off the hot path). The four mechanisms today, multiple solution options, a recommended <code>MessageBus</code> plan + phased steps + a measured validation. Closes the retired <code>todo.txt</code> items 5–6 / Status §31.</td>
 </tr>
 <tr>
-<td><a href="archive/NextTask_SyncPulseCountCheck.html"><code>archive/NextTask_SyncPulseCountCheck.md</code></a></td>
-<td>Open, low priority — <strong>source-side only</strong>: the NI-DAQ can capture a different sync-pulse count than the NPX (either end). The <strong>analysis side is fully handled</strong> (<code>match="auto"</code> + modulo-period wrap + an automatic count-mismatch warning); only the hardware capture asymmetry remains, which the user deems non-critical.</td>
-</tr>
-<tr>
 <td><a href="NextTask_DocsRefresh.html"><code>NextTask_DocsRefresh.md</code></a></td>
 <td><strong>IN PROGRESS — the documentation refresh.</strong> Which screenshots have been recaptured on the real rig, which are still stale and exactly what each one needs (a ripple signal, the NP2 probe, a play file, NI-DAQ), which prose has been corrected and what is still wrong, and the traps that waste a recapture pass.</td>
 </tr>
-<tr>
-<td><a href="archive/NextSession_SecondMachine_OneBox.html"><code>archive/NextSession_SecondMachine_OneBox.md</code></a></td>
-<td><strong>Brief for an agent standing this up on a SECOND Windows machine with a OneBox and no PXIe</strong> — prerequisites and every known hardcoded path, the build recipe, the definition of green, which test is expected to be red and why, and the OneBox verification order. Tracking issue #52.</td>
-</tr>
-<tr>
-<td><a href="archive/NextTask_WasmFrontend.html"><code>archive/NextTask_WasmFrontend.md</code></a></td>
-<td><strong>Archived 2026-08-27 — done.</strong> The runbook for the branch that replaced the SciChart live view. The operator asked to "move the front end to WASM"; the runbook ordered the work <strong>draw-first</strong> instead, because the measured bottleneck was the main-thread draw and moving the parse to a worker had already been tried and reverted — and that ordering is what settled it. What shipped is a hand-written WebGL2 renderer in plain JS on the main thread (<code>webinterface/GlRenderer.js</code>): no WASM, no worker and no OffscreenCanvas were needed. Superseded by <a href="RendererExperiment.html"><code>RendererExperiment.md</code></a> §9.</td>
-</tr>
 </tbody>
 </table>
+<p>Finished briefs do not stay in this table — each moves to <a href="archive/README.html"><code>archive/</code></a> in the commit
+that finishes it, and the archive's own table says what superseded it.</p>
 <h3 id="elsewhere-in-this-book">Elsewhere in this book<a class="headerlink" href="#elsewhere-in-this-book" title="Permanent link">#</a></h3>
 <p>Not under <code>developer_docs/</code>, but part of the same book and reachable from its nav.</p>
 <table>
@@ -702,10 +691,10 @@ comparison. Both probes run the <strong>identical</strong> test matrix; the tabs
 </tr>
 <tr>
 <td><a href="../images/architecture_overview.html"><code>../images/architecture_overview.md</code></a></td>
-<td>Architecture narrative + the PlantUML diagrams.</td>
+<td>Architecture narrative + the per-profile pipeline diagrams, generated from the code by <code>scripts/make_architecture.py</code> (see <a href="ArchitectureDiagrams.html"><code>ArchitectureDiagrams.md</code></a>).</td>
 </tr>
 <tr>
-<td><a href="../user_docs/"><code>../user_docs/</code></a></td>
+<td><a href="../user_docs/README.html"><code>../user_docs/</code></a></td>
 <td>End-user GUI guide — connect + stream a probe, run ripple detection, and <strong>export a recording to SpikeGLX / Open Ephys</strong> (<a href="../user_docs/Exporting-Recordings.html"><code>Exporting-Recordings.md</code></a>).</td>
 </tr>
 <tr>
@@ -766,7 +755,7 @@ belongs in that recording session's <code>analysis/</code> folder, not next to t
   trailing "Archive (historical)" section. (<code>NextTask_NP1RippleRegression.md</code> was archived 2026-07-20
   when the NP1 regression passed; its durable content lives in <code>RippleDetection.md</code>,
   <code>RippleClosedLoopAnalysis.md</code>, <code>RippleGui.md</code>, and <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>.)</li>
-<li><strong>Subsystem references stay live.</strong> <code>Neuropixels2.0.md</code>, <code>SimDataLinux.md</code>, <code>NiDaq.md</code> and
+<li><strong>Subsystem references stay live.</strong> <code>Neuropixels2.0.md</code>, <code>NiDaq.md</code> and
   <code>../SpikesPeak_Status.md</code> are running references, not snapshots — do not archive them. A <em>scoped</em> status
   snapshot (one effort, now finished) does get archived once its content is folded into
   <code>../SpikesPeak_Status.md</code> — that is what happened to <code>StimClosedLoop_Status.md</code> on 2026-07-20.</li>
@@ -863,9 +852,12 @@ time, so the first configure needs internet</strong>. After that, incremental bu
         (served HTTP :8234)                          ^ QWebChannel Q_INVOKABLEs per source
 </code></pre>
 <ul>
-<li><strong>Not embedded:</strong> the backend serves the UI over HTTP :8234 and opens your <strong>system browser</strong>; all
-  traffic is one WebSocket on :1234. Because the backend is a <code>QApplication</code>, native Qt dialogs are
-  valid (and land on the machine running SpikesPeak).</li>
+<li><strong>Not embedded:</strong> the backend serves the UI over HTTP :8234 and opens it in a <strong>dedicated Chromium
+  app-window</strong> with its own profile (<code>~/.spikespeak/browser-profile</code>); <code>--tab</code> / <code>--system-browser</code>
+  opens a tab in the default browser instead, which is also the fallback when no Chromium-family
+  browser is found, and <code>--no-browser</code> opens nothing. All traffic is one WebSocket on :1234. Because
+  the backend is a <code>QApplication</code>, native Qt dialogs are valid (and land on the machine running
+  SpikesPeak).</li>
 <li><strong>Everything pluggable is named + registered</strong> in one place: <code>src/core/Utils.cpp</code>
   <code>registerBuiltInTypes()</code>. A YAML profile in <code>config/</code> wires named sources-buffers-sinks; the UI
   Source dropdown picks a profile by its <code>name:</code>.</li>
@@ -933,8 +925,8 @@ machine, don't assume. <code>CMakeLists.txt</code> is the authority for the requ
 </tr>
 <tr>
 <td>Qt</td>
-<td><strong>6.7.3 <code>msvc2019_64</code></strong> (<code>C:/Qt/6.7.3/msvc2019_64</code>) — modules <strong>Core, Gui, Widgets, WebEngineWidgets, WebSockets, Network</strong> (QtWebChannel arrives via WebEngine; used for the QWebChannel RPC)</td>
-<td><code>CMakeLists.txt</code> <code>find_package(Qt6 6.7 …)</code>; path in <code>CMakeCache.txt</code> <code>Qt6_DIR</code></td>
+<td><strong>6.7.3 <code>msvc2019_64</code></strong> (<code>C:/Qt/6.7.3/msvc2019_64</code>) — modules <strong>Core, Gui, Widgets, Network, WebSockets, WebChannel</strong> (+ <strong>Test</strong> for the C++ suite); WebChannel is requested explicitly for the QWebChannel RPC, and <strong>WebEngine is not required</strong> — the header of <code>CMakeLists.txt</code> records why it was removed</td>
+<td><code>CMakeLists.txt</code> <code>find_package(Qt6 6.7 …)</code>; path in <code>CMakeCache.txt</code> <code>Qt6_DIR</code>; the component set is also in <a href="Building.html"><code>Building.md</code></a> Prerequisites</td>
 </tr>
 <tr>
 <td>HDF5</td>
@@ -964,7 +956,7 @@ machine, don't assume. <code>CMakeLists.txt</code> is the authority for the requ
 <tr>
 <td>Runtime DLLs (copied post-build)</td>
 <td><code>FTD3XX.dll</code>, <code>FpgaManager.dll</code>, <code>NeuropixAPI_x64_4_1_3.dll</code></td>
-<td><code>external/neuropixels/extlibs</code> → build tree</td>
+<td><code>external/neuropixels/extlibs</code> → <code>bin/</code> (beside the exe)</td>
 </tr>
 </tbody>
 </table>
@@ -995,8 +987,8 @@ only if present, so a clone without it still builds (sim needs no calibration).<
 </tr>
 <tr>
 <td>Qt</td>
-<td><strong>6.7+</strong> (this box uses <strong>6.11.1</strong> <code>gcc_64</code>) — <code>qt6-base</code> + <strong>websockets</strong> + <strong>webchannel</strong> + <strong>webenginewidgets</strong></td>
-<td>same module set as Windows</td>
+<td><strong>6.7+</strong> (this box uses <strong>6.11.1</strong> <code>gcc_64</code>) — <code>qt6-base</code> + <strong>websockets</strong> + <strong>webchannel</strong> (no WebEngine)</td>
+<td>same module set as Windows: <code>Core Gui Widgets Network WebSockets WebChannel</code> (+<code>Test</code>); <a href="Building.html"><code>Building.md</code></a> Prerequisites is the authoritative list</td>
 </tr>
 <tr>
 <td>HDF5</td>
@@ -1026,7 +1018,7 @@ only if present, so a clone without it still builds (sim needs no calibration).<
 <tbody>
 <tr>
 <td>Launcher</td>
-<td><strong><code>run_spikespeak.py</code></strong> (cross-platform; thin wrappers <code>run_spikespeak.bat</code> / <code>run_spikespeak.sh</code>). Reads the build <code>CMakeCache.txt</code> and puts <strong>Qt + the vendored Neuropixels DLLs + HDF5</strong> on the loader path, then execs the backend — without it the exe dies at load (Windows <code>0xC0000135</code>). Flags: <code>--no-browser</code>, <code>--offscreen</code> (headless Qt platform), <code>--dry-run</code>.</td>
+<td><strong><code>run_spikespeak.bat</code></strong> (Windows) / <strong><code>run_spikespeak.sh</code></strong> (Linux) — thin wrappers over <strong><code>scripts/spikespeak.py run</code></strong>, which reads the build <code>CMakeCache.txt</code> and puts <strong>Qt + the vendored Neuropixels DLLs + HDF5</strong> on the loader path, then execs the backend — without it the exe dies at load (Windows <code>0xC0000135</code>). Everything after <code>run</code> passes through to the backend (<code>--no-browser</code>, <code>--tab</code>, <code>--ws-port</code>/<code>--http-port</code>); on Linux the script selects the offscreen Qt platform itself when <code>DISPLAY</code> is unset, so there is no flag for it. The older standalone <strong><code>run_spikespeak.py</code></strong> at the repo root does the same job and is the one that understands <code>--offscreen</code> and <code>--dry-run</code>.</td>
 </tr>
 <tr>
 <td>Browser</td>
@@ -1133,12 +1125,12 @@ for the synthetic-ripple generator. The <strong>Pi stim server</strong> has its 
 <pre><code class="language-bash">git clone &lt;repo&gt; &amp;&amp; cd SpikesPeak
 ./build.sh                                       # configures build/ on first use; exe -&gt; bin/
 ./run_spikespeak.sh --no-browser                 # backend on :8234 (HTTP) + :1234 (WS); sets QT_QPA_PLATFORM=offscreen itself when DISPLAY is unset
-# open a Chromium browser at http://localhost:8234 → Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
+# open a Chromium browser at http://localhost:8234 → Source ▸ Simulated Data › ▸ OneBox (or PXIe) ▸ Neuropixels 1.0 ▸ sine wave → press ▶ Play
 </code></pre>
 <p><strong>Windows (hardware box):</strong></p>
 <pre><code class="language-bat">build.bat --no-pause          :: configures build/ on first use; exe -&gt; bin/
 run_spikespeak.bat            :: puts Qt + Neuropix + HDF5 on PATH, opens the browser
-:: in the browser: Source ▸ &quot;Simulated Data…&quot; ▸ Neuropixels 1.0 → press ▶ Play
+:: in the browser: Source ▸ Simulated Data › ▸ OneBox (or PXIe) ▸ Neuropixels 1.0 ▸ sine wave → press ▶ Play
 </code></pre>
 <p>You should see <strong>streaming traces</strong> in the Live Data view — for the sim source, a clean sine identical on
 every channel:</p>
@@ -1152,11 +1144,14 @@ python python/spikespeak_cli.py --host localhost \
 driving/screenshotting the browser over CDP.</p>
 <h2 id="build-run">Build &amp; run<a class="headerlink" href="#build-run" title="Permanent link">#</a></h2>
 <p><code>CMakeLists.txt</code> is <strong>cross-platform</strong> (<code>if(WIN32)/elseif(Linux)</code>). There are two dev boxes: a
-<strong>Linux</strong> (GCC, sim-only, <strong>no hardware</strong>) box and the <strong>Windows</strong> hardware box (real NP1.0 + NI-DAQ).</p>
-<p><strong>Linux (GCC, sim-only):</strong> needs <strong>Qt 6.7+</strong> (<code>qt6-base</code> + websockets + webchannel + webenginewidgets),
-<strong>HDF5</strong> (<code>libhdf5-dev</code>), and internet at configure time (PortAudio + rapidyaml are <code>FetchContent</code>).
-<code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code> are off, so hardware sources are excluded and NeuropixAPI <strong>stubs</strong>
-compile. Full plan + gotchas in <a href="SimDataLinux.html"><code>SimDataLinux.md</code></a>.</p>
+<strong>Linux</strong> (GCC, sim-only, <strong>no hardware</strong>) box and the <strong>Windows</strong> hardware box (PXIe and OneBox
+basestations, NP1.0 and NP2.0 probes, plus the PXI-6133 NI-DAQ on the PXIe rig).</p>
+<p><strong>Linux (GCC, sim-only):</strong> needs <strong>Qt 6.7+</strong> (<code>qt6-base</code> + websockets + webchannel — no WebEngine;
+<a href="Building.html"><code>Building.md</code></a> has the component set), <strong>HDF5</strong> (<code>libhdf5-dev</code>), and internet at configure
+time (PortAudio + rapidyaml are <code>FetchContent</code>). <code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code> are off, so hardware
+sources are excluded and NeuropixAPI <strong>stubs</strong> compile. Full instructions and gotchas in
+<a href="Building.html"><code>Building.md</code></a> and <a href="Testing.html"><code>Testing.md</code></a> §1a; <a href="SimDataLinux.html"><code>SimDataLinux.md</code></a> is
+the 2026-07 design record, not the build guide.</p>
 <pre><code class="language-bash">cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release &amp;&amp; cmake --build build
 QT_QPA_PLATFORM=offscreen LD_LIBRARY_PATH=~/Qt/6.11.1/gcc_64/lib ./bin/SpikesPeak --no-browser
 python python/spikespeak_cli.py --host localhost list         # source = Simulated Data
@@ -1175,8 +1170,9 @@ app resolves <code>config/</code>, <code>data/</code>, <code>webinterface/</code
 <code>&lt;exe&gt;/../&lt;name&gt;</code>, which from <code>bin/</code> is the repo root — so it reads the <strong>source</strong> directories.
 Editing a <code>.yaml</code> or a <code>.js</code> therefore needs no build at all; just relaunch, or hard-reload the
 browser for frontend files.
-Hardware sources (<code>source.npx.pxi</code>, <code>source.nidaq</code>) are gated by <code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code>
-(Windows only). Without a probe, use a probe-independent NI-DAQ or sim profile — see <a href="NiDaq.html"><code>NiDaq.md</code></a>.</p>
+Hardware sources (<code>source.npx.pxi</code>, <code>source.npx.onebox</code>, <code>source.nidaq</code>) are gated by
+<code>NPX_HW_ENABLED</code>/<code>NIDAQ_HW_ENABLED</code> (Windows only; the NI-DAQ one is the <code>SP_ENABLE_NIDAQ</code> CMake option
+and is delay-loaded, so the NI runtime is optional at launch). Without a probe, use a probe-independent NI-DAQ or sim profile — see <a href="NiDaq.html"><code>NiDaq.md</code></a>.</p>
 </blockquote>
 <h2 id="working-in-parallel-multiple-devs-agents">Working in parallel (multiple devs / agents)<a class="headerlink" href="#working-in-parallel-multiple-devs-agents" title="Permanent link">#</a></h2>
 <p>Module work is <strong>folder-isolated</strong> except for a few <strong>shared hotspots</strong> — coordinate edits to:
@@ -1195,7 +1191,7 @@ backend's <code>configList</code> by <code>main.js rebuildSourceOptions()</code>
 <ul>
 <li><a href="#start-here-the-path-for-a-new-agent-30-min-in-this-order">START HERE — the path for a new agent (≈30 min, in this order)</a><ul>
 <li><a href="#before-you-call-anything-green">Before you call anything green</a></li>
-<li><a href="#traps-this-repo-has-already-sprung-internalise-before-touching-the-closed-loop">Traps this repo has already sprung (internalise before touching the closed loop)</a></li>
+<li><a href="#traps-this-repo-has-already-sprung-internalize-before-touching-the-closed-loop">Traps this repo has already sprung (internalize before touching the closed loop)</a></li>
 </ul>
 </li>
 <li><a href="#what-is-here">What is here</a><ul>

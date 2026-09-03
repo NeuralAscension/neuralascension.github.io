@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -141,8 +143,8 @@
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="the-hardware-fault-guard-stopping-before-issue-54">The hardware fault guard — stopping before issue #54<a class="headerlink" href="#the-hardware-fault-guard-stopping-before-issue-54" title="Permanent link">#</a></h1>
 <p>Two failed Neuropixels connects on one transport, and the <strong>next</strong> acquisition dies with an access
-violation. SpikesPeak now counts those attempts and stops the session before that happens, with a
-dialog whose only ways out are restart or close.</p>
+violation. SpikesPeak now counts those attempts, warns the operator at the first (§3), and stops the
+session at the second — before that happens — with a dialog whose only ways out are restart or close.</p>
 <p><img alt="The fault dialog" src="images/hardware_fault_modal_2026-08-24.png" /></p>
 <hr />
 <h2 id="1-what-we-are-guarding-against">1. What we are guarding against<a class="headerlink" href="#1-what-we-are-guarding-against" title="Permanent link">#</a></h2>
@@ -208,9 +210,30 @@ is wrong: a simulated source named with "onebox" in it — a natural thing for s
 be counted, and the guard would fire on a rig with no hardware attached at all. Every sim source
 (<code>simdata</code>, <code>sim2</code>, <code>simadc</code>, <code>synthripples</code>) and both NI-DAQ sources open no basestation, so their
 failures say nothing about the driver state.</p>
+<p><strong>Two failures that are not faults still count.</strong> The tally is taken in <code>SourceManager::setupSources</code>
+when <code>initDataSource</code> returns false, and two ordinary things fail exactly there. A basestation with
+<strong>no probe on it</strong>: <code>NpInterface.cpp</code> reports <em>"no headstage was detected on any port"</em> and returns
+false. And a basestation with <strong>more than one probe</strong>: the source refuses to pick one and stops to
+ask which port — it asks <em>by failing</em>, and the question is parked in <code>src/core/ConnectChoice</code> for
+<code>WebSocketServer</code> to put to the operator as a choice (Status §89). Both opened the basestation and
+its ports to find out, which is the footprint the crash was measured on, so both are counted and the
+heads-up in §3 says so. It follows that an operator checking two probe-less basestations spends the
+whole budget without doing anything unusual — which is why probe-level autodetect cannot be built
+until #54 is understood (Status §86).</p>
 <hr />
 <h2 id="3-what-the-operator-sees">3. What the operator sees<a class="headerlink" href="#3-what-the-operator-sees" title="Permanent link">#</a></h2>
-<p>When the threshold trips, the backend broadcasts <code>hardwareFault</code> and logs it:</p>
+<p><strong>At failure one, a heads-up.</strong> Until 2026-09-02 the count was silent at one and fatal at two, so
+there was no moment at which knowing it could still change what the operator did. The first failed
+connect on a transport now broadcasts a <code>guiStatus</code> of kind <code>warning</code>, which the GUI shows on the
+toolbar status display — not a dialog, because one failure is ordinary and a modal at one is what §2
+rejected:</p>
+<pre><code class="language-json">{&quot;event&quot;:&quot;guiStatus&quot;,&quot;kind&quot;:&quot;warning&quot;,
+ &quot;message&quot;:&quot;Heads-up: that was failed connect 1 of 2 on the OneBox. One more and SpikesPeak has to be restarted before it can acquire again — the Neuropixels driver is left in a state where the next acquisition faults, so the software stops rather than risk it (issue #54).\n\nNote that a basestation with no probe on it counts as a failed connect, and so does being asked which probe to use. Nothing is wrong with the hardware.&quot;}
+</code></pre>
+<p>It names the transport, the count against the threshold, the consequence of one more, and the two
+ways the budget gets spent without a fault (§2).</p>
+<p><strong>At failure two, the dialog.</strong> When the threshold trips, the backend broadcasts <code>hardwareFault</code> and
+logs it:</p>
 <pre><code class="language-json">{&quot;event&quot;:&quot;hardwareFault&quot;,&quot;kind&quot;:&quot;connect-attempts&quot;,&quot;transport&quot;:&quot;OneBox&quot;,
  &quot;failures&quot;:2,&quot;threshold&quot;:2,&quot;code&quot;:&quot;0xC0000005&quot;,&quot;driver&quot;:&quot;4.1.3&quot;,&quot;issue&quot;:54}
 </code></pre>
@@ -275,7 +298,7 @@ floor out from under a live callback. Verified with five connect/play/disconnect
 <p>The guard needs no OneBox — it fires on <em>failed</em> connects, and a OneBox profile with no box attached
 fails exactly as required:</p>
 <pre><code>Disconnect                                   # a select while connected is refused outright
-selectSource &quot;NPX 2.0 Multishank (OneBox)&quot;   # fails -- 1 of 2
+selectSource &quot;NPX 2.0 Multishank (OneBox)&quot;   # fails -- 1 of 2 -&gt; heads-up on the status line
 selectSource &quot;NPX 1.0 (OneBox)&quot;              # fails -- 2 of 2 -&gt; dialog
 </code></pre>
 <blockquote>
@@ -295,6 +318,14 @@ click is <code>Neuropixels</code> on a rig where the scan finds a OneBox (the <c
 </code></pre>
 <p><code>tests/test_connectattemptlog.cpp</code> covers the rule itself and was proven able to fail: restoring the
 substring match makes <code>aSimulatedSourceNamedLikeHardwareIsStillNotHardware</code> go red.</p>
+<h3 id="spending-an-attempt-on-a-rig-that-has-hardware">Spending an attempt on a rig that has hardware<a class="headerlink" href="#spending-an-attempt-on-a-rig-that-has-hardware" title="Permanent link">#</a></h3>
+<p>Both non-fault failures in §2 reproduce the count without a missing box, and both were hit on the
+rig on 2026-09-02. Select <code>Neuropixels</code> (or <code>OneBox</code> / <code>PXIe</code>) with <strong>no probe</strong> on the basestation:
+the connect fails on <em>"no headstage was detected on any port"</em> — 1 of 2, with the heads-up
+(Status §86). Or select it with <strong>two probes</strong> on the basestation: the connect stops to ask which
+port, the <code>probe-choice</code> picker appears, <code>deviceReady</code> stays false, and that question is also 1 of 2
+(Status §89); the picker's answer (the <code>setProbePort</code> command) records the port for the retry.
+Neither is a defect to fix here; they are the reason the heads-up exists.</p>
 <hr />
 <h2 id="7-known-limits">7. Known limits<a class="headerlink" href="#7-known-limits" title="Permanent link">#</a></h2>
 <ul>
@@ -326,7 +357,10 @@ substring match makes <code>aSimulatedSourceNamedLikeHardwareIsStillNotHardware<
 <li><a href="#3-what-the-operator-sees">3. What the operator sees</a></li>
 <li><a href="#4-how-restart-actually-works">4. How restart actually works</a></li>
 <li><a href="#5-a-second-bug-this-work-uncovered">5. A second bug this work uncovered</a></li>
-<li><a href="#6-testing-it-yourself">6. Testing it yourself</a></li>
+<li><a href="#6-testing-it-yourself">6. Testing it yourself</a><ul>
+<li><a href="#spending-an-attempt-on-a-rig-that-has-hardware">Spending an attempt on a rig that has hardware</a></li>
+</ul>
+</li>
 <li><a href="#7-known-limits">7. Known limits</a></li>
 </ul>
 </div>

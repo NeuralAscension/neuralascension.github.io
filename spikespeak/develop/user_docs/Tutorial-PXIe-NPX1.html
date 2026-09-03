@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step - SpikesPeak Docs</title>
+<script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
+<link rel="stylesheet" href="../assets/style.css">
+<script src="../assets/logo.js" defer></script>
+<noscript><style>.tab-panel{display:block !important}.tab-buttons{display:none}</style></noscript>
+</head><body>
+<header class="topbar">
+  <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
+  <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
+  <span class="crumb">User Guide / Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</span>
+  <span class="spacer"></span>
+  <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
+</header>
+<div class="layout">
+  <nav class="sidebar" id="sidebar"><a class="brand-home" href="../index.html">Home</a>
+<h3>Overview</h3>
+<a href="../README.html">SpikesPeak</a>
+<a href="../SpikesPeak_Status.html">SpikesPeak — Running Status Log</a>
+<a href="../CLAUDE.html">SpikesPeak — instructions for agents</a>
+<h3>User Guide</h3>
+<a href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
+<a href="README.html">SpikesPeak — User Guide</a>
+<a href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
+<a href="RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
+<a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
+<a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
+<a href="Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
+<a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
+<a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a class="active" href="Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
+<h3>Developer Docs</h3>
+<details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
+<a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
+<a href="../developer_docs/AgentTraps.html">Traps that have cost real time</a>
+<a href="../developer_docs/SourceSelection.html">Source selection — the rig names itself</a>
+<a href="../developer_docs/ConfigReference.html">Configuration reference — every key, and what is NOT a key</a>
+<a href="../developer_docs/ClosedLoopDriving.html">Driving SpikesPeak headlessly — the sequences that actually work</a>
+<a href="../developer_docs/RendererExperiment.html">Replacing SciChart in the live view — the measured comparison</a>
+<a href="../developer_docs/SpikesPeak_Architecture_Review.html">SpikesPeak — Architectural Review & Audit</a>
+</details>
+<details class="navgroup"><summary>Architecture and contracts<span class="navcount">3</span></summary>
+<a href="../developer_docs/ModuleCommunication.html">SpikesPeak — Module Communication (frontend ⇄ backend commands)</a>
+<a href="../developer_docs/Fdir.html">FDIR — fault detection, reporting, and staying in a valid state</a>
+<a href="../developer_docs/Logging.html">Logging — format, severity, and what to write</a>
+</details>
+<details class="navgroup"><summary>Extending the stack<span class="navcount">3</span></summary>
+<a href="../developer_docs/AddingASourceModule.html">Developer Guide — Adding a New Source Module</a>
+<a href="../developer_docs/AddingASinkModule.html">Developer Guide — Adding a New Sink (Processor) Module</a>
+<a href="../developer_docs/SyntheticSources.html">Synthetic Sources — generating and replaying test data</a>
+</details>
+<details class="navgroup"><summary>Probes and DAQ hardware<span class="navcount">8</span></summary>
+<a href="../developer_docs/Neuropixels2.0.html">SpikesPeak — Neuropixels 2.0 support</a>
+<a href="../developer_docs/NiDaq.html">NI-DAQ — streaming, configs, and the probe codependence</a>
+<a href="../developer_docs/OneBoxWiring.html">OneBox connectors and rig wiring</a>
+<a href="../developer_docs/IntanMicroZed.html">Intan on the MicroZed — the design, and what is not known yet</a>
+<a href="../developer_docs/IntanOpenQuestions.html">Intan / MicroZed — open questions</a>
+<a href="../developer_docs/HardwareFaultGuard.html">The hardware fault guard — stopping before issue #54</a>
+<a href="../developer_docs/OpenEphys-NP2-Reference.html">OpenEphys Neuropixels 2.0 (multishank) — reference</a>
+<a href="../developer_docs/OpenEphys-OneBox-Reference.html">OpenEphys OneBox — reference digest (for the SpikesPeak OneBox port)</a>
+</details>
+<details class="navgroup"><summary>Signal processing<span class="navcount">4</span></summary>
+<a href="../developer_docs/DerivedBands.html">Derived bands — LFP and spike, from one raw stream</a>
+<a href="../developer_docs/FilterDebugging.html">Filter debugging — the .bin dumps, the kill switches, and how to validate the filters</a>
+<a href="../developer_docs/SpikeAudio.html">Spike audio — listening to a channel's AP band</a>
+<a href="../developer_docs/SimdDispatch.html">SIMD dispatch — what AVX2 is worth, and when</a>
+</details>
+<details class="navgroup"><summary>Ripple detection and closed loop<span class="navcount">8</span></summary>
+<a href="../developer_docs/RippleDetection.html">Ripple (sharp-wave-ripple / SWR) detection — how it works + how to validate it</a>
+<a href="../developer_docs/SimulatedSignals.html">Simulated signals — what the fake probes emit, and why</a>
+<a href="../developer_docs/RippleGui.html">Ripple-detection GUI — design, WS contract, and integration plan</a>
+<a href="../developer_docs/RippleDetectorThreading.html">Ripple detector — threading & compute trade-off report</a>
+<a href="../developer_docs/RippleClosedLoopAnalysis.html">Offline analysis of closed-loop ripple→stim recordings</a>
+<a href="../developer_docs/LatencyProfiling.html">Closed-loop latency — profiling, where the time goes, and the ASAP delivery flag</a>
+<a href="../developer_docs/Profiling.html">Profiling — where the time actually goes</a>
+<a href="../developer_docs/AudioVideoLatency.html">What you see, what you hear, and how old both are</a>
+</details>
+<details class="navgroup"><summary>Live view and GUI<span class="navcount">6</span></summary>
+<a href="../developer_docs/LiveDataView.html">SpikesPeak — Live Data View (waveform display)</a>
+<a href="../developer_docs/RendererContract.html">THE LIVE-VIEW RENDERER CONTRACT</a>
+<a href="../developer_docs/RenderingPerformance.html">Live-view rendering performance — SciChart limits, what we tried, and the off-ramps</a>
+<a href="../developer_docs/ProbeActivityHeatmap.html">Feature Plan — Probe Activity Heatmap (live, on the probe map)</a>
+<a href="../developer_docs/HeatmapView.html">The heatmap column — time × channel, on the GPU</a>
+<a href="../developer_docs/DetachedViews.html">Detached windows</a>
+</details>
+<details class="navgroup"><summary>Recording and headless control<span class="navcount">4</span></summary>
+<a href="../developer_docs/Recording.html">SpikesPeak — Recording</a>
+<a href="../developer_docs/RecordingTest.html">"Recording Test" — runbook for agents</a>
+<a href="../developer_docs/ControlCLI.html">Control CLI — headless command interface</a>
+<a href="../developer_docs/DataConversion.html">Data conversion — the sidecar contract, and what each export derives from it</a>
+</details>
+<details class="navgroup"><summary>Testing<span class="navcount">6</span></summary>
+<a href="../developer_docs/Testing.html">Testing, and how to tell software faults from hardware faults</a>
+<a href="../developer_docs/InvariantTests.html">Invariant tests — making a defect class unwritable</a>
+<a href="../developer_docs/KnowledgeOps.html">Knowledge ops — where what you learned goes</a>
+<a href="../developer_docs/GuiTestCoverage.html">GUI test coverage — what is checked, and what is not</a>
+<a href="../developer_docs/GuiTesting.html">Driving & screenshotting the SpikesPeak GUI headlessly (for agents / CI)</a>
+<a href="../developer_docs/SecondMachineRunbooks.html">Second-machine runbooks — one per configuration of issue #52</a>
+</details>
+<details class="navgroup"><summary>Working on this repo<span class="navcount">7</span></summary>
+<a href="../developer_docs/Building.html">Building and running SpikesPeak</a>
+<a href="../developer_docs/ArchitectureDiagrams.html">Architecture diagrams — generated, not drawn</a>
+<a href="../developer_docs/Contributing.html">Contributing</a>
+<a href="../developer_docs/CodeStyle.html">Code style — the formatter, and why it has not been run yet</a>
+<a href="../developer_docs/BuildingTheDocs.html">The Documentation Book (HTML)</a>
+<a href="../developer_docs/UsingAgy.html">Using agy (Antigravity / Gemini) on SpikesPeak</a>
+<a href="../developer_docs/SimDataLinux.html">Simulated NP1.0 source fully working on Linux — spec + plan (APPROVED 2026-07-06)</a>
+</details>
+<details class="navgroup"><summary>Plans and open briefs<span class="navcount">3</span></summary>
+<a href="../developer_docs/NextTask_SourceArchitecture.html">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)</a>
+<a href="../developer_docs/NextTask_CommandEventBus.html">SpikesPeak — A modular command/event subscription bus (design brief + options)</a>
+<a href="../developer_docs/NextTask_DocsRefresh.html">In progress — documentation refresh (screenshots + prose)</a>
+</details>
+<h3>Architecture</h3>
+<a href="../images/architecture_overview.html">SpikesPeak — Architecture Overview</a>
+<h3>Tooling</h3>
+<a href="../python/README.html">spikespeakpostprocess</a>
+<h3>Hardware Results</h3>
+<a href="../RecordingTests/CLOSED_LOOP_LATENCY.html">Hardware Results — closed-loop ripple → stimulation</a>
+<h3>Benchmarks</h3>
+<a href="../benchmarks/README.html">Benchmarks</a>
+<a href="../benchmarks/CHANNEL_DENSITY_REPORT.html">SciChart channel-density benchmark — how many traces can the live view show?</a>
+<h3>Stim Server</h3>
+<a href="../raspberrypi_pulsegenerator/README.html">Raspberry Pi 3B+ — AM Systems 2300 pulse generator (real-time)</a>
+<a href="../esp32s3eth_am2300_pulsegenerator/README.html">ESP32-S3-ETH — AM Systems 2300 pulse generator (Waveshare)</a>
+<h3>Archive (historical)</h3>
+<a href="../developer_docs/archive/README.html">Archive — retired task briefs and superseded status snapshots</a>
+<a href="../developer_docs/archive/StimClosedLoop_Status.html">Stim Closed-Loop — Session Status (human-verified, 2026-07-09; NP1.0 real-ripple loop 2026-07-15)</a>
+<a href="../developer_docs/archive/NextSession_SecondMachine_OneBox.html">Next session — stand SpikesPeak up on a second Windows machine (OneBox only)</a>
+<a href="../developer_docs/archive/NextTask_LinuxBringUp.html">Next task — stand SpikesPeak up on Linux (simulation only, no hardware)</a>
+<a href="../developer_docs/archive/NextTask_NP1RippleRegression.html">NEXT TASK — Repeat the closed-loop ripple→stim validation on Neuropixels 1.0 (regression)</a>
+<a href="../developer_docs/archive/NextTask_OneBoxClosedLoopLatency.html">ARCHIVED — Closed-loop latency on the OneBox, NP1.0 and NP2.0</a>
+<a href="../developer_docs/archive/NextTask_OneBoxLatencyMatrix.html">ARCHIVED — finish the OneBox closed-loop latency matrix</a>
+<a href="../developer_docs/archive/NextTask_OneBoxSupport.html">SpikesPeak — Adding Neuropixels OneBox support (implementation plan)</a>
+<a href="../developer_docs/archive/NextTask_SyncPulseCountCheck.html">NEXT TASK (low priority) — NI-DAQ captures a different sync-pulse count than the NPX</a>
+<a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
+<a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
+<a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
+  <main class="content"><article class="markdown-body"><h1 id="tutorial-a-neuropixels-10-probe-on-the-pxie-basestation-step-by-step">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step<a class="headerlink" href="#tutorial-a-neuropixels-10-probe-on-the-pxie-basestation-step-by-step" title="Permanent link">#</a></h1>
+<p>The companion to <a href="Tutorial-OneBox-NPX2.html"><code>Tutorial-OneBox-NPX2.md</code></a>, for the other probe and the
+other transport: a Neuropixels 1.0 probe in a PXIe chassis, with the NI-DAQ card alongside. The
+sequence is the same — connect, choose electrodes, apply, stream, arrange the live view, listen,
+finish — and this page says what is <em>different</em> on a 1.0 probe at each step.</p>
+<blockquote>
+<p><strong>Captures.</strong> The per-step screenshots for this walkthrough have not been taken yet; the operator
+is producing them with the narrated video. The 1.0 screenshots on this page are the existing ones
+from <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code></a> and <a href="GUI-Guide.html"><code>GUI-Guide.md</code></a>, dated in their
+filenames. Everything stated here about behavior was verified on the rig on 2026-09-02, with the
+1.0 probe on the PXIe basestation and a 2.0 on the OneBox at the same time.</p>
+</blockquote>
+<hr />
+<h2 id="1-launch-and-choose-the-pxie">1. Launch, and choose the PXIe<a class="headerlink" href="#1-launch-and-choose-the-pxie" title="Permanent link">#</a></h2>
+<p>Start SpikesPeak and click <strong>Source</strong>. With a PXIe basestation attached the menu offers <strong>PXIe</strong>, and
+— because the NI-DAQ card lives in the same chassis — <strong>PXIe with NI-DAQ</strong>, which adds the card's
+analog and digital inputs as extra streams beside the probe. Choose the latter if you want the
+NI-DAQ channels (stimulation pulses, sync, anything on the BNCs) recorded with the probe.</p>
+<p>If a OneBox is attached at the same time the menu says so and lists both by name, as in the 2.0
+tutorial; SpikesPeak never guesses between them.</p>
+<p>Connecting opens the chassis slot, finds the headstage and the probe, and writes the default map.
+The <strong>Probe Map</strong> tab opens on it.</p>
+<p><img alt="The 1.0 probe map" src="images/np1_probemap_2026-08-21.png" /></p>
+<h2 id="2-the-10-map-one-shank-three-banks-two-columns">2. The 1.0 map: one shank, three banks, two columns<a class="headerlink" href="#2-the-10-map-one-shank-three-banks-two-columns" title="Permanent link">#</a></h2>
+<p>A 1.0 probe has a single shank of 960 electrodes in two columns (left and right), read out 384 at a
+time. The electrodes are grouped in three <strong>banks</strong> of 384 — bank 0 nearest the tip, bank 1 above it,
+bank 2 (a half bank) at the top. The default map is bank 0.</p>
+<ul>
+<li><strong>Edit Map</strong> mode, then <strong>drag along the shank</strong> to route a run of electrodes. On a 1.0 the drag
+  is per <em>column</em>: drag on the left half of the shank for the left column, the right half for the
+  right column. Rows you drag over take over their channels; channel 191 is the internal reference
+  and is never routed, so a drag across it leaves it alone.</li>
+<li><strong>Scroll with the wheel</strong> to move along the shank. Bank 1 starts at row 192, bank 2 at row 384.</li>
+<li>The <strong>Bank 0 / Bank 1 / Bank 2</strong> buttons route all 384 channels to one bank in a click.</li>
+</ul>
+<p>The rest of the map page — Apply, Save/Load <code>.imro</code>, tip referencing — works exactly as on the 2.0;
+the walkthrough is in <a href="Neuropixels-1.0.html"><code>Neuropixels-1.0.md</code> §3–4</a>.</p>
+<h2 id="3-apply-and-stream">3. Apply, and stream<a class="headerlink" href="#3-apply-and-stream" title="Permanent link">#</a></h2>
+<p><strong>Apply Map to Hardware</strong> writes the selection to the probe and reads it back; the status line
+reports it. Then <strong>Live Data</strong> and <strong>Play</strong>.</p>
+<p><img alt="The 1.0 live view" src="images/np1_liveview_2026-08-21.png" /></p>
+<p>The difference from a 2.0 is the <strong>bands</strong>: a 1.0 probe produces <strong>AP</strong> (spikes, 0.3–10 kHz) and
+<strong>LFP</strong> (0.5–500 Hz) <em>on the probe itself</em>, so both arrive as separate streams and there is no
+<strong>Bands</strong> menu — pick <code>AP Band</code> or <code>LFP Band</code> per column from the column's <strong>Stream</strong> dropdown. A 2.0
+produces one raw stream and derives its bands in software, which is what that menu is for.</p>
+<p>With <strong>PXIe with NI-DAQ</strong> the same dropdown also offers <code>NIDAQ AI/O</code> (the analog inputs, in volts)
+and <code>NIDAQ DI/O</code>.</p>
+<h2 id="4-arranging-the-live-view">4. Arranging the live view<a class="headerlink" href="#4-arranging-the-live-view" title="Permanent link">#</a></h2>
+<p>Everything in the 2.0 tutorial's sections 6–8 applies unchanged: columns, the per-column control
+chips and pin, the Stream and View dropdowns, the channel pager, <strong>Ch</strong> for density, <strong>Time</strong> for
+history, the vertical layout, and the heatmap. The one 1.0-specific note: there is no <strong>Shank</strong>
+dropdown to speak of — a single-shank probe has nothing to choose — so columns differ by band and by
+which stretch of the shank their pager sits on.</p>
+<h2 id="5-listening">5. Listening<a class="headerlink" href="#5-listening" title="Permanent link">#</a></h2>
+<p>Open the ♪ dock and click a channel label in the live view. On a 1.0 you hear that channel's <strong>AP
+band</strong>, which the probe already provides; nothing has to be turned on first. The rest —
+Thresh, Volume, choosing the output device — is in <a href="SpikeAudio.html"><code>SpikeAudio.md</code></a>.</p>
+<h2 id="6-finish-properly">6. Finish properly<a class="headerlink" href="#6-finish-properly" title="Permanent link">#</a></h2>
+<p><strong>Pause, then Disconnect.</strong> Disconnect is disabled while streaming, on purpose. Disconnecting
+releases the chassis slot; only then close the window. Never kill the backend from Task Manager with
+a probe connected — see <a href="OneBox-NPX2.html"><code>OneBox-NPX2.md</code> §1</a> for the rule and its cost, which
+applies to the PXIe basestation just the same.</p>
+<hr />
+<p><em>Behavior verified on the rig 2026-09-02 (NP1.0 on the PXIe basestation; NP2.0 on the OneBox
+alongside). Per-step screenshots and the narrated video to follow.</em></p></article>
+    <footer class="pagefoot">Generated from <code>user_docs/Tutorial-PXIe-NPX1.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
+  </main>
+  <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-launch-and-choose-the-pxie">1. Launch, and choose the PXIe</a></li>
+<li><a href="#2-the-10-map-one-shank-three-banks-two-columns">2. The 1.0 map: one shank, three banks, two columns</a></li>
+<li><a href="#3-apply-and-stream">3. Apply, and stream</a></li>
+<li><a href="#4-arranging-the-live-view">4. Arranging the live view</a></li>
+<li><a href="#5-listening">5. Listening</a></li>
+<li><a href="#6-finish-properly">6. Finish properly</a></li>
+</ul>
+</div>
+</aside>
+</div>
+<script>
+document.getElementById("navtoggle").addEventListener("click",function(){document.getElementById("sidebar").classList.toggle("open");});
+(function(){var b=document.getElementById("themetoggle");if(!b)return;b.addEventListener("click",function(){var n=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";document.documentElement.setAttribute("data-theme",n);try{localStorage.setItem("sp-theme",n);}catch(e){}});})();
+/* Bring the current page into view in its own scroller when its group sits below the fold. Scrolls the
+   sidebar only -- never the document, which scrollIntoView() would also do. */
+(function(){var s=document.getElementById("sidebar"),a=s&&s.querySelector("a.active");
+if(a&&a.offsetTop>s.clientHeight-90)s.scrollTop=a.offsetTop-s.clientHeight/2;})();
+/* Tabbed content (e.g. NP1.0 / NP2.0 hardware results). Progressive-enhancement: with JS off, all
+   panels stay visible (see .no-js fallback in CSS), so the content is never hidden. */
+document.querySelectorAll(".tabs").forEach(function(t){
+  var btns=t.querySelectorAll(".tab-btn"), panels=t.querySelectorAll(".tab-panel");
+  btns.forEach(function(b){b.addEventListener("click",function(){
+    btns.forEach(function(x){x.classList.remove("active");});
+    panels.forEach(function(x){x.classList.remove("active");});
+    b.classList.add("active");
+    var p=t.querySelector('.tab-panel[data-tab="'+b.dataset.tab+'"]');
+    if(p)p.classList.add("active");
+  });});
+});
+</script>
+</body></html>

@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -140,11 +142,11 @@
 <a href="archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
   <main class="content"><article class="markdown-body"><h1 id="invariant-tests-making-a-defect-class-unwritable">Invariant tests — making a defect class unwritable<a class="headerlink" href="#invariant-tests-making-a-defect-class-unwritable" title="Permanent link">#</a></h1>
-<p>A practice this repo arrived at by having the same bug four times. It is <strong>not</strong> textbook TDD, and
-the difference is the point.</p>
+<p>A practice this repo arrived at by having the same bug four times — and a fifth after the rule was
+written down. It is <strong>not</strong> textbook TDD, and the difference is the point.</p>
 <hr />
 <h2 id="1-the-observation-that-produced-it">1. The observation that produced it<a class="headerlink" href="#1-the-observation-that-produced-it" title="Permanent link">#</a></h2>
-<p>Four separate defects, one shape: <strong>the system announced what was REQUESTED instead of what was
+<p>Five separate defects, one shape: <strong>the system announced what was REQUESTED instead of what was
 CONFIRMED.</strong></p>
 <table>
 <thead>
@@ -170,13 +172,20 @@ CONFIRMED.</strong></p>
 <td>2026-08-30</td>
 <td><code>Disconnect</code> cleared the state but not the <strong>name</strong>, so a disconnected rig kept reporting its last source</td>
 </tr>
+<tr>
+<td>2026-09-02</td>
+<td>the <strong>launcher</strong> printed <em>servers up</em> after both servers had failed to bind — <code>main.cpp</code> printed its banner unconditionally, and because the auto-quit fires only when a client disconnects, a process no client could ever reach sat there announcing success for hours (Status §87)</td>
+</tr>
 </tbody>
 </table>
 <p>Each was found, fixed, and tested. And the next one appeared somewhere the previous fix did not
 reach — because <strong>each test was written about the bug, not about the rule the bug broke.</strong></p>
-<p>The last two were only reachable at all because a source was added that <em>deliberately fails to
+<p>The 2026-08-30 pair were only reachable at all because a source was added that <em>deliberately fails to
 connect</em>. Nothing else in the suite fails a connect with no source held, so that path had never been
 exercised in the project's history.</p>
+<p>The fifth appeared days after §2's test existed, on a surface no WebSocket-state invariant reads:
+the launcher's own console output. The rule was right; the scope it was checked over was not yet
+wide enough.</p>
 <hr />
 <h2 id="2-what-an-invariant-test-is">2. What an invariant test is<a class="headerlink" href="#2-what-an-invariant-test-is" title="Permanent link">#</a></h2>
 <p><strong>Write down the property that must always hold, and check it at every transition — rather than
@@ -246,7 +255,7 @@ down the rule.</strong></p>
 <li><strong>A rule with no local symptom.</strong> These bugs did not crash, throw, or log. The state was merely
   <em>wrong</em>, and every surface reported it confidently.</li>
 <li><strong>A rule a newcomer would not know.</strong> "Announce confirmed state, never requested" is not
-  discoverable from the code; it is discoverable from four postmortems.</li>
+  discoverable from the code; it is discoverable from five postmortems.</li>
 <li><strong>A rule where the failure is expensive.</strong> A recording labeled with the wrong source is not
   recoverable after the fact.</li>
 </ul>

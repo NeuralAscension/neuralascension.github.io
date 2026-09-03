@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup" open><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -208,9 +210,13 @@ prediction. <code>wait_baselines()</code> returns when the thresholds actually e
 <p><code>rippleEnvelope</code> is the vital sign. Zero of them means look upstream, not at z.</p>
 <h3 id="asap-low-latency-ask-for-it-before-play">ASAP (low latency) — ask for it BEFORE <code>play()</code><a class="headerlink" href="#asap-low-latency-ask-for-it-before-play" title="Permanent link">#</a></h3>
 <p>Since #80 (2026-09-01) ASAP is no longer only a YAML key on the source, so a headless run no longer has to
-select a separate <code>*(ASAP)*</code> profile to get it. <code>rig.py</code> has no verb for it yet; send the frame:</p>
-<pre><code class="language-python">rig.send({&quot;command&quot;: &quot;lowLatency&quot;, &quot;module&quot;: &quot;proc.rippledetector&quot;, &quot;value&quot;: True})
+select a separate <code>*(ASAP)*</code> profile to get it (those copies were deleted on 2026-09-02). <code>rig.py</code>
+has the verb, and a wait for the <em>confirmed</em> state:</p>
+<pre><code class="language-python">rig.set_low_latency(&quot;proc.rippledetector&quot;, True)      # before play()
+rig.play()
+assert rig.wait_low_latency(&quot;source.&quot;)[&quot;active&quot;]      # in force, not merely requested
 </code></pre>
+<p>The raw frame it sends is <code>{"command": "lowLatency", "module": "proc.rippledetector", "value": true}</code>.</p>
 <p>The backend replies with a <code>lowLatencyState</code> event carrying <code>ok</code>, <code>module</code>, and a <code>modules</code> array whose
 entries are <code>{name, active, pending, upstream}</code>. Two things to get right:</p>
 <ul>

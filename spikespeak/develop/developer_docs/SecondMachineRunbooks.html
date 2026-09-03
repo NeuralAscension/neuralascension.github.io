@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -143,11 +145,14 @@
 <p><a href="https://github.com/NeuralAscension/SpikesPeak/issues/52">Issue #52</a> gated merging
 <code>feature/OneBoxSupport</code>: the tree had to be shown to build, run and pass the suites somewhere other
 than the machine it was written on. <strong>That branch has merged into <code>develop</code></strong> (fast-forward,
-<code>60889d7</code> — Status §84), so the runbooks below are no longer a merge gate: they are the standing
-procedure for standing this tree up on a new box, and #52 is still where the evidence goes. "A second
-machine" is really <strong>five configurations</strong>, and a green run on one says almost nothing about the
-others — they fail in different places.</p>
-<p>This page is the procedure for each. Run one, paste the result into #52, move on.</p>
+<code>60889d7</code> — Status §84), and <strong>#52 closed on 2026-09-02</strong> once every one of the five configurations
+had been run at least once (configurations 2 and 3 were the last — Status §87 and §88). So the
+runbooks below are neither a merge gate nor an open issue's checklist: they are the standing
+procedure for standing this tree up on a new box. <strong>Evidence from a re-run goes into
+<code>SpikesPeak_Status.md</code> as a dated section</strong>, and a configuration that regresses gets a fresh issue —
+do not append to the closed one. "A second machine" is really <strong>five configurations</strong>, and a green
+run on one says almost nothing about the others — they fail in different places.</p>
+<p>This page is the procedure for each. Run one, record the result in the Status log, move on.</p>
 <hr />
 <h2 id="before-any-of-them">Before any of them<a class="headerlink" href="#before-any-of-them" title="Permanent link">#</a></h2>
 <h3 id="what-green-means-today">What green means today<a class="headerlink" href="#what-green-means-today" title="Permanent link">#</a></h3>
@@ -185,9 +190,9 @@ others — they fail in different places.</p>
 </table>
 <p><strong>The counts live in <a href="Testing.html"><code>Testing.md</code></a> and nowhere else.</strong> Read N from there rather than
 from this page: three documents once each carried their own copy of those numbers and all three were
-wrong. What this page asks of you is the opposite — <strong>record the numbers you actually saw</strong> in #52,
-with the commit, because "20/20" from a 2026-08-26 run and today's are not the same claim, and #52
-was partly held open by exactly that ambiguity.</p>
+wrong. What this page asks of you is the opposite — <strong>record the numbers you actually saw</strong> in the
+Status entry, with the commit, because "20/20" from a 2026-08-26 run and today's are not the same
+claim, and #52 was partly held open by exactly that ambiguity.</p>
 <p><strong>The GUI suite runs four tests at a time</strong> (since 2026-09-01): <code>--jobs</code> defaults to <code>auto</code> =
 <code>min(4, cpus - 2)</code>, and each job gets <strong>its own backend on its own port pair and its own isolated
 Chrome</strong>, so nothing is shared between them. It was 35 minutes serial and is about 10 now. <code>--jobs 1</code>
@@ -222,13 +227,14 @@ still says both suites need nothing, which was true when it was written and is n
   you.</li>
 </ul>
 <h3 id="recording-a-run">Recording a run<a class="headerlink" href="#recording-a-run" title="Permanent link">#</a></h3>
-<p>For every configuration, capture and paste into #52:</p>
+<p>For every configuration, capture and record in <code>SpikesPeak_Status.md</code> (this is what #52 asked for
+while it was open, and it is still the record):</p>
 <pre><code>date, commit (git rev-parse --short HEAD), OS + version, compiler + version, Qt version,
 browser discovered, portrait display attached? (yes/no),
 C++ result (N/N suites, M cases), Python result (N tests), GUI result (N/N tests),
 every red test by name, and every [untested] notice the GUI runner printed.
 </code></pre>
-<p>A run without the commit is not evidence: the whole point of #52 is that "it passed" decays. The GUI
+<p>A run without the commit is not evidence: the whole point of #52 was that "it passed" decays. The GUI
 runner also <strong>names any backend process that survived the run</strong> — a survivor is a failure of the run
 even when every test passed, and on a rig it is the thing that makes the next build die on
 <code>LNK1104</code>.</p>
@@ -295,7 +301,7 @@ degrade honestly with nothing attached. <strong>Cannot prove:</strong> any hardw
 <blockquote>
 <p><strong>Run 2026-09-02 (twice: before and after a reboot), and it earned its place.</strong> Clean clone on Windows with the Neuropixels
 basestations powered off: <code>build.bat</code> configured and built a fresh clone with <strong>no path edits</strong>
-(27/27 C++ in 91 s), and all three suites went green. The "degrades honestly" half found <strong>two real
+(the C++ suite green in 91 s), and all three suites went green. The "degrades honestly" half found <strong>two real
 defects</strong>, both now fixed (Status §87):</p>
 <ul>
 <li>the app printed <em>"Application server is running!"</em> and <em>"servers up"</em> <strong>after both servers had
@@ -356,8 +362,9 @@ appears to connect, or the failure is a generic "hardware was not detected" when
 more.</p>
 <p>Related: <a href="https://github.com/NeuralAscension/SpikesPeak/issues/51">#51</a> is exactly this class of bug
 and is still open. Its remaining transient — a <code>stateSource</code> naming the source that was refused — was
-closed on 2026-08-28 and is covered by <code>tests/gui/command_surface.py</code>, but the "profile degrades
-honestly" half has never been observed on a Windows box with nothing attached.</p>
+closed on 2026-08-28 and is covered by <code>tests/gui/command_surface.py</code>, and the "profile degrades
+honestly" half was observed on a Windows box with nothing attached on 2026-09-02, after a clean
+reboot (Status §87), and is pinned by <code>tests/gui/hardware_absent.py</code>.</p>
 <hr />
 <h2 id="configuration-3-windows-onebox-pxie">Configuration 3 — Windows + OneBox + PXIe<a class="headerlink" href="#configuration-3-windows-onebox-pxie" title="Permanent link">#</a></h2>
 <p><strong>Proves:</strong> both transports coexist — slot enumeration, <code>mapBS</code>, and which basestation a profile
@@ -444,8 +451,9 @@ python -u scripts/run_all_tests.py --no-browser --fatal
    is ~150 lines over <code>spikespeak_cli.WSClient</code> and is easy to rewrite from this paragraph.</p>
 </li>
 </ol>
-<p><strong>Record the suite counts too.</strong> The existing evidence for this configuration is a dialog exercise,
-not a suite result, which is why #52's checkboxes (b) and (c) are unevidenced here.</p>
+<p><strong>Record the suite counts too.</strong> The 2026-09-02 run is recorded in Status §88 and its counts live in
+<a href="Testing.html"><code>Testing.md</code></a>; the 2026-08-29 dialog exercise was the first half of this record, and a
+dialog exercise on its own is not a suite result.</p>
 <p>⚠️ <strong>Never force-kill the backend with a probe or OneBox open.</strong> The FT601 handle is released only on
 a clean exit; a kill costs a physical power-cycle. Shut down with the WebSocket <code>quit</code> command or the
 GUI's Disconnect.</p>
@@ -493,10 +501,12 @@ python -u scripts/run_all_tests.py --no-browser --fatal
 </code></pre>
 <p><strong>What to watch for, from the last run of this configuration (2026-08-21, second machine):</strong></p>
 <ul>
-<li>The GUI suite came back <strong>5 of 6 with <code>stream_options</code> red</strong>, attributed to #51 and left alone.
-  That is an explained red, not a pass, and #52's checkbox (c) asks for a pass. #51's transient has
-  since been fixed — so <strong>re-run and see whether <code>stream_options</code> is green now</strong>. If it is, say so in
-  #52: that is one of the two things holding the checkbox.</li>
+<li>The GUI suite came back with <strong><code>stream_options</code> red</strong> and every other test green, attributed to
+  #51 and left alone.
+  That was an explained red, not a pass. #51's transient was fixed on 2026-08-28 and <code>stream_options</code>
+  has been green on every gate since — but none of those gates was this configuration. Configuration
+  5 itself has not been re-run on a full three-suite gate: <strong>do that for its own sake</strong>, not for #52,
+  and record it in the Status log.</li>
 <li>The ADC costs throughput. <code>Npx2OneBoxNoAdc.yaml</code> ("NPX 2.0 Multishank (OneBox, no ADC)") is the
   control, committed and reproducible. It is <code>gui_hidden: true</code>, so select it <strong>by exact name</strong> —
   hidden only means absent from the dropdown, not unselectable.</li>
@@ -508,7 +518,8 @@ band's throughput is now reported at every record stop, including a stop caused 
 <p>⚠️ Same rule as configuration 3: no force-kills with the box open.</p>
 <hr />
 <h2 id="what-is-still-open-after-all-five-pass">What is still open after all five pass<a class="headerlink" href="#what-is-still-open-after-all-five-pass" title="Permanent link">#</a></h2>
-<p>Passing the matrix is necessary, not sufficient. #52's checklist also asks for:</p>
+<p>Passing the matrix is necessary, not sufficient. #52's checklist also asked for the following, and
+this is where each stands now that the issue is closed:</p>
 <ul>
 <li>~~<strong>The portrait-monitor dependency made explicit</strong>~~ — <strong>done 2026-09-01.</strong> The vertical cells now
   skip with a visible <code>[untested]</code> reason and the result line counts only the combinations that ran;
@@ -516,10 +527,10 @@ band's throughput is now reported at every record stop, including a stop caused 
 <li>~~<strong><code>developer_docs/README.md</code> "START HERE"</strong> carrying real prerequisites for a fresh box~~ —
   <strong>done.</strong> It now carries a versioned dependency checklist per platform and a "what a fresh clone
   still needs" section (HDF5 on <code>CMAKE_PREFIX_PATH</code>, internet at first configure).</li>
-<li><strong>A clean-clone Windows build.</strong> Still open. Configuration 1 was re-run from a fresh <code>git clone</code> on
-  2026-09-01, so the <em>Linux</em> half of this is closed; every Windows record so far is from a working
-  tree. Configuration 2 starts with a clone above for this reason, and configuration 3 still names it
-  as outstanding — do the same on 4 and 5 when the rig is free.</li>
+<li>~~<strong>A clean-clone Windows build.</strong>~~ — <strong>done 2026-09-02 for configurations 2 and 3</strong> (Status §87,
+  §88), both from a fresh <code>git clone</code> at a short path; configuration 1 had closed the <em>Linux</em> half
+  from a fresh clone on 2026-09-01. Configurations 4 and 5 are still working-tree records — redo
+  them on a clone when the rig is free.</li>
 </ul>
 <p><code>scripts/requirements.txt</code> (criterion f) was rewritten on 2026-08-28 and groups everything by what it
 is for — but its headline, <em>"both test suites need nothing from this file"</em>, has been overtaken: the

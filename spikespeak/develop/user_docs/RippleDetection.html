@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpikesPeak — Ripple Detection Module (User Guide) - SpikesPeak Docs</title>
+<title>SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide) - SpikesPeak Docs</title>
 <script>(function(){try{var t=localStorage.getItem('sp-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t);}catch(e){}})();</script>
 <link rel="stylesheet" href="../assets/style.css">
 <script src="../assets/logo.js" defer></script>
@@ -12,7 +12,7 @@
 <header class="topbar">
   <button id="navtoggle" aria-label="Toggle navigation">&#9776;</button>
   <a class="brand" href="../index.html"><span class="sp-logo sp-logo--nav"></span><span class="brand-sub">Docs</span></a>
-  <span class="crumb">User Guide / SpikesPeak — Ripple Detection Module (User Guide)</span>
+  <span class="crumb">User Guide / SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</span>
   <span class="spacer"></span>
   <button id="themetoggle" aria-label="Toggle dark mode" title="Toggle dark / light theme"></button>
 </header>
@@ -26,12 +26,14 @@
 <a href="GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="README.html">SpikesPeak — User Guide</a>
 <a href="SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a class="active" href="RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a class="active" href="RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="../developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -139,8 +141,8 @@
 <a href="../developer_docs/archive/NextTask_ThroughputOnSecondMachine.html">Reproducing the recording throughput shortfall on the second machine</a>
 <a href="../developer_docs/archive/NextTask_WasmFrontend.html">NEXT TASK — The WASM front-end branch: what it should actually be</a>
 <a href="../developer_docs/archive/NextTask_WindowsReverify.html">Next task — re-verify the Linux changes on Windows, and finish #52</a></nav>
-  <main class="content"><article class="markdown-body"><h1 id="spikespeak-ripple-detection-module-user-guide">SpikesPeak — Ripple Detection Module (User Guide)<a class="headerlink" href="#spikespeak-ripple-detection-module-user-guide" title="Permanent link">#</a></h1>
-<p>The <strong>Ripple Detection</strong> module watches the LFP band for hippocampal <strong>sharp-wave ripples (SWRs)</strong> and, when
+  <main class="content"><article class="markdown-body"><h1 id="spikespeak-swr-detector-ripple-detection-module-user-guide">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)<a class="headerlink" href="#spikespeak-swr-detector-ripple-detection-module-user-guide" title="Permanent link">#</a></h1>
+<p>The <strong>SWR Detector</strong> (ripple detection) module watches the LFP band for hippocampal <strong>sharp-wave ripples (SWRs)</strong> and, when
 enough channels cross threshold together within a short window, fires a <strong>stimulation trigger</strong> (closed-loop). It
 lives in a <strong>right-side dock</strong> in the browser UI and coexists with the Probe Map / Live Data views (a toolbar tab
 toggles it). Everything is <strong>GUI-driven</strong> — you pick the channels, set the parameters, and start/stop it live;
@@ -166,7 +168,8 @@ these shots — that is why the STIM LED is dark; see the callout in §5.</p>
 <hr />
 <h2 id="1-open-the-module-and-pick-a-source">1. Open the module and pick a source<a class="headerlink" href="#1-open-the-module-and-pick-a-source" title="Permanent link">#</a></h2>
 <ol>
-<li>In the toolbar's <strong>second row</strong> — beside <code>Probe Map | Live Data</code>, and the <code>▣ OneBox</code> / <code>▤ NI-DAQ</code> device tabs when those sources are connected — click <strong>SWR Detector</strong>. The dock slides in on the right and the main view <strong>shrinks
+<li>In the toolbar's <strong>second row</strong>, in the <strong>module group on the left</strong> under the view controls (where
+   <strong>Bands ▼</strong>, <strong>♪</strong> and <strong>⚡ ASAP</strong> also appear when available), click <strong>SWR Detector</strong>. The dock slides in on the right and the main view <strong>shrinks
    to fit</strong> (no overlap, even columns). Drag the dock's <strong>left grip</strong> to resize it.</li>
 </ol>
 <p><strong>Or put it on its own monitor.</strong> The <strong>⧉</strong> button in the dock's header opens the dock as a
@@ -315,9 +318,9 @@ ripple by about 5 dB rather than removing it. So an AP-band column is a valid pl
 it is just a noisier one, because the spiking band is in there with it. The <strong>detector</strong> always reads
 the LFP band. In the LFP/RAW band the ripple bursts show as periodic
 denser vertical bands across channels — but the <strong>clearest</strong> view of a ripple is the per-channel <strong>envelope</strong>
-in the dock, which spikes above the dashed threshold on every detection. (Tip: a <strong>~2 s Window</strong> and a
-<strong>~600 µV Scale</strong> separate the traces nicely and make each ripple burst stand out as a bright vertical band —
-that's what the screenshots below use.)</p>
+in the dock, which spikes above the dashed threshold on every detection. (Tip: set <strong>Time</strong> to <strong>2 s</strong> and
+type <strong>600</strong> in the column's <strong>µV</strong> box — that separates the traces nicely and makes each ripple burst
+stand out as a bright vertical band, and it is what the screenshots below use.)</p>
 </blockquote>
 <p><strong>Per-channel column</strong> (section ③):
 - the <strong>μ + z·σ = value</strong> threshold,
@@ -369,7 +372,10 @@ from ~34 to ~82 — note the other two columns, untouched, still read μ + 3.00�
 <p>Everything so far detects. This is what makes something happen when it does. <strong>Two switches, both off
 by default, and BOTH are required</strong> — the master gate decides whether this host may transmit at all,
 the arm toggle decides whether the stimulator will act on it.</p>
-<p><img alt="The ripple dock's Detection &amp; stimulation card, with the ⚡ Test Fire button" src="images/ripple_dock_testfire_2026-07-13.png" /></p>
+<p><img alt="The ripple dock's Detection &amp; stimulation card, as captured 2026-07-13" src="images/ripple_dock_testfire_2026-07-13.png" /></p>
+<p><em>An older capture: it shows the stim-server selector and </em><em>⚡ Test Fire</em><em>, but predates the
+<code>enable stimulation</code> gate, the arm pill, the <code>trigger</code> dropdown, <code>amp V</code> and the pulse fields
+described below. A current capture of the card is pending.</em></p>
 <h3 id="enable-stimulation-the-master-gate"><code>enable stimulation</code> — the master gate<a class="headerlink" href="#enable-stimulation-the-master-gate" title="Permanent link">#</a></h3>
 <p>The checkbox at the top of the <em>Detection &amp; stimulation</em> card. <strong>Unchecked by default, and no shipped
 config turns it on.</strong> While it is off, <strong>no datagram can leave this host</strong>: every send path in the
@@ -584,9 +590,9 @@ Ripples</strong> · <strong>NPX 2.0 Multishank + Real NI-DAQ + Ripples</strong>.
 <p><strong>The real-hardware profiles do not.</strong> <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> stream at the default
 1 ms poll, because most sessions are not closed-loop and should not pay a core for latency they do
 not use. On the rig, ASAP is something you switch on for the run that needs it. (The older
-<code>… (ASAP)</code> hardware profiles — <code>NPX 1.0 (OneBox, ASAP)</code> and its three siblings — still exist and are
-still selectable <strong>by name from the control CLI</strong>, kept so a published measurement can be reproduced
-exactly. They are no longer in the GUI menu, and the ⚡ ASAP tab is what replaced them.)</p>
+<code>… (ASAP)</code> hardware profiles — <code>NPX 1.0 (OneBox, ASAP)</code> and its three siblings — were deleted on
+2026-09-02; the ⚡ ASAP tab replaced them in the GUI, and scripts use the control CLI's <code>asap</code> verb or
+<code>rig.set_low_latency()</code>, which can confirm the request is in force.)</p>
 <h3 id="confirming-it-is-on">Confirming it is on<a class="headerlink" href="#confirming-it-is-on" title="Permanent link">#</a></h3>
 <p>Two places, and they agree:</p>
 <ul>

@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -299,8 +301,8 @@ which is <code>6 + 2·384</code> — the header plus every channel.</p>
 thing as recording everything.</p>
 <h3 id="the-profiles-that-record-three-channels-and-why-they-stay-that-way">The profiles that record three channels, and why they stay that way<a class="headerlink" href="#the-profiles-that-record-three-channels-and-why-they-stay-that-way" title="Permanent link">#</a></h3>
 <p>Several <code>gui_hidden</code> per-probe profiles record only <code>[1, 2, 3]</code> or <code>[1, 192, 196]</code>:
-<code>NPX 1.0</code>, <code>NPX 1.0 (OneBox)</code>, <code>NPX 2.0 Multishank</code>, <code>NPX 2.0 Multishank (OneBox)</code>, the ASAP variants,
-and the two latency benches. <strong>This is deliberate and must not be "fixed".</strong> They exist for latency
+<code>NPX 1.0</code>, <code>NPX 1.0 (OneBox)</code>, <code>NPX 2.0 Multishank</code>, <code>NPX 2.0 Multishank (OneBox)</code>,
+and the latency bench. <strong>This is deliberate and must not be "fixed".</strong> They exist for latency
 benches and as #63's ADC-throughput control, whose published 78.1 % / 99.99 % pair is only reproducible
 against the three-channel pair. Widening them would destroy that comparison.</p>
 <p>They are hidden from the dropdown, but <strong>they remain selectable by exact name</strong> — which is how the

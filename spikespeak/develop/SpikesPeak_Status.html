@@ -26,12 +26,14 @@
 <a href="user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="developer_docs/README.html">SpikesPeak — Developer Docs</a>
@@ -156,7 +158,7 @@ every quorum level on both -- NP1.0 0.94-0.98 ms, NP2.0 0.55-0.61 ms. ASAP now w
 (<code>Npx2MSProbe::setLowLatency</code>). The closed loop is validated end to end on both probes.</p>
 <p>SEE ALSO: developer_docs/README.md (the doc map + the START HERE path for a new agent);
 developer_docs/archive/README.md (retired docs + how to catch up);
-user_docs/ (GUI usage); images/architecture_overview.md (architecture.txt / plantuml_export.txt)</p>
+user_docs/ (GUI usage); images/architecture_overview.md (the generated per-profile pipeline SVGs; see developer_docs/ArchitectureDiagrams.md)</p>
 </blockquote>
 <h2 id="session-index-what-happened-when-newest-last">Session index — what happened, when (newest last)<a class="headerlink" href="#session-index-what-happened-when-newest-last" title="Permanent link">#</a></h2>
 <p>This log is append-only and long. Use this index to jump; each row is a dated session with its topic.
@@ -8125,7 +8127,61 @@ Neuropixels source; it is proven by the run above and by the driver script, and 
 runbook says to repeat it whenever that branch is touched.</p>
 <p><strong>The rule, stated once more because this is its second occurrence</strong> (ErrorLog was the first): a
 test that synthesizes an event proves the renderer, not the path. If the question is "does it
-arrive", the test must start from the failure.</p></article>
+arrive", the test must start from the failure.</p>
+<h2 id="90-the-asap-config-copies-are-gone-and-the-menu-offers-a-profile-that-connects-2026-09-02">90. THE ASAP CONFIG COPIES ARE GONE, AND THE MENU OFFERS A PROFILE THAT CONNECTS  (2026-09-02)<a class="headerlink" href="#90-the-asap-config-copies-are-gone-and-the-menu-offers-a-profile-that-connects-2026-09-02" title="Permanent link">#</a></h2>
+<p>§81 deferred deleting the five <code>*Asap.yaml</code> profiles because <code>ripple_tools/fair_ab.py</code> read one by
+filename to produce published latency numbers, and nothing headless could <em>confirm</em> that a runtime
+ASAP request had taken. Both halves are done, so the files are deleted: <code>Npx1OneBoxAsap</code>,
+<code>Npx1PxiNiDaqAsap</code>, <code>Npx2OneBoxAsap</code>, <code>Npx2PxiNiDaqAsap</code>, <code>SimNpx1LatencyAsap</code>, and their five
+committed <code>images/architecture_*Asap.svg</code>. 36 configs → 31; nothing the operator sees changed (all
+five were <code>gui_hidden</code>).</p>
+<p><strong>What replaced the filename:</strong> <code>rig.set_low_latency()</code> + <code>wait_low_latency()</code> (a request, then the
+CONFIRMED per-module state from <code>lowLatencyState</code>/<code>systemState</code>); <code>run_latency_hw.py --asap</code>, which
+refuses to record unless the source reports <code>active</code>; the control CLI's <code>asap on|off [module]</code>; and
+<code>fair_ab.py</code> now reads the base <code>Npx2OneBox.yaml</code>, asks for ASAP through the page, and asserts it is
+in force before a single pulse is measured. That last one matters: the copy it used to read had
+drifted — the base gained <code>proc.audio</code>, the copy never did — while its own header swore they
+differed by one key. A duplicate profile is a drift waiting to happen; a runtime request can be
+checked.</p>
+<p><strong>Made permanent:</strong> <code>python/tests/test_config_no_asap_twins.py</code> — no config may end in <code>Asap.yaml</code>,
+and no two configs may be the same profile once <code>name:</code>, comments and <code>low_latency:</code> are ignored.
+It was red against the tree before the deletion (both checks, naming all five files and the four
+twin pairs) and green after, which is the proof it can fail.</p>
+<p><strong>Also in this change, from the same audit:</strong> the ambiguity menu offered <code>PXIe with NI-DAQ</code> — the
+<em>auto</em> profile — which with both basestations attached refuses for the very reason the menu was
+shown, and asks again. It now offers <code>PXIe + NI-DAQ</code>, the explicit one, and <code>tests/gui/sim_picker.py</code>
+asserts the rule: no auto-resolving profile in a menu that exists because auto-resolution refused.
+<code>test_config_channels.py</code>'s EXEMPT list no longer names deleted profiles (the two NI-DAQ profiles that list all
+384 channels explicitly stay exempt: the check cannot tell an explicit full list from a narrowing). Config headers
+that pointed at the old brief path, at the deleted PXIe twin, at the ESP32, or at a 3-channel default
+the file no longer has, are corrected. <strong>Deliberately not done:</strong> the inert <code>data:</code> key still sits
+beside <code>name:</code> on source outputs in most configs; deleting 78 lines across 30 files blind, with the
+GUI suite as the only check, is the wrong trade for a key the parser ignores — the two docs that
+claimed it was already gone now say what is true instead.</p>
+<p><strong>The docs pass that found it (§89's audit, applied today):</strong> 154 verified findings across 45 files;
+91 applied and independently re-verified, 10 more fixed by the verifiers, 9 left open — six of them
+screenshots that need recapturing (done on a simulated source the same evening, see the dated
+filenames), one a full rewrite of <code>images/architecture_overview.md</code> (deferred: the generated diagrams
+on it are current, the prose around them is a snapshot and now says so), one the <code>proc.rippledetector</code>
+auto-provision edge in <code>scripts/make_architecture.py</code>, and one a table in
+<code>developer_docs/RippleDetection.md</code> that enumerated the deleted profiles (fixed with the deletion).</p>
+<p><strong>Second pass, same evening.</strong> A read-only re-audit with five fresh lenses (the newcomer path, today's
+hand-written prose against the code, cross-document contradictions on what changed today, every config
+header against its own file, the docs site's navigation) and two skeptics per finding was cut short by
+a usage limit: 25 findings confirmed, 28 never verified, 3 refuted. The confirmed ones are applied: three
+documents still described the ambiguity menu as offering the auto profile (<code>SourceSelection.md</code> in two
+places, <code>developer_docs/README.md</code>, <code>user_docs/README.md</code>); two ASAP profile names survived the
+deletion in <code>RecordingTests/CLOSED_LOOP_LATENCY.md</code>, <code>ConfigReference.md</code>, <code>LatencyProfiling.md</code> and
+<code>OneBox-NPX2.md</code>; <code>NextTask_SourceArchitecture.md</code> counted 36 configs in three places and said the ASAP
+axis had not collapsed; <code>Testing.md</code>'s Python table omitted <code>test_config_no_asap_twins.py</code> and its total
+was short by exactly those two; the skill file named profiles by filename where selection is by <code>name:</code>;
+four config headers (<code>SimNpx1Ripples</code>, <code>SimNpx2Ripples</code>, <code>Npx2OneBoxDigitalIn</code>, <code>SimNpx1LatencyBaseline</code>)
+claimed a detector that fires as shipped, a twin that differs by one key when it differs by two, and a
+script with no default profile; the docs site's home page still said the architecture was PlantUML; and
+the twelve <code>RecordingTests/latency/asap_comparison_onebox_*.png</code> figures that <code>CLOSED_LOOP_LATENCY.md</code>
+embeds were never committed (3.5 MB, no <code>.bin</code>). Of the unverified 28, the ones checked by hand and
+fixed: the sentence above about EXEMPT. Left alone on purpose: the suggestion to add a Status exception
+to CLAUDE.md's no-counts-outside-Testing.md rule — the rule is the operator's.</p></article>
     <footer class="pagefoot">Generated from <code>SpikesPeak_Status.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
   <aside class="toc-col"><div class="toctitle">On this page</div><div class="toc">
@@ -8688,6 +8744,7 @@ arrive", the test must start from the failure.</p></article>
 </ul>
 </li>
 <li><a href="#89-two-probes-on-one-basestation-the-question-that-never-reached-the-operator-2026-09-02">89. TWO PROBES ON ONE BASESTATION: THE QUESTION THAT NEVER REACHED THE OPERATOR (2026-09-02)</a></li>
+<li><a href="#90-the-asap-config-copies-are-gone-and-the-menu-offers-a-profile-that-connects-2026-09-02">90. THE ASAP CONFIG COPIES ARE GONE, AND THE MENU OFFERS A PROFILE THAT CONNECTS (2026-09-02)</a></li>
 </ul>
 </div>
 </aside>

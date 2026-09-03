@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -147,8 +149,9 @@ closed loop (synthetic ripple → detection → Pi/AM 2300 → NI-DAQ ai4 on PXI
 OneBox), sub-millisecond with ASAP delivery, on both transports. Results:
 <a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a>. Saline bench
 validation is <strong>done</strong>, and the in-vivo milestone this page used to point at came round on <strong>2026-08-28</strong>
-(<code>SpikesPeak_Status.md</code> §65 — which records the morning's pre-session findings, not the session's own
-results). For where things stand, read the Status log, not this paragraph.</p>
+(<code>SpikesPeak_Status.md</code> §85 — it ran, the recording was noisy, and every closed-loop figure quoted here is
+still a saline-bench number; §65 is only the morning-of record). For where things stand, read the Status
+log, not this paragraph.</p>
 <h2 id="the-three-ripple-docs-read-the-right-one">The three ripple docs (read the right one)<a class="headerlink" href="#the-three-ripple-docs-read-the-right-one" title="Permanent link">#</a></h2>
 <p>To keep content in one place, the ripple documentation is split by audience — <strong>this doc does not repeat
 the other two</strong>:</p>
@@ -174,11 +177,15 @@ the other two</strong>:</p>
 </tr>
 </tbody>
 </table>
-<p>The full closed loop running on an NP1 sim — LFP streaming into the detector (left) with two trained
-channels (e80, e160) and a confirmed fire in the dock (right):</p>
-<p><img alt="Ripple detection running: live LFP streaming plus the detection/stimulation dock with a confirmed fire" src="images/ripple_detection_module_2026-08-21.png" /></p>
-<p><em>(Captured live over CDP from the <code>Simulated NPX 1.0 + Ripple Detection</code> source; the GUI is identical for a
-real probe. Step-by-step operation is in the user guide above.)</em></p>
+<p>The full closed loop running on a real NP2.0 probe on the OneBox — the RAW band streaming into the
+detector (left), the OneBox ADC catching the stim pulse on IO2 (middle), and three trained channels
+(e100, e140, e180) with a confirmed fire in the dock (right):</p>
+<p><img alt="Ripple detection running: live RAW-band streaming and the OneBox ADC, plus the detection/stimulation dock with a confirmed fire" src="images/ripple_detection_module_2026-08-21.png" /></p>
+<p><em>(Captured live over CDP on 2026-08-21 from the <code>NPX 2.0 Multishank (OneBox)</code> profile — a real source,
+which is why the <code>▣ OneBox</code> device tab sits beside <code>Probe Map | Live Data</code>; a simulated source shows the
+same panes and the same dock with no device tab, and an NI-DAQ profile adds <code>▤ NI-DAQ</code>. The capture
+predates the 2026-08-27 SciChart removal, so the watermark in the live panes is historical.
+Step-by-step operation is in the user guide above.)</em></p>
 <h2 id="the-data-path-the-detector-runs-differently-per-probe">The data path — the detector runs DIFFERENTLY per probe<a class="headerlink" href="#the-data-path-the-detector-runs-differently-per-probe" title="Permanent link">#</a></h2>
 <p>The detector processes the LFP band at <strong>2.5 kHz</strong> (its ripple-band FIR + envelope filters are designed for
 2.5 kHz). Its input band, type, and decimation are <strong>config-driven</strong>, so it runs differently per probe:</p>
@@ -222,7 +229,7 @@ time</em> sets. The gate depends on which profile you selected:</p>
 <td><strong>~11 s</strong></td>
 </tr>
 <tr>
-<td>the four NP1 hardware profiles + <code>SimNpx1NiDaqRipples</code></td>
+<td>the two NP1 hardware profiles (<code>Npx1OneBox</code>, <code>Npx1PxiNiDaq</code>; their <code>*Asap</code> copies were deleted 2026-09-02) + <code>SimNpx1NiDaqRipples</code></td>
 <td><strong>1.0</strong></td>
 <td><strong>~11 s</strong></td>
 </tr>
@@ -517,7 +524,7 @@ DAC, above). An ESP32-S3-ETH firmware twin of the Pi exists, but the Pi is the p
 per cell), sub-millisecond with ASAP delivery, over <strong>both</strong> transports. Results, figures and the per-probe
 detail: <strong><a href="../RecordingTests/CLOSED_LOOP_LATENCY.html"><code>../RecordingTests/CLOSED_LOOP_LATENCY.md</code></a></strong>
 (tabbed NP1.0 / NP2.0). Those numbers are all from saline; the in-vivo work started 2026-08-28 and lives in
-the Status log (§65 onward), not here.</p>
+the Status log (§85 for the session, §65 for the morning before it), not here.</p>
 <h2 id="validate-from-a-saved-recording-post-hoc-no-live-capture">Validate from a SAVED recording (post-hoc, no live capture)<a class="headerlink" href="#validate-from-a-saved-recording-post-hoc-no-live-capture" title="Permanent link">#</a></h2>
 <p><code>ripple_tools/analyze_recording.py &lt;recdir&gt;</code> reconstructs the <strong>EXACT</strong> online detector from a recorded
 band and, if the NI-DAQ captured the Pi-GPIO stim pulses, quantifies the closed loop (signal-chain,
@@ -580,8 +587,9 @@ against its own output. The per-sample <code>.bin</code> dumps that make this po
 switches that ship <strong>false</strong>. See <a href="FilterDebugging.html"><code>FilterDebugging.md</code></a>.</p>
 <h2 id="known-limitations-todo">Known limitations / TODO<a class="headerlink" href="#known-limitations-todo" title="Permanent link">#</a></h2>
 <ul>
-<li>The detection notification/cowsay currently runs in the detection loop; it should move to a separate thread
-  that drives the ripple GUI, off the hot path (planned with the GUI, <code>SpikesPeak_Status.md §19.1</code>).</li>
+<li>The detection cowsay still prints to stdout inside the detection loop (<code>RippleDetector::doRippleDetectionLoop</code>,
+  <code>RippleDetector.cpp</code> ~:1418 as of 2026-09-02); moving it off the hot path is open. The GUI it was once
+  planned alongside shipped 2026-07-08 (<code>SpikesPeak_Status.md</code> §20.17).</li>
 <li>Ripple-detection <strong>GUI</strong> (DONE — see RippleGui.md) and <strong>2-D HDF5 per-channel playback</strong> (DONE 2026-07-08 —
   <code>SynthRippleSource</code> + <code>gen_synthetic_ripples.py</code>, verified: the 2-D file fires the detector; format above).
   Remaining follow-up: a <code>.bin</code>+<code>.json</code> recording → playback <code>.h5</code> converter (replay a REAL recording). File playback via <code>QFileDialog</code> is now complete.</li>

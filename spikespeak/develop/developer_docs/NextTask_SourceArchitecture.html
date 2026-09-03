@@ -26,12 +26,14 @@
 <a href="../user_docs/GUI-Guide.html">SpikesPeak — GUI Guide (with screenshots)</a>
 <a href="../user_docs/README.html">SpikesPeak — User Guide</a>
 <a href="../user_docs/SimulatedData.html">SpikesPeak — Simulated Data (complete operating guide)</a>
-<a href="../user_docs/RippleDetection.html">SpikesPeak — Ripple Detection Module (User Guide)</a>
+<a href="../user_docs/RippleDetection.html">SpikesPeak — SWR Detector (Ripple Detection) Module (User Guide)</a>
 <a href="../user_docs/Neuropixels-1.0.html">Using a Neuropixels 1.0 Probe</a>
 <a href="../user_docs/CommandLineControl.html">SpikesPeak — Command-Line & Console Control (User Guide)</a>
 <a href="../user_docs/Exporting-Recordings.html">Exporting recordings to SpikeGLX or Open Ephys</a>
 <a href="../user_docs/OneBox-NPX2.html">Neuropixels 2.0 Multishank on a OneBox</a>
 <a href="../user_docs/SpikeAudio.html">SpikesPeak — Spike Audio Monitor (User Guide)</a>
+<a href="../user_docs/Tutorial-OneBox-NPX2.html">Tutorial — a Neuropixels 2.0 probe on the OneBox, one screen at a time</a>
+<a href="../user_docs/Tutorial-PXIe-NPX1.html">Tutorial — a Neuropixels 1.0 probe on the PXIe basestation, step by step</a>
 <h3>Developer Docs</h3>
 <details class="navgroup"><summary>Start here<span class="navcount">7</span></summary>
 <a href="README.html">SpikesPeak — Developer Docs</a>
@@ -142,10 +144,11 @@
   <main class="content"><article class="markdown-body"><h1 id="spikespeak-source-architecture-taming-the-config-explosion-arbitraryneuronexusreplay-sources-design-options">SpikesPeak — Source architecture: taming the config explosion + arbitrary/NeuroNexus/replay sources (design options)<a class="headerlink" href="#spikespeak-source-architecture-taming-the-config-explosion-arbitraryneuronexusreplay-sources-design-options" title="Permanent link">#</a></h1>
 <p>A <strong>planning brief (no implementation)</strong> for reorganizing "source options." When this was written there were
 23 near-duplicate config profiles behind two hand-synced pickers; Phase 1 shipped on 2026-08-26 (see the
-STATUS banner below), and today <code>config/</code> holds 36 files behind <strong>three</strong> operator-visible source entries
-plus the simulated picker. What remains awkward is adding a new <em>kind</em> of source (an arbitrary simulated
-Neuropixels geometry, a NeuroNexus probe on the Intan interface, or <strong>replaying a recorded file by hitting
-Play</strong>) is awkward. This doc maps the current state and lays out <strong>multiple options</strong> with a phased
+STATUS banner below), and as of 2026-09-02 <code>config/</code> holds 31 files behind <strong>two</strong> operator-visible hardware entries
+(<code>Neuropixels</code>, <code>PXIe with NI-DAQ</code> — basestation and probe read from the rig), an Intan entry that refuses
+to connect, and the simulated picker. What remains awkward is adding a new <em>kind</em> of source (an arbitrary
+simulated Neuropixels geometry, a NeuroNexus probe on the Intan interface, or <strong>replaying a recorded file by
+hitting Play</strong>). This doc maps the current state and lays out <strong>multiple options</strong> with a phased
 recommendation for the maintainer + collaborator to choose from.</p>
 <blockquote>
 <p><strong>Wider context:</strong> builds on <a href="SimDataLinux.html"><code>SimDataLinux.md</code></a> (the "one sim class per module" ruling +
@@ -159,9 +162,10 @@ once a direction is chosen; <code>git mv</code> to <code>archive/</code> when do
 <h2 id="do-not-implement-any-of-this-yet-this-is-a-decision-doc"><strong>Do NOT implement any of this yet.</strong> This is a decision doc.<a class="headerlink" href="#do-not-implement-any-of-this-yet-this-is-a-decision-doc" title="Permanent link">#</a></h2>
 <p><strong>STATUS 2026-08-26 — PHASE 1 IS DONE.</strong> Goal 1 ("fewer / better-organized source options") is
 delivered: twelve hardware profiles collapsed to three, one picker, no label collisions, no
-accidentally-invisible configs. The durable design is written up in
-<a href="SourceSelection.html"><code>SourceSelection.md</code></a>; the rest of this brief remains a decision doc for
-<strong>Phases 2 and 3</strong>, which are untouched.</p>
+accidentally-invisible configs. (Overtaken the next day, 2026-08-27: those three went <code>gui_hidden</code>
+behind two self-naming entries, <code>Neuropixels</code> and <code>PXIe with NI-DAQ</code> — see §2.1.) The durable design
+is written up in <a href="SourceSelection.html"><code>SourceSelection.md</code></a>; the rest of this brief remains a decision
+doc for <strong>Phases 2 and 3</strong>, which are untouched.</p>
 <p><strong>It was reached by a different route than §4.1 proposed, and the difference is worth recording.</strong>
 Option A assumed the cross-product had to be collapsed by a <em>config layering</em> (<code>include:</code>) loader
 in <code>Configuration.cpp</code>. None was needed. The axis doing most of the multiplying — the probe — is
@@ -171,15 +175,17 @@ probe rather than from a profile. Removing that axis takes 2 (probe) x 3 (basest
 to 3 files with no new loader and no new config semantics. §4.1's "capability-tagged list" survives
 as exactly two optional keys, <code>sim_basestation:</code> and <code>sim_probe:</code>, and only for the simulated
 picker, where there is no hardware to ask.</p>
-<p>The remaining axes named in §2.2 — ASAP delivery, ADC on/off, scenario — did <strong>not</strong> collapse. They
-are still one profile each, now <code>gui_hidden</code> so they are out of the operator's way while staying
-CLI-selectable. Making them runtime toggles is real work and is not what "fewer options" required.</p>
+<p>Of the remaining axes named in §2.2, ADC on/off and scenario did <strong>not</strong> collapse: they are still
+one profile each, now <code>gui_hidden</code> so they are out of the operator's way while staying
+CLI-selectable. ASAP delivery did, on 2026-09-02: it is a runtime request (#80) and its five profile
+copies are gone. Making the other two runtime toggles is real work and is not what "fewer options"
+required.</p>
 </blockquote>
 <hr />
 <h2 id="1-context-the-problem-and-the-goals">1. Context — the problem and the goals<a class="headerlink" href="#1-context-the-problem-and-the-goals" title="Permanent link">#</a></h2>
 <p><strong>Problem:</strong> the source layer grew by hand-materializing every combination as its own YAML, and the picker
 that surfaces them was bolted on twice (hardcoded HTML for real sources, a dynamic <code>sim_variant</code> list for
-sims). The result is 23 near-identical configs, label collisions, two sim configs invisible to the GUI, and
+sims). The result was 23 near-identical configs, label collisions, two sim configs invisible to the GUI, and
 human-facing name strings (<code>"(play file)"</code>, <code>"onebox"</code>, <code>"NPX"</code>) driving real control flow.</p>
 <p><strong>Goals the new design must serve (maintainer, 2026-07-24):</strong>
 1. <strong>Fewer / better-organized source options</strong> — stop the combinatorial config sprawl and the dual picker.
@@ -189,8 +195,8 @@ human-facing name strings (<code>"(play file)"</code>, <code>"onebox"</code>, <c
 4. <strong>Restream a recorded file by hitting Play</strong> — a first-class <em>file-playback source</em> that reproduces the
    exact <code>data.*</code> streams a live source would, so display / ripple-detection / recording are unchanged.</p>
 <hr />
-<h2 id="2-current-state-what-any-plan-must-build-on">2. Current state (what any plan must build on)<a class="headerlink" href="#2-current-state-what-any-plan-must-build-on" title="Permanent link">#</a></h2>
-<h3 id="21-registered-source-classes-6-total-srccoreutilscppregisterbuiltintypes">2.1 Registered source classes — 6 total (<code>src/core/Utils.cpp::registerBuiltInTypes</code>)<a class="headerlink" href="#21-registered-source-classes-6-total-srccoreutilscppregisterbuiltintypes" title="Permanent link">#</a></h3>
+<h2 id="2-current-state-as-of-2026-09-02-what-any-plan-must-build-on">2. Current state as of 2026-09-02 (what any plan must build on)<a class="headerlink" href="#2-current-state-as-of-2026-09-02-what-any-plan-must-build-on" title="Permanent link">#</a></h2>
+<h3 id="21-registered-source-classes-9-total-srccoreutilscppregisterbuiltintypes">2.1 Registered source classes — 9 total (<code>src/core/Utils.cpp::registerBuiltInTypes</code>)<a class="headerlink" href="#21-registered-source-classes-9-total-srccoreutilscppregisterbuiltintypes" title="Permanent link">#</a></h3>
 <table>
 <thead>
 <tr>
@@ -220,10 +226,28 @@ human-facing name strings (<code>"(play file)"</code>, <code>"onebox"</code>, <c
 <td><strong>HDF5 <code>.h5</code> FILE PLAYBACK</strong> (the only file-driven source today)</td>
 </tr>
 <tr>
+<td><code>source.npx.simadc</code></td>
+<td><code>SimOneBoxAdcSource</code> — <code>modules/neuropixels/SimOneBoxAdcSource.*</code></td>
+<td>always</td>
+<td>Simulated OneBox 12-ch ADC → <code>data.npx.adc</code>; composes with a sim probe source to make a hardware-free OneBox</td>
+</tr>
+<tr>
+<td><code>source.intan.microzed</code></td>
+<td><code>IntanSource</code> — <code>modules/intan/IntanSource.*</code></td>
+<td>always</td>
+<td>Intan over the MicroZed Ethernet interface (#74). Registered and visible, and <strong>refuses to connect</strong> (the network layer is not built) — the deliberate failure path <a href="InvariantTests.html"><code>InvariantTests.md</code></a> §6 relies on</td>
+</tr>
+<tr>
 <td><code>source.npx.pxi</code></td>
 <td><code>NeuropixelsSource</code> — <code>modules/neuropixels/NpInterface.*</code></td>
 <td><code>#ifdef NPX_HW_ENABLED</code></td>
-<td>Real NPX 1.0/2.0 (vendor NeuropixAPI)</td>
+<td>Real NPX 1.0/2.0 on a PXIe basestation (vendor NeuropixAPI)</td>
+</tr>
+<tr>
+<td><code>source.npx.onebox</code></td>
+<td><code>OneBoxSource</code> — <code>modules/neuropixels/OneBoxSource.*</code></td>
+<td><code>#ifdef NPX_HW_ENABLED</code></td>
+<td>Real NPX 1.0/2.0 on a OneBox (USB): the same probe/IMRO machinery as PXI, plus the box's own <code>data.npx.adc</code> (+<code>.adc.di</code>) when the profile asks for it</td>
 </tr>
 <tr>
 <td><code>source.nidaq.sim</code></td>
@@ -239,26 +263,43 @@ human-facing name strings (<code>"(play file)"</code>, <code>"onebox"</code>, <c
 </tr>
 </tbody>
 </table>
-<p><code>source.npx.onebox</code> is a <strong>phantom</strong> — referenced in <code>config/OneBoxTest.yaml</code> but never registered; selecting
-it hits the "not implemented" branch (<code>WebSocketServer.cpp:113-124</code>).</p>
-<h3 id="22-the-config-explosion-23-yamls-a-5-axis-cross-product">2.2 The config explosion — 23 YAMLs = a 5-axis cross-product<a class="headerlink" href="#22-the-config-explosion-23-yamls-a-5-axis-cross-product" title="Permanent link">#</a></h3>
+<p><code>source.npx.auto</code> is <strong>not a class</strong> but an alias: <code>SourceManager::setupSources</code> (<code>SourceManager.cpp</code>)
+resolves it to <code>.pxi</code> or <code>.onebox</code> from a basestation scan (<code>resolveAutoSource</code>, <code>BasestationScan.hpp</code>)
+before the registry is consulted, and refuses when the scan is ambiguous. That is what the two visible
+hardware profiles (<code>Neuropixels</code>, <code>PXIe with NI-DAQ</code>) name — see <a href="SourceSelection.html"><code>SourceSelection.md</code></a>.</p>
+<h3 id="22-the-config-explosion-31-yamls-as-of-2026-09-02-still-a-cross-product">2.2 The config explosion — 31 YAMLs as of 2026-09-02, still a cross-product<a class="headerlink" href="#22-the-config-explosion-31-yamls-as-of-2026-09-02-still-a-cross-product" title="Permanent link">#</a></h3>
 <p>Probe family {NP1 · NP2} × source realness {real · procedural-sim · file} × NI-DAQ {none · real · sim} ×
-scenario {plain sine · ripples · ripple-detector-GUI · module-only} × delivery {baseline · ASAP}. Only ~23 of
-the dozens of possible combinations are checked in, and they differ by a few lines each. <strong>Smells:</strong>
+scenario {plain sine · ripples · ripple-detector-GUI · module-only} × delivery {baseline · ASAP}. When this
+was written 23 of the dozens of possible combinations were checked in; on 2026-09-02 it is 31 (36 until the five
+ASAP copies were deleted that day) — the OneBox rows,
+the ADC / digital-in variants, the latency benches and the Phase 1 entries arrived since — and they still
+differ by a few lines each. What Phase 1 changed is not the count but what the operator sees: the probe
+axis is discovered rather than declared, the basestation axis is resolved by <code>source.npx.auto</code> behind the
+<code>Neuropixels</code> / <code>PXIe with NI-DAQ</code> entries, the sims sit behind one <code>Simulated Data…</code> picker, and the
+per-combination hardware profiles are <code>gui_hidden</code> (CLI-only). The <strong>smells as of 2026-07-24</strong>, and where
+each stands:
 - Three configs share one <code>sim_variant</code> label (<code>"Neuropixels 1.0 — Ripple Detection (GUI)"</code>) → the picker
-  shows visually-identical entries.
-- Two sim configs (<code>SimNpx1Ripples</code>, <code>SimNpx2Ripples</code>) have <strong>no</strong> <code>sim_variant</code> → invisible to the GUI,
-  CLI-only.
-- The real-hardware dropdown is <strong>hardcoded in HTML</strong> (<code>webinterface/index.html:42-51</code>) and omits the
-  <code>*Asap</code>, <code>OneBox</code>, and <code>NiDaqOnly</code> profiles.</p>
-<h3 id="23-two-selection-mechanisms-kept-in-sync-by-hand">2.3 Two selection mechanisms, kept in sync by hand<a class="headerlink" href="#23-two-selection-mechanisms-kept-in-sync-by-hand" title="Permanent link">#</a></h3>
+  showed visually-identical entries. <strong>Still true of the files</strong> (<code>SimNpx1RippleModule</code> + the two
+  <code>SimNpx1Latency*</code> benches), but the benches are <code>gui_hidden</code>, so only one reaches the picker.
+- Two sim configs (<code>SimNpx1Ripples</code>, <code>SimNpx2Ripples</code>) had <strong>no</strong> <code>sim_variant</code> → invisible to the GUI by
+  accident. <strong>Now hidden on purpose</strong> (<code>gui_hidden: true</code>, with a comment saying why).
+- The real-hardware dropdown was <strong>hardcoded in HTML</strong> and omitted the <code>OneBox</code> and <code>NiDaqOnly</code> profiles (and the <code>*Asap</code> copies, since deleted on 2026-09-02),
+  profiles. <strong>Gone</strong> — see §2.3; the comment in <code>index.html</code> now reads <em>"Do not add profiles here"</em>.</p>
+<h3 id="23-one-selection-mechanism-but-control-flow-still-keys-off-name-substrings">2.3 One selection mechanism — but control flow still keys off name substrings<a class="headerlink" href="#23-one-selection-mechanism-but-control-flow-still-keys-off-name-substrings" title="Permanent link">#</a></h3>
 <ul>
-<li><strong>Real sources:</strong> static <code>&lt;option&gt;</code>s in <code>index.html</code> whose value must equal the config <code>name:</code> exactly.</li>
-<li><strong>Sim sources:</strong> dynamic — <code>listConfigs</code> (<code>WebSocketServer.cpp:468-488</code>) returns names + <code>sim_variant</code>
-  labels; <code>showSimPicker()</code> renders them; <code>"(play file)"</code> in the name switches the row to a file-path +
-  Browse + ▶Play control (<code>main.js:677-710</code>).</li>
-<li><strong>Control flow keys off human-facing name substrings</strong> — <code>"(play file)"</code>, <code>"onebox"</code>, <code>"NPX"</code>
-  (<code>WebSocketServer.cpp:421-460</code>, <code>main.js</code>, <code>NetworkClient.js:132</code>). Fragile.</li>
+<li><strong>Real and sim sources both come from the backend.</strong> <code>listConfigs</code> (<code>WebSocketServer.cpp</code>, the
+  <code>configList</code> reply) returns every config name, the <code>simVariants</code> subset (name + <code>sim_variant</code> label + the
+  optional <code>basestation</code> / <code>probe</code> cascade axes) and the <code>guiHidden</code> subset; <code>main.js rebuildSourceOptions()</code>
+  builds the Source dropdown from it and <code>showSimPicker()</code> opens the cascaded sim picker. <code>index.html
+  #selectSource</code> is a <strong>hidden</strong> state element holding a two-entry pre-connect fallback, not a list to edit —
+  a new <code>config/*.yaml</code> appears with no frontend change (<a href="README.html"><code>README.md</code></a>, "Not a hotspot, despite
+  appearances"). This is the one dynamic list §4.1 asked for, minus the capability tags.</li>
+<li><strong><code>"(play file)"</code> in the name</strong> still switches the picker row to a file-path + Browse + ▶Play control
+  (<code>main.js renderSimScenario</code>, the picker's last step) and makes <code>selectSource</code> route an <code>.h5</code> path to <code>SynthRippleSource</code>
+  (<code>WebSocketServer.cpp</code>).</li>
+<li><strong>Control flow keys off human-facing name substrings</strong> — <code>"(play file)"</code> (above), and <code>"onebox"</code> /
+  <code>"pxi"</code> to word the not-in-this-build message (<code>WebSocketServer.cpp</code>). <code>NetworkClient.js</code> no longer gates
+  the QWebChannel bind on <code>"NPX"</code>. Fewer than in July, still fragile, and still the case for §4.3.</li>
 </ul>
 <h3 id="24-the-contract-the-three-seams-already-partly-built">2.4 The contract + the three seams (already partly built)<a class="headerlink" href="#24-the-contract-the-three-seams-already-partly-built" title="Permanent link">#</a></h3>
 <ul>
@@ -267,12 +308,16 @@ the dozens of possible combinations are checked in, and they differ by a few lin
   publish an <code>IChannelMap</code> to <code>ChannelMapService</code>. Multiple sources compose freely — <code>sources:</code> is a YAML
   sequence, each entry an independent producer (that's how NPX + NI-DAQ coexist in one profile).</li>
 <li><strong>(a) Arbitrary NPX sim</strong> — <code>SimulatedDataSource</code> and <code>SimulatedData2Source</code> are <strong>near-duplicates</strong>;
-  <code>SimSignalProfile</code>/<code>Sim2SignalProfile</code> already externalise the <em>signal</em> knobs, but <strong>geometry (shank count,
+  <code>SimSignalProfile</code>/<code>Sim2SignalProfile</code> already externalize the <em>signal</em> knobs, but <strong>geometry (shank count,
   bank model, band layout) is hardcoded per class</strong>. <code>IChannelMap</code>/<code>NpxChannelMap</code> already encodes both NP1
   (<code>electrode = ch + 384·bank</code>) and NP2 (<code>electrode = shank·1280 + electrodeId</code>) geometry — the seam exists.</li>
-<li><strong>(b) NeuroNexus/Intan</strong> — <strong>zero code today</strong> (<code>grep neuronexus|intan|rhd|rhx</code> → only forward-looking
-  prose in <code>SimDataLinux.md:110</code>, Status §715/§1294, <code>IChannelMap.hpp:7</code>). <code>NIDAQSource</code> is the template for
-  wrapping a vendor SDK behind a worker.</li>
+<li><strong>(b) NeuroNexus/Intan</strong> — <strong>partly built</strong> (#74): <code>src/modules/intan/</code> holds the MicroZed wire protocol
+  (<code>IntanProtocol.hpp</code>), the packet decoder (<code>IntanPacket.*</code>, tested against synthesized packets) and an
+  <code>IntanSource</code> that is registered, visible and <strong>refuses to connect</strong> because the socket layer and buffers
+  do not exist yet. The NeuroNexus geometry (an <code>IChannelMap</code>) is still zero code, and the question that
+  blocks the rest — a 256-channel buffer through the 384-stride <code>BandFilterProcessor</code> would scramble, not
+  error — is recorded in <code>IntanSource.hpp</code> and <a href="IntanOpenQuestions.html"><code>IntanOpenQuestions.md</code></a>.
+  <code>NIDAQSource</code> remains the template for wrapping a vendor SDK behind a worker.</li>
 <li><strong>(c) File replay</strong> — <strong>already exists in embryo:</strong> <code>SynthRippleSource</code> plays an HDF5 <code>.h5</code> into the same
   <code>data.npx.*</code> buffers a live probe writes (dataset <code>data</code> int16, 1-D broadcast or 2-D per-channel, attr
   <code>sampling_rate</code>), paced to wall-clock. <strong>Gaps:</strong> it reads <code>.h5</code> but the recorder writes <strong><code>.bin</code> +
@@ -282,7 +327,7 @@ the dozens of possible combinations are checked in, and they differ by a few lin
   binding the correct registered buffer generically is feasible.</li>
 </ul>
 <h3 id="25-the-binding-constraint-from-simdatalinuxmd177-203">2.5 The binding constraint (from <code>SimDataLinux.md:177-203</code>)<a class="headerlink" href="#25-the-binding-constraint-from-simdatalinuxmd177-203" title="Permanent link">#</a></h3>
-<p>The maintainer <strong>rejected</strong> a single polymorphic "hardware-agnostic" sim source in favour of <strong>one sim class
+<p>The maintainer <strong>rejected</strong> a single polymorphic "hardware-agnostic" sim source in favor of <strong>one sim class
 per source module</strong>, with per-module flexibility for the <em>scenario</em>, not the <em>hardware family</em>. So: unifying
 the two <strong>NPX</strong> sims (same family) is consistent; a mega-source spanning NPX + NeuroNexus + NI-DAQ is not.</p>
 <hr />
@@ -341,7 +386,7 @@ mechanism, the label collisions, and the invisible configs.
 <li><strong>Add</strong> <code>FilePlaybackSource</code> that reads the <strong>recorder's</strong> <code>.bin</code>+<code>.bin.json</code> set, rebuilds the exact
   <code>CircularBuffer&lt;dtype,aux&gt;</code> for each recorded band from the sidecar (<code>data_name</code>, <code>record_format</code>,
   <code>sample_rate_hz</code>), <code>addProducer</code>s, and streams at rate — so <strong>any recording replays by hitting Play</strong>, NPX
-  <em>or</em> NI-DAQ, display/detector/record unchanged. Generalises <code>SynthRippleSource</code> (fold it in or keep <code>.h5</code>
+  <em>or</em> NI-DAQ, display/detector/record unchanged. Generalizes <code>SynthRippleSource</code> (fold it in or keep <code>.h5</code>
   as one reader behind the same source). Aligns with Status §19.1.</li>
 <li><strong>Delivers:</strong> goals 2 &amp; 4 (and shrinks the config count as a side effect). <strong>Pros:</strong> directly on-target;
   reuses the proven producer/worker + <code>IChannelMap</code> seams. <strong>Cons:</strong> sim-source rewrite needs sim rebuild +
@@ -390,7 +435,7 @@ invent a format); keep the SimDataLinux ruling (one sim class per hardware famil
 <li><strong>Descriptor model now or later</strong> — is the string-matching pain (§2.3) acute enough to justify Phase 3
   before NeuroNexus, or defer until it lands?</li>
 <li><strong>Picker UX</strong> — group by probe family? by realness (live/sim/replay)? Expose ASAP as a per-profile toggle
-  rather than separate <code>*Asap</code> configs?</li>
+  rather than separate configs? <em>(Done: #80 made it a runtime request; the <code>*Asap</code> copies were deleted 2026-09-02.)</em></li>
 </ul></article>
     <footer class="pagefoot">Generated from <code>developer_docs/NextTask_SourceArchitecture.md</code> by <code>scripts/build_docs.py</code> &mdash; edit the Markdown and re-run.</footer>
   </main>
@@ -398,10 +443,10 @@ invent a format); keep the SimDataLinux ruling (one sim class per hardware famil
 <ul>
 <li><a href="#do-not-implement-any-of-this-yet-this-is-a-decision-doc">Do NOT implement any of this yet. This is a decision doc.</a></li>
 <li><a href="#1-context-the-problem-and-the-goals">1. Context — the problem and the goals</a></li>
-<li><a href="#2-current-state-what-any-plan-must-build-on">2. Current state (what any plan must build on)</a><ul>
-<li><a href="#21-registered-source-classes-6-total-srccoreutilscppregisterbuiltintypes">2.1 Registered source classes — 6 total (src/core/Utils.cpp::registerBuiltInTypes)</a></li>
-<li><a href="#22-the-config-explosion-23-yamls-a-5-axis-cross-product">2.2 The config explosion — 23 YAMLs = a 5-axis cross-product</a></li>
-<li><a href="#23-two-selection-mechanisms-kept-in-sync-by-hand">2.3 Two selection mechanisms, kept in sync by hand</a></li>
+<li><a href="#2-current-state-as-of-2026-09-02-what-any-plan-must-build-on">2. Current state as of 2026-09-02 (what any plan must build on)</a><ul>
+<li><a href="#21-registered-source-classes-9-total-srccoreutilscppregisterbuiltintypes">2.1 Registered source classes — 9 total (src/core/Utils.cpp::registerBuiltInTypes)</a></li>
+<li><a href="#22-the-config-explosion-31-yamls-as-of-2026-09-02-still-a-cross-product">2.2 The config explosion — 31 YAMLs as of 2026-09-02, still a cross-product</a></li>
+<li><a href="#23-one-selection-mechanism-but-control-flow-still-keys-off-name-substrings">2.3 One selection mechanism — but control flow still keys off name substrings</a></li>
 <li><a href="#24-the-contract-the-three-seams-already-partly-built">2.4 The contract + the three seams (already partly built)</a></li>
 <li><a href="#25-the-binding-constraint-from-simdatalinuxmd177-203">2.5 The binding constraint (from SimDataLinux.md:177-203)</a></li>
 </ul>
